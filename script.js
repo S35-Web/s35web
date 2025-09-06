@@ -700,7 +700,6 @@ class CardsStack {
         this.container = document.getElementById('cardsContainer');
         this.stack = document.getElementById('cardsStack');
         this.cards = document.querySelectorAll('.card-item');
-        this.currentIndex = 0; // Índice de la card actual
         
         if (this.container && this.stack && this.cards.length > 0) {
             this.init();
@@ -800,213 +799,50 @@ class CardsStack {
     }
 
     setupTinderSwipe() {
-        let startX = 0;
-        let startY = 0;
-        let currentX = 0;
-        let currentY = 0;
-        let isDragging = false;
-        let currentCard = null;
-        let threshold = 80;
-        let currentIndex = 0; // Índice de la card actual
-
-        // Función para mostrar la card actual
-        const showCurrentCard = () => {
-            this.cards.forEach((card, index) => {
-                if (index === currentIndex) {
-                    card.style.zIndex = '5';
-                    card.style.transform = 'translateY(0) scale(1)';
-                    card.style.opacity = '1';
-                } else if (index === (currentIndex + 1) % this.cards.length) {
-                    card.style.zIndex = '4';
-                    card.style.transform = 'translateY(-8px) scale(0.95)';
-                    card.style.opacity = '0.8';
-                } else if (index === (currentIndex + 2) % this.cards.length) {
-                    card.style.zIndex = '3';
-                    card.style.transform = 'translateY(-16px) scale(0.9)';
-                    card.style.opacity = '0.6';
-                } else {
-                    card.style.zIndex = '1';
-                    card.style.transform = 'translateY(-24px) scale(0.85)';
-                    card.style.opacity = '0.4';
-                }
-            });
-        };
-
-        // Inicializar carrusel
-        showCurrentCard();
-
-        // Agregar eventos a cada card
+        // Configurar scroll horizontal nativo
+        this.stack.style.overflowX = 'auto';
+        this.stack.style.overflowY = 'hidden';
+        this.stack.style.scrollBehavior = 'smooth';
+        this.stack.style.scrollbarWidth = 'none';
+        this.stack.style.msOverflowStyle = 'none';
+        
+        // Ocultar scrollbar en webkit
+        const style = document.createElement('style');
+        style.textContent = `
+            .cards-stack::-webkit-scrollbar {
+                display: none;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Configurar cada card para scroll horizontal
         this.cards.forEach((card, index) => {
-            card.addEventListener('touchstart', (e) => {
-                // Solo permitir swipe en la card actual
-                if (index !== currentIndex) return;
-                if (e.touches.length !== 1) return;
-                
-                e.stopPropagation();
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-                currentCard = card;
-                
-                card.classList.add('swiping');
-                isDragging = true;
-                
-                console.log('Touch start en card:', index);
-            }, { passive: false });
-
-            card.addEventListener('touchmove', (e) => {
-                if (!isDragging || !currentCard || currentCard !== card) return;
-                
-                e.preventDefault();
-                e.stopPropagation();
-                
-                currentX = e.touches[0].clientX;
-                currentY = e.touches[0].clientY;
-                
-                const deltaX = currentX - startX;
-                const deltaY = currentY - startY;
-                const rotation = deltaX * 0.15;
-                
-                // Aplicar transformación en tiempo real
-                card.style.transform = `translateX(${deltaX}px) translateY(${deltaY * 0.1}px) rotate(${rotation}deg)`;
-                
-                // Cambiar opacidad basada en distancia
-                const distance = Math.abs(deltaX);
-                const opacity = Math.max(0.2, 1 - distance / 150);
-                card.style.opacity = opacity;
-            }, { passive: false });
-
-            card.addEventListener('touchend', (e) => {
-                if (!isDragging || !currentCard || currentCard !== card) return;
-                
-                e.stopPropagation();
-                isDragging = false;
-                card.classList.remove('swiping');
-                
-                const deltaX = currentX - startX;
-                const deltaY = currentY - startY;
-                const distance = Math.abs(deltaX);
-                
-                console.log('Touch end - deltaX:', deltaX, 'distance:', distance);
-                
-                // Determinar si es un swipe válido
-                if (distance > threshold && Math.abs(deltaX) > Math.abs(deltaY)) {
-                    // Swipe válido - avanzar al siguiente
-                    console.log('Swipe detectado, avanzando al siguiente');
-                    this.nextCard();
-                } else {
-                    // Retornar a posición original
-                    console.log('Retornando card a posición original');
-                    this.returnCard(card);
-                }
-                
-                // Reset variables
-                startX = 0;
-                startY = 0;
-                currentX = 0;
-                currentY = 0;
-                currentCard = null;
-            }, { passive: false });
-        });
-    }
-
-    nextCard() {
-        // Avanzar al siguiente índice
-        this.currentIndex = (this.currentIndex + 1) % this.cards.length;
-        
-        // Aplicar animación de salida a la card actual
-        const currentCard = this.cards[this.currentIndex === 0 ? this.cards.length - 1 : this.currentIndex - 1];
-        currentCard.classList.add('swiped-right');
-        
-        setTimeout(() => {
-            // Remover clase de swipe
-            currentCard.classList.remove('swiped-right');
-            
-            // Reorganizar el carrusel
-            this.reorganizeCarousel();
-            
-            console.log('Carrusel avanzado a índice:', this.currentIndex);
-        }, 300);
-    }
-
-    returnCard(card) {
-        card.classList.add('returning');
-        card.style.transform = '';
-        card.style.opacity = '';
-        
-        setTimeout(() => {
-            card.classList.remove('returning');
-        }, 300);
-    }
-
-    reorganizeCarousel() {
-        // Reorganizar el carrusel basado en el índice actual
-        this.cards.forEach((card, index) => {
-            // Resetear todas las transformaciones CSS
-            card.style.transform = '';
-            card.style.opacity = '';
-            card.style.zIndex = '';
+            card.style.flexShrink = '0';
+            card.style.position = 'relative';
+            card.style.transform = 'none';
+            card.style.opacity = '1';
+            card.style.zIndex = '1';
             
             // Remover todas las clases de estado
             card.classList.remove('swiping', 'swiped-left', 'swiped-right', 'returning');
-            
-            // Aplicar posición basada en el índice actual
-            const relativeIndex = (index - this.currentIndex + this.cards.length) % this.cards.length;
-            
-            if (relativeIndex === 0) {
-                // Card actual
-                card.style.zIndex = '5';
-                card.style.transform = 'translateY(0) scale(1)';
-                card.style.opacity = '1';
-            } else if (relativeIndex === 1) {
-                // Siguiente card
-                card.style.zIndex = '4';
-                card.style.transform = 'translateY(-8px) scale(0.95)';
-                card.style.opacity = '0.8';
-            } else if (relativeIndex === 2) {
-                // Tercera card
-                card.style.zIndex = '3';
-                card.style.transform = 'translateY(-16px) scale(0.9)';
-                card.style.opacity = '0.6';
-            } else {
-                // Cards de fondo
-                card.style.zIndex = '1';
-                card.style.transform = 'translateY(-24px) scale(0.85)';
-                card.style.opacity = '0.4';
-            }
         });
         
-        // Forzar reflow para que los estilos CSS se apliquen
-        this.stack.offsetHeight;
-        
-        console.log('Carrusel reorganizado - índice actual:', this.currentIndex);
+        console.log('Carrusel horizontal configurado para móvil');
     }
+
 
     setupAnimations() {
         // Animación de entrada
         this.cards.forEach((card, index) => {
             if (window.innerWidth <= 768) {
-                // Móvil: animación de carrusel
+                // Móvil: animación simple para carrusel horizontal
                 card.style.opacity = '0';
-                card.style.transform = 'translateY(50px) scale(0.8)';
+                card.style.transform = 'translateY(30px)';
                 
                 setTimeout(() => {
                     card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
                     card.style.opacity = '1';
-                    
-                    // Aplicar posición inicial del carrusel
-                    if (index === 0) {
-                        card.style.zIndex = '5';
-                        card.style.transform = 'translateY(0) scale(1)';
-                    } else if (index === 1) {
-                        card.style.zIndex = '4';
-                        card.style.transform = 'translateY(-8px) scale(0.95)';
-                    } else if (index === 2) {
-                        card.style.zIndex = '3';
-                        card.style.transform = 'translateY(-16px) scale(0.9)';
-                    } else {
-                        card.style.zIndex = '1';
-                        card.style.transform = 'translateY(-24px) scale(0.85)';
-                    }
+                    card.style.transform = 'translateY(0)';
                 }, index * 100);
             } else {
                 // Desktop: animación normal
