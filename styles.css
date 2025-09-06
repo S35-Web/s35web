@@ -964,6 +964,197 @@ body {
     }
 }
 
+/* Water Section */
+.water-section {
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: var(--gray-900);
+}
+
+.water-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+}
+
+.water-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    opacity: 0.8;
+}
+
+.water-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 0, 0, 0.6) 0%,
+        rgba(0, 0, 0, 0.4) 50%,
+        rgba(0, 0, 0, 0.7) 100%
+    );
+    z-index: 2;
+}
+
+.water-content {
+    position: relative;
+    z-index: 3;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3xl);
+    align-items: center;
+}
+
+.water-text {
+    max-width: 600px;
+    color: var(--primary-white);
+}
+
+.water-title {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 300;
+    line-height: 1.2;
+    margin-bottom: var(--space-2xl);
+    opacity: 0;
+    transform: translateX(-50px);
+    animation: slide-in-left 1s ease-out 0.2s forwards;
+}
+
+.water-stats {
+    display: flex;
+    gap: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+}
+
+.water-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.water-stat:nth-child(1) {
+    animation: slide-in-up 1s ease-out 0.4s forwards;
+}
+
+.water-stat:nth-child(2) {
+    animation: slide-in-up 1s ease-out 0.6s forwards;
+}
+
+.water-stat .stat-number {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--primary-white);
+    line-height: 1;
+    margin-bottom: var(--space-xs);
+}
+
+.water-stat .stat-label {
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.875rem;
+    color: var(--gray-300);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 300;
+}
+
+.water-description {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--gray-200);
+    margin-bottom: var(--space-2xl);
+    opacity: 0;
+    transform: translateX(-30px);
+    animation: slide-in-left 1s ease-out 0.8s forwards;
+}
+
+.water-cta {
+    background: transparent;
+    color: var(--primary-white);
+    border: 1px solid var(--primary-white);
+    padding: var(--space-md) var(--space-xl);
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slide-in-up 1s ease-out 1s forwards;
+    position: relative;
+    overflow: hidden;
+}
+
+.water-cta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--primary-white);
+    transition: left 0.3s ease;
+    z-index: -1;
+}
+
+.water-cta:hover {
+    color: var(--primary-black);
+    transform: translateY(-2px);
+}
+
+.water-cta:hover::before {
+    left: 0;
+}
+
+.water-cta i {
+    transition: transform 0.3s ease;
+}
+
+.water-cta:hover i {
+    transform: translateX(4px);
+}
+
+/* Animaciones para la sección de agua */
+@keyframes slide-in-left {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slide-in-up {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Technology Section */
 .technology {
     padding: var(--space-3xl) 0;
@@ -1680,6 +1871,22 @@ body {
     }
 
     .vision-text {
+        max-width: 100%;
+    }
+    
+    /* Water section responsive */
+    .water-content {
+        grid-template-columns: 1fr;
+        gap: var(--space-2xl);
+        text-align: center;
+    }
+    
+    .water-stats {
+        justify-content: center;
+        gap: var(--space-xl);
+    }
+    
+    .water-text {
         max-width: 100%;
     }
 }
