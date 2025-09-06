@@ -127,6 +127,8 @@ const animateConsistencyCounters = () => {
     
     counters.forEach(counter => {
         const target = parseInt(counter.getAttribute('data-target'));
+        const prefix = counter.getAttribute('data-prefix') || '';
+        const suffix = counter.getAttribute('data-suffix') || '';
         const duration = 2000; // 2 seconds
         const increment = target / (duration / 16); // 60fps
         let current = 0;
@@ -134,10 +136,10 @@ const animateConsistencyCounters = () => {
         const updateCounter = () => {
             if (current < target) {
                 current += increment;
-                counter.textContent = Math.floor(current);
+                counter.textContent = prefix + Math.floor(current) + suffix;
                 requestAnimationFrame(updateCounter);
             } else {
-                counter.textContent = target;
+                counter.textContent = prefix + target + suffix;
             }
         };
         

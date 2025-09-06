@@ -1382,7 +1382,7 @@ body {
     letter-spacing: 0.05em;
 }
 
-/* Consistency Section */
+/* Consistency Section - Modern Minimalist */
 .consistency {
     padding: var(--space-3xl) 0;
     background: var(--primary-white);
@@ -1390,36 +1390,53 @@ body {
 
 .consistency-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: var(--space-2xl);
-    max-width: 1000px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xl);
+    max-width: 1200px;
     margin: 0 auto;
 }
 
 .consistency-card {
     background: var(--primary-white);
-    border: 2px solid var(--gray-200);
-    border-radius: 16px;
-    padding: var(--space-2xl);
+    border: 1px solid var(--primary-black);
+    border-radius: 0;
+    padding: var(--space-3xl) var(--space-2xl);
     text-align: center;
-    transition: var(--transition-normal);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .consistency-card:hover {
-    border-color: var(--primary-black);
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+    background: var(--primary-black);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.consistency-card:hover .consistency-number {
+    color: var(--primary-white);
+}
+
+.consistency-card:hover .consistency-title {
+    color: var(--primary-white);
+}
+
+.consistency-card:hover .consistency-description {
+    color: var(--gray-200);
 }
 
 .consistency-number {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: clamp(3rem, 8vw, 5rem);
-    font-weight: 700;
+    font-size: clamp(4rem, 10vw, 6rem);
+    font-weight: 900;
     color: var(--primary-black);
     margin-bottom: var(--space-lg);
-    line-height: 1;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
 }
 
 .consistency-number .counter {
@@ -1429,20 +1446,24 @@ body {
 
 .consistency-title {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 700;
     color: var(--primary-black);
     margin-bottom: var(--space-lg);
-    line-height: 1.3;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
 }
 
 .consistency-description {
-    font-family: 'Roboto', sans-serif;
-    font-size: 1rem;
-    line-height: 1.6;
-    color: var(--gray-700);
-    max-width: 400px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--gray-600);
+    max-width: 300px;
     margin: 0 auto;
+    letter-spacing: 0.01em;
 }
 
 /* Innovation Section */
@@ -1942,20 +1963,28 @@ body {
 
     .consistency-grid {
         grid-template-columns: 1fr;
-        gap: var(--space-xl);
+        gap: var(--space-lg);
         padding: 0 var(--space-md);
     }
 
     .consistency-card {
-        padding: var(--space-xl);
+        padding: var(--space-2xl) var(--space-lg);
+        min-height: 240px;
+    }
+
+    .consistency-number {
+        font-size: clamp(3rem, 8vw, 4rem);
+        margin-bottom: var(--space-md);
     }
 
     .consistency-title {
-        font-size: 1.25rem;
+        font-size: 1rem;
+        margin-bottom: var(--space-md);
     }
 
     .consistency-description {
-        font-size: 0.9375rem;
+        font-size: 0.8125rem;
+        max-width: 280px;
     }
 
     .innovation-content,
