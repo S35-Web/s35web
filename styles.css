@@ -1963,30 +1963,53 @@ body {
     }
 
     .consistency-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-lg);
         padding: 0 var(--space-md);
     }
 
     .consistency-card {
-        padding: var(--space-lg) var(--space-sm);
-        min-height: 200px;
+        display: flex;
+        align-items: center;
+        gap: var(--space-lg);
+        padding: var(--space-lg);
+        min-height: auto;
+        text-align: left;
+        border-radius: 0;
+        border: 1px solid var(--primary-black);
+    }
+
+    .consistency-card:hover {
+        background: var(--primary-black);
+        transform: none;
+        box-shadow: none;
     }
 
     .consistency-number {
-        font-size: clamp(2.5rem, 6vw, 3rem);
-        margin-bottom: var(--space-sm);
+        font-size: clamp(2.5rem, 8vw, 3.5rem);
+        margin-bottom: 0;
+        flex-shrink: 0;
+        min-width: 80px;
+        text-align: center;
     }
 
     .consistency-title {
         font-size: 0.875rem;
-        margin-bottom: var(--space-sm);
+        margin-bottom: var(--space-xs);
+        text-align: left;
     }
 
     .consistency-description {
-        font-size: 0.625rem;
+        font-size: 0.75rem;
         max-width: 100%;
-        line-height: 1.25;
+        line-height: 1.4;
+        text-align: left;
+        margin: 0;
+    }
+
+    .consistency-card .consistency-content {
+        flex: 1;
     }
 
     .innovation-content,
