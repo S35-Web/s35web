@@ -2132,6 +2132,11 @@ body {
         flex-direction: column;
         text-align: center;
         gap: var(--space-md);
+        align-items: center;
+    }
+    
+    .impact-icon {
+        margin: 0 auto;
     }
     
     .article-meta {
