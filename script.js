@@ -792,49 +792,152 @@ class CardsStack {
     }
 
     setupTouch() {
-        // Touch events para móvil
+        // Touch events para móvil - efecto Tinder
+        if (window.innerWidth <= 768) {
+            this.setupTinderSwipe();
+        }
+    }
+
+    setupTinderSwipe() {
         let startX = 0;
         let startY = 0;
-        let isScrolling = false;
+        let currentX = 0;
+        let currentY = 0;
+        let isDragging = false;
+        let currentCard = null;
+        let threshold = 100; // Distancia mínima para considerar swipe
+
+        // Encontrar la card superior (la que se puede deslizar)
+        const getTopCard = () => {
+            return this.cards[0]; // La primera card es siempre la superior
+        };
 
         this.stack.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
-            isScrolling = false;
-        });
-
-        this.stack.addEventListener('touchmove', (e) => {
-            if (!startX || !startY) return;
-
-            const currentX = e.touches[0].clientX;
-            const currentY = e.touches[0].clientY;
-            const diffX = Math.abs(startX - currentX);
-            const diffY = Math.abs(startY - currentY);
-
-            if (diffX > diffY) {
-                isScrolling = true;
-                e.preventDefault();
+            currentCard = getTopCard();
+            
+            if (currentCard) {
+                currentCard.classList.add('swiping');
+                isDragging = true;
             }
         });
 
+        this.stack.addEventListener('touchmove', (e) => {
+            if (!isDragging || !currentCard) return;
+            
+            e.preventDefault();
+            
+            currentX = e.touches[0].clientX;
+            currentY = e.touches[0].clientY;
+            
+            const deltaX = currentX - startX;
+            const deltaY = currentY - startY;
+            const rotation = deltaX * 0.1; // Rotación basada en movimiento horizontal
+            
+            // Aplicar transformación en tiempo real
+            currentCard.style.transform = `translateX(${deltaX}px) translateY(${deltaY * 0.1}px) rotate(${rotation}deg)`;
+            
+            // Cambiar opacidad basada en distancia
+            const distance = Math.abs(deltaX);
+            const opacity = Math.max(0.3, 1 - distance / 200);
+            currentCard.style.opacity = opacity;
+        });
+
         this.stack.addEventListener('touchend', () => {
+            if (!isDragging || !currentCard) return;
+            
+            isDragging = false;
+            currentCard.classList.remove('swiping');
+            
+            const deltaX = currentX - startX;
+            const deltaY = currentY - startY;
+            const distance = Math.abs(deltaX);
+            
+            // Determinar si es un swipe válido
+            if (distance > threshold && Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Swipe válido
+                if (deltaX > 0) {
+                    // Swipe derecha
+                    this.swipeCard(currentCard, 'right');
+                } else {
+                    // Swipe izquierda
+                    this.swipeCard(currentCard, 'left');
+                }
+            } else {
+                // Retornar a posición original
+                this.returnCard(currentCard);
+            }
+            
+            // Reset variables
             startX = 0;
             startY = 0;
-            isScrolling = false;
+            currentX = 0;
+            currentY = 0;
+            currentCard = null;
+        });
+    }
+
+    swipeCard(card, direction) {
+        card.classList.add(direction === 'right' ? 'swiped-right' : 'swiped-left');
+        
+        setTimeout(() => {
+            // Mover la card al final del stack
+            this.stack.appendChild(card);
+            
+            // Remover clases de swipe
+            card.classList.remove('swiped-left', 'swiped-right');
+            card.style.transform = '';
+            card.style.opacity = '';
+            
+            // Reorganizar z-index para el nuevo stack
+            this.reorganizeStack();
+        }, 300);
+    }
+
+    returnCard(card) {
+        card.classList.add('returning');
+        card.style.transform = '';
+        card.style.opacity = '';
+        
+        setTimeout(() => {
+            card.classList.remove('returning');
+        }, 300);
+    }
+
+    reorganizeStack() {
+        // Reorganizar las cards para que la siguiente sea la superior
+        this.cards.forEach((card, index) => {
+            card.style.zIndex = this.cards.length - index;
         });
     }
 
     setupAnimations() {
         // Animación de entrada
         this.cards.forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(50px)';
-            
-            setTimeout(() => {
-                card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, index * 100);
+            if (window.innerWidth <= 768) {
+                // Móvil: animación de stack
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(50px) scale(0.8)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                    card.style.opacity = '1';
+                    // La transformación final se maneja por CSS con nth-child
+                }, index * 100);
+            } else {
+                // Desktop: animación normal
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(50px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
         });
     }
 

@@ -1511,32 +1511,78 @@ body {
     }
     
     .cards-stack {
-        flex-direction: column;
-        justify-content: flex-start;
+        position: relative;
+        display: flex;
+        justify-content: center;
         align-items: center;
         padding: var(--space-lg);
-        gap: var(--space-md);
-        overflow-y: auto;
-        overflow-x: hidden;
+        overflow: visible;
+        height: 100%;
     }
     
     .card-item {
-        width: 90%;
-        max-width: 317px;
+        position: absolute;
+        width: 80%;
+        max-width: 280px;
         height: auto;
         aspect-ratio: 317/651;
-        transform: translateY(0);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .card-item:hover {
-        transform: translateY(-4px) scale(1.02);
+        transform-origin: center center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: grab;
+        user-select: none;
+        z-index: 1;
     }
     
     .card-item:active {
-        transform: scale(0.98);
+        cursor: grabbing;
     }
     
+    /* Stack effect - cards apiladas */
+    .card-item:nth-child(1) {
+        z-index: 5;
+        transform: translateY(0) scale(1);
+    }
+    
+    .card-item:nth-child(2) {
+        z-index: 4;
+        transform: translateY(-8px) scale(0.95);
+    }
+    
+    .card-item:nth-child(3) {
+        z-index: 3;
+        transform: translateY(-16px) scale(0.9);
+    }
+    
+    .card-item:nth-child(4) {
+        z-index: 2;
+        transform: translateY(-24px) scale(0.85);
+    }
+    
+    .card-item:nth-child(5) {
+        z-index: 1;
+        transform: translateY(-32px) scale(0.8);
+    }
+    
+    /* Estados de deslizamiento */
+    .card-item.swiping {
+        transition: none;
+        z-index: 10;
+    }
+    
+    .card-item.swiped-left {
+        transform: translateX(-100vw) rotate(-30deg);
+        opacity: 0;
+    }
+    
+    .card-item.swiped-right {
+        transform: translateX(100vw) rotate(30deg);
+        opacity: 0;
+    }
+    
+    .card-item.returning {
+        transform: translateX(0) rotate(0deg);
+        opacity: 1;
+    }
 }
 
 /* Responsive Design */
