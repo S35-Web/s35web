@@ -991,88 +991,10 @@ body {
     height: 100%;
     object-fit: cover;
     z-index: 1;
-    opacity: 0.3;
-    filter: brightness(2) contrast(0.8);
+    opacity: 1;
     display: block;
 }
 
-/* Fallback water effect with CSS animations */
-.water-background::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        linear-gradient(45deg, 
-            rgba(255, 255, 255, 0.8) 0%, 
-            rgba(240, 248, 255, 0.9) 25%, 
-            rgba(255, 255, 255, 0.85) 50%, 
-            rgba(240, 248, 255, 0.8) 75%, 
-            rgba(255, 255, 255, 0.9) 100%),
-        radial-gradient(circle at 20% 30%, rgba(240, 248, 255, 0.6) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.7) 0%, transparent 50%),
-        radial-gradient(circle at 40% 80%, rgba(240, 248, 255, 0.5) 0%, transparent 50%);
-    z-index: 1;
-    animation: waterFlow 8s ease-in-out infinite;
-}
-
-.water-background::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="waterRipples" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="2" fill="%23000000" opacity="0.03"/><circle cx="5" cy="5" r="1" fill="%23000000" opacity="0.02"/><circle cx="15" cy="15" r="1.5" fill="%23000000" opacity="0.025"/></pattern></defs><rect width="100" height="100" fill="url(%23waterRipples)"/></svg>');
-    z-index: 1;
-    opacity: 0.2;
-    animation: waterRipples 12s linear infinite;
-}
-
-@keyframes waterFlow {
-    0%, 100% {
-        background-position: 0% 0%, 0% 0%, 100% 100%, 50% 50%;
-        transform: scale(1);
-    }
-    25% {
-        background-position: 25% 25%, 10% 20%, 90% 80%, 60% 40%;
-        transform: scale(1.02);
-    }
-    50% {
-        background-position: 50% 50%, 20% 40%, 80% 60%, 40% 60%;
-        transform: scale(1.05);
-    }
-    75% {
-        background-position: 75% 75%, 30% 60%, 70% 40%, 30% 80%;
-        transform: scale(1.02);
-    }
-}
-
-@keyframes waterRipples {
-    0% {
-        transform: translateX(0) translateY(0);
-        opacity: 0.3;
-    }
-    25% {
-        transform: translateX(-5px) translateY(-3px);
-        opacity: 0.4;
-    }
-    50% {
-        transform: translateX(-10px) translateY(-5px);
-        opacity: 0.3;
-    }
-    75% {
-        transform: translateX(-5px) translateY(-8px);
-        opacity: 0.4;
-    }
-    100% {
-        transform: translateX(0) translateY(0);
-        opacity: 0.3;
-    }
-}
 
 .water-overlay {
     position: absolute;
@@ -1099,7 +1021,7 @@ body {
 
 .water-text {
     max-width: 600px;
-    color: var(--primary-black);
+    color: var(--primary-white);
 }
 
 .water-title {
@@ -1139,7 +1061,7 @@ body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: clamp(2rem, 5vw, 3.5rem);
     font-weight: 700;
-    color: var(--primary-black);
+    color: var(--primary-white);
     line-height: 1;
     margin-bottom: var(--space-xs);
 }
@@ -1147,7 +1069,7 @@ body {
 .water-stat .stat-label {
     font-family: 'Roboto', sans-serif;
     font-size: 0.875rem;
-    color: var(--gray-600);
+    color: var(--gray-300);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     font-weight: 300;
@@ -1157,7 +1079,7 @@ body {
     font-family: 'Roboto', sans-serif;
     font-size: 1rem;
     line-height: 1.7;
-    color: var(--gray-700);
+    color: var(--gray-200);
     margin-bottom: var(--space-2xl);
     opacity: 0;
     transform: translateX(-30px);
@@ -1166,8 +1088,8 @@ body {
 
 .water-cta {
     background: transparent;
-    color: var(--primary-black);
-    border: 1px solid var(--primary-black);
+    color: var(--primary-white);
+    border: 1px solid var(--primary-white);
     padding: var(--space-md) var(--space-xl);
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 0.875rem;
@@ -1193,13 +1115,13 @@ body {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: var(--primary-black);
+    background: var(--primary-white);
     transition: left 0.3s ease;
     z-index: -1;
 }
 
 .water-cta:hover {
-    color: var(--primary-white);
+    color: var(--primary-black);
     transform: translateY(-2px);
 }
 
