@@ -700,8 +700,6 @@ class CardsStack {
         this.container = document.getElementById('cardsContainer');
         this.stack = document.getElementById('cardsStack');
         this.cards = document.querySelectorAll('.card-item');
-        this.originalCardsCount = 5; // Número original de cards únicas
-        this.isScrolling = false;
         
         if (this.container && this.stack && this.cards.length > 0) {
             this.init();
@@ -807,6 +805,8 @@ class CardsStack {
         this.stack.style.scrollBehavior = 'smooth';
         this.stack.style.scrollbarWidth = 'none';
         this.stack.style.msOverflowStyle = 'none';
+        this.stack.style.scrollSnapType = 'x mandatory';
+        this.stack.style.webkitOverflowScrolling = 'touch';
         
         // Ocultar scrollbar en webkit
         const style = document.createElement('style');
@@ -824,60 +824,67 @@ class CardsStack {
             card.style.transform = 'none';
             card.style.opacity = '1';
             card.style.zIndex = '1';
+            card.style.scrollSnapAlign = 'center';
+            card.style.scrollSnapStop = 'always';
             
             // Remover todas las clases de estado
             card.classList.remove('swiping', 'swiped-left', 'swiped-right', 'returning');
         });
         
-        // Configurar scroll infinito
-        this.setupInfiniteScroll();
+        // Configurar scroll suave entre cards
+        this.setupSmoothScrolling();
         
-        console.log('Carrusel horizontal con scroll infinito configurado para móvil');
+        console.log('Carrusel horizontal configurado para móvil');
+    }
+    
+    setupSmoothScrolling() {
+        let isScrolling = false;
+        let scrollTimeout;
+        
+        this.stack.addEventListener('scroll', () => {
+            if (isScrolling) return;
+            
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                // Calcular la card más cercana al centro
+                const containerWidth = this.stack.clientWidth;
+                const scrollLeft = this.stack.scrollLeft;
+                const center = scrollLeft + (containerWidth / 2);
+                
+                let closestCard = null;
+                let closestDistance = Infinity;
+                
+                this.cards.forEach((card) => {
+                    const cardRect = card.getBoundingClientRect();
+                    const cardCenter = cardRect.left + (cardRect.width / 2);
+                    const distance = Math.abs(cardCenter - center);
+                    
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestCard = card;
+                    }
+                });
+                
+                // Si hay una card cercana, centrarla suavemente
+                if (closestCard && closestDistance > 50) {
+                    isScrolling = true;
+                    const cardRect = closestCard.getBoundingClientRect();
+                    const containerRect = this.stack.getBoundingClientRect();
+                    const targetScroll = this.stack.scrollLeft + (cardRect.left - containerRect.left) - (containerWidth / 2) + (cardRect.width / 2);
+                    
+                    this.stack.scrollTo({
+                        left: targetScroll,
+                        behavior: 'smooth'
+                    });
+                    
+                    setTimeout(() => {
+                        isScrolling = false;
+                    }, 300);
+                }
+            }, 150);
+        });
     }
 
-    setupInfiniteScroll() {
-        // Esperar a que las cards se rendericen completamente
-        setTimeout(() => {
-            // Calcular el ancho de una card para saber cuándo resetear
-            const firstCard = this.cards[0];
-            const cardWidth = firstCard.offsetWidth;
-            const gap = parseInt(getComputedStyle(this.stack).gap) || 0;
-            const totalCardWidth = cardWidth + gap;
-            const resetPoint = totalCardWidth * this.originalCardsCount;
-            
-            console.log('Card width:', cardWidth, 'Gap:', gap, 'Reset point:', resetPoint);
-            
-            // Escuchar el evento de scroll
-            this.stack.addEventListener('scroll', () => {
-                if (this.isScrolling) return;
-                
-                const scrollLeft = this.stack.scrollLeft;
-                
-                // Si llegamos al final (segunda serie), resetear al inicio (primera serie)
-                if (scrollLeft >= resetPoint - 10) { // -10 para margen de error
-                    this.isScrolling = true;
-                    this.stack.style.scrollBehavior = 'auto';
-                    this.stack.scrollLeft = scrollLeft - resetPoint;
-                    setTimeout(() => {
-                        this.stack.style.scrollBehavior = 'smooth';
-                        this.isScrolling = false;
-                    }, 50);
-                }
-                // Si estamos en el inicio y scrolleamos hacia atrás, ir al final
-                else if (scrollLeft <= 10) { // +10 para margen de error
-                    this.isScrolling = true;
-                    this.stack.style.scrollBehavior = 'auto';
-                    this.stack.scrollLeft = resetPoint + scrollLeft;
-                    setTimeout(() => {
-                        this.stack.style.scrollBehavior = 'smooth';
-                        this.isScrolling = false;
-                    }, 50);
-                }
-            });
-            
-            console.log('Scroll infinito configurado - reset point:', resetPoint);
-        }, 100);
-    }
 
     setupAnimations() {
         // Animación de entrada

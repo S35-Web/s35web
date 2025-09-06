@@ -1522,6 +1522,8 @@ body {
         scrollbar-width: none;
         -ms-overflow-style: none;
         gap: var(--space-lg);
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
     }
     
     .cards-stack::-webkit-scrollbar {
@@ -1545,6 +1547,8 @@ body {
         -moz-user-select: none;
         -ms-user-select: none;
         touch-action: pan-x;
+        scroll-snap-align: center;
+        scroll-snap-stop: always;
     }
     
     .card-item:active {
