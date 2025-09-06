@@ -694,288 +694,142 @@ const optimizedScroll = debounce(function() {
 
 window.addEventListener('scroll', optimizedScroll);
 
-// Chemical Code Animation
-class ChemicalAnimation {
+// 3D Interactive Block Animation
+class Interactive3D {
     constructor() {
-        this.canvas = document.getElementById('chemicalCanvas');
-        this.formulasContainer = document.getElementById('chemicalFormulas');
-        this.formulas = [];
-        this.connections = [];
-        this.mousePosition = { x: 0, y: 0 };
-        this.isActive = false;
+        this.canvas = document.getElementById('threejs-canvas');
+        this.container = document.getElementById('interactive3DCanvas');
         
-        if (this.canvas && this.formulasContainer) {
+        if (this.canvas && this.container) {
             this.init();
         }
     }
 
     init() {
-        this.createFormulas();
-        this.setupEventListeners();
-        this.startAnimation();
+        this.setupScene();
+        this.loadModel();
+        this.setupControls();
+        this.animate();
     }
 
-    createFormulas() {
-        const productData = [
-            // Nombres de productos S-35
-            { text: 'WAXTARD', type: 'product', category: 's35' },
-            { text: 'CELLBOND', type: 'product', category: 's35' },
-            { text: 'PEGAEXPRESS', type: 'product', category: 's35' },
-            { text: 'BASECOAT', type: 'product', category: 's35' },
-            { text: 'STYROBOND', type: 'product', category: 's35' },
-            { text: 'ULTRAFORCE', type: 'product', category: 's35' },
-            { text: 'PSP+', type: 'product', category: 's35' },
-            { text: 'MIXANDREADY', type: 'product', category: 's35' },
-            { text: 'PASTABLOCK', type: 'product', category: 's35' },
-            { text: 'LA FINA', type: 'product', category: 's35' }
-        ];
+    setupScene() {
+        // Scene
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0xf8f9fa);
 
-        const chemicalData = [
-            // Fórmulas de construcción
-            { text: 'Ca(OH)₂ + CO₂ → CaCO₃ + H₂O', type: 'formula', category: 'reaction' },
-            { text: 'SiO₂ + 2NaOH → Na₂SiO₃ + H₂O', type: 'formula', category: 'reaction' },
-            { text: 'C₃S + H₂O → C-S-H + Ca(OH)₂', type: 'formula', category: 'reaction' },
-            { text: 'C₂S + H₂O → C-S-H + Ca(OH)₂', type: 'formula', category: 'reaction' },
-            { text: 'C₃A + 3CaSO₄ + 32H₂O → AFt', type: 'formula', category: 'reaction' },
-            { text: 'C₃S + C₂S + C₃A + C₄AF', type: 'formula', category: 'reaction' },
-            { text: 'CaCO₃ + TiO₂ + Polymer', type: 'formula', category: 'reaction' },
-            { text: 'SiO₂ + Al₂O₃ + Fe₂O₃', type: 'formula', category: 'reaction' },
-            { text: 'C-S-H + CH + AFt', type: 'formula', category: 'reaction' },
-            { text: 'C₃A + C₄AF + Gypsum', type: 'formula', category: 'reaction' },
-            
-            // Propiedades químicas
-            { text: 'pH: 12.5-13.5', type: 'property', category: 'property' },
-            { text: 'Densidad: 2.1-2.3 g/cm³', type: 'property', category: 'property' },
-            { text: 'Resistencia: 25-50 MPa', type: 'property', category: 'property' },
-            { text: 'Tiempo de fraguado: 2-6 horas', type: 'property', category: 'property' },
-            { text: 'Contracción: <0.1%', type: 'property', category: 'property' },
-            { text: 'Molienda: 325 mesh', type: 'property', category: 'property' },
-            { text: 'Temperatura: 1450°C', type: 'property', category: 'property' },
-            { text: 'Enfriamiento: 100°C/min', type: 'property', category: 'property' },
-            { text: 'Mezclado: 3-5 min', type: 'property', category: 'property' },
-            { text: 'Curado: 28 días', type: 'property', category: 'property' },
-            
-            // Aditivos y modificadores
-            { text: 'Superplastificante: PCE', type: 'reaction', category: 'additive' },
-            { text: 'Retardador: Na₂SO₄', type: 'reaction', category: 'additive' },
-            { text: 'Acelerador: CaCl₂', type: 'reaction', category: 'additive' },
-            { text: 'Hidrofugante: Si(OR)₄', type: 'reaction', category: 'additive' },
-            { text: 'Fibras: PP, PVA, Steel', type: 'reaction', category: 'additive' }
-        ];
+        // Camera
+        this.camera = new THREE.PerspectiveCamera(
+            75,
+            this.container.offsetWidth / this.container.offsetHeight,
+            0.1,
+            1000
+        );
+        this.camera.position.set(0, 0, 5);
 
-        // Crear productos primero (más grandes, más visibles)
-        productData.forEach((data, index) => {
-            this.createFormulaElement(data, index);
+        // Renderer
+        this.renderer = new THREE.WebGLRenderer({
+            canvas: this.canvas,
+            antialias: true,
+            alpha: true
         });
+        this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-        // Crear fórmulas químicas (más pequeñas, de fondo)
-        chemicalData.forEach((data, index) => {
-            this.createFormulaElement(data, index + productData.length);
-        });
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        this.scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 10, 5);
+        directionalLight.castShadow = true;
+        this.scene.add(directionalLight);
+
+        // Mouse controls
+        this.mouseX = 0;
+        this.mouseY = 0;
+        this.targetRotationX = 0;
+        this.targetRotationY = 0;
+        this.isMouseDown = false;
     }
 
-    createFormulaElement(data, index) {
-        const formula = document.createElement('div');
-        formula.className = `chemical-formula ${data.type} ${data.category}`;
-        formula.textContent = data.text;
+    loadModel() {
+        const loader = new THREE.GLTFLoader();
         
-        // Posición aleatoria inicial con diferentes rangos según el tipo
-        let x, y;
-        if (data.type === 'product') {
-            // Productos más centrados y visibles
-            x = Math.random() * (this.canvas.offsetWidth - 400) + 200;
-            y = Math.random() * (this.canvas.offsetHeight - 100) + 50;
-        } else {
-            // Fórmulas más distribuidas por toda la pantalla
-            x = Math.random() * (this.canvas.offsetWidth - 300);
-            y = Math.random() * (this.canvas.offsetHeight - 50);
-        }
-        
-        formula.style.left = `${x}px`;
-        formula.style.top = `${y}px`;
-        
-        // Agregar animaciones aleatorias solo a fórmulas de fondo
-        if (data.type !== 'product' && Math.random() > 0.7) {
-            formula.classList.add('flowing');
-        } else if (data.type !== 'product' && Math.random() > 0.5) {
-            formula.classList.add('pulsing');
-        }
-        
-        this.formulasContainer.appendChild(formula);
-        this.formulas.push({
-            element: formula,
-            data: data,
-            x: x,
-            y: y,
-            vx: (Math.random() - 0.5) * (data.type === 'product' ? 0.2 : 0.5),
-            vy: (Math.random() - 0.5) * (data.type === 'product' ? 0.2 : 0.5)
-        });
-    }
-
-    setupEventListeners() {
-        // Mouse movement
-        this.canvas.addEventListener('mousemove', (e) => {
-            const rect = this.canvas.getBoundingClientRect();
-            this.mousePosition.x = e.clientX - rect.left;
-            this.mousePosition.y = e.clientY - rect.top;
-        });
-
-        // Mouse enter/leave
-        this.canvas.addEventListener('mouseenter', () => {
-            this.isActive = true;
-            this.activateNearbyFormulas();
-        });
-
-        this.canvas.addEventListener('mouseleave', () => {
-            this.isActive = false;
-            this.deactivateAllFormulas();
-        });
-
-        // Click interactions
-        this.canvas.addEventListener('click', (e) => {
-            this.handleClick(e);
-        });
-    }
-
-    activateNearbyFormulas() {
-        this.formulas.forEach(formula => {
-            const distance = this.getDistance(formula, this.mousePosition);
-            if (distance < 150) {
-                formula.element.classList.add('active');
+        loader.load(
+            'Assets/3d_cube.glb',
+            (gltf) => {
+                this.model = gltf.scene;
+                this.model.scale.set(2, 2, 2);
+                this.model.position.set(0, 0, 0);
+                this.model.castShadow = true;
+                this.model.receiveShadow = true;
+                this.scene.add(this.model);
+                console.log('Modelo 3D cargado exitosamente');
+            },
+            (progress) => {
+                console.log('Cargando modelo:', (progress.loaded / progress.total * 100) + '%');
+            },
+            (error) => {
+                console.error('Error al cargar el modelo:', error);
+                this.createFallbackCube();
             }
-        });
+        );
     }
 
-    deactivateAllFormulas() {
-        this.formulas.forEach(formula => {
-            formula.element.classList.remove('active');
+    createFallbackCube() {
+        const geometry = new THREE.BoxGeometry(2, 2, 2);
+        const material = new THREE.MeshLambertMaterial({ 
+            color: 0x8B8B8B,
+            roughness: 0.8,
+            metalness: 0.2
         });
+        
+        this.model = new THREE.Mesh(geometry, material);
+        this.model.castShadow = true;
+        this.model.receiveShadow = true;
+        this.scene.add(this.model);
     }
 
-    handleClick(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const clickY = e.clientY - rect.top;
-
-        // Encontrar fórmula más cercana
-        let closestFormula = null;
-        let minDistance = Infinity;
-
-        this.formulas.forEach(formula => {
-            const distance = Math.sqrt(
-                Math.pow(formula.x - clickX, 2) + Math.pow(formula.y - clickY, 2)
-            );
-            if (distance < minDistance && distance < 100) {
-                minDistance = distance;
-                closestFormula = formula;
+    setupControls() {
+        this.container.addEventListener('mousemove', (e) => {
+            if (this.isMouseDown) {
+                this.mouseX = (e.clientX / this.container.offsetWidth) * 2 - 1;
+                this.mouseY = -(e.clientY / this.container.offsetHeight) * 2 + 1;
+                this.targetRotationY = this.mouseX * Math.PI;
+                this.targetRotationX = this.mouseY * Math.PI * 0.5;
             }
         });
 
-        if (closestFormula) {
-            this.animateFormula(closestFormula);
-        }
-    }
+        this.container.addEventListener('mousedown', () => this.isMouseDown = true);
+        this.container.addEventListener('mouseup', () => this.isMouseDown = false);
+        this.container.addEventListener('mouseleave', () => this.isMouseDown = false);
 
-    animateFormula(formula) {
-        // Efecto de explosión
-        formula.element.style.transform = 'scale(1.5)';
-        formula.element.style.opacity = '1';
-        
-        setTimeout(() => {
-            formula.element.style.transform = 'scale(1)';
-        }, 300);
-
-        // Crear ondas de conexión
-        this.createConnectionWaves(formula);
-    }
-
-    createConnectionWaves(centerFormula) {
-        this.formulas.forEach(formula => {
-            if (formula !== centerFormula) {
-                const distance = this.getDistance(formula, centerFormula);
-                if (distance < 200) {
-                    this.createConnection(centerFormula, formula);
-                }
-            }
+        this.container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            this.camera.position.z += e.deltaY * 0.1;
+            this.camera.position.z = Math.max(2, Math.min(10, this.camera.position.z));
         });
     }
 
-    createConnection(from, to) {
-        const connection = document.createElement('div');
-        connection.className = 'chemical-connection';
-        
-        const angle = Math.atan2(to.y - from.y, to.x - from.x);
-        const distance = this.getDistance(from, to);
-        
-        connection.style.left = `${from.x}px`;
-        connection.style.top = `${from.y}px`;
-        connection.style.width = `${distance}px`;
-        connection.style.transform = `rotate(${angle}rad)`;
-        connection.style.transformOrigin = '0 0';
-        
-        this.formulasContainer.appendChild(connection);
-        
-        setTimeout(() => {
-            connection.remove();
-        }, 800);
-    }
+    animate() {
+        requestAnimationFrame(() => this.animate());
 
-    getDistance(formula1, formula2) {
-        const x1 = typeof formula1 === 'object' ? formula1.x : formula1.x;
-        const y1 = typeof formula1 === 'object' ? formula1.y : formula1.y;
-        const x2 = typeof formula2 === 'object' ? formula2.x : formula2.x;
-        const y2 = typeof formula2 === 'object' ? formula2.y : formula2.y;
-        
-        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-    }
-
-    startAnimation() {
-        const animate = () => {
-            this.formulas.forEach(formula => {
-                // Movimiento suave
-                formula.x += formula.vx;
-                formula.y += formula.vy;
-                
-                // Rebote en bordes
-                if (formula.x < 0 || formula.x > this.canvas.offsetWidth - 200) {
-                    formula.vx *= -1;
-                }
-                if (formula.y < 0 || formula.y > this.canvas.offsetHeight - 50) {
-                    formula.vy *= -1;
-                }
-                
-                // Mantener dentro del canvas
-                formula.x = Math.max(0, Math.min(formula.x, this.canvas.offsetWidth - 200));
-                formula.y = Math.max(0, Math.min(formula.y, this.canvas.offsetHeight - 50));
-                
-                // Aplicar posición
-                formula.element.style.left = `${formula.x}px`;
-                formula.element.style.top = `${formula.y}px`;
-                
-                // Efecto de atracción al mouse
-                if (this.isActive) {
-                    const distance = this.getDistance(formula, this.mousePosition);
-                    if (distance < 200) {
-                        const force = (200 - distance) / 200 * 0.1;
-                        const angle = Math.atan2(this.mousePosition.y - formula.y, this.mousePosition.x - formula.x);
-                        formula.vx += Math.cos(angle) * force;
-                        formula.vy += Math.sin(angle) * force;
-                    }
-                }
-                
-                // Limitar velocidad
-                formula.vx = Math.max(-2, Math.min(2, formula.vx));
-                formula.vy = Math.max(-2, Math.min(2, formula.vy));
-            });
+        if (this.model) {
+            this.model.rotation.x += (this.targetRotationX - this.model.rotation.x) * 0.05;
+            this.model.rotation.y += (this.targetRotationY - this.model.rotation.y) * 0.05;
             
-            requestAnimationFrame(animate);
-        };
-        
-        animate();
+            if (!this.isMouseDown) {
+                this.model.rotation.y += 0.005;
+            }
+        }
+
+        this.renderer.render(this.scene, this.camera);
     }
 }
 
-// Inicializar animación química cuando el DOM esté listo
+// Inicializar 3D interactivo cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
-    new ChemicalAnimation();
+    new Interactive3D();
 });

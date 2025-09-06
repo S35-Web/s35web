@@ -82,17 +82,18 @@
         </div>
     </section>
 
-    <!-- Chemical Code Animation Section -->
-    <section class="chemical-code-section">
+    <!-- 3D Interactive Block Section -->
+    <section class="interactive-3d-section">
         <div class="container">
-            <div class="chemical-header">
-                <h2 class="chemical-section-title">NUESTRAS FÓRMULAS</h2>
-                <h1 class="chemical-main-title">Procesos tradicionales, formulados en laboratorio.</h1>
+            <div class="interactive-header">
+                <h2 class="interactive-section-title">NUESTRAS FÓRMULAS</h2>
+                <h1 class="interactive-main-title">Procesos tradicionales, formulados en laboratorio.</h1>
             </div>
-            <div class="chemical-canvas" id="chemicalCanvas">
-                <div class="chemical-overlay">
-                    <div class="chemical-formulas" id="chemicalFormulas">
-                        <!-- Las fórmulas se generarán dinámicamente con JavaScript -->
+            <div class="interactive-3d-canvas" id="interactive3DCanvas">
+                <canvas id="threejs-canvas"></canvas>
+                <div class="interactive-overlay">
+                    <div class="interactive-info">
+                        <p class="interactive-instruction">Mueve el mouse para rotar • Scroll para acercar</p>
                     </div>
                 </div>
             </div>
@@ -286,6 +287,8 @@
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
