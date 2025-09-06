@@ -676,3 +676,265 @@ const optimizedScroll = debounce(function() {
 }, 16);
 
 window.addEventListener('scroll', optimizedScroll);
+
+// Chemical Code Animation
+class ChemicalAnimation {
+    constructor() {
+        this.canvas = document.getElementById('chemicalCanvas');
+        this.formulasContainer = document.getElementById('chemicalFormulas');
+        this.formulas = [];
+        this.connections = [];
+        this.mousePosition = { x: 0, y: 0 };
+        this.isActive = false;
+        
+        if (this.canvas && this.formulasContainer) {
+            this.init();
+        }
+    }
+
+    init() {
+        this.createFormulas();
+        this.setupEventListeners();
+        this.startAnimation();
+    }
+
+    createFormulas() {
+        const chemicalData = [
+            // Fórmulas de construcción
+            { text: 'Ca(OH)₂ + CO₂ → CaCO₃ + H₂O', type: 'molecule', category: 'reaction' },
+            { text: 'SiO₂ + 2NaOH → Na₂SiO₃ + H₂O', type: 'molecule', category: 'reaction' },
+            { text: 'C₃S + H₂O → C-S-H + Ca(OH)₂', type: 'molecule', category: 'reaction' },
+            { text: 'C₂S + H₂O → C-S-H + Ca(OH)₂', type: 'molecule', category: 'reaction' },
+            { text: 'C₃A + 3CaSO₄ + 32H₂O → AFt', type: 'molecule', category: 'reaction' },
+            
+            // Propiedades químicas
+            { text: 'pH: 12.5-13.5', type: 'property', category: 'property' },
+            { text: 'Densidad: 2.1-2.3 g/cm³', type: 'property', category: 'property' },
+            { text: 'Resistencia: 25-50 MPa', type: 'property', category: 'property' },
+            { text: 'Tiempo de fraguado: 2-6 horas', type: 'property', category: 'property' },
+            { text: 'Contracción: <0.1%', type: 'property', category: 'property' },
+            
+            // Aditivos y modificadores
+            { text: 'Superplastificante: PCE', type: 'reaction', category: 'additive' },
+            { text: 'Retardador: Na₂SO₄', type: 'reaction', category: 'additive' },
+            { text: 'Acelerador: CaCl₂', type: 'reaction', category: 'additive' },
+            { text: 'Hidrofugante: Si(OR)₄', type: 'reaction', category: 'additive' },
+            { text: 'Fibras: PP, PVA, Steel', type: 'reaction', category: 'additive' },
+            
+            // Procesos industriales
+            { text: 'Molienda: 325 mesh', type: 'property', category: 'process' },
+            { text: 'Temperatura: 1450°C', type: 'property', category: 'process' },
+            { text: 'Enfriamiento: 100°C/min', type: 'property', category: 'process' },
+            { text: 'Mezclado: 3-5 min', type: 'property', category: 'process' },
+            { text: 'Curado: 28 días', type: 'property', category: 'process' },
+            
+            // Fórmulas S-35 específicas
+            { text: 'S-35 Base: C₃S + C₂S + C₃A', type: 'molecule', category: 's35' },
+            { text: 'WAXTARD: SiO₂ + Al₂O₃ + Fe₂O₃', type: 'molecule', category: 's35' },
+            { text: 'CELLBOND: C-S-H + CH + AFt', type: 'molecule', category: 's35' },
+            { text: 'PEGAEXPRESS: C₃A + C₄AF + Gypsum', type: 'molecule', category: 's35' },
+            { text: 'BASECOAT: CaCO₃ + TiO₂ + Polymer', type: 'molecule', category: 's35' }
+        ];
+
+        chemicalData.forEach((data, index) => {
+            this.createFormulaElement(data, index);
+        });
+    }
+
+    createFormulaElement(data, index) {
+        const formula = document.createElement('div');
+        formula.className = `chemical-formula ${data.type} ${data.category}`;
+        formula.textContent = data.text;
+        
+        // Posición aleatoria inicial
+        const x = Math.random() * (this.canvas.offsetWidth - 200);
+        const y = Math.random() * (this.canvas.offsetHeight - 50);
+        
+        formula.style.left = `${x}px`;
+        formula.style.top = `${y}px`;
+        
+        // Agregar animaciones aleatorias
+        if (Math.random() > 0.7) {
+            formula.classList.add('flowing');
+        } else if (Math.random() > 0.5) {
+            formula.classList.add('pulsing');
+        }
+        
+        this.formulasContainer.appendChild(formula);
+        this.formulas.push({
+            element: formula,
+            data: data,
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5
+        });
+    }
+
+    setupEventListeners() {
+        // Mouse movement
+        this.canvas.addEventListener('mousemove', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            this.mousePosition.x = e.clientX - rect.left;
+            this.mousePosition.y = e.clientY - rect.top;
+        });
+
+        // Mouse enter/leave
+        this.canvas.addEventListener('mouseenter', () => {
+            this.isActive = true;
+            this.activateNearbyFormulas();
+        });
+
+        this.canvas.addEventListener('mouseleave', () => {
+            this.isActive = false;
+            this.deactivateAllFormulas();
+        });
+
+        // Click interactions
+        this.canvas.addEventListener('click', (e) => {
+            this.handleClick(e);
+        });
+    }
+
+    activateNearbyFormulas() {
+        this.formulas.forEach(formula => {
+            const distance = this.getDistance(formula, this.mousePosition);
+            if (distance < 150) {
+                formula.element.classList.add('active');
+            }
+        });
+    }
+
+    deactivateAllFormulas() {
+        this.formulas.forEach(formula => {
+            formula.element.classList.remove('active');
+        });
+    }
+
+    handleClick(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+
+        // Encontrar fórmula más cercana
+        let closestFormula = null;
+        let minDistance = Infinity;
+
+        this.formulas.forEach(formula => {
+            const distance = Math.sqrt(
+                Math.pow(formula.x - clickX, 2) + Math.pow(formula.y - clickY, 2)
+            );
+            if (distance < minDistance && distance < 100) {
+                minDistance = distance;
+                closestFormula = formula;
+            }
+        });
+
+        if (closestFormula) {
+            this.animateFormula(closestFormula);
+        }
+    }
+
+    animateFormula(formula) {
+        // Efecto de explosión
+        formula.element.style.transform = 'scale(1.5)';
+        formula.element.style.opacity = '1';
+        
+        setTimeout(() => {
+            formula.element.style.transform = 'scale(1)';
+        }, 300);
+
+        // Crear ondas de conexión
+        this.createConnectionWaves(formula);
+    }
+
+    createConnectionWaves(centerFormula) {
+        this.formulas.forEach(formula => {
+            if (formula !== centerFormula) {
+                const distance = this.getDistance(formula, centerFormula);
+                if (distance < 200) {
+                    this.createConnection(centerFormula, formula);
+                }
+            }
+        });
+    }
+
+    createConnection(from, to) {
+        const connection = document.createElement('div');
+        connection.className = 'chemical-connection';
+        
+        const angle = Math.atan2(to.y - from.y, to.x - from.x);
+        const distance = this.getDistance(from, to);
+        
+        connection.style.left = `${from.x}px`;
+        connection.style.top = `${from.y}px`;
+        connection.style.width = `${distance}px`;
+        connection.style.transform = `rotate(${angle}rad)`;
+        connection.style.transformOrigin = '0 0';
+        
+        this.formulasContainer.appendChild(connection);
+        
+        setTimeout(() => {
+            connection.remove();
+        }, 800);
+    }
+
+    getDistance(formula1, formula2) {
+        const x1 = typeof formula1 === 'object' ? formula1.x : formula1.x;
+        const y1 = typeof formula1 === 'object' ? formula1.y : formula1.y;
+        const x2 = typeof formula2 === 'object' ? formula2.x : formula2.x;
+        const y2 = typeof formula2 === 'object' ? formula2.y : formula2.y;
+        
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    }
+
+    startAnimation() {
+        const animate = () => {
+            this.formulas.forEach(formula => {
+                // Movimiento suave
+                formula.x += formula.vx;
+                formula.y += formula.vy;
+                
+                // Rebote en bordes
+                if (formula.x < 0 || formula.x > this.canvas.offsetWidth - 200) {
+                    formula.vx *= -1;
+                }
+                if (formula.y < 0 || formula.y > this.canvas.offsetHeight - 50) {
+                    formula.vy *= -1;
+                }
+                
+                // Mantener dentro del canvas
+                formula.x = Math.max(0, Math.min(formula.x, this.canvas.offsetWidth - 200));
+                formula.y = Math.max(0, Math.min(formula.y, this.canvas.offsetHeight - 50));
+                
+                // Aplicar posición
+                formula.element.style.left = `${formula.x}px`;
+                formula.element.style.top = `${formula.y}px`;
+                
+                // Efecto de atracción al mouse
+                if (this.isActive) {
+                    const distance = this.getDistance(formula, this.mousePosition);
+                    if (distance < 200) {
+                        const force = (200 - distance) / 200 * 0.1;
+                        const angle = Math.atan2(this.mousePosition.y - formula.y, this.mousePosition.x - formula.x);
+                        formula.vx += Math.cos(angle) * force;
+                        formula.vy += Math.sin(angle) * force;
+                    }
+                }
+                
+                // Limitar velocidad
+                formula.vx = Math.max(-2, Math.min(2, formula.vx));
+                formula.vy = Math.max(-2, Math.min(2, formula.vy));
+            });
+            
+            requestAnimationFrame(animate);
+        };
+        
+        animate();
+    }
+}
+
+// Inicializar animación química cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+    new ChemicalAnimation();
+});
