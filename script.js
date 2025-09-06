@@ -700,6 +700,7 @@ class CardsStack {
         this.container = document.getElementById('cardsContainer');
         this.stack = document.getElementById('cardsStack');
         this.cards = document.querySelectorAll('.card-item');
+        this.currentIndex = 0; // Índice de la card actual
         
         if (this.container && this.stack && this.cards.length > 0) {
             this.init();
@@ -805,19 +806,40 @@ class CardsStack {
         let currentY = 0;
         let isDragging = false;
         let currentCard = null;
-        let threshold = 80; // Reducir threshold para iPhone
+        let threshold = 80;
+        let currentIndex = 0; // Índice de la card actual
 
-        // Encontrar la card superior (la que se puede deslizar)
-        const getTopCard = () => {
-            const cards = Array.from(this.cards);
-            return cards.find(card => !card.classList.contains('swiped-left') && !card.classList.contains('swiped-right'));
+        // Función para mostrar la card actual
+        const showCurrentCard = () => {
+            this.cards.forEach((card, index) => {
+                if (index === currentIndex) {
+                    card.style.zIndex = '5';
+                    card.style.transform = 'translateY(0) scale(1)';
+                    card.style.opacity = '1';
+                } else if (index === (currentIndex + 1) % this.cards.length) {
+                    card.style.zIndex = '4';
+                    card.style.transform = 'translateY(-8px) scale(0.95)';
+                    card.style.opacity = '0.8';
+                } else if (index === (currentIndex + 2) % this.cards.length) {
+                    card.style.zIndex = '3';
+                    card.style.transform = 'translateY(-16px) scale(0.9)';
+                    card.style.opacity = '0.6';
+                } else {
+                    card.style.zIndex = '1';
+                    card.style.transform = 'translateY(-24px) scale(0.85)';
+                    card.style.opacity = '0.4';
+                }
+            });
         };
 
-        // Agregar eventos a cada card individualmente para mejor detección en iPhone
+        // Inicializar carrusel
+        showCurrentCard();
+
+        // Agregar eventos a cada card
         this.cards.forEach((card, index) => {
             card.addEventListener('touchstart', (e) => {
-                // Solo permitir swipe en la card superior
-                if (index !== 0) return;
+                // Solo permitir swipe en la card actual
+                if (index !== currentIndex) return;
                 if (e.touches.length !== 1) return;
                 
                 e.stopPropagation();
@@ -842,7 +864,7 @@ class CardsStack {
                 
                 const deltaX = currentX - startX;
                 const deltaY = currentY - startY;
-                const rotation = deltaX * 0.15; // Aumentar rotación para mejor feedback
+                const rotation = deltaX * 0.15;
                 
                 // Aplicar transformación en tiempo real
                 card.style.transform = `translateX(${deltaX}px) translateY(${deltaY * 0.1}px) rotate(${rotation}deg)`;
@@ -868,16 +890,9 @@ class CardsStack {
                 
                 // Determinar si es un swipe válido
                 if (distance > threshold && Math.abs(deltaX) > Math.abs(deltaY)) {
-                    // Swipe válido
-                    if (deltaX > 0) {
-                        // Swipe derecha
-                        console.log('Swipe derecha detectado');
-                        this.swipeCard(card, 'right');
-                    } else {
-                        // Swipe izquierda
-                        console.log('Swipe izquierda detectado');
-                        this.swipeCard(card, 'left');
-                    }
+                    // Swipe válido - avanzar al siguiente
+                    console.log('Swipe detectado, avanzando al siguiente');
+                    this.nextCard();
                 } else {
                     // Retornar a posición original
                     console.log('Retornando card a posición original');
@@ -894,25 +909,23 @@ class CardsStack {
         });
     }
 
-    swipeCard(card, direction) {
-        console.log('Ejecutando swipeCard:', direction);
+    nextCard() {
+        // Avanzar al siguiente índice
+        this.currentIndex = (this.currentIndex + 1) % this.cards.length;
         
-        card.classList.add(direction === 'right' ? 'swiped-right' : 'swiped-left');
+        // Aplicar animación de salida a la card actual
+        const currentCard = this.cards[this.currentIndex === 0 ? this.cards.length - 1 : this.currentIndex - 1];
+        currentCard.classList.add('swiped-right');
         
         setTimeout(() => {
-            // Mover la card al final del stack
-            this.stack.appendChild(card);
+            // Remover clase de swipe
+            currentCard.classList.remove('swiped-right');
             
-            // Remover clases de swipe
-            card.classList.remove('swiped-left', 'swiped-right');
-            card.style.transform = '';
-            card.style.opacity = '';
+            // Reorganizar el carrusel
+            this.reorganizeCarousel();
             
-            // Reorganizar z-index para el nuevo stack
-            this.reorganizeStack();
-            
-            console.log('Stack reorganizado');
-        }, 400);
+            console.log('Carrusel avanzado a índice:', this.currentIndex);
+        }, 300);
     }
 
     returnCard(card) {
@@ -925,10 +938,9 @@ class CardsStack {
         }, 300);
     }
 
-    reorganizeStack() {
-        // Reorganizar las cards para que la siguiente sea la superior
-        const cards = Array.from(this.cards);
-        cards.forEach((card, index) => {
+    reorganizeCarousel() {
+        // Reorganizar el carrusel basado en el índice actual
+        this.cards.forEach((card, index) => {
             // Resetear todas las transformaciones CSS
             card.style.transform = '';
             card.style.opacity = '';
@@ -936,26 +948,65 @@ class CardsStack {
             
             // Remover todas las clases de estado
             card.classList.remove('swiping', 'swiped-left', 'swiped-right', 'returning');
+            
+            // Aplicar posición basada en el índice actual
+            const relativeIndex = (index - this.currentIndex + this.cards.length) % this.cards.length;
+            
+            if (relativeIndex === 0) {
+                // Card actual
+                card.style.zIndex = '5';
+                card.style.transform = 'translateY(0) scale(1)';
+                card.style.opacity = '1';
+            } else if (relativeIndex === 1) {
+                // Siguiente card
+                card.style.zIndex = '4';
+                card.style.transform = 'translateY(-8px) scale(0.95)';
+                card.style.opacity = '0.8';
+            } else if (relativeIndex === 2) {
+                // Tercera card
+                card.style.zIndex = '3';
+                card.style.transform = 'translateY(-16px) scale(0.9)';
+                card.style.opacity = '0.6';
+            } else {
+                // Cards de fondo
+                card.style.zIndex = '1';
+                card.style.transform = 'translateY(-24px) scale(0.85)';
+                card.style.opacity = '0.4';
+            }
         });
         
         // Forzar reflow para que los estilos CSS se apliquen
         this.stack.offsetHeight;
         
-        console.log('Stack reorganizado - cards:', cards.length);
+        console.log('Carrusel reorganizado - índice actual:', this.currentIndex);
     }
 
     setupAnimations() {
         // Animación de entrada
         this.cards.forEach((card, index) => {
             if (window.innerWidth <= 768) {
-                // Móvil: animación de stack
+                // Móvil: animación de carrusel
                 card.style.opacity = '0';
                 card.style.transform = 'translateY(50px) scale(0.8)';
                 
                 setTimeout(() => {
                     card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
                     card.style.opacity = '1';
-                    // La transformación final se maneja por CSS con nth-child
+                    
+                    // Aplicar posición inicial del carrusel
+                    if (index === 0) {
+                        card.style.zIndex = '5';
+                        card.style.transform = 'translateY(0) scale(1)';
+                    } else if (index === 1) {
+                        card.style.zIndex = '4';
+                        card.style.transform = 'translateY(-8px) scale(0.95)';
+                    } else if (index === 2) {
+                        card.style.zIndex = '3';
+                        card.style.transform = 'translateY(-16px) scale(0.9)';
+                    } else {
+                        card.style.zIndex = '1';
+                        card.style.transform = 'translateY(-24px) scale(0.85)';
+                    }
                 }, index * 100);
             } else {
                 // Desktop: animación normal
