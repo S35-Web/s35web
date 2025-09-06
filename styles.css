@@ -1510,8 +1510,16 @@ body {
 /* Cards responsive - Móvil */
 @media (max-width: 768px) {
     .cards-container {
-        height: 70vh;
-        min-height: 500px;
+        height: 80vh;
+        min-height: 600px;
+        padding: var(--space-lg) 0;
+    }
+    
+    /* Ajustar contenedor cuando hay una card ampliada */
+    .cards-container:has(.card-item.zoomed) {
+        height: 90vh;
+        min-height: 700px;
+        padding: var(--space-xl) 0;
     }
     
     .cards-stack {
@@ -1520,7 +1528,7 @@ body {
         align-items: center;
         padding: var(--space-lg);
         overflow-x: auto;
-        overflow-y: hidden;
+        overflow-y: visible;
         height: 100%;
         scroll-behavior: smooth;
         scrollbar-width: none;
@@ -1528,6 +1536,14 @@ body {
         gap: var(--space-lg);
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Ajustar contenedor cuando hay una card ampliada */
+    .cards-stack:has(.card-item.zoomed) {
+        overflow-y: visible;
+        padding: var(--space-xl) var(--space-lg);
+        align-items: flex-start;
+        padding-top: var(--space-2xl);
     }
     
     .cards-stack::-webkit-scrollbar {
@@ -1565,7 +1581,7 @@ body {
 
 /* Efecto de zoom para cards en móvil */
 .card-item.zoomed {
-    transform: scale(1.15) !important;
+    transform: scale(1.08) !important;
     z-index: 10 !important;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: 
@@ -1574,6 +1590,7 @@ body {
         inset 0 1px 0 rgba(255, 255, 255, 0.3),
         inset 0 -1px 0 rgba(0, 0, 0, 0.1) !important;
     border-radius: 20px !important;
+    margin: var(--space-md) 0 !important;
 }
 
 .card-item.zoomed img {
