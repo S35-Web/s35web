@@ -415,7 +415,7 @@ body {
     align-items: center;
     gap: var(--space-sm);
     color: var(--primary-white);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     z-index: 3;
@@ -1476,7 +1476,16 @@ body {
     }
     
     .scroll-indicator {
-        font-size: 0.75rem;
+        font-size: 0.65rem;
+        white-space: nowrap;
+    }
+}
+
+/* Para pantallas muy pequeñas */
+@media (max-width: 480px) {
+    .scroll-indicator {
+        font-size: 0.6rem;
+        white-space: nowrap;
     }
 }
 
