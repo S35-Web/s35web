@@ -694,97 +694,141 @@ const optimizedScroll = debounce(function() {
 
 window.addEventListener('scroll', optimizedScroll);
 
-// Spline 3D Interactive Block
-class Spline3D {
+// Interactive Cards Stack
+class CardsStack {
     constructor() {
-        this.container = document.getElementById('spline-container');
-        this.canvas = document.getElementById('interactive3DCanvas');
+        this.container = document.getElementById('cardsContainer');
+        this.stack = document.getElementById('cardsStack');
+        this.cards = document.querySelectorAll('.card-item');
         
-        if (this.container && this.canvas) {
+        if (this.container && this.stack && this.cards.length > 0) {
             this.init();
         }
     }
 
-    async init() {
-        try {
-            // Verificar que Spline esté disponible
-            if (typeof spline === 'undefined') {
-                console.error('Spline runtime no está disponible');
-                this.createFallback();
-                return;
-            }
+    init() {
+        console.log('Inicializando stack de cards...');
+        
+        this.setupCards();
+        this.setupScroll();
+        this.setupTouch();
+        this.setupAnimations();
+        
+        console.log('Stack de cards configurado exitosamente');
+    }
 
-            console.log('Inicializando Spline...');
+    setupCards() {
+        // Configurar cada card individualmente
+        this.cards.forEach((card, index) => {
+            // Agregar delay escalonado para animación de entrada
+            card.style.animationDelay = `${index * 0.1}s`;
             
-            // Crear aplicación Spline
-            this.app = new spline.Application();
+            // Configurar eventos de hover
+            card.addEventListener('mouseenter', () => {
+                this.highlightCard(card);
+            });
             
-            // Cargar la escena de Spline
-            await this.app.load('https://prod.spline.design/gAkxX8AQNSCnNRzK/scene.splinecode');
+            card.addEventListener('mouseleave', () => {
+                this.unhighlightCard(card);
+            });
             
-            // Agregar el canvas de Spline al contenedor
-            this.container.appendChild(this.app.canvas);
-            
-            // Configurar el canvas
-            this.app.canvas.style.width = '100%';
-            this.app.canvas.style.height = '100%';
-            this.app.canvas.style.display = 'block';
-            
-            console.log('Spline cargado exitosamente');
-            
-            // Configurar controles
-            this.setupControls();
-            
-        } catch (error) {
-            console.error('Error al cargar Spline:', error);
-            this.createFallback();
+            // Configurar click
+            card.addEventListener('click', () => {
+                this.selectCard(card);
+            });
+        });
+    }
+
+    setupScroll() {
+        // Scroll suave para desktop
+        if (window.innerWidth > 768) {
+            this.stack.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                this.stack.scrollLeft += e.deltaY;
+            });
         }
     }
 
-    setupControls() {
-        // Los controles de Spline se manejan automáticamente
-        console.log('Controles de Spline configurados automáticamente');
+    setupTouch() {
+        // Touch events para móvil
+        let startX = 0;
+        let startY = 0;
+        let isScrolling = false;
+
+        this.stack.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            isScrolling = false;
+        });
+
+        this.stack.addEventListener('touchmove', (e) => {
+            if (!startX || !startY) return;
+
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const diffX = Math.abs(startX - currentX);
+            const diffY = Math.abs(startY - currentY);
+
+            if (diffX > diffY) {
+                isScrolling = true;
+                e.preventDefault();
+            }
+        });
+
+        this.stack.addEventListener('touchend', () => {
+            startX = 0;
+            startY = 0;
+            isScrolling = false;
+        });
     }
 
-    createFallback() {
-        // Crear un cubo 3D simple como respaldo
-        console.log('Creando cubo de respaldo...');
+    setupAnimations() {
+        // Animación de entrada
+        this.cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(50px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    }
+
+    highlightCard(card) {
+        // Efecto de resaltado
+        card.style.zIndex = '10';
+        this.cards.forEach(otherCard => {
+            if (otherCard !== card) {
+                otherCard.style.opacity = '0.7';
+                otherCard.style.transform = 'scale(0.95)';
+            }
+        });
+    }
+
+    unhighlightCard(card) {
+        // Quitar efecto de resaltado
+        card.style.zIndex = '1';
+        this.cards.forEach(otherCard => {
+            otherCard.style.opacity = '1';
+            otherCard.style.transform = 'scale(1)';
+        });
+    }
+
+    selectCard(card) {
+        // Efecto de selección
+        card.style.transform = 'scale(0.95)';
         
-        const fallbackHTML = `
-            <div style="
-                width: 100%;
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-                border-radius: 8px;
-                position: relative;
-                overflow: hidden;
-            ">
-                <div style="
-                    width: 200px;
-                    height: 200px;
-                    background: linear-gradient(45deg, #8B8B8B, #A0A0A0);
-                    border-radius: 8px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                    transform: rotateX(20deg) rotateY(20deg);
-                    animation: rotate 10s linear infinite;
-                "></div>
-                <style>
-                    @keyframes rotate {
-                        from { transform: rotateX(20deg) rotateY(0deg); }
-                        to { transform: rotateX(20deg) rotateY(360deg); }
-                    }
-                </style>
-            </div>
-        `;
+        setTimeout(() => {
+            card.style.transform = 'scale(1)';
+        }, 150);
         
-        this.container.innerHTML = fallbackHTML;
+        console.log('Card seleccionada:', card.dataset.card);
     }
 }
 
-// Inicializar Spline 3D cuando el DOM esté listo
+// Inicializar stack de cards cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
-    new Spline3D();
+    new CardsStack();
 });
