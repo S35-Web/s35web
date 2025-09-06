@@ -694,322 +694,97 @@ const optimizedScroll = debounce(function() {
 
 window.addEventListener('scroll', optimizedScroll);
 
-// 3D Interactive Block Animation
-class Interactive3D {
+// Spline 3D Interactive Block
+class Spline3D {
     constructor() {
-        this.canvas = document.getElementById('threejs-canvas');
-        this.container = document.getElementById('interactive3DCanvas');
+        this.container = document.getElementById('spline-container');
+        this.canvas = document.getElementById('interactive3DCanvas');
         
-        if (this.canvas && this.container) {
+        if (this.container && this.canvas) {
             this.init();
         }
     }
 
-    init() {
-        this.setupScene();
-        this.loadModel();
-        this.setupControls();
-        this.animate();
-    }
-
-    setupScene() {
-        // Scene
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xf8f9fa);
-
-        // Camera
-        this.camera = new THREE.PerspectiveCamera(
-            75,
-            this.container.offsetWidth / this.container.offsetHeight,
-            0.1,
-            1000
-        );
-        this.camera.position.set(0, 0, 5);
-
-        // Renderer mejorado para texturas
-        this.renderer = new THREE.WebGLRenderer({
-            canvas: this.canvas,
-            antialias: true,
-            alpha: true,
-            powerPreference: "high-performance"
-        });
-        this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        this.renderer.outputEncoding = THREE.sRGBEncoding;
-        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.0;
-
-        // Lighting mejorado para texturas
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        this.scene.add(ambientLight);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
-        directionalLight.position.set(10, 10, 5);
-        directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
-        this.scene.add(directionalLight);
-
-        // Luz adicional para mejor iluminación de texturas
-        const pointLight1 = new THREE.PointLight(0xffffff, 0.6);
-        pointLight1.position.set(-10, -10, -5);
-        this.scene.add(pointLight1);
-
-        const pointLight2 = new THREE.PointLight(0xffffff, 0.4);
-        pointLight2.position.set(0, 10, 0);
-        this.scene.add(pointLight2);
-
-        // Mouse controls
-        this.mouseX = 0;
-        this.mouseY = 0;
-        this.targetRotationX = 0;
-        this.targetRotationY = 0;
-        this.isMouseDown = false;
-    }
-
-    loadModel() {
-        const loader = new THREE.OBJLoader();
-        
-        loader.load(
-            'Assets/3d_cube.obj',
-            (obj) => {
-                this.model = obj;
-                this.model.scale.set(2, 2, 2);
-                this.model.position.set(0, 0, 0);
-                this.model.castShadow = true;
-                this.model.receiveShadow = true;
-                
-                // Debug: verificar el modelo OBJ
-                console.log('Modelo OBJ cargado exitosamente');
-                console.log('Modelo completo:', this.model);
-                
-                // Procesar cada mesh del modelo
-                this.model.traverse((child) => {
-                    if (child.isMesh) {
-                        console.log('Mesh encontrado:', child.name);
-                        console.log('Geometría:', child.geometry);
-                        console.log('Atributos de geometría:', child.geometry.attributes);
-                        console.log('Material original:', child.material);
-                        
-                        // Verificar si hay colores de vértices en el archivo OBJ
-                        if (child.geometry.attributes.color) {
-                            console.log('✅ Colores de vértices encontrados:', child.geometry.attributes.color);
-                            
-                            // Crear material que use colores de vértices
-                            const material = new THREE.MeshStandardMaterial({
-                                vertexColors: true,
-                                roughness: 0.9,
-                                metalness: 0.1
-                            });
-                            
-                            child.material = material;
-                            console.log('Material con colores de vértices aplicado');
-                        } else {
-                            console.log('❌ No se encontraron colores de vértices');
-                            
-                            // Intentar extraer colores del archivo OBJ manualmente
-                            this.extractVertexColors(child.geometry);
-                            
-                            // Crear material con color sólido y textura
-                            const material = new THREE.MeshStandardMaterial({
-                                color: 0x8B8B8B,
-                                roughness: 0.9,
-                                metalness: 0.1
-                            });
-                            
-                            // Agregar textura procedural
-                            const texture = this.createCementTexture();
-                            material.map = texture;
-                            
-                            child.material = material;
-                            console.log('Material con textura aplicado');
-                        }
-                        
-                        // Forzar actualización
-                        child.material.needsUpdate = true;
-                        child.geometry.attributesNeedUpdate = true;
-                        
-                        console.log('Material final:', child.material);
-                    }
-                });
-                
-                this.scene.add(this.model);
-            },
-            (progress) => {
-                console.log('Cargando modelo OBJ:', (progress.loaded / progress.total * 100) + '%');
-            },
-            (error) => {
-                console.error('Error al cargar el modelo OBJ:', error);
-                this.createFallbackCube();
+    async init() {
+        try {
+            // Verificar que Spline esté disponible
+            if (typeof spline === 'undefined') {
+                console.error('Spline runtime no está disponible');
+                this.createFallback();
+                return;
             }
-        );
-    }
 
-    createFallbackCube() {
-        const geometry = new THREE.BoxGeometry(2, 2, 2);
-        
-        // Crear material más realista para cemento
-        const material = new THREE.MeshStandardMaterial({ 
-            color: 0x8B8B8B,
-            roughness: 0.9,
-            metalness: 0.1,
-            bumpScale: 0.1
-        });
-        
-        // Crear textura procedural para simular cemento
-        const canvas = document.createElement('canvas');
-        canvas.width = 512;
-        canvas.height = 512;
-        const ctx = canvas.getContext('2d');
-        
-        // Fondo base
-        ctx.fillStyle = '#8B8B8B';
-        ctx.fillRect(0, 0, 512, 512);
-        
-        // Agregar textura de cemento
-        ctx.fillStyle = '#A0A0A0';
-        for (let i = 0; i < 1000; i++) {
-            const x = Math.random() * 512;
-            const y = Math.random() * 512;
-            const size = Math.random() * 3;
-            ctx.fillRect(x, y, size, size);
-        }
-        
-        // Crear textura desde canvas
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(2, 2);
-        
-        material.map = texture;
-        material.needsUpdate = true;
-        
-        this.model = new THREE.Mesh(geometry, material);
-        this.model.castShadow = true;
-        this.model.receiveShadow = true;
-        this.scene.add(this.model);
-        
-        console.log('Cubo de respaldo con textura creado');
-    }
-
-    createCementTexture() {
-        // Crear textura procedural más visible para cemento
-        const canvas = document.createElement('canvas');
-        canvas.width = 1024;
-        canvas.height = 1024;
-        const ctx = canvas.getContext('2d');
-        
-        // Fondo base más oscuro
-        ctx.fillStyle = '#6B6B6B';
-        ctx.fillRect(0, 0, 1024, 1024);
-        
-        // Agregar textura de cemento más contrastada
-        ctx.fillStyle = '#9A9A9A';
-        for (let i = 0; i < 2000; i++) {
-            const x = Math.random() * 1024;
-            const y = Math.random() * 1024;
-            const size = Math.random() * 4 + 1;
-            ctx.fillRect(x, y, size, size);
-        }
-        
-        // Agregar detalles más oscuros
-        ctx.fillStyle = '#4A4A4A';
-        for (let i = 0; i < 1000; i++) {
-            const x = Math.random() * 1024;
-            const y = Math.random() * 1024;
-            const size = Math.random() * 3 + 1;
-            ctx.fillRect(x, y, size, size);
-        }
-        
-        // Agregar líneas de cemento
-        ctx.strokeStyle = '#5A5A5A';
-        ctx.lineWidth = 2;
-        for (let i = 0; i < 50; i++) {
-            ctx.beginPath();
-            ctx.moveTo(Math.random() * 1024, Math.random() * 1024);
-            ctx.lineTo(Math.random() * 1024, Math.random() * 1024);
-            ctx.stroke();
-        }
-        
-        // Crear textura desde canvas
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(1, 1); // Sin repetición para mejor calidad
-        texture.flipY = false;
-        
-        console.log('Textura de cemento creada:', texture);
-        return texture;
-    }
-
-    extractVertexColors(geometry) {
-        // Intentar extraer colores de vértices del archivo OBJ
-        const positionAttribute = geometry.attributes.position;
-        if (positionAttribute) {
-            const vertexCount = positionAttribute.count;
-            const colors = new Float32Array(vertexCount * 3);
+            console.log('Inicializando Spline...');
             
-            // Crear colores basados en la posición (gradiente)
-            for (let i = 0; i < vertexCount; i++) {
-                const x = positionAttribute.getX(i);
-                const y = positionAttribute.getY(i);
-                const z = positionAttribute.getZ(i);
-                
-                // Crear gradiente de colores de cemento
-                const r = 0.5 + (x + 1) * 0.1; // 0.4 a 0.6
-                const g = 0.5 + (y + 1) * 0.1; // 0.4 a 0.6
-                const b = 0.4 + (z + 1) * 0.1; // 0.3 a 0.5
-                
-                colors[i * 3] = r;
-                colors[i * 3 + 1] = g;
-                colors[i * 3 + 2] = b;
-            }
+            // Crear aplicación Spline
+            this.app = new spline.Application();
             
-            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-            console.log('Colores de vértices extraídos y aplicados');
+            // Cargar la escena de Spline
+            await this.app.load('https://prod.spline.design/gAkxX8AQNSCnNRzK/scene.splinecode');
+            
+            // Agregar el canvas de Spline al contenedor
+            this.container.appendChild(this.app.canvas);
+            
+            // Configurar el canvas
+            this.app.canvas.style.width = '100%';
+            this.app.canvas.style.height = '100%';
+            this.app.canvas.style.display = 'block';
+            
+            console.log('Spline cargado exitosamente');
+            
+            // Configurar controles
+            this.setupControls();
+            
+        } catch (error) {
+            console.error('Error al cargar Spline:', error);
+            this.createFallback();
         }
     }
 
     setupControls() {
-        this.container.addEventListener('mousemove', (e) => {
-            if (this.isMouseDown) {
-                this.mouseX = (e.clientX / this.container.offsetWidth) * 2 - 1;
-                this.mouseY = -(e.clientY / this.container.offsetHeight) * 2 + 1;
-                this.targetRotationY = this.mouseX * Math.PI;
-                this.targetRotationX = this.mouseY * Math.PI * 0.5;
-            }
-        });
-
-        this.container.addEventListener('mousedown', () => this.isMouseDown = true);
-        this.container.addEventListener('mouseup', () => this.isMouseDown = false);
-        this.container.addEventListener('mouseleave', () => this.isMouseDown = false);
-
-        this.container.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            this.camera.position.z += e.deltaY * 0.1;
-            this.camera.position.z = Math.max(2, Math.min(10, this.camera.position.z));
-        });
+        // Los controles de Spline se manejan automáticamente
+        console.log('Controles de Spline configurados automáticamente');
     }
 
-    animate() {
-        requestAnimationFrame(() => this.animate());
-
-        if (this.model) {
-            this.model.rotation.x += (this.targetRotationX - this.model.rotation.x) * 0.05;
-            this.model.rotation.y += (this.targetRotationY - this.model.rotation.y) * 0.05;
-            
-            if (!this.isMouseDown) {
-                this.model.rotation.y += 0.005;
-            }
-        }
-
-        this.renderer.render(this.scene, this.camera);
+    createFallback() {
+        // Crear un cubo 3D simple como respaldo
+        console.log('Creando cubo de respaldo...');
+        
+        const fallbackHTML = `
+            <div style="
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border-radius: 8px;
+                position: relative;
+                overflow: hidden;
+            ">
+                <div style="
+                    width: 200px;
+                    height: 200px;
+                    background: linear-gradient(45deg, #8B8B8B, #A0A0A0);
+                    border-radius: 8px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    transform: rotateX(20deg) rotateY(20deg);
+                    animation: rotate 10s linear infinite;
+                "></div>
+                <style>
+                    @keyframes rotate {
+                        from { transform: rotateX(20deg) rotateY(0deg); }
+                        to { transform: rotateX(20deg) rotateY(360deg); }
+                    }
+                </style>
+            </div>
+        `;
+        
+        this.container.innerHTML = fallbackHTML;
     }
 }
 
-// Inicializar 3D interactivo cuando el DOM esté listo
+// Inicializar Spline 3D cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
-    new Interactive3D();
+    new Spline3D();
 });
