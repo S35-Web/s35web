@@ -726,25 +726,40 @@ class Interactive3D {
         );
         this.camera.position.set(0, 0, 5);
 
-        // Renderer
+        // Renderer mejorado para texturas
         this.renderer = new THREE.WebGLRenderer({
             canvas: this.canvas,
             antialias: true,
-            alpha: true
+            alpha: true,
+            powerPreference: "high-performance"
         });
         this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.outputEncoding = THREE.sRGBEncoding;
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.0;
 
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        // Lighting mejorado para texturas
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
         this.scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
         directionalLight.position.set(10, 10, 5);
         directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
         this.scene.add(directionalLight);
+
+        // Luz adicional para mejor iluminación de texturas
+        const pointLight1 = new THREE.PointLight(0xffffff, 0.6);
+        pointLight1.position.set(-10, -10, -5);
+        this.scene.add(pointLight1);
+
+        const pointLight2 = new THREE.PointLight(0xffffff, 0.4);
+        pointLight2.position.set(0, 10, 0);
+        this.scene.add(pointLight2);
 
         // Mouse controls
         this.mouseX = 0;
@@ -765,8 +780,31 @@ class Interactive3D {
                 this.model.position.set(0, 0, 0);
                 this.model.castShadow = true;
                 this.model.receiveShadow = true;
-                this.scene.add(this.model);
+                
+                // Debug: verificar materiales y texturas
                 console.log('Modelo 3D cargado exitosamente');
+                console.log('Materiales encontrados:', gltf.materials);
+                console.log('Texturas encontradas:', gltf.textures);
+                
+                // Asegurar que las texturas se carguen correctamente
+                this.model.traverse((child) => {
+                    if (child.isMesh) {
+                        console.log('Mesh encontrado:', child.name);
+                        console.log('Material del mesh:', child.material);
+                        
+                        // Forzar la actualización de texturas
+                        if (child.material.map) {
+                            child.material.map.needsUpdate = true;
+                            console.log('Textura encontrada:', child.material.map);
+                        }
+                        
+                        // Asegurar que el material sea visible
+                        child.material.transparent = false;
+                        child.material.needsUpdate = true;
+                    }
+                });
+                
+                this.scene.add(this.model);
             },
             (progress) => {
                 console.log('Cargando modelo:', (progress.loaded / progress.total * 100) + '%');
@@ -780,16 +818,49 @@ class Interactive3D {
 
     createFallbackCube() {
         const geometry = new THREE.BoxGeometry(2, 2, 2);
-        const material = new THREE.MeshLambertMaterial({ 
+        
+        // Crear material más realista para cemento
+        const material = new THREE.MeshStandardMaterial({ 
             color: 0x8B8B8B,
-            roughness: 0.8,
-            metalness: 0.2
+            roughness: 0.9,
+            metalness: 0.1,
+            bumpScale: 0.1
         });
+        
+        // Crear textura procedural para simular cemento
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        
+        // Fondo base
+        ctx.fillStyle = '#8B8B8B';
+        ctx.fillRect(0, 0, 512, 512);
+        
+        // Agregar textura de cemento
+        ctx.fillStyle = '#A0A0A0';
+        for (let i = 0; i < 1000; i++) {
+            const x = Math.random() * 512;
+            const y = Math.random() * 512;
+            const size = Math.random() * 3;
+            ctx.fillRect(x, y, size, size);
+        }
+        
+        // Crear textura desde canvas
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(2, 2);
+        
+        material.map = texture;
+        material.needsUpdate = true;
         
         this.model = new THREE.Mesh(geometry, material);
         this.model.castShadow = true;
         this.model.receiveShadow = true;
         this.scene.add(this.model);
+        
+        console.log('Cubo de respaldo con textura creado');
     }
 
     setupControls() {
