@@ -1432,7 +1432,7 @@ body {
 .consistency-number {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: clamp(4rem, 10vw, 6rem);
-    font-weight: 900;
+    font-weight: 300;
     color: var(--primary-black);
     margin-bottom: var(--space-lg);
     line-height: 0.9;
@@ -1457,8 +1457,8 @@ body {
 
 .consistency-description {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 0.875rem;
-    font-weight: 400;
+    font-size: 0.75rem;
+    font-weight: 300;
     line-height: 1.5;
     color: var(--gray-600);
     max-width: 300px;
@@ -1983,7 +1983,7 @@ body {
     }
 
     .consistency-description {
-        font-size: 0.8125rem;
+        font-size: 0.6875rem;
         max-width: 280px;
     }
 
