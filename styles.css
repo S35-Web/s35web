@@ -1423,6 +1423,16 @@ body {
         transform: scale(1.1);
         filter: brightness(0.7) contrast(1.1);
     }
+    
+    /* Textos más pequeños en móvil */
+    .hero-subtitle {
+        font-size: 0.75rem;
+        font-weight: 300;
+    }
+    
+    .scroll-indicator {
+        font-size: 0.75rem;
+    }
 }
 
 /* Responsive Design */
