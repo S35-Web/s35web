@@ -1,0 +1,13 @@
+{
+  "name": "s35-technology-website",
+  "version": "1.0.0",
+  "description": "S-35 Technology website",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'No build needed'",
+    "start": "echo 'Static site'"
+  },
+  "keywords": ["website", "construction", "technology"],
+  "author": "S-35 Technology",
+  "license": "MIT"
+}
