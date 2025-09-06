@@ -770,47 +770,63 @@ class Interactive3D {
     }
 
     loadModel() {
-        const loader = new THREE.GLTFLoader();
+        const loader = new THREE.OBJLoader();
         
         loader.load(
-            'Assets/3d_cube.glb',
-            (gltf) => {
-                this.model = gltf.scene;
+            'Assets/3d_cube.obj',
+            (obj) => {
+                this.model = obj;
                 this.model.scale.set(2, 2, 2);
                 this.model.position.set(0, 0, 0);
                 this.model.castShadow = true;
                 this.model.receiveShadow = true;
                 
-                // Debug: verificar materiales y texturas
-                console.log('Modelo 3D cargado exitosamente');
-                console.log('Materiales encontrados:', gltf.materials);
-                console.log('Texturas encontradas:', gltf.textures);
+                // Debug: verificar el modelo OBJ
+                console.log('Modelo OBJ cargado exitosamente');
+                console.log('Modelo completo:', this.model);
                 
-                // Asegurar que las texturas se carguen correctamente
+                // Procesar cada mesh del modelo
                 this.model.traverse((child) => {
                     if (child.isMesh) {
                         console.log('Mesh encontrado:', child.name);
-                        console.log('Material del mesh:', child.material);
+                        console.log('Geometría:', child.geometry);
+                        console.log('Material original:', child.material);
                         
-                        // Forzar la actualización de texturas
-                        if (child.material.map) {
-                            child.material.map.needsUpdate = true;
-                            console.log('Textura encontrada:', child.material.map);
+                        // Crear material mejorado para el cemento
+                        const material = new THREE.MeshStandardMaterial({
+                            color: 0x8B8B8B,
+                            roughness: 0.9,
+                            metalness: 0.1,
+                            vertexColors: true // Usar colores de vértices si están disponibles
+                        });
+                        
+                        // Si la geometría tiene colores de vértices, usarlos
+                        if (child.geometry.attributes.color) {
+                            console.log('Colores de vértices encontrados');
+                            material.vertexColors = true;
                         }
                         
-                        // Asegurar que el material sea visible
-                        child.material.transparent = false;
+                        // Si hay coordenadas de textura, crear textura procedural
+                        if (child.geometry.attributes.uv) {
+                            console.log('Coordenadas UV encontradas');
+                            const texture = this.createCementTexture();
+                            material.map = texture;
+                        }
+                        
+                        child.material = material;
                         child.material.needsUpdate = true;
+                        
+                        console.log('Material actualizado:', child.material);
                     }
                 });
                 
                 this.scene.add(this.model);
             },
             (progress) => {
-                console.log('Cargando modelo:', (progress.loaded / progress.total * 100) + '%');
+                console.log('Cargando modelo OBJ:', (progress.loaded / progress.total * 100) + '%');
             },
             (error) => {
-                console.error('Error al cargar el modelo:', error);
+                console.error('Error al cargar el modelo OBJ:', error);
                 this.createFallbackCube();
             }
         );
@@ -861,6 +877,44 @@ class Interactive3D {
         this.scene.add(this.model);
         
         console.log('Cubo de respaldo con textura creado');
+    }
+
+    createCementTexture() {
+        // Crear textura procedural para simular cemento
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        
+        // Fondo base
+        ctx.fillStyle = '#8B8B8B';
+        ctx.fillRect(0, 0, 512, 512);
+        
+        // Agregar textura de cemento
+        ctx.fillStyle = '#A0A0A0';
+        for (let i = 0; i < 1000; i++) {
+            const x = Math.random() * 512;
+            const y = Math.random() * 512;
+            const size = Math.random() * 3;
+            ctx.fillRect(x, y, size, size);
+        }
+        
+        // Agregar más detalles
+        ctx.fillStyle = '#707070';
+        for (let i = 0; i < 500; i++) {
+            const x = Math.random() * 512;
+            const y = Math.random() * 512;
+            const size = Math.random() * 2;
+            ctx.fillRect(x, y, size, size);
+        }
+        
+        // Crear textura desde canvas
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(2, 2);
+        
+        return texture;
     }
 
     setupControls() {
