@@ -212,7 +212,7 @@ body {
         linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.8) 100%),
         url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="columns" x="0" y="0" width="20" height="100" patternUnits="userSpaceOnUse"><rect width="2" height="100" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23columns)"/></svg>');
     z-index: 0;
-    display: block;
+    display: none;
 }
 
 /* Mostrar fallback solo cuando el video no está disponible */

@@ -33,7 +33,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Large video files (too big for Vercel free tier)
-Assets/landing.mp4
+# Assets/landing.mp4  # Re-enabled for main video
 Assets/mezcla.mp4
 Assets/Agua.mp4
 
