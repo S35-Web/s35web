@@ -740,13 +740,55 @@ class CardsStack {
     }
 
     setupScroll() {
-        // Scroll suave para desktop
+        // Scroll con movimiento del mouse para desktop
         if (window.innerWidth > 768) {
-            this.stack.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                this.stack.scrollLeft += e.deltaY;
-            });
+            this.setupMouseScroll();
         }
+    }
+
+    setupMouseScroll() {
+        let isMouseOver = false;
+        let scrollSpeed = 0;
+        const maxScrollSpeed = 5;
+        const scrollZone = 100; // Zona de activación en píxeles desde los bordes
+
+        this.stack.addEventListener('mouseenter', () => {
+            isMouseOver = true;
+        });
+
+        this.stack.addEventListener('mouseleave', () => {
+            isMouseOver = false;
+            scrollSpeed = 0;
+        });
+
+        this.stack.addEventListener('mousemove', (e) => {
+            if (!isMouseOver) return;
+
+            const rect = this.stack.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const stackWidth = rect.width;
+
+            // Calcular velocidad de scroll basada en la posición del mouse
+            if (mouseX < scrollZone) {
+                // Mouse cerca del borde izquierdo - scroll hacia la izquierda
+                scrollSpeed = -maxScrollSpeed * (1 - mouseX / scrollZone);
+            } else if (mouseX > stackWidth - scrollZone) {
+                // Mouse cerca del borde derecho - scroll hacia la derecha
+                scrollSpeed = maxScrollSpeed * ((mouseX - (stackWidth - scrollZone)) / scrollZone);
+            } else {
+                // Mouse en el centro - no scroll
+                scrollSpeed = 0;
+            }
+        });
+
+        // Animación de scroll suave
+        const animateScroll = () => {
+            if (scrollSpeed !== 0) {
+                this.stack.scrollLeft += scrollSpeed;
+            }
+            requestAnimationFrame(animateScroll);
+        };
+        animateScroll();
     }
 
     setupTouch() {
