@@ -1963,29 +1963,29 @@ body {
     }
 
     .consistency-grid {
-        grid-template-columns: 1fr;
-        gap: var(--space-lg);
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-md);
         padding: 0 var(--space-md);
     }
 
     .consistency-card {
-        padding: var(--space-2xl) var(--space-lg);
-        min-height: 240px;
+        padding: var(--space-lg) var(--space-sm);
+        min-height: 200px;
     }
 
     .consistency-number {
-        font-size: clamp(3rem, 8vw, 4rem);
-        margin-bottom: var(--space-md);
+        font-size: clamp(2.5rem, 6vw, 3rem);
+        margin-bottom: var(--space-sm);
     }
 
     .consistency-title {
-        font-size: 1rem;
-        margin-bottom: var(--space-md);
+        font-size: 0.875rem;
+        margin-bottom: var(--space-sm);
     }
 
     .consistency-description {
         font-size: 0.625rem;
-        max-width: 260px;
+        max-width: 100%;
         line-height: 1.25;
     }
 
