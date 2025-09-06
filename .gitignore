@@ -31,3 +31,11 @@ oldpage/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Large video files (too big for Vercel free tier)
+Assets/landing.mp4
+Assets/mezcla.mp4
+Assets/Agua.mp4
+
+# Large product images (optimize these later)
+Productos 2025/*.jpg
