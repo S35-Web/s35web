@@ -667,48 +667,23 @@ function inicializarVideo() {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
     
     if (isMobile) {
-        console.log('Dispositivo móvil detectado, configurando video para móvil');
+        console.log('Dispositivo móvil detectado, configurando video pequeño');
         
-        // En móvil, el fondo se maneja con CSS
-        console.log('Fondo móvil configurado con CSS');
+        // En móvil, hacer el video más pequeño y optimizado
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.objectFit = 'cover';
+        video.style.opacity = '0.8';
         
-        // Ocultar video en móvil
-        video.style.display = 'none';
-        
-        // Agregar botón de reproducción manual
-        const playButton = document.createElement('button');
-        playButton.innerHTML = '▶️ Reproducir Video';
-        playButton.style.cssText = `
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            z-index: 10;
-            backdrop-filter: blur(10px);
-        `;
-        
-        playButton.addEventListener('click', () => {
-            video.style.display = 'block';
+        // Intentar reproducir automáticamente en móvil
+        setTimeout(() => {
             video.play().then(() => {
-                playButton.style.display = 'none';
                 console.log('Video reproduciéndose en móvil');
             }).catch(e => {
-                console.log('Error al reproducir en móvil:', e);
-                playButton.innerHTML = '❌ Error al reproducir';
+                console.log('No se pudo reproducir automáticamente en móvil:', e);
+                // Si no se puede reproducir, mantener el fondo CSS
             });
-        });
-        
-        const heroContent = document.querySelector('.hero-content');
-        if (heroContent) {
-            heroContent.appendChild(playButton);
-        }
+        }, 500);
     }
 }
 
