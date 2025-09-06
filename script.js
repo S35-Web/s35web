@@ -98,7 +98,7 @@ if (visionLine) {
     observer.observe(visionLine);
 }
 
-// Animated counters
+// Animated counters for innovation section
 const animateCounters = () => {
     const counters = document.querySelectorAll('.data-number');
     
@@ -121,6 +121,30 @@ const animateCounters = () => {
     });
 };
 
+// Animated counters for consistency section
+const animateConsistencyCounters = () => {
+    const counters = document.querySelectorAll('.consistency-card .counter');
+    
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const duration = 2000; // 2 seconds
+        const increment = target / (duration / 16); // 60fps
+        let current = 0;
+        
+        const updateCounter = () => {
+            if (current < target) {
+                current += increment;
+                counter.textContent = Math.floor(current);
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.textContent = target;
+            }
+        };
+        
+        updateCounter();
+    });
+};
+
 // Intersection Observer for animations
 const observerOptions = {
     threshold: 0.1,
@@ -136,13 +160,18 @@ const observer = new IntersectionObserver((entries) => {
             if (entry.target.classList.contains('data-visualization')) {
                 setTimeout(animateCounters, 500);
             }
+            
+            // Trigger counter animation for consistency cards
+            if (entry.target.classList.contains('consistency-card')) {
+                setTimeout(animateConsistencyCounters, 300);
+            }
         }
     });
 }, observerOptions);
 
 // Observe elements for animation
 document.addEventListener('DOMContentLoaded', () => {
-    const animateElements = document.querySelectorAll('.tech-card, .data-visualization, .feature');
+    const animateElements = document.querySelectorAll('.tech-card, .data-visualization, .feature, .consistency-card');
     animateElements.forEach(el => observer.observe(el));
 });
 

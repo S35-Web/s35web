@@ -1382,6 +1382,69 @@ body {
     letter-spacing: 0.05em;
 }
 
+/* Consistency Section */
+.consistency {
+    padding: var(--space-3xl) 0;
+    background: var(--primary-white);
+}
+
+.consistency-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--space-2xl);
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.consistency-card {
+    background: var(--primary-white);
+    border: 2px solid var(--gray-200);
+    border-radius: 16px;
+    padding: var(--space-2xl);
+    text-align: center;
+    transition: var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.consistency-card:hover {
+    border-color: var(--primary-black);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.consistency-number {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 700;
+    color: var(--primary-black);
+    margin-bottom: var(--space-lg);
+    line-height: 1;
+}
+
+.consistency-number .counter {
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.consistency-title {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-black);
+    margin-bottom: var(--space-lg);
+    line-height: 1.3;
+}
+
+.consistency-description {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--gray-700);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
 /* Innovation Section */
 .innovation {
     padding: var(--space-3xl) 0;
@@ -1875,6 +1938,24 @@ body {
 
     .hero-visual {
         height: 300px;
+    }
+
+    .consistency-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-xl);
+        padding: 0 var(--space-md);
+    }
+
+    .consistency-card {
+        padding: var(--space-xl);
+    }
+
+    .consistency-title {
+        font-size: 1.25rem;
+    }
+
+    .consistency-description {
+        font-size: 0.9375rem;
     }
 
     .innovation-content,
