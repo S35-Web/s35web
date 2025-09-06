@@ -790,33 +790,48 @@ class Interactive3D {
                     if (child.isMesh) {
                         console.log('Mesh encontrado:', child.name);
                         console.log('Geometría:', child.geometry);
+                        console.log('Atributos de geometría:', child.geometry.attributes);
                         console.log('Material original:', child.material);
                         
-                        // Crear material mejorado para el cemento
-                        const material = new THREE.MeshStandardMaterial({
-                            color: 0x8B8B8B,
-                            roughness: 0.9,
-                            metalness: 0.1,
-                            vertexColors: true // Usar colores de vértices si están disponibles
-                        });
-                        
-                        // Si la geometría tiene colores de vértices, usarlos
+                        // Verificar si hay colores de vértices en el archivo OBJ
                         if (child.geometry.attributes.color) {
-                            console.log('Colores de vértices encontrados');
-                            material.vertexColors = true;
-                        }
-                        
-                        // Si hay coordenadas de textura, crear textura procedural
-                        if (child.geometry.attributes.uv) {
-                            console.log('Coordenadas UV encontradas');
+                            console.log('✅ Colores de vértices encontrados:', child.geometry.attributes.color);
+                            
+                            // Crear material que use colores de vértices
+                            const material = new THREE.MeshStandardMaterial({
+                                vertexColors: true,
+                                roughness: 0.9,
+                                metalness: 0.1
+                            });
+                            
+                            child.material = material;
+                            console.log('Material con colores de vértices aplicado');
+                        } else {
+                            console.log('❌ No se encontraron colores de vértices');
+                            
+                            // Intentar extraer colores del archivo OBJ manualmente
+                            this.extractVertexColors(child.geometry);
+                            
+                            // Crear material con color sólido y textura
+                            const material = new THREE.MeshStandardMaterial({
+                                color: 0x8B8B8B,
+                                roughness: 0.9,
+                                metalness: 0.1
+                            });
+                            
+                            // Agregar textura procedural
                             const texture = this.createCementTexture();
                             material.map = texture;
+                            
+                            child.material = material;
+                            console.log('Material con textura aplicado');
                         }
                         
-                        child.material = material;
+                        // Forzar actualización
                         child.material.needsUpdate = true;
+                        child.geometry.attributesNeedUpdate = true;
                         
-                        console.log('Material actualizado:', child.material);
+                        console.log('Material final:', child.material);
                     }
                 });
                 
@@ -880,41 +895,81 @@ class Interactive3D {
     }
 
     createCementTexture() {
-        // Crear textura procedural para simular cemento
+        // Crear textura procedural más visible para cemento
         const canvas = document.createElement('canvas');
-        canvas.width = 512;
-        canvas.height = 512;
+        canvas.width = 1024;
+        canvas.height = 1024;
         const ctx = canvas.getContext('2d');
         
-        // Fondo base
-        ctx.fillStyle = '#8B8B8B';
-        ctx.fillRect(0, 0, 512, 512);
+        // Fondo base más oscuro
+        ctx.fillStyle = '#6B6B6B';
+        ctx.fillRect(0, 0, 1024, 1024);
         
-        // Agregar textura de cemento
-        ctx.fillStyle = '#A0A0A0';
-        for (let i = 0; i < 1000; i++) {
-            const x = Math.random() * 512;
-            const y = Math.random() * 512;
-            const size = Math.random() * 3;
+        // Agregar textura de cemento más contrastada
+        ctx.fillStyle = '#9A9A9A';
+        for (let i = 0; i < 2000; i++) {
+            const x = Math.random() * 1024;
+            const y = Math.random() * 1024;
+            const size = Math.random() * 4 + 1;
             ctx.fillRect(x, y, size, size);
         }
         
-        // Agregar más detalles
-        ctx.fillStyle = '#707070';
-        for (let i = 0; i < 500; i++) {
-            const x = Math.random() * 512;
-            const y = Math.random() * 512;
-            const size = Math.random() * 2;
+        // Agregar detalles más oscuros
+        ctx.fillStyle = '#4A4A4A';
+        for (let i = 0; i < 1000; i++) {
+            const x = Math.random() * 1024;
+            const y = Math.random() * 1024;
+            const size = Math.random() * 3 + 1;
             ctx.fillRect(x, y, size, size);
+        }
+        
+        // Agregar líneas de cemento
+        ctx.strokeStyle = '#5A5A5A';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 50; i++) {
+            ctx.beginPath();
+            ctx.moveTo(Math.random() * 1024, Math.random() * 1024);
+            ctx.lineTo(Math.random() * 1024, Math.random() * 1024);
+            ctx.stroke();
         }
         
         // Crear textura desde canvas
         const texture = new THREE.CanvasTexture(canvas);
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(2, 2);
+        texture.repeat.set(1, 1); // Sin repetición para mejor calidad
+        texture.flipY = false;
         
+        console.log('Textura de cemento creada:', texture);
         return texture;
+    }
+
+    extractVertexColors(geometry) {
+        // Intentar extraer colores de vértices del archivo OBJ
+        const positionAttribute = geometry.attributes.position;
+        if (positionAttribute) {
+            const vertexCount = positionAttribute.count;
+            const colors = new Float32Array(vertexCount * 3);
+            
+            // Crear colores basados en la posición (gradiente)
+            for (let i = 0; i < vertexCount; i++) {
+                const x = positionAttribute.getX(i);
+                const y = positionAttribute.getY(i);
+                const z = positionAttribute.getZ(i);
+                
+                // Crear gradiente de colores de cemento
+                const r = 0.5 + (x + 1) * 0.1; // 0.4 a 0.6
+                const g = 0.5 + (y + 1) * 0.1; // 0.4 a 0.6
+                const b = 0.4 + (z + 1) * 0.1; // 0.3 a 0.5
+                
+                colors[i * 3] = r;
+                colors[i * 3 + 1] = g;
+                colors[i * 3 + 2] = b;
+            }
+            
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            console.log('Colores de vértices extraídos y aplicados');
+        }
     }
 
     setupControls() {
