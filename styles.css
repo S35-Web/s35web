@@ -1021,7 +1021,7 @@ body {
 
 .water-text {
     max-width: 600px;
-    color: var(--primary-white);
+    color: var(--primary-black);
 }
 
 .water-title {
@@ -1061,7 +1061,7 @@ body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: clamp(2rem, 5vw, 3.5rem);
     font-weight: 700;
-    color: var(--primary-white);
+    color: var(--primary-black);
     line-height: 1;
     margin-bottom: var(--space-xs);
 }
@@ -1069,7 +1069,7 @@ body {
 .water-stat .stat-label {
     font-family: 'Roboto', sans-serif;
     font-size: 0.875rem;
-    color: var(--gray-300);
+    color: var(--gray-600);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     font-weight: 300;
@@ -1079,7 +1079,7 @@ body {
     font-family: 'Roboto', sans-serif;
     font-size: 1rem;
     line-height: 1.7;
-    color: var(--gray-200);
+    color: var(--gray-700);
     margin-bottom: var(--space-2xl);
     opacity: 0;
     transform: translateX(-30px);
@@ -1088,8 +1088,8 @@ body {
 
 .water-cta {
     background: transparent;
-    color: var(--primary-white);
-    border: 1px solid var(--primary-white);
+    color: var(--primary-black);
+    border: 1px solid var(--primary-black);
     padding: var(--space-md) var(--space-xl);
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 0.875rem;
@@ -1115,13 +1115,13 @@ body {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: var(--primary-white);
+    background: var(--primary-black);
     transition: left 0.3s ease;
     z-index: -1;
 }
 
 .water-cta:hover {
-    color: var(--primary-black);
+    color: var(--primary-white);
     transform: translateY(-2px);
 }
 
