@@ -2032,7 +2032,19 @@ body {
     
     .problem-grid {
         grid-template-columns: 1fr;
-        gap: var(--space-lg);
+        gap: var(--space-2xl);
+        margin: var(--space-2xl) 0;
+        padding: var(--space-lg) 0;
+    }
+    
+    .problem-item h3 {
+        font-size: 1rem;
+        font-weight: 700;
+    }
+    
+    .problem-item p {
+        font-size: 0.875rem;
+        font-weight: 300;
     }
     
     .benefits-grid {
@@ -2274,33 +2286,33 @@ body {
 
 .problem-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--space-xl);
-    margin: var(--space-2xl) 0;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-2xl);
+    margin: var(--space-3xl) 0;
+    padding: var(--space-2xl) 0;
 }
 
 .problem-item {
-    padding: var(--space-xl);
-    background: var(--gray-50);
-    border-radius: 16px;
-    border-left: 4px solid var(--accent-orange);
+    padding: 0;
+    background: transparent;
+    border: none;
     transition: var(--transition-normal);
+    position: relative;
 }
 
 .problem-item:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
 }
 
 .problem-icon {
-    width: 60px;
-    height: 60px;
+    width: 48px;
+    height: 48px;
     background: var(--primary-black);
-    border-radius: 8px;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-xl);
     position: relative;
     overflow: hidden;
 }
@@ -2313,11 +2325,11 @@ body {
     right: 0;
     bottom: 0;
     background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-    border-radius: 8px;
+    border-radius: 4px;
 }
 
 .problem-icon i {
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: var(--primary-white);
     font-weight: 300;
     z-index: 1;
@@ -2325,16 +2337,22 @@ body {
 
 .problem-item h3 {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.125rem;
+    font-weight: 700;
     color: var(--primary-black);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
 }
 
 .problem-item p {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 0.9375rem;
+    font-weight: 300;
     color: var(--gray-600);
     margin: 0;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
 }
 
 .benefits-grid {
@@ -2544,8 +2562,8 @@ body {
 
 /* Modern Icon Styles */
 .problem-item:hover .problem-icon {
-    transform: scale(1.05) rotate(2deg);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .impact-item:hover .impact-icon {
@@ -2571,7 +2589,7 @@ body {
 /* Icon animations */
 @keyframes iconFloat {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-3px); }
+    50% { transform: translateY(-2px); }
 }
 
 .problem-icon,
@@ -2579,13 +2597,13 @@ body {
 .tech-icon,
 .contact-item i,
 .feature i {
-    animation: iconFloat 6s ease-in-out infinite;
+    animation: iconFloat 8s ease-in-out infinite;
 }
 
 .problem-icon:nth-child(1) { animation-delay: 0s; }
-.problem-icon:nth-child(2) { animation-delay: 1s; }
-.problem-icon:nth-child(3) { animation-delay: 2s; }
-.problem-icon:nth-child(4) { animation-delay: 3s; }
+.problem-icon:nth-child(2) { animation-delay: 2s; }
+.problem-icon:nth-child(3) { animation-delay: 4s; }
+.problem-icon:nth-child(4) { animation-delay: 6s; }
 
 .impact-icon:nth-child(1) { animation-delay: 0.5s; }
 .impact-icon:nth-child(2) { animation-delay: 1.5s; }
