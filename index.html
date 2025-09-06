@@ -91,19 +91,19 @@
             </div>
             <div class="cards-container" id="cardsContainer">
                 <div class="cards-stack" id="cardsStack">
-                    <div class="card-item" data-card="1">
+                    <div class="card-item" data-card="1" data-title="Estuco Premium" data-description="Fórmula avanzada para acabados de alta calidad con durabilidad excepcional y acabado profesional.">
                         <img src="Assets/card.png" alt="Card 1" />
                     </div>
-                    <div class="card-item" data-card="2">
+                    <div class="card-item" data-card="2" data-title="Basecoat Industrial" data-description="Base de aplicación para sistemas de revestimiento con excelente adherencia y resistencia.">
                         <img src="Assets/card2.png" alt="Card 2" />
                     </div>
-                    <div class="card-item" data-card="3">
+                    <div class="card-item" data-card="3" data-title="Acabado Texturizado" data-description="Acabados especiales con texturas únicas para proyectos arquitectónicos de vanguardia.">
                         <img src="Assets/card3.png" alt="Card 3" />
                     </div>
-                    <div class="card-item" data-card="4">
+                    <div class="card-item" data-card="4" data-title="Sistema Completo" data-description="Solución integral que combina base, estuco y acabado para resultados profesionales.">
                         <img src="Assets/card4.png" alt="Card 4" />
                     </div>
-                    <div class="card-item" data-card="5">
+                    <div class="card-item" data-card="5" data-title="Fórmula Especializada" data-description="Desarrollos personalizados para necesidades específicas de construcción industrial.">
                         <img src="Assets/card5.png" alt="Card 5" />
                     </div>
                 </div>
@@ -297,6 +297,22 @@
             </div>
         </div>
     </footer>
+
+    <!-- Modal de pantalla completa para móvil -->
+    <div id="cardModal" class="card-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <div class="modal-image-container">
+                <img id="modalImage" class="modal-image" src="" alt="">
+            </div>
+            <div class="modal-text-container">
+                <h3 id="modalTitle" class="modal-title"></h3>
+                <p id="modalDescription" class="modal-description"></p>
+                <button id="modalButton" class="modal-button">Ver más</button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

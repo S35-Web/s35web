@@ -736,6 +736,14 @@ class CardsStack {
             card.addEventListener('click', () => {
                 this.selectCard(card);
             });
+            
+            // Click para abrir modal en móvil
+            if (window.innerWidth <= 768) {
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.openModal(card);
+                });
+            }
         });
     }
 
@@ -942,6 +950,53 @@ class CardsStack {
         }, 150);
         
         console.log('Card seleccionada:', card.dataset.card);
+    }
+    
+    openModal(card) {
+        const modal = document.getElementById('cardModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalClose = document.getElementById('modalClose');
+        
+        // Obtener datos de la card
+        const cardImage = card.querySelector('img');
+        const title = card.getAttribute('data-title');
+        const description = card.getAttribute('data-description');
+        
+        // Configurar contenido del modal
+        modalImage.src = cardImage.src;
+        modalImage.alt = cardImage.alt;
+        modalTitle.textContent = title;
+        modalDescription.textContent = description;
+        
+        // Mostrar modal
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Event listeners para cerrar modal
+        modalClose.addEventListener('click', () => this.closeModal());
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal || e.target.classList.contains('modal-backdrop')) {
+                this.closeModal();
+            }
+        });
+        
+        // Cerrar con tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal();
+            }
+        });
+        
+        console.log('Modal abierto para:', title);
+    }
+    
+    closeModal() {
+        const modal = document.getElementById('cardModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        console.log('Modal cerrado');
     }
 }
 
