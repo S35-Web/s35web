@@ -2050,6 +2050,12 @@ body {
         flex-direction: column;
         gap: var(--space-sm);
     }
+    
+    .lead {
+        font-size: 1.125rem;
+        text-align: left;
+        padding: var(--space-lg) 0;
+    }
 
     /* Optimización de video en móviles */
     .hero-video {
@@ -2174,6 +2180,7 @@ body {
     opacity: 0;
     transform: translateY(20px);
     animation: slide-in-up 1s ease-out 0.8s forwards;
+    display: none; /* Hidden since we integrated it into the lead paragraph */
 }
 
 .article-content {
@@ -2224,10 +2231,16 @@ body {
 
 .lead {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 1.25rem;
+    font-size: 1.375rem;
     line-height: 1.7;
     color: var(--gray-800);
     font-weight: 300;
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    padding: var(--space-xl) 0;
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: var(--space-3xl);
 }
 
 .article-section {
