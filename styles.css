@@ -1457,13 +1457,14 @@ body {
 
 .consistency-description {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 300;
-    line-height: 1.5;
+    line-height: 1.3;
     color: var(--gray-600);
-    max-width: 300px;
+    max-width: 280px;
     margin: 0 auto;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.005em;
+    text-align: center;
 }
 
 /* Innovation Section */
@@ -1983,8 +1984,9 @@ body {
     }
 
     .consistency-description {
-        font-size: 0.6875rem;
-        max-width: 280px;
+        font-size: 0.625rem;
+        max-width: 260px;
+        line-height: 1.25;
     }
 
     .innovation-content,
