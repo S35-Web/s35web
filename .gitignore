@@ -34,7 +34,7 @@ yarn-error.log*
 
 # Large video files (too big for Vercel free tier)
 # Assets/landing.mp4  # Re-enabled for main video
-# Assets/Agua.mp4     # Re-enabled for water section
+Assets/Agua.mp4       # Too large (72MB) - need optimization
 Assets/mezcla.mp4
 
 # Large product images (optimize these later)
