@@ -699,13 +699,32 @@ class ChemicalAnimation {
     }
 
     createFormulas() {
+        const productData = [
+            // Nombres de productos S-35
+            { text: 'WAXTARD', type: 'product', category: 's35' },
+            { text: 'CELLBOND', type: 'product', category: 's35' },
+            { text: 'PEGAEXPRESS', type: 'product', category: 's35' },
+            { text: 'BASECOAT', type: 'product', category: 's35' },
+            { text: 'STYROBOND', type: 'product', category: 's35' },
+            { text: 'ULTRAFORCE', type: 'product', category: 's35' },
+            { text: 'PSP+', type: 'product', category: 's35' },
+            { text: 'MIXANDREADY', type: 'product', category: 's35' },
+            { text: 'PASTABLOCK', type: 'product', category: 's35' },
+            { text: 'LA FINA', type: 'product', category: 's35' }
+        ];
+
         const chemicalData = [
             // Fórmulas de construcción
-            { text: 'Ca(OH)₂ + CO₂ → CaCO₃ + H₂O', type: 'molecule', category: 'reaction' },
-            { text: 'SiO₂ + 2NaOH → Na₂SiO₃ + H₂O', type: 'molecule', category: 'reaction' },
-            { text: 'C₃S + H₂O → C-S-H + Ca(OH)₂', type: 'molecule', category: 'reaction' },
-            { text: 'C₂S + H₂O → C-S-H + Ca(OH)₂', type: 'molecule', category: 'reaction' },
-            { text: 'C₃A + 3CaSO₄ + 32H₂O → AFt', type: 'molecule', category: 'reaction' },
+            { text: 'Ca(OH)₂ + CO₂ → CaCO₃ + H₂O', type: 'formula', category: 'reaction' },
+            { text: 'SiO₂ + 2NaOH → Na₂SiO₃ + H₂O', type: 'formula', category: 'reaction' },
+            { text: 'C₃S + H₂O → C-S-H + Ca(OH)₂', type: 'formula', category: 'reaction' },
+            { text: 'C₂S + H₂O → C-S-H + Ca(OH)₂', type: 'formula', category: 'reaction' },
+            { text: 'C₃A + 3CaSO₄ + 32H₂O → AFt', type: 'formula', category: 'reaction' },
+            { text: 'C₃S + C₂S + C₃A + C₄AF', type: 'formula', category: 'reaction' },
+            { text: 'CaCO₃ + TiO₂ + Polymer', type: 'formula', category: 'reaction' },
+            { text: 'SiO₂ + Al₂O₃ + Fe₂O₃', type: 'formula', category: 'reaction' },
+            { text: 'C-S-H + CH + AFt', type: 'formula', category: 'reaction' },
+            { text: 'C₃A + C₄AF + Gypsum', type: 'formula', category: 'reaction' },
             
             // Propiedades químicas
             { text: 'pH: 12.5-13.5', type: 'property', category: 'property' },
@@ -713,31 +732,28 @@ class ChemicalAnimation {
             { text: 'Resistencia: 25-50 MPa', type: 'property', category: 'property' },
             { text: 'Tiempo de fraguado: 2-6 horas', type: 'property', category: 'property' },
             { text: 'Contracción: <0.1%', type: 'property', category: 'property' },
+            { text: 'Molienda: 325 mesh', type: 'property', category: 'property' },
+            { text: 'Temperatura: 1450°C', type: 'property', category: 'property' },
+            { text: 'Enfriamiento: 100°C/min', type: 'property', category: 'property' },
+            { text: 'Mezclado: 3-5 min', type: 'property', category: 'property' },
+            { text: 'Curado: 28 días', type: 'property', category: 'property' },
             
             // Aditivos y modificadores
             { text: 'Superplastificante: PCE', type: 'reaction', category: 'additive' },
             { text: 'Retardador: Na₂SO₄', type: 'reaction', category: 'additive' },
             { text: 'Acelerador: CaCl₂', type: 'reaction', category: 'additive' },
             { text: 'Hidrofugante: Si(OR)₄', type: 'reaction', category: 'additive' },
-            { text: 'Fibras: PP, PVA, Steel', type: 'reaction', category: 'additive' },
-            
-            // Procesos industriales
-            { text: 'Molienda: 325 mesh', type: 'property', category: 'process' },
-            { text: 'Temperatura: 1450°C', type: 'property', category: 'process' },
-            { text: 'Enfriamiento: 100°C/min', type: 'property', category: 'process' },
-            { text: 'Mezclado: 3-5 min', type: 'property', category: 'process' },
-            { text: 'Curado: 28 días', type: 'property', category: 'process' },
-            
-            // Fórmulas S-35 específicas
-            { text: 'S-35 Base: C₃S + C₂S + C₃A', type: 'molecule', category: 's35' },
-            { text: 'WAXTARD: SiO₂ + Al₂O₃ + Fe₂O₃', type: 'molecule', category: 's35' },
-            { text: 'CELLBOND: C-S-H + CH + AFt', type: 'molecule', category: 's35' },
-            { text: 'PEGAEXPRESS: C₃A + C₄AF + Gypsum', type: 'molecule', category: 's35' },
-            { text: 'BASECOAT: CaCO₃ + TiO₂ + Polymer', type: 'molecule', category: 's35' }
+            { text: 'Fibras: PP, PVA, Steel', type: 'reaction', category: 'additive' }
         ];
 
-        chemicalData.forEach((data, index) => {
+        // Crear productos primero (más grandes, más visibles)
+        productData.forEach((data, index) => {
             this.createFormulaElement(data, index);
+        });
+
+        // Crear fórmulas químicas (más pequeñas, de fondo)
+        chemicalData.forEach((data, index) => {
+            this.createFormulaElement(data, index + productData.length);
         });
     }
 
@@ -746,17 +762,25 @@ class ChemicalAnimation {
         formula.className = `chemical-formula ${data.type} ${data.category}`;
         formula.textContent = data.text;
         
-        // Posición aleatoria inicial
-        const x = Math.random() * (this.canvas.offsetWidth - 200);
-        const y = Math.random() * (this.canvas.offsetHeight - 50);
+        // Posición aleatoria inicial con diferentes rangos según el tipo
+        let x, y;
+        if (data.type === 'product') {
+            // Productos más centrados y visibles
+            x = Math.random() * (this.canvas.offsetWidth - 400) + 200;
+            y = Math.random() * (this.canvas.offsetHeight - 100) + 50;
+        } else {
+            // Fórmulas más distribuidas por toda la pantalla
+            x = Math.random() * (this.canvas.offsetWidth - 300);
+            y = Math.random() * (this.canvas.offsetHeight - 50);
+        }
         
         formula.style.left = `${x}px`;
         formula.style.top = `${y}px`;
         
-        // Agregar animaciones aleatorias
-        if (Math.random() > 0.7) {
+        // Agregar animaciones aleatorias solo a fórmulas de fondo
+        if (data.type !== 'product' && Math.random() > 0.7) {
             formula.classList.add('flowing');
-        } else if (Math.random() > 0.5) {
+        } else if (data.type !== 'product' && Math.random() > 0.5) {
             formula.classList.add('pulsing');
         }
         
@@ -766,8 +790,8 @@ class ChemicalAnimation {
             data: data,
             x: x,
             y: y,
-            vx: (Math.random() - 0.5) * 0.5,
-            vy: (Math.random() - 0.5) * 0.5
+            vx: (Math.random() - 0.5) * (data.type === 'product' ? 0.2 : 0.5),
+            vy: (Math.random() - 0.5) * (data.type === 'product' ? 0.2 : 0.5)
         });
     }
 

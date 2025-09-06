@@ -749,8 +749,8 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     overflow: hidden;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 8px;
+    background: var(--primary-white);
+    border-radius: 0;
 }
 
 .chemical-overlay {
@@ -779,14 +779,15 @@ body {
     position: absolute;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight: 300;
-    font-size: 0.875rem;
+    font-size: clamp(10px, 8vw, 300px);
     color: var(--primary-black);
-    opacity: 0.6;
+    opacity: 0.3;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     pointer-events: auto;
     white-space: nowrap;
     user-select: none;
+    z-index: 1;
 }
 
 .chemical-formula:hover {
@@ -805,20 +806,38 @@ body {
 }
 
 .chemical-formula.molecule {
-    font-size: 1rem;
+    font-size: clamp(12px, 10vw, 350px);
     font-weight: 400;
     color: var(--gray-700);
+    opacity: 0.4;
 }
 
 .chemical-formula.reaction {
-    font-size: 0.75rem;
+    font-size: clamp(8px, 6vw, 250px);
     color: var(--gray-600);
     font-style: italic;
+    opacity: 0.25;
 }
 
 .chemical-formula.property {
-    font-size: 0.8rem;
+    font-size: clamp(6px, 4vw, 200px);
     color: var(--gray-500);
+    opacity: 0.2;
+}
+
+.chemical-formula.product {
+    font-size: clamp(15px, 12vw, 400px);
+    font-weight: 500;
+    color: var(--primary-black);
+    opacity: 0.5;
+    z-index: 2;
+}
+
+.chemical-formula.formula {
+    font-size: clamp(8px, 6vw, 250px);
+    color: var(--gray-600);
+    opacity: 0.3;
+    z-index: 1;
 }
 
 /* Animaciones de flujo */
