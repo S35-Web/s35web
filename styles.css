@@ -1531,6 +1531,12 @@ body {
         cursor: grab;
         user-select: none;
         z-index: 1;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        touch-action: pan-y;
     }
     
     .card-item:active {
@@ -1565,23 +1571,26 @@ body {
     
     /* Estados de deslizamiento */
     .card-item.swiping {
-        transition: none;
-        z-index: 10;
+        transition: none !important;
+        z-index: 10 !important;
     }
     
     .card-item.swiped-left {
-        transform: translateX(-100vw) rotate(-30deg);
-        opacity: 0;
+        transform: translateX(-100vw) rotate(-30deg) !important;
+        opacity: 0 !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     
     .card-item.swiped-right {
-        transform: translateX(100vw) rotate(30deg);
-        opacity: 0;
+        transform: translateX(100vw) rotate(30deg) !important;
+        opacity: 0 !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     
     .card-item.returning {
-        transform: translateX(0) rotate(0deg);
-        opacity: 1;
+        transform: translateX(0) rotate(0deg) !important;
+        opacity: 1 !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 }
 

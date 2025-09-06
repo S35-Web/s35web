@@ -805,82 +805,98 @@ class CardsStack {
         let currentY = 0;
         let isDragging = false;
         let currentCard = null;
-        let threshold = 100; // Distancia mínima para considerar swipe
+        let threshold = 80; // Reducir threshold para iPhone
 
         // Encontrar la card superior (la que se puede deslizar)
         const getTopCard = () => {
-            return this.cards[0]; // La primera card es siempre la superior
+            const cards = Array.from(this.cards);
+            return cards.find(card => !card.classList.contains('swiped-left') && !card.classList.contains('swiped-right'));
         };
 
-        this.stack.addEventListener('touchstart', (e) => {
-            if (e.touches.length !== 1) return;
-            
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            currentCard = getTopCard();
-            
-            if (currentCard) {
-                currentCard.classList.add('swiping');
+        // Agregar eventos a cada card individualmente para mejor detección en iPhone
+        this.cards.forEach((card, index) => {
+            card.addEventListener('touchstart', (e) => {
+                // Solo permitir swipe en la card superior
+                if (index !== 0) return;
+                if (e.touches.length !== 1) return;
+                
+                e.stopPropagation();
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                currentCard = card;
+                
+                card.classList.add('swiping');
                 isDragging = true;
-            }
-        });
+                
+                console.log('Touch start en card:', index);
+            }, { passive: false });
 
-        this.stack.addEventListener('touchmove', (e) => {
-            if (!isDragging || !currentCard) return;
-            
-            e.preventDefault();
-            
-            currentX = e.touches[0].clientX;
-            currentY = e.touches[0].clientY;
-            
-            const deltaX = currentX - startX;
-            const deltaY = currentY - startY;
-            const rotation = deltaX * 0.1; // Rotación basada en movimiento horizontal
-            
-            // Aplicar transformación en tiempo real
-            currentCard.style.transform = `translateX(${deltaX}px) translateY(${deltaY * 0.1}px) rotate(${rotation}deg)`;
-            
-            // Cambiar opacidad basada en distancia
-            const distance = Math.abs(deltaX);
-            const opacity = Math.max(0.3, 1 - distance / 200);
-            currentCard.style.opacity = opacity;
-        });
+            card.addEventListener('touchmove', (e) => {
+                if (!isDragging || !currentCard || currentCard !== card) return;
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                currentX = e.touches[0].clientX;
+                currentY = e.touches[0].clientY;
+                
+                const deltaX = currentX - startX;
+                const deltaY = currentY - startY;
+                const rotation = deltaX * 0.15; // Aumentar rotación para mejor feedback
+                
+                // Aplicar transformación en tiempo real
+                card.style.transform = `translateX(${deltaX}px) translateY(${deltaY * 0.1}px) rotate(${rotation}deg)`;
+                
+                // Cambiar opacidad basada en distancia
+                const distance = Math.abs(deltaX);
+                const opacity = Math.max(0.2, 1 - distance / 150);
+                card.style.opacity = opacity;
+            }, { passive: false });
 
-        this.stack.addEventListener('touchend', () => {
-            if (!isDragging || !currentCard) return;
-            
-            isDragging = false;
-            currentCard.classList.remove('swiping');
-            
-            const deltaX = currentX - startX;
-            const deltaY = currentY - startY;
-            const distance = Math.abs(deltaX);
-            
-            // Determinar si es un swipe válido
-            if (distance > threshold && Math.abs(deltaX) > Math.abs(deltaY)) {
-                // Swipe válido
-                if (deltaX > 0) {
-                    // Swipe derecha
-                    this.swipeCard(currentCard, 'right');
+            card.addEventListener('touchend', (e) => {
+                if (!isDragging || !currentCard || currentCard !== card) return;
+                
+                e.stopPropagation();
+                isDragging = false;
+                card.classList.remove('swiping');
+                
+                const deltaX = currentX - startX;
+                const deltaY = currentY - startY;
+                const distance = Math.abs(deltaX);
+                
+                console.log('Touch end - deltaX:', deltaX, 'distance:', distance);
+                
+                // Determinar si es un swipe válido
+                if (distance > threshold && Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // Swipe válido
+                    if (deltaX > 0) {
+                        // Swipe derecha
+                        console.log('Swipe derecha detectado');
+                        this.swipeCard(card, 'right');
+                    } else {
+                        // Swipe izquierda
+                        console.log('Swipe izquierda detectado');
+                        this.swipeCard(card, 'left');
+                    }
                 } else {
-                    // Swipe izquierda
-                    this.swipeCard(currentCard, 'left');
+                    // Retornar a posición original
+                    console.log('Retornando card a posición original');
+                    this.returnCard(card);
                 }
-            } else {
-                // Retornar a posición original
-                this.returnCard(currentCard);
-            }
-            
-            // Reset variables
-            startX = 0;
-            startY = 0;
-            currentX = 0;
-            currentY = 0;
-            currentCard = null;
+                
+                // Reset variables
+                startX = 0;
+                startY = 0;
+                currentX = 0;
+                currentY = 0;
+                currentCard = null;
+            }, { passive: false });
         });
     }
 
     swipeCard(card, direction) {
+        console.log('Ejecutando swipeCard:', direction);
+        
         card.classList.add(direction === 'right' ? 'swiped-right' : 'swiped-left');
         
         setTimeout(() => {
@@ -894,7 +910,9 @@ class CardsStack {
             
             // Reorganizar z-index para el nuevo stack
             this.reorganizeStack();
-        }, 300);
+            
+            console.log('Stack reorganizado');
+        }, 400);
     }
 
     returnCard(card) {
@@ -909,9 +927,21 @@ class CardsStack {
 
     reorganizeStack() {
         // Reorganizar las cards para que la siguiente sea la superior
-        this.cards.forEach((card, index) => {
-            card.style.zIndex = this.cards.length - index;
+        const cards = Array.from(this.cards);
+        cards.forEach((card, index) => {
+            // Resetear todas las transformaciones CSS
+            card.style.transform = '';
+            card.style.opacity = '';
+            card.style.zIndex = '';
+            
+            // Remover todas las clases de estado
+            card.classList.remove('swiping', 'swiped-left', 'swiped-right', 'returning');
         });
+        
+        // Forzar reflow para que los estilos CSS se apliquen
+        this.stack.offsetHeight;
+        
+        console.log('Stack reorganizado - cards:', cards.length);
     }
 
     setupAnimations() {
