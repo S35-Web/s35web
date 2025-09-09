@@ -597,31 +597,54 @@ const initMobileDoubleTapFlashlight = () => {
         }, 30);
     };
     
-    // Double tap detection
-    productsContent.addEventListener('touchend', (e) => {
-        const currentTime = Date.now();
-        const tapTime = currentTime - lastTapTime;
+    // Double tap detection with scroll protection
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    let isScrolling = false;
+    
+    productsContent.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+        isScrolling = false;
+    }, { passive: true });
+    
+    productsContent.addEventListener('touchmove', (e) => {
+        const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
+        const deltaTime = Date.now() - touchStartTime;
         
-        if (tapTime < 500 && tapTime > 0) {
-            tapCount++;
-            if (tapCount === 2) {
-                // Double tap detected
-                const touch = e.changedTouches[0];
-                const rect = productsContent.getBoundingClientRect();
-                const x = touch.clientX - rect.left;
-                const y = touch.clientY - rect.top;
-                
-                if (!isFlashlightActive) {
-                    activateFlashlight(x, y);
-                }
-                tapCount = 0;
-            }
-        } else {
-            tapCount = 1;
+        // If significant vertical movement, it's a scroll
+        if (deltaY > 10 && deltaTime < 200) {
+            isScrolling = true;
         }
-        
-        lastTapTime = currentTime;
-    });
+    }, { passive: true });
+    
+    productsContent.addEventListener('touchend', (e) => {
+        // Only activate if it's not a scroll gesture
+        if (!isScrolling) {
+            const currentTime = Date.now();
+            const tapTime = currentTime - lastTapTime;
+            
+            if (tapTime < 500 && tapTime > 0) {
+                tapCount++;
+                if (tapCount === 2) {
+                    // Double tap detected
+                    const touch = e.changedTouches[0];
+                    const rect = productsContent.getBoundingClientRect();
+                    const x = touch.clientX - rect.left;
+                    const y = touch.clientY - rect.top;
+                    
+                    if (!isFlashlightActive) {
+                        activateFlashlight(x, y);
+                    }
+                    tapCount = 0;
+                }
+            } else {
+                tapCount = 1;
+            }
+            
+            lastTapTime = currentTime;
+        }
+    }, { passive: true });
 };
 
 // Initialize mobile double-tap flashlight
