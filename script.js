@@ -330,29 +330,57 @@ const initFlashlightEffect = () => {
     // Touch handler (mobile only)
     let touchTimeout = null;
     let fadeOutInterval = null;
+    let touchStartTime = 0;
+    let touchStartY = 0;
+    let isScrolling = false;
     
     flashlightHandlers.handleTouch = (e) => {
         if (!isMobile) return; // Skip on desktop
         
-        e.preventDefault();
         const touch = e.touches[0];
-        const rect = productsContent.getBoundingClientRect();
-        const x = ((touch.clientX - rect.left) / rect.width) * 100;
-        const y = ((touch.clientY - rect.top) / rect.height) * 100;
+        const currentTime = Date.now();
         
-        // Clear any existing timeouts/intervals
-        if (touchTimeout) clearTimeout(touchTimeout);
-        if (fadeOutInterval) clearInterval(fadeOutInterval);
+        // On touch start, record initial position and time
+        if (e.type === 'touchstart') {
+            touchStartTime = currentTime;
+            touchStartY = touch.clientY;
+            isScrolling = false;
+            return; // Don't prevent default on touchstart
+        }
         
-        // Apply mask with vapor clearing effect
-        const mask = `radial-gradient(circle 100px at ${x}% ${y}%, transparent 0%, transparent 5%, rgba(0,0,0,0.1) 10%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.8) 80%, rgba(0,0,0,0.9) 90%, rgba(0,0,0,1) 100%)`;
-        productsBackground.style.webkitMask = mask;
-        productsBackground.style.mask = mask;
-        
-        // Start fade out after 2 seconds of no touch
-        touchTimeout = setTimeout(() => {
-            startFadeOut();
-        }, 2000);
+        // On touch move, check if it's a scroll gesture
+        if (e.type === 'touchmove') {
+            const deltaY = Math.abs(touch.clientY - touchStartY);
+            const deltaTime = currentTime - touchStartTime;
+            
+            // If significant vertical movement in short time, it's a scroll
+            if (deltaY > 10 && deltaTime < 200) {
+                isScrolling = true;
+                return; // Don't prevent default, allow scroll
+            }
+            
+            // If it's not a scroll gesture, activate flashlight effect
+            if (!isScrolling && deltaTime > 100) { // Wait 100ms to distinguish from scroll
+                e.preventDefault();
+                const rect = productsContent.getBoundingClientRect();
+                const x = ((touch.clientX - rect.left) / rect.width) * 100;
+                const y = ((touch.clientY - rect.top) / rect.height) * 100;
+                
+                // Clear any existing timeouts/intervals
+                if (touchTimeout) clearTimeout(touchTimeout);
+                if (fadeOutInterval) clearInterval(fadeOutInterval);
+                
+                // Apply mask with vapor clearing effect
+                const mask = `radial-gradient(circle 100px at ${x}% ${y}%, transparent 0%, transparent 5%, rgba(0,0,0,0.1) 10%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.8) 80%, rgba(0,0,0,0.9) 90%, rgba(0,0,0,1) 100%)`;
+                productsBackground.style.webkitMask = mask;
+                productsBackground.style.mask = mask;
+                
+                // Start fade out after 2 seconds of no touch
+                touchTimeout = setTimeout(() => {
+                    startFadeOut();
+                }, 2000);
+            }
+        }
     };
     
     // Touch end handler for immediate fade out
@@ -405,10 +433,9 @@ const initFlashlightEffect = () => {
     
     // Add event listeners based on device type
     if (isMobile) {
-        // Mobile: touch events
-        productsContent.addEventListener('touchstart', flashlightHandlers.handleTouch, { passive: false });
-        productsContent.addEventListener('touchmove', flashlightHandlers.handleTouch, { passive: false });
-        productsContent.addEventListener('touchend', flashlightHandlers.handleTouchEnd, { passive: false });
+        // Mobile: No touch events to avoid scroll interference
+        // Use the mobile button instead
+        console.log('Mobile detected: Using button-based flashlight effect');
     } else {
         // Desktop: mouse events
         productsContent.addEventListener('mousemove', flashlightHandlers.handleMouseMove);
@@ -494,6 +521,81 @@ const optimizeProductImages = () => {
 
 // Initialize image optimization
 document.addEventListener('DOMContentLoaded', optimizeProductImages);
+
+// Mobile flashlight button functionality
+const initMobileFlashlightButton = () => {
+    const mobileBtn = document.getElementById('mobileFlashlightBtn');
+    const productsContent = document.querySelector('.products-content');
+    const productsBackground = document.querySelector('.products-background');
+    
+    if (!mobileBtn || !productsContent || !productsBackground) return;
+    
+    let isFlashlightActive = false;
+    let flashlightInterval = null;
+    
+    const activateFlashlight = () => {
+        isFlashlightActive = true;
+        mobileBtn.classList.add('active');
+        mobileBtn.querySelector('span').textContent = 'Desactivar';
+        
+        // Create a moving flashlight effect
+        let angle = 0;
+        flashlightInterval = setInterval(() => {
+            const rect = productsContent.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const radius = Math.min(rect.width, rect.height) * 0.3;
+            
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+            
+            const xPercent = (x / rect.width) * 100;
+            const yPercent = (y / rect.height) * 100;
+            
+            const mask = `radial-gradient(circle 100px at ${xPercent}% ${yPercent}%, transparent 0%, transparent 5%, rgba(0,0,0,0.1) 10%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.8) 80%, rgba(0,0,0,0.9) 90%, rgba(0,0,0,1) 100%)`;
+            productsBackground.style.webkitMask = mask;
+            productsBackground.style.mask = mask;
+            
+            angle += 0.05; // Speed of rotation
+        }, 50);
+    };
+    
+    const deactivateFlashlight = () => {
+        isFlashlightActive = false;
+        mobileBtn.classList.remove('active');
+        mobileBtn.querySelector('span').textContent = 'Explorar';
+        
+        if (flashlightInterval) {
+            clearInterval(flashlightInterval);
+            flashlightInterval = null;
+        }
+        
+        productsBackground.style.webkitMask = 'none';
+        productsBackground.style.mask = 'none';
+    };
+    
+    mobileBtn.addEventListener('click', () => {
+        if (isFlashlightActive) {
+            deactivateFlashlight();
+        } else {
+            activateFlashlight();
+        }
+    });
+    
+    // Auto-deactivate after 10 seconds
+    mobileBtn.addEventListener('click', () => {
+        if (isFlashlightActive) {
+            setTimeout(() => {
+                if (isFlashlightActive) {
+                    deactivateFlashlight();
+                }
+            }, 10000);
+        }
+    });
+};
+
+// Initialize mobile flashlight button
+document.addEventListener('DOMContentLoaded', initMobileFlashlightButton);
 
 // Re-initialize flashlight effect on window resize (for device rotation)
 window.addEventListener('resize', () => {

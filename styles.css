@@ -1775,6 +1775,56 @@ body {
     transform: translateX(4px);
 }
 
+/* Mobile flashlight button */
+.mobile-flashlight-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-flashlight-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.mobile-flashlight-btn svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+}
+
+.mobile-flashlight-btn.active svg {
+    transform: rotate(45deg);
+}
+
+.mobile-flashlight-btn.active {
+    background: rgba(255, 255, 255, 0.9);
+    color: black;
+}
+
+/* Hide on desktop */
+@media (min-width: 769px) {
+    .mobile-flashlight-btn {
+        display: none;
+    }
+}
+
 /* Animations */
 @keyframes slideInfinite {
     0% {
