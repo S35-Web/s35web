@@ -522,80 +522,110 @@ const optimizeProductImages = () => {
 // Initialize image optimization
 document.addEventListener('DOMContentLoaded', optimizeProductImages);
 
-// Mobile flashlight button functionality
-const initMobileFlashlightButton = () => {
-    const mobileBtn = document.getElementById('mobileFlashlightBtn');
+// Mobile double-tap flashlight functionality
+const initMobileDoubleTapFlashlight = () => {
     const productsContent = document.querySelector('.products-content');
     const productsBackground = document.querySelector('.products-background');
     
-    if (!mobileBtn || !productsContent || !productsBackground) return;
+    if (!productsContent || !productsBackground) return;
     
     let isFlashlightActive = false;
     let flashlightInterval = null;
+    let lastTapTime = 0;
+    let tapCount = 0;
     
-    const activateFlashlight = () => {
+    const activateFlashlight = (x, y) => {
         isFlashlightActive = true;
-        mobileBtn.classList.add('active');
-        mobileBtn.querySelector('span').textContent = 'Desactivar';
         
-        // Create a moving flashlight effect
+        // Create a moving flashlight effect from the tap position
         let angle = 0;
+        const startX = x;
+        const startY = y;
+        
         flashlightInterval = setInterval(() => {
             const rect = productsContent.getBoundingClientRect();
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
-            const radius = Math.min(rect.width, rect.height) * 0.3;
+            const radius = Math.min(rect.width, rect.height) * 0.2;
             
-            const x = centerX + Math.cos(angle) * radius;
-            const y = centerY + Math.sin(angle) * radius;
+            // Move from tap position in a spiral pattern
+            const spiralX = startX + Math.cos(angle) * radius * (angle / 10);
+            const spiralY = startY + Math.sin(angle) * radius * (angle / 10);
             
-            const xPercent = (x / rect.width) * 100;
-            const yPercent = (y / rect.height) * 100;
+            const xPercent = Math.max(0, Math.min(100, (spiralX / rect.width) * 100));
+            const yPercent = Math.max(0, Math.min(100, (spiralY / rect.height) * 100));
             
             const mask = `radial-gradient(circle 100px at ${xPercent}% ${yPercent}%, transparent 0%, transparent 5%, rgba(0,0,0,0.1) 10%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.8) 80%, rgba(0,0,0,0.9) 90%, rgba(0,0,0,1) 100%)`;
             productsBackground.style.webkitMask = mask;
             productsBackground.style.mask = mask;
             
-            angle += 0.05; // Speed of rotation
+            angle += 0.08; // Speed of spiral
+            
+            // Auto-deactivate after 5 seconds
+            if (angle > 20) {
+                deactivateFlashlight();
+            }
         }, 50);
     };
     
     const deactivateFlashlight = () => {
         isFlashlightActive = false;
-        mobileBtn.classList.remove('active');
-        mobileBtn.querySelector('span').textContent = 'Explorar';
         
         if (flashlightInterval) {
             clearInterval(flashlightInterval);
             flashlightInterval = null;
         }
         
-        productsBackground.style.webkitMask = 'none';
-        productsBackground.style.mask = 'none';
+        // Fade out the mask
+        let opacity = 1;
+        const fadeInterval = setInterval(() => {
+            opacity -= 0.05;
+            if (opacity <= 0) {
+                productsBackground.style.webkitMask = 'none';
+                productsBackground.style.mask = 'none';
+                clearInterval(fadeInterval);
+            } else {
+                const currentMask = productsBackground.style.webkitMask;
+                if (currentMask && currentMask !== 'none') {
+                    const fadedMask = currentMask.replace(/rgba\(0,0,0,([\d.]+)\)/g, (match, alpha) => {
+                        return `rgba(0,0,0,${parseFloat(alpha) * opacity})`;
+                    });
+                    productsBackground.style.webkitMask = fadedMask;
+                    productsBackground.style.mask = fadedMask;
+                }
+            }
+        }, 30);
     };
     
-    mobileBtn.addEventListener('click', () => {
-        if (isFlashlightActive) {
-            deactivateFlashlight();
-        } else {
-            activateFlashlight();
-        }
-    });
-    
-    // Auto-deactivate after 10 seconds
-    mobileBtn.addEventListener('click', () => {
-        if (isFlashlightActive) {
-            setTimeout(() => {
-                if (isFlashlightActive) {
-                    deactivateFlashlight();
+    // Double tap detection
+    productsContent.addEventListener('touchend', (e) => {
+        const currentTime = Date.now();
+        const tapTime = currentTime - lastTapTime;
+        
+        if (tapTime < 500 && tapTime > 0) {
+            tapCount++;
+            if (tapCount === 2) {
+                // Double tap detected
+                const touch = e.changedTouches[0];
+                const rect = productsContent.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                
+                if (!isFlashlightActive) {
+                    activateFlashlight(x, y);
                 }
-            }, 10000);
+                tapCount = 0;
+            }
+        } else {
+            tapCount = 1;
         }
+        
+        lastTapTime = currentTime;
     });
 };
 
-// Initialize mobile flashlight button
-document.addEventListener('DOMContentLoaded', initMobileFlashlightButton);
+// Initialize mobile double-tap flashlight
+document.addEventListener('DOMContentLoaded', initMobileDoubleTapFlashlight);
 
 // Re-initialize flashlight effect on window resize (for device rotation)
 window.addEventListener('resize', () => {
