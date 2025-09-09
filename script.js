@@ -559,13 +559,20 @@ const initMobileDoubleTapFlashlight = () => {
             productsBackground.style.webkitMask = mask;
             productsBackground.style.mask = mask;
             
-            angle += 0.08; // Speed of spiral
+            angle += 0.12; // Faster speed for 2-second effect
             
-            // Auto-deactivate after 5 seconds
-            if (angle > 20) {
+            // Auto-deactivate after 2 seconds (artistic effect)
+            if (angle > 15) {
                 deactivateFlashlight();
             }
-        }, 50);
+        }, 40);
+        
+        // Backup auto-deactivate after exactly 2 seconds
+        setTimeout(() => {
+            if (isFlashlightActive) {
+                deactivateFlashlight();
+            }
+        }, 2000);
     };
     
     const deactivateFlashlight = () => {
@@ -597,53 +604,30 @@ const initMobileDoubleTapFlashlight = () => {
         }, 30);
     };
     
-    // Double tap detection with scroll protection
-    let touchStartY = 0;
-    let touchStartTime = 0;
-    let isScrolling = false;
-    
-    productsContent.addEventListener('touchstart', (e) => {
-        touchStartY = e.touches[0].clientY;
-        touchStartTime = Date.now();
-        isScrolling = false;
-    }, { passive: true });
-    
-    productsContent.addEventListener('touchmove', (e) => {
-        const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
-        const deltaTime = Date.now() - touchStartTime;
-        
-        // If significant vertical movement, it's a scroll
-        if (deltaY > 10 && deltaTime < 200) {
-            isScrolling = true;
-        }
-    }, { passive: true });
-    
+    // Simple double tap detection for artistic effect
     productsContent.addEventListener('touchend', (e) => {
-        // Only activate if it's not a scroll gesture
-        if (!isScrolling) {
-            const currentTime = Date.now();
-            const tapTime = currentTime - lastTapTime;
-            
-            if (tapTime < 500 && tapTime > 0) {
-                tapCount++;
-                if (tapCount === 2) {
-                    // Double tap detected
-                    const touch = e.changedTouches[0];
-                    const rect = productsContent.getBoundingClientRect();
-                    const x = touch.clientX - rect.left;
-                    const y = touch.clientY - rect.top;
-                    
-                    if (!isFlashlightActive) {
-                        activateFlashlight(x, y);
-                    }
-                    tapCount = 0;
+        const currentTime = Date.now();
+        const tapTime = currentTime - lastTapTime;
+        
+        if (tapTime < 500 && tapTime > 0) {
+            tapCount++;
+            if (tapCount === 2) {
+                // Double tap detected - activate artistic effect
+                const touch = e.changedTouches[0];
+                const rect = productsContent.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                
+                if (!isFlashlightActive) {
+                    activateFlashlight(x, y);
                 }
-            } else {
-                tapCount = 1;
+                tapCount = 0;
             }
-            
-            lastTapTime = currentTime;
+        } else {
+            tapCount = 1;
         }
+        
+        lastTapTime = currentTime;
     }, { passive: true });
 };
 
