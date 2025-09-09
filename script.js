@@ -419,6 +419,82 @@ const initFlashlightEffect = () => {
 // Initialize flashlight effect
 document.addEventListener('DOMContentLoaded', initFlashlightEffect);
 
+// Optimize product images loading
+const optimizeProductImages = () => {
+    const productImages = document.querySelectorAll('.product-sample img');
+    
+    // Image mapping for fallback to JPG
+    const imageMapping = {
+        'estuco-base.png': 'estuco-base-pro+.jpg',
+        'basecoat-blanco.png': 'BASECOAT-blanco-absoluto-Recuperado.jpg',
+        'WAXTARD-BLANCO-ABSOLUTO.png': 'WAXTARD-BLANCO-ABSOLUTO.jpg',
+        'ultraforce.png': 'ULTRAFORCE.jpg',
+        'cellbond.png': 'CELLBOND.jpg',
+        'styrobond.png': 'STYROBOND.jpg',
+        'mixandready.png': 'MIXANDREADY.jpg',
+        'porcelanico.png': 'porcelanico-universal.jpg',
+        'cemento-plastico.png': 'cemento-plastico.jpg',
+        'piso-sobre-piso.png': 'PSP+.jpg',
+        'pastablock.png': 'Pastablock.jpg',
+        'ceramico.png': 'ceramico.jpg',
+        'basecoat.png': 'BASECOAT-GRIS-Recuperado.jpg',
+        'WAXTARD-gris.png': 'waxtrard-gris.jpg'
+    };
+    
+    // Add lazy loading and fallback to all product images
+    productImages.forEach((img, index) => {
+        img.loading = 'lazy';
+        img.classList.add('loading');
+        
+        // Add loading state
+        img.addEventListener('load', () => {
+            img.classList.remove('loading');
+            img.classList.add('loaded');
+        });
+        
+        // Add error handling with JPG fallback
+        img.addEventListener('error', () => {
+            const currentSrc = img.src;
+            const fileName = currentSrc.split('/').pop();
+            const jpgFallback = imageMapping[fileName];
+            
+            if (jpgFallback) {
+                img.src = `Productos 2025/${jpgFallback}`;
+                console.log(`Fallback to JPG: ${fileName} -> ${jpgFallback}`);
+            }
+        });
+        
+        // Preload critical images (first row)
+        if (index < 10) {
+            img.loading = 'eager';
+            img.classList.remove('loading');
+            img.classList.add('loaded');
+        }
+    });
+    
+    // Add progressive loading for better UX
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                }
+                observer.unobserve(img);
+            }
+        });
+    }, { rootMargin: '50px' });
+    
+    // Observe images for progressive loading
+    productImages.forEach(img => {
+        observer.observe(img);
+    });
+};
+
+// Initialize image optimization
+document.addEventListener('DOMContentLoaded', optimizeProductImages);
+
 // Re-initialize flashlight effect on window resize (for device rotation)
 window.addEventListener('resize', () => {
     // Remove existing event listeners
