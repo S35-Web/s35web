@@ -70,14 +70,445 @@ if (heroVideo) {
     }
 }
 
+// Process video optimization for mobile
+const processVideo = document.querySelector('.process-video');
+
+if (processVideo) {
+    // Check if mobile
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // Mobile: optimize for landscape format
+        processVideo.style.objectFit = 'cover';
+        processVideo.style.objectPosition = 'center center';
+        processVideo.style.filter = 'grayscale(100%) contrast(1.4) brightness(0.8)';
+        processVideo.style.opacity = '0.4';
+        
+        // Multiple attempts to play video
+        const playProcessVideo = () => {
+            processVideo.play().catch(e => {
+                console.log('Process video autoplay failed:', e);
+                // If autoplay fails, try again after a delay
+                setTimeout(playProcessVideo, 1000);
+            });
+        };
+        
+        // Try to play when video can play
+        processVideo.addEventListener('canplay', playProcessVideo);
+        processVideo.addEventListener('loadeddata', playProcessVideo);
+        processVideo.addEventListener('canplaythrough', playProcessVideo);
+        
+        // Force play after a delay
+        setTimeout(playProcessVideo, 500);
+    } else {
+        // Desktop: optimize for portrait format
+        processVideo.style.objectFit = 'cover';
+        processVideo.style.objectPosition = 'center center';
+        processVideo.style.filter = 'grayscale(100%) contrast(1.2)';
+        processVideo.style.opacity = '0.3';
+        
+        // Desktop: normal video behavior
+        processVideo.play().catch(e => {
+            console.log('Process video autoplay failed:', e);
+        });
+    }
+}
+
+// Stats video optimization
+const statsVideo = document.querySelector('.stats-video');
+
+if (statsVideo) {
+    // Check if mobile
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // Mobile: optimize for landscape format
+        statsVideo.style.objectFit = 'cover';
+        statsVideo.style.objectPosition = 'center center';
+        statsVideo.style.filter = 'brightness(0.5) contrast(1.2)';
+        statsVideo.style.opacity = '0.5';
+        
+        // Multiple attempts to play video
+        const playStatsVideo = () => {
+            statsVideo.play().catch(e => {
+                console.log('Stats video autoplay failed:', e);
+                // If autoplay fails, try again after a delay
+                setTimeout(playStatsVideo, 1000);
+            });
+        };
+        
+        // Try to play when video can play
+        statsVideo.addEventListener('canplay', playStatsVideo);
+        statsVideo.addEventListener('loadeddata', playStatsVideo);
+        statsVideo.addEventListener('canplaythrough', playStatsVideo);
+        
+        // Force play after a delay
+        setTimeout(playStatsVideo, 500);
+    } else {
+        // Desktop: optimize for portrait format
+        statsVideo.style.objectFit = 'cover';
+        statsVideo.style.objectPosition = 'center center';
+        statsVideo.style.filter = 'brightness(0.6) contrast(1.1)';
+        statsVideo.style.opacity = '0.4';
+        
+        // Desktop: normal video behavior
+        statsVideo.play().catch(e => {
+            console.log('Stats video autoplay failed:', e);
+        });
+    }
+}
+
+// Animated counters for stats section
+const animateStatsCounters = () => {
+    const counters = document.querySelectorAll('.stat-number');
+    
+    counters.forEach(counter => {
+        // Skip if already animated
+        if (counter.classList.contains('animated')) {
+            return;
+        }
+        
+        const isDynamic = counter.getAttribute('data-dynamic');
+        const numberElement = counter.querySelector('.number');
+        let target;
+        
+        // Calculate dynamic years if needed
+        if (isDynamic === 'years') {
+            const startDate = new Date('1999-02-01'); // February 1999
+            const currentDate = new Date();
+            const diffTime = Math.abs(currentDate - startDate);
+            const diffYears = diffTime / (1000 * 60 * 60 * 24 * 365.25); // More accurate year calculation
+            target = Math.round(diffYears * 10) / 10; // Round to 1 decimal place
+        } else {
+            target = parseFloat(counter.getAttribute('data-target'));
+        }
+        
+        // Validate target value
+        if (isNaN(target) || target <= 0) {
+            console.warn('Invalid target value for counter:', target);
+            return;
+        }
+        
+        // If numberElement doesn't exist, use the counter itself
+        const targetElement = numberElement || counter;
+        
+        // Mark as animated
+        counter.classList.add('animated');
+        
+        const duration = 2000; // 2 seconds
+        const increment = target / (duration / 16); // 60fps
+        let current = 0;
+        
+        const updateCounter = () => {
+            if (current < target) {
+                current += increment;
+                const displayValue = isDynamic === 'years' ? 
+                    Math.round(current * 10) / 10 : // Keep decimal for years
+                    Math.floor(current); // Integer for others
+                targetElement.textContent = displayValue;
+                requestAnimationFrame(updateCounter);
+            } else {
+                const finalValue = isDynamic === 'years' ? 
+                    Math.round(target * 10) / 10 : 
+                    target;
+                targetElement.textContent = finalValue;
+            }
+        };
+        
+        updateCounter();
+    });
+};
+
+// Intersection Observer for stats animation
+const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            // Trigger counter animation
+            animateStatsCounters();
+            // Stop observing this element to prevent multiple executions
+            statsObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.3 });
+
+// Observe stats section for animation
+document.addEventListener('DOMContentLoaded', () => {
+    const statsSection = document.querySelector('.stats-section');
+    if (statsSection) {
+        statsObserver.observe(statsSection);
+    }
+});
+
+// Products counter animation
+const animateProductsCounter = () => {
+    const counter = document.querySelector('.products-counter-number');
+    
+    if (!counter || counter.classList.contains('animated')) {
+        return;
+    }
+    
+    const numberElement = counter.querySelector('.number');
+    const target = parseInt(counter.getAttribute('data-target'));
+    
+    if (isNaN(target) || target <= 0) {
+        return;
+    }
+    
+    const duration = 2000; // 2 seconds
+    const increment = target / (duration / 16); // 60fps
+    let current = 0;
+    
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+            current = target;
+            clearInterval(timer);
+        }
+        numberElement.textContent = Math.floor(current);
+    }, 16);
+    
+    counter.classList.add('animated');
+};
+
+// Products counter observer
+const productsCounterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            animateProductsCounter();
+            productsCounterObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.3 });
+
+// Observe products section for counter animation
+document.addEventListener('DOMContentLoaded', () => {
+    const productsSection = document.querySelector('.products-showcase');
+    if (productsSection) {
+        productsCounterObserver.observe(productsSection);
+    }
+});
+
+// Flashlight effect for products section
+let flashlightHandlers = {
+    handleMouseMove: null,
+    handleMouseLeave: null,
+    handleTouch: null,
+    handleTouchEnd: null
+};
+
+const initFlashlightEffect = () => {
+    const productsContent = document.querySelector('.products-content');
+    const productsBackground = document.querySelector('.products-background');
+    
+    if (!productsContent || !productsBackground) return;
+    
+    // Check if mobile
+    const isMobile = window.innerWidth <= 768;
+    
+    // Mouse move handler (desktop only)
+    flashlightHandlers.handleMouseMove = (e) => {
+        if (isMobile) return; // Skip on mobile
+        
+        const rect = productsContent.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        
+        // Apply mask with vapor clearing effect - mouse moves vapor to reveal products
+        // Simple mask: transparent center (reveals products) to opaque edges (keeps blur)
+        const mask = `radial-gradient(circle 100px at ${x}% ${y}%, transparent 0%, transparent 5%, rgba(0,0,0,0.1) 10%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.8) 80%, rgba(0,0,0,0.9) 90%, rgba(0,0,0,1) 100%)`;
+        productsBackground.style.webkitMask = mask;
+        productsBackground.style.mask = mask;
+    };
+    
+    // Mouse leave handler (desktop only)
+    flashlightHandlers.handleMouseLeave = () => {
+        if (isMobile) return; // Skip on mobile
+        productsBackground.style.webkitMask = 'none';
+        productsBackground.style.mask = 'none';
+    };
+    
+    // Touch handler (mobile only)
+    let touchTimeout = null;
+    let fadeOutInterval = null;
+    
+    flashlightHandlers.handleTouch = (e) => {
+        if (!isMobile) return; // Skip on desktop
+        
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = productsContent.getBoundingClientRect();
+        const x = ((touch.clientX - rect.left) / rect.width) * 100;
+        const y = ((touch.clientY - rect.top) / rect.height) * 100;
+        
+        // Clear any existing timeouts/intervals
+        if (touchTimeout) clearTimeout(touchTimeout);
+        if (fadeOutInterval) clearInterval(fadeOutInterval);
+        
+        // Apply mask with vapor clearing effect
+        const mask = `radial-gradient(circle 100px at ${x}% ${y}%, transparent 0%, transparent 5%, rgba(0,0,0,0.1) 10%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.6) 60%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.8) 80%, rgba(0,0,0,0.9) 90%, rgba(0,0,0,1) 100%)`;
+        productsBackground.style.webkitMask = mask;
+        productsBackground.style.mask = mask;
+        
+        // Start fade out after 2 seconds of no touch
+        touchTimeout = setTimeout(() => {
+            startFadeOut();
+        }, 2000);
+    };
+    
+    // Touch end handler for immediate fade out
+    flashlightHandlers.handleTouchEnd = (e) => {
+        if (!isMobile) return; // Skip on desktop
+        
+        // Clear the 2-second timeout
+        if (touchTimeout) {
+            clearTimeout(touchTimeout);
+            touchTimeout = null;
+        }
+        
+        // Start immediate fade out
+        startFadeOut();
+    };
+    
+    // Fade out function
+    const startFadeOut = () => {
+        if (fadeOutInterval) return; // Already fading out
+        
+        let opacity = 1;
+        const fadeStep = 0.05; // How much to reduce opacity each step
+        const fadeSpeed = 50; // Milliseconds between steps
+        
+        fadeOutInterval = setInterval(() => {
+            opacity -= fadeStep;
+            
+            if (opacity <= 0) {
+                // Fade complete - remove mask
+                productsBackground.style.webkitMask = 'none';
+                productsBackground.style.mask = 'none';
+                clearInterval(fadeOutInterval);
+                fadeOutInterval = null;
+            } else {
+                // Apply fading mask
+                const currentMask = productsBackground.style.webkitMask;
+                if (currentMask && currentMask !== 'none') {
+                    // Extract position from current mask
+                    const positionMatch = currentMask.match(/at ([\d.]+% [\d.]+%)/);
+                    if (positionMatch) {
+                        const position = positionMatch[1];
+                        const fadedMask = `radial-gradient(circle 100px at ${position}, transparent 0%, transparent 5%, rgba(0,0,0,${0.1 * opacity}) 10%, rgba(0,0,0,${0.2 * opacity}) 20%, rgba(0,0,0,${0.3 * opacity}) 30%, rgba(0,0,0,${0.4 * opacity}) 40%, rgba(0,0,0,${0.5 * opacity}) 50%, rgba(0,0,0,${0.6 * opacity}) 60%, rgba(0,0,0,${0.7 * opacity}) 70%, rgba(0,0,0,${0.8 * opacity}) 80%, rgba(0,0,0,${0.9 * opacity}) 90%, rgba(0,0,0,${1 * opacity}) 100%)`;
+                        productsBackground.style.webkitMask = fadedMask;
+                        productsBackground.style.mask = fadedMask;
+                    }
+                }
+            }
+        }, fadeSpeed);
+    };
+    
+    // Add event listeners based on device type
+    if (isMobile) {
+        // Mobile: touch events
+        productsContent.addEventListener('touchstart', flashlightHandlers.handleTouch, { passive: false });
+        productsContent.addEventListener('touchmove', flashlightHandlers.handleTouch, { passive: false });
+        productsContent.addEventListener('touchend', flashlightHandlers.handleTouchEnd, { passive: false });
+    } else {
+        // Desktop: mouse events
+        productsContent.addEventListener('mousemove', flashlightHandlers.handleMouseMove);
+        productsContent.addEventListener('mouseleave', flashlightHandlers.handleMouseLeave);
+    }
+};
+
+// Initialize flashlight effect
+document.addEventListener('DOMContentLoaded', initFlashlightEffect);
+
+// Re-initialize flashlight effect on window resize (for device rotation)
+window.addEventListener('resize', () => {
+    // Remove existing event listeners
+    const productsContent = document.querySelector('.products-content');
+    if (productsContent && flashlightHandlers.handleMouseMove) {
+        productsContent.removeEventListener('mousemove', flashlightHandlers.handleMouseMove);
+        productsContent.removeEventListener('mouseleave', flashlightHandlers.handleMouseLeave);
+        productsContent.removeEventListener('touchstart', flashlightHandlers.handleTouch);
+        productsContent.removeEventListener('touchmove', flashlightHandlers.handleTouch);
+        productsContent.removeEventListener('touchend', flashlightHandlers.handleTouchEnd);
+    }
+    
+    // Re-initialize with new device type
+    initFlashlightEffect();
+});
+
+// Products Showcase Animations - Infinite Slider
+const initProductsShowcase = () => {
+    const productSamples = document.querySelectorAll('.product-sample');
+    const sliderTrack = document.querySelector('.slider-track');
+    const ctaBtn = document.querySelector('.products-cta-btn');
+    
+    // Intersection Observer for product samples
+    const productObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = entry.target.style.transform.replace('scale(0)', 'scale(1)');
+                }, index * 30);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    // Initialize product samples
+    productSamples.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = item.style.transform + ' scale(0)';
+        item.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+        productObserver.observe(item);
+    });
+    
+    // Slider pause on hover
+    if (sliderTrack) {
+        sliderTrack.addEventListener('mouseenter', () => {
+            sliderTrack.style.animationPlayState = 'paused';
+        });
+        
+        sliderTrack.addEventListener('mouseleave', () => {
+            sliderTrack.style.animationPlayState = 'running';
+        });
+    }
+    
+    // Product sample hover effects
+    productSamples.forEach(item => {
+        item.addEventListener('mouseenter', () => {
+            // Add subtle glow effect
+            item.style.filter = 'drop-shadow(0 0 20px rgba(0, 0, 0, 0.3))';
+        });
+        
+        item.addEventListener('mouseleave', () => {
+            item.style.filter = 'none';
+        });
+    });
+    
+    // CTA button animation
+    if (ctaBtn) {
+        ctaBtn.addEventListener('mouseenter', () => {
+            ctaBtn.style.transform = 'translateY(-2px) scale(1.02)';
+        });
+        
+        ctaBtn.addEventListener('mouseleave', () => {
+            ctaBtn.style.transform = 'translateY(0) scale(1)';
+        });
+    }
+};
+
+// Initialize products showcase when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    initProductsShowcase();
+});
+
 // Parallax effect for polvo image
 const polvoImage = document.querySelector('.polvo-image');
 
 if (polvoImage) {
     window.addEventListener('scroll', () => {
         const scrolled = window.pageYOffset;
-        const parallax = scrolled * 0.3;
-        const scale = 1 + (scrolled * 0.0001);
+        const parallax = scrolled * 0.8; // Much stronger parallax effect
+        const scale = 1 + (scrolled * 0.0005); // Much stronger scale effect
         
         polvoImage.style.transform = `translateY(${parallax}px) scale(${scale})`;
     });
@@ -199,8 +630,8 @@ function updateScrollEffects() {
     const scrolled = window.pageYOffset;
     
     if (polvoImage) {
-        const parallax = scrolled * 0.3;
-        const scale = 1 + (scrolled * 0.0001);
+        const parallax = scrolled * 0.8; // Much stronger parallax effect
+        const scale = 1 + (scrolled * 0.0005); // Much stronger scale effect
         polvoImage.style.transform = `translateY(${parallax}px) scale(${scale})`;
     }
     
