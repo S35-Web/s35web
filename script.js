@@ -525,6 +525,53 @@ document.addEventListener('DOMContentLoaded', optimizeProductImages);
 // Mobile flashlight effect disabled - desktop only
 // The flashlight effect is now only available on desktop with mouse hover
 
+// Navigation background adaptation for white sections
+const initNavigationBackground = () => {
+    const nav = document.querySelector('.nav');
+    const whiteSections = document.querySelectorAll('.white-bg-section');
+    
+    if (!nav || whiteSections.length === 0) return;
+    
+    const checkNavigationBackground = () => {
+        if (!nav.classList.contains('visible')) return;
+        
+        const navRect = nav.getBoundingClientRect();
+        const navBottom = navRect.bottom;
+        
+        let isOnWhiteSection = false;
+        
+        whiteSections.forEach(section => {
+            const sectionRect = section.getBoundingClientRect();
+            const sectionTop = sectionRect.top;
+            const sectionBottom = sectionRect.bottom;
+            
+            // Check if navigation is overlapping with white section
+            if (navBottom > sectionTop && navRect.top < sectionBottom) {
+                isOnWhiteSection = true;
+            }
+        });
+        
+        // Toggle dark tint class
+        if (isOnWhiteSection) {
+            nav.classList.add('on-white-bg');
+        } else {
+            nav.classList.remove('on-white-bg');
+        }
+    };
+    
+    // Check on scroll
+    window.addEventListener('scroll', checkNavigationBackground);
+    
+    // Check on resize
+    window.addEventListener('resize', checkNavigationBackground);
+    
+    // Initial check
+    checkNavigationBackground();
+};
+
+// Initialize navigation background adaptation
+document.addEventListener('DOMContentLoaded', initNavigationBackground);
+
 // Re-initialize flashlight effect on window resize (for device rotation)
 window.addEventListener('resize', () => {
     // Remove existing event listeners
