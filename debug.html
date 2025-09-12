@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - S-35</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug - S-35 Technology</h1>
+        
+        <div class="test info">
+            <strong>URL actual:</strong> <span id="currentUrl"></span>
+        </div>
+        
+        <div class="test info">
+            <strong>Fecha:</strong> <span id="currentDate"></span>
+        </div>
+        
+        <h2>Test de Archivos:</h2>
+        
+        <div class="test" id="html-test">
+            <strong>HTML:</strong> ✅ Cargado correctamente
+        </div>
+        
+        <div class="test" id="css-test">
+            <strong>CSS:</strong> <span id="css-status">🔄 Verificando...</span>
+        </div>
+        
+        <div class="test" id="js-test">
+            <strong>JavaScript:</strong> <span id="js-status">🔄 Verificando...</span>
+        </div>
+        
+        <h2>Test de Enlaces:</h2>
+        <p><a href="styles.css" target="_blank">Abrir styles.css</a></p>
+        <p><a href="script.js" target="_blank">Abrir script.js</a></p>
+        <p><a href="catalogo.css" target="_blank">Abrir catalogo.css</a></p>
+        <p><a href="catalogo.js" target="_blank">Abrir catalogo.js</a></p>
+        
+        <h2>Test de Imágenes:</h2>
+        <p><a href="Assets/Logotipo Principal.png" target="_blank">Abrir logo</a></p>
+        
+        <h2>Información del Navegador:</h2>
+        <div class="test info">
+            <strong>User Agent:</strong> <span id="userAgent"></span>
+        </div>
+        
+        <div class="test info">
+            <strong>Resolución:</strong> <span id="screenSize"></span>
+        </div>
+    </div>
+
+    <script>
+        // Información básica
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('currentDate').textContent = new Date().toLocaleString();
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        document.getElementById('screenSize').textContent = window.screen.width + 'x' + window.screen.height;
+        
+        // Test de CSS
+        function testCSS() {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'styles.css';
+            link.onload = function() {
+                document.getElementById('css-status').textContent = '✅ Cargado correctamente';
+                document.getElementById('css-test').className = 'test success';
+            };
+            link.onerror = function() {
+                document.getElementById('css-status').textContent = '❌ Error al cargar';
+                document.getElementById('css-test').className = 'test error';
+            };
+            document.head.appendChild(link);
+        }
+        
+        // Test de JS
+        function testJS() {
+            const script = document.createElement('script');
+            script.src = 'script.js';
+            script.onload = function() {
+                document.getElementById('js-status').textContent = '✅ Cargado correctamente';
+                document.getElementById('js-test').className = 'test success';
+            };
+            script.onerror = function() {
+                document.getElementById('js-status').textContent = '❌ Error al cargar';
+                document.getElementById('js-test').className = 'test error';
+            };
+            document.head.appendChild(script);
+        }
+        
+        // Ejecutar tests
+        setTimeout(testCSS, 500);
+        setTimeout(testJS, 1000);
+    </script>
+</body>
+</html>
