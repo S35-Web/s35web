@@ -731,6 +731,32 @@ const animateConsistencyCounters = () => {
     });
 };
 
+// Animated counters for quality guarantees section
+const animateQualityCounters = () => {
+    const counters = document.querySelectorAll('.quality-stats .counter');
+    
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const prefix = counter.getAttribute('data-prefix') || '';
+        const suffix = counter.getAttribute('data-suffix') || '';
+        const duration = 2000; // 2 seconds
+        const increment = target / (duration / 16); // 60fps
+        let current = 0;
+        
+        const updateCounter = () => {
+            if (current < target) {
+                current += increment;
+                counter.textContent = prefix + Math.floor(current) + suffix;
+                requestAnimationFrame(updateCounter);
+            } else {
+                counter.textContent = prefix + target + suffix;
+            }
+        };
+        
+        updateCounter();
+    });
+};
+
 // Intersection Observer for animations
 const observerOptions = {
     threshold: 0.1,
@@ -747,6 +773,11 @@ const observer = new IntersectionObserver((entries) => {
                 setTimeout(animateCounters, 500);
             }
             
+            // Trigger counter animation for quality guarantees section
+            if (entry.target.classList.contains('quality-guarantees')) {
+                setTimeout(animateQualityCounters, 500);
+            }
+            
             // Trigger counter animation for consistency cards
             if (entry.target.classList.contains('consistency-card')) {
                 setTimeout(animateConsistencyCounters, 300);
@@ -757,7 +788,7 @@ const observer = new IntersectionObserver((entries) => {
 
 // Observe elements for animation
 document.addEventListener('DOMContentLoaded', () => {
-    const animateElements = document.querySelectorAll('.tech-card, .data-visualization, .feature, .consistency-card');
+    const animateElements = document.querySelectorAll('.tech-card, .data-visualization, .feature, .consistency-card, .quality-guarantees');
     animateElements.forEach(el => observer.observe(el));
 });
 
@@ -817,6 +848,45 @@ const optimizedScroll = debounce(() => {
     // Any additional scroll optimizations can go here
 }, 16);
 
+// Contact form functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForms = document.querySelectorAll('.contact-form');
+    
+    contactForms.forEach(contactForm => {
+        if (contactForm) {
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                       // Get form data
+                       const formData = new FormData(this);
+                       const nombre = formData.get('nombre');
+                       const email = formData.get('email');
+                       const empresa = formData.get('empresa');
+                       const mensaje = formData.get('mensaje');
+                       const newsletter = formData.get('newsletter');
+                       
+                       // Simple validation
+                       if (!nombre || !email || !mensaje) {
+                           alert('Por favor completa todos los campos obligatorios.');
+                           return;
+                       }
+                       
+                       // Prepare success message
+                       let successMessage = '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.';
+                       if (newsletter) {
+                           successMessage += ' También te has suscrito a nuestro newsletter.';
+                       }
+                       
+                       // Show success message
+                       alert(successMessage);
+                
+                // Reset form
+                this.reset();
+            });
+        }
+    });
+});
+
 window.addEventListener('scroll', optimizedScroll);
 
 // Interactive Cards Stack
@@ -838,6 +908,7 @@ class CardsStack {
         this.setupScroll();
         this.setupTouch();
         this.setupAnimations();
+        this.centerFirstCard();
     }
 
     setupCards() {
@@ -1179,9 +1250,305 @@ class CardsStack {
             closeButton.remove();
         }
     }
+
+    centerFirstCard() {
+        // Solo centrar la primera card sin forzar posiciones específicas
+        setTimeout(() => {
+            const stack = this.stack;
+            if (!stack || !this.cards.length) return;
+            
+            // Scroll suave al inicio
+            stack.scrollTo({
+                left: 0,
+                behavior: 'smooth'
+            });
+        }, 100);
+    }
+
 }
 
 // Inicializar stack de cards cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
     new CardsStack();
+});
+
+// Pixel Rastreador para detectar color de fondo
+class PixelTracker {
+    constructor() {
+        this.pixelTracker = document.getElementById('pixelTracker');
+        this.nav = document.querySelector('.nav');
+        this.canvas = null;
+        this.ctx = null;
+        this.isInitialized = false;
+        
+        if (this.pixelTracker && this.nav) {
+            this.init();
+        }
+    }
+
+    init() {
+        // Crear canvas oculto para análisis de color
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = 1;
+        this.canvas.height = 1;
+        this.canvas.style.display = 'none';
+        document.body.appendChild(this.canvas);
+        
+        this.ctx = this.canvas.getContext('2d');
+        this.isInitialized = true;
+        
+        // Iniciar detección
+        this.startDetection();
+        
+        console.log('Pixel Tracker inicializado');
+    }
+
+    startDetection() {
+        if (!this.isInitialized) return;
+        
+        // Detectar color inicial con un pequeño delay para asegurar que el DOM esté listo
+        setTimeout(() => {
+            this.detectBackgroundColor();
+        }, 100);
+        
+        // Detectar cambios en scroll
+        window.addEventListener('scroll', this.throttle(() => {
+            this.detectBackgroundColor();
+        }, 100));
+        
+        // Detectar cambios en resize
+        window.addEventListener('resize', this.throttle(() => {
+            this.detectBackgroundColor();
+        }, 100));
+        
+        // Agregar función de prueba global para debugging
+        window.testPixelTracker = () => {
+            console.log('=== PRUEBA DEL PIXEL TRACKER ===');
+            this.detectBackgroundColor();
+        };
+    }
+
+    detectBackgroundColor() {
+        if (!this.isInitialized || !this.pixelTracker) return;
+        
+        try {
+            // Obtener la sección actual visible en el viewport
+            const currentSection = this.getCurrentVisibleSection();
+            
+            if (!currentSection) {
+                console.log('No se encontró sección visible');
+                this.setButtonStyle('default');
+                return;
+            }
+            
+            console.log('Sección detectada:', currentSection.tagName, currentSection.className);
+            
+            // Obtener el color de fondo de la sección actual
+            const sectionStyle = window.getComputedStyle(currentSection);
+            let backgroundColor = sectionStyle.backgroundColor;
+            
+            console.log('Color de fondo de la sección:', backgroundColor);
+            
+            // Si el color es transparente, buscar en elementos padre de la sección
+            if (!backgroundColor || backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent') {
+                backgroundColor = this.findParentBackground(currentSection);
+                console.log('Color de fondo del padre de la sección:', backgroundColor);
+            }
+            
+            // Analizar el color
+            this.analyzeColor(backgroundColor);
+            
+        } catch (error) {
+            console.warn('Error en detección de color:', error);
+            // Fallback: mantener estilo por defecto
+            this.setButtonStyle('default');
+        }
+    }
+
+    analyzeColor(backgroundColor) {
+        console.log('Analizando color:', backgroundColor);
+        
+        if (!backgroundColor || backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent') {
+            console.log('Color transparente, buscando en elementos padre');
+            // Si no hay color de fondo, usar el color del elemento padre
+            this.detectParentBackground();
+            return;
+        }
+        
+        // Extraer valores RGB
+        const rgbMatch = backgroundColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (!rgbMatch) {
+            console.log('No se pudo extraer valores RGB del color:', backgroundColor);
+            this.setButtonStyle('default');
+            return;
+        }
+        
+        const r = parseInt(rgbMatch[1]);
+        const g = parseInt(rgbMatch[2]);
+        const b = parseInt(rgbMatch[3]);
+        
+        console.log('Valores RGB:', r, g, b);
+        
+        // Solo cambiar a botones negros si el fondo es específicamente blanco
+        if (r === 255 && g === 255 && b === 255) {
+            console.log('Fondo blanco detectado - aplicando botones negros');
+            this.setButtonStyle('light');
+        } else {
+            console.log('Fondo no es blanco - manteniendo botones por defecto');
+            this.setButtonStyle('default');
+        }
+    }
+
+    getCurrentVisibleSection() {
+        // Obtener todas las secciones principales
+        const sections = document.querySelectorAll('section, .hero, .vision, .interactive-3d-section, .water-section, .process-section, .stats-section, .products-showcase, .innovation, .consistency, .contact');
+        
+        const viewportHeight = window.innerHeight;
+        const scrollTop = window.pageYOffset;
+        const viewportCenter = scrollTop + (viewportHeight / 2);
+        
+        let currentSection = null;
+        let maxVisibility = 0;
+        
+        sections.forEach(section => {
+            const rect = section.getBoundingClientRect();
+            const sectionTop = rect.top + scrollTop;
+            const sectionBottom = sectionTop + rect.height;
+            
+            // Calcular cuánto de la sección está visible en el viewport
+            const visibleTop = Math.max(sectionTop, scrollTop);
+            const visibleBottom = Math.min(sectionBottom, scrollTop + viewportHeight);
+            const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+            const visibilityRatio = visibleHeight / viewportHeight;
+            
+            // Si la sección está visible y tiene mayor visibilidad que la anterior
+            if (visibilityRatio > 0.1 && visibilityRatio > maxVisibility) {
+                maxVisibility = visibilityRatio;
+                currentSection = section;
+            }
+        });
+        
+        return currentSection;
+    }
+
+    findParentBackground(element) {
+        // Buscar el elemento padre más cercano con fondo
+        let currentElement = element;
+        let backgroundColor = null;
+        
+        while (currentElement && currentElement !== document.documentElement) {
+            const style = window.getComputedStyle(currentElement);
+            const bg = style.backgroundColor;
+            
+            console.log('Revisando elemento:', currentElement.tagName, currentElement.className, 'Color:', bg);
+            
+            if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+                backgroundColor = bg;
+                console.log('Color de fondo encontrado en:', currentElement.tagName, currentElement.className);
+                break;
+            }
+            
+            currentElement = currentElement.parentElement;
+        }
+        
+        if (!backgroundColor) {
+            // Fallback: usar el color del body
+            const bodyStyle = window.getComputedStyle(document.body);
+            backgroundColor = bodyStyle.backgroundColor;
+            console.log('Usando color del body:', backgroundColor);
+        }
+        
+        return backgroundColor;
+    }
+
+    detectParentBackground() {
+        // Buscar el elemento padre más cercano con fondo
+        let element = this.pixelTracker.parentElement;
+        let backgroundColor = null;
+        
+        while (element && element !== document.body) {
+            const style = window.getComputedStyle(element);
+            const bg = style.backgroundColor;
+            
+            if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+                backgroundColor = bg;
+                break;
+            }
+            
+            element = element.parentElement;
+        }
+        
+        if (backgroundColor) {
+            this.analyzeColor(backgroundColor);
+        } else {
+            // Fallback: usar el color del body
+            const bodyStyle = window.getComputedStyle(document.body);
+            this.analyzeColor(bodyStyle.backgroundColor);
+        }
+    }
+
+    setButtonStyle(backgroundType) {
+        if (!this.nav) return;
+        
+        // Remover clases anteriores
+        this.nav.classList.remove('on-dark-bg', 'on-light-bg', 'on-default-bg');
+        
+        // Agregar clase correspondiente
+        if (backgroundType === 'light') {
+            this.nav.classList.add('on-light-bg');
+            console.log('Fondo blanco detectado - aplicando botones negros');
+        } else if (backgroundType === 'dark') {
+            this.nav.classList.add('on-dark-bg');
+            console.log('Fondo oscuro detectado - aplicando botones claros');
+        } else {
+            this.nav.classList.add('on-default-bg');
+            console.log('Fondo por defecto - manteniendo botones originales');
+        }
+    }
+
+    // Función throttle para optimizar rendimiento
+    throttle(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        }
+    }
+
+    // Método para forzar detección manual
+    forceDetection() {
+        this.detectBackgroundColor();
+    }
+}
+
+// Mobile Footer Accordion functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const accordionHeaders = document.querySelectorAll('.footer-accordion-header');
+    
+    accordionHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const accordionItem = this.parentElement;
+            const isActive = accordionItem.classList.contains('active');
+            
+            // Close all other accordion items
+            document.querySelectorAll('.footer-accordion-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Toggle current item
+            if (!isActive) {
+                accordionItem.classList.add('active');
+            }
+        });
+    });
+});
+
+// Inicializar Pixel Tracker cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+    new PixelTracker();
 });

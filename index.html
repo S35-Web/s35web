@@ -29,6 +29,8 @@
                 <span></span>
             </div>
         </div>
+        <!-- Pixel rastreador invisible para detectar color de fondo -->
+        <div class="pixel-tracker" id="pixelTracker"></div>
     </nav>
 
     <!-- Hero Section -->
@@ -92,6 +94,58 @@
             </div>
             <div class="cards-container" id="cardsContainer">
                 <div class="cards-stack" id="cardsStack">
+                    <!-- Primera serie de cards -->
+                    <div class="card-item" data-card="1" data-title="Estuco Premium" data-description="Fórmula avanzada para acabados de alta calidad con durabilidad excepcional y acabado profesional.">
+                        <img src="Assets/card.png" alt="Estuco Premium" />
+                    </div>
+                    <div class="card-item" data-card="2" data-title="Basecoat Industrial" data-description="Base de aplicación para sistemas de revestimiento con excelente adherencia y resistencia.">
+                        <img src="Assets/card2.png" alt="Basecoat Industrial" />
+                    </div>
+                    <div class="card-item" data-card="3" data-title="Acabado Texturizado" data-description="Acabados especiales con texturas únicas para proyectos arquitectónicos de vanguardia.">
+                        <img src="Assets/card3.png" alt="Acabado Texturizado" />
+                    </div>
+                    <div class="card-item" data-card="4" data-title="Sistema Completo" data-description="Solución integral que combina base, estuco y acabado para resultados profesionales.">
+                        <img src="Assets/card4.png" alt="Sistema Completo" />
+                    </div>
+                    <div class="card-item" data-card="5" data-title="Fórmula Especializada" data-description="Desarrollos personalizados para necesidades específicas de construcción industrial.">
+                        <img src="Assets/card5.png" alt="Fórmula Especializada" />
+                    </div>
+                    
+                    <!-- Segunda serie de cards -->
+                    <div class="card-item" data-card="1" data-title="Estuco Premium" data-description="Fórmula avanzada para acabados de alta calidad con durabilidad excepcional y acabado profesional.">
+                        <img src="Assets/card.png" alt="Estuco Premium" />
+                    </div>
+                    <div class="card-item" data-card="2" data-title="Basecoat Industrial" data-description="Base de aplicación para sistemas de revestimiento con excelente adherencia y resistencia.">
+                        <img src="Assets/card2.png" alt="Basecoat Industrial" />
+                    </div>
+                    <div class="card-item" data-card="3" data-title="Acabado Texturizado" data-description="Acabados especiales con texturas únicas para proyectos arquitectónicos de vanguardia.">
+                        <img src="Assets/card3.png" alt="Acabado Texturizado" />
+                    </div>
+                    <div class="card-item" data-card="4" data-title="Sistema Completo" data-description="Solución integral que combina base, estuco y acabado para resultados profesionales.">
+                        <img src="Assets/card4.png" alt="Sistema Completo" />
+                    </div>
+                    <div class="card-item" data-card="5" data-title="Fórmula Especializada" data-description="Desarrollos personalizados para necesidades específicas de construcción industrial.">
+                        <img src="Assets/card5.png" alt="Fórmula Especializada" />
+                    </div>
+                    
+                    <!-- Tercera serie de cards -->
+                    <div class="card-item" data-card="1" data-title="Estuco Premium" data-description="Fórmula avanzada para acabados de alta calidad con durabilidad excepcional y acabado profesional.">
+                        <img src="Assets/card.png" alt="Estuco Premium" />
+                    </div>
+                    <div class="card-item" data-card="2" data-title="Basecoat Industrial" data-description="Base de aplicación para sistemas de revestimiento con excelente adherencia y resistencia.">
+                        <img src="Assets/card2.png" alt="Basecoat Industrial" />
+                    </div>
+                    <div class="card-item" data-card="3" data-title="Acabado Texturizado" data-description="Acabados especiales con texturas únicas para proyectos arquitectónicos de vanguardia.">
+                        <img src="Assets/card3.png" alt="Acabado Texturizado" />
+                    </div>
+                    <div class="card-item" data-card="4" data-title="Sistema Completo" data-description="Solución integral que combina base, estuco y acabado para resultados profesionales.">
+                        <img src="Assets/card4.png" alt="Sistema Completo" />
+                    </div>
+                    <div class="card-item" data-card="5" data-title="Fórmula Especializada" data-description="Desarrollos personalizados para necesidades específicas de construcción industrial.">
+                        <img src="Assets/card5.png" alt="Fórmula Especializada" />
+                    </div>
+                    
+                    <!-- Cuarta serie de cards -->
                     <div class="card-item" data-card="1" data-title="Estuco Premium" data-description="Fórmula avanzada para acabados de alta calidad con durabilidad excepcional y acabado profesional.">
                         <img src="Assets/card.png" alt="Estuco Premium" />
                     </div>
@@ -507,7 +561,7 @@
                 <p class="products-main-description">
                     Desde la preparación del sustrato hasta el acabado final, nuestra línea de productos cubre cada etapa del proceso constructivo con formulaciones de precisión que garantizan resultados superiores en cada proyecto.
                 </p>
-                <a href="#productos-tienda" class="products-cta-btn">
+                <a href="catalogo.html" class="products-cta-btn">
                     <span>EXPLORAR CATÁLOGO</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -518,108 +572,68 @@
         
     </section>
 
-    <!-- Innovation Section -->
-    <section class="innovation">
-        <div class="container">
-            <div class="innovation-content">
-                <div class="innovation-text">
-                    <h2>Innovación Constante</h2>
-                    <p>
-                        En S-35, la innovación no es solo una palabra, es nuestro compromiso 
-                        diario. Cada producto que desarrollamos pasa por rigurosos procesos 
-                        de investigación y desarrollo.
-                    </p>
-                    <div class="innovation-features">
-                        <div class="feature">
-                            <i class="fas fa-flask"></i>
-                            <span>I+D Continuo</span>
-                        </div>
-                        <div class="feature">
-                            <i class="fas fa-certificate"></i>
-                            <span>Certificaciones</span>
-                        </div>
-                        <div class="feature">
-                            <i class="fas fa-recycle"></i>
-                            <span>Sostenibilidad</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="innovation-visual">
-                    <div class="data-visualization">
-                        <div class="data-point" style="--delay: 0s">
-                            <span class="data-number">98%</span>
-                            <span class="data-label">Eficiencia</span>
-                        </div>
-                        <div class="data-point" style="--delay: 0.5s">
-                            <span class="data-number">99.9%</span>
-                            <span class="data-label">Pureza</span>
-                        </div>
-                        <div class="data-point" style="--delay: 1s">
-                            <span class="data-number">25+</span>
-                            <span class="data-label">Años Vida</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Quality Guarantees Section with Video Background -->
+    <section class="quality-guarantees">
+        <!-- Video Background -->
+        <div class="video-background">
+            <video autoplay muted loop playsinline preload="metadata">
+                <source src="Assets/control_optimized.mp4" type="video/mp4">
+                <source src="Assets/control.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
         </div>
-    </section>
-
-    <!-- Consistency Section -->
-    <section class="consistency white-bg-section">
+        
+        <!-- Content -->
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Garantías de Calidad</h2>
-                <p class="section-subtitle">
-                    Nuestros productos ofrecen resultados consistentes y confiables en cada aplicación
-                </p>
-            </div>
-            <div class="consistency-grid">
-                <div class="consistency-card">
-                    <div class="consistency-number">
-                        <span class="counter" data-target="98" data-prefix="" data-suffix="%">0</span>
-                    </div>
-                    <div class="consistency-content">
-                        <h3 class="consistency-title">Consistencia garantizada</h3>
-                        <p class="consistency-description">
-                            Cada producto mantiene las mismas características físicas y químicas, 
-                            independientemente del lote o fecha de producción.
-                        </p>
-                    </div>
+            <div class="quality-content">
+                <div class="quality-header">
+                    <h2 class="quality-subtitle">CONTROL</h2>
+                    <h1 class="quality-title">GARANTÍAS<br>DE CALIDAD</h1>
                 </div>
-                <div class="consistency-card">
-                    <div class="consistency-number">
-                        <span class="counter" data-target="40" data-prefix="+" data-suffix="%">0</span>
+                
+                <div class="quality-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            <span class="counter" data-target="98" data-prefix="" data-suffix="%">0</span>
+                        </div>
+                        <div class="stat-label">Consistencia garantizada</div>
+                        <div class="stat-description">
+                            Se logra al solo agregar agua en vez de formular en obra, 
+                            garantizando resultados uniformes en cada aplicación.
+                        </div>
                     </div>
-                    <div class="consistency-content">
-                        <h3 class="consistency-title">Eficiencia en tiempo</h3>
-                        <p class="consistency-description">
+                    
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            <span class="counter" data-target="40" data-prefix="+" data-suffix="%">0</span>
+                        </div>
+                        <div class="stat-label">Eficiencia en tiempo</div>
+                        <div class="stat-description">
                             Reducción significativa en el tiempo de preparación y aplicación, 
                             optimizando los cronogramas de obra.
-                        </p>
+                        </div>
                     </div>
-                </div>
-                <div class="consistency-card">
-                    <div class="consistency-number">
-                        <span class="counter" data-target="60" data-prefix="-" data-suffix="%">0</span>
-                    </div>
-                    <div class="consistency-content">
-                        <h3 class="consistency-title">Desperdicio de material</h3>
-                        <p class="consistency-description">
+                    
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            <span class="counter" data-target="60" data-prefix="-" data-suffix="%">0</span>
+                        </div>
+                        <div class="stat-label">Desperdicio de material</div>
+                        <div class="stat-description">
                             Los productos pre-formulados tienen tiempos de vida útil extendidos 
                             y mejor aprovechamiento del material.
-                        </p>
+                        </div>
                     </div>
-                </div>
-                <div class="consistency-card">
-                    <div class="consistency-number">
-                        <span class="counter" data-target="100" data-prefix="" data-suffix="%">0</span>
-                    </div>
-                    <div class="consistency-content">
-                        <h3 class="consistency-title">Control de calidad</h3>
-                        <p class="consistency-description">
+                    
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            <span class="counter" data-target="100" data-prefix="" data-suffix="%">0</span>
+                        </div>
+                        <div class="stat-label">Control de calidad</div>
+                        <div class="stat-description">
                             Cada lote pasa por rigurosas pruebas de laboratorio antes 
                             de salir a producción.
-                        </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -627,85 +641,287 @@
     </section>
 
     <!-- Contact Section -->
-    <section id="contacto" class="contact white-bg-section">
-        <div class="container">
+    <section id="contacto" class="contact-section">
+        <div class="contact-container">
             <div class="contact-content">
-                <div class="contact-info">
-                    <h2>Contacto</h2>
-                    <p>Conecta con nuestro equipo de expertos</p>
-                    <div class="contact-details">
-                        <div class="contact-item">
-                            <i class="fas fa-map-pin"></i>
-                            <div>
-                                <h4>Ubicación</h4>
-                                <p>Blvd. Emiliano Zapata 2650<br>Lomas del Boulevard, Culiacán, Sinaloa</p>
-                            </div>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-phone-alt"></i>
-                            <div>
-                                <h4>Teléfono</h4>
-                                <p>+52 (667) 123-4567</p>
-                            </div>
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-paper-plane"></i>
-                            <div>
-                                <h4>Email</h4>
-                                <p>info@s-35.com.mx</p>
+                <!-- Left Panel - Architectural Image -->
+                <div class="contact-left">
+                    <div class="contact-image">
+                        <img src="Assets/contact.jpg" alt="Architectural Background" />
+                        <div class="image-overlay">
+                            <div class="overlay-content">
+                                <h2>Diseña tu futuro,<br>una fórmula a la vez.</h2>
+                                <h3>Únete a una comunidad de constructores que moldean el mañana.</h3>
+                                <p>S-35® Tu aliado en la excelencia constructiva.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <form class="contact-form">
-                    <div class="form-group">
-                        <input type="text" placeholder="Nombre" required>
+                
+                <!-- Right Panel - Contact Form -->
+                <div class="contact-right">
+                    <div class="contact-form-container">
+                        <div class="form-header">
+                            <h1>Envíanos un mensaje</h1>
+                            <p>Conecta con nuestro equipo y descubre cómo podemos transformar tu próximo proyecto constructivo.</p>
+                        </div>
+                        
+                        <form class="contact-form">
+                            <div class="form-group">
+                                <label for="nombre">Nombre completo *</label>
+                                <input type="text" id="nombre" name="nombre" placeholder="e.g. Juan Pérez" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Dirección de email *</label>
+                                <input type="email" id="email" name="email" placeholder="e.g. juan@empresa.com" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="empresa">Empresa</label>
+                                <input type="text" id="empresa" name="empresa" placeholder="e.g. Constructora ABC">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="mensaje">Mensaje *</label>
+                                <textarea id="mensaje" name="mensaje" placeholder="Cuéntanos sobre tu proyecto..." rows="4" required></textarea>
+                            </div>
+                            
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="newsletter" name="newsletter" class="checkbox-input">
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-text">Conecta con nuestro equipo y descubre cómo podemos transformar tu próximo proyecto constructivo. Suscríbete a nuestro newsletter y mantente informado de nuestros avances.</span>
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="submit-btn">
+                                Enviar mensaje
+                            </button>
+                            
+                            <div class="form-footer">
+                                <p class="terms">Un asesor especializado estará contigo para dar seguimiento a tu consulta y brindarte la mejor solución y/o asesoría constructiva.</p>
+                            </div>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <input type="email" placeholder="Email" required>
+                </div>
+            </div>
+            
+            <!-- Mobile Layout -->
+            <div class="contact-mobile">
+                <!-- Mobile Image -->
+                <div class="contact-mobile-image">
+                    <img src="Assets/contact.jpg" alt="Architectural Background" />
+                </div>
+                
+                <!-- Mobile Text Section -->
+                <div class="contact-mobile-text">
+                    <h2>Diseña tu futuro,<br>una fórmula a la vez.</h2>
+                    <h3>Únete a una comunidad de constructores que moldean el mañana.</h3>
+                    <p>S-35® Tu aliado en la excelencia constructiva.</p>
+                </div>
+                
+                <!-- Mobile Divider -->
+                <div class="contact-mobile-divider"></div>
+                
+                <!-- Mobile Form -->
+                <div class="contact-mobile-form">
+                    <div class="form-header">
+                        <h1>Envíanos un mensaje</h1>
+                        <p>Conecta con nuestro equipo y descubre cómo podemos transformar tu próximo proyecto constructivo.</p>
                     </div>
-                    <div class="form-group">
-                        <input type="text" placeholder="Empresa">
-                    </div>
-                    <div class="form-group">
-                        <textarea placeholder="Mensaje" rows="5" required></textarea>
-                    </div>
-                    <button type="submit" class="btn-primary">
-                        <span>Enviar Mensaje</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </form>
+                    
+                    <form class="contact-form">
+                        <div class="form-group">
+                            <label for="nombre-mobile">Nombre completo *</label>
+                            <input type="text" id="nombre-mobile" name="nombre" placeholder="e.g. Juan Pérez" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email-mobile">Dirección de email *</label>
+                            <input type="email" id="email-mobile" name="email" placeholder="e.g. juan@empresa.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="empresa-mobile">Empresa</label>
+                            <input type="text" id="empresa-mobile" name="empresa" placeholder="e.g. Constructora ABC">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mensaje-mobile">Mensaje *</label>
+                            <textarea id="mensaje-mobile" name="mensaje" placeholder="Cuéntanos sobre tu proyecto..." rows="4" required></textarea>
+                        </div>
+                        
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="newsletter-mobile" name="newsletter" class="checkbox-input">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">Conecta con nuestro equipo y descubre cómo podemos transformar tu próximo proyecto constructivo. Suscríbete a nuestro newsletter y mantente informado de nuestros avances.</span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">
+                            Enviar mensaje
+                        </button>
+                        
+                        <div class="form-footer">
+                            <p class="terms">Un asesor especializado estará contigo para dar seguimiento a tu consulta y brindarte la mejor solución y/o asesoría constructiva.</p>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </section>
 
+    <!-- Spacer for desktop -->
+    <div class="footer-spacer"></div>
+
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
+        <div class="footer-container">
+            <!-- Main Footer Content -->
+            <div class="footer-main">
+                <!-- Brand Section -->
                 <div class="footer-brand">
                     <div class="footer-logo">
                         <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="footer-logo-image">
                     </div>
-                    <p>Tecnología en construcción para el futuro</p>
+                    <p class="footer-tagline">Tecnología en construcción para el futuro</p>
                 </div>
+
+                <!-- Links Grid -->
                 <div class="footer-links">
-                    <div class="link-group">
-                        <h4>Productos</h4>
-                        <a href="#">Estuco</a>
-                        <a href="#">Basecoat</a>
-                        <a href="#">Acabados</a>
+                    <div class="footer-column">
+                        <h4 class="footer-title">Productos</h4>
+                        <ul class="footer-list">
+                            <li><a href="catalogo.html">Catálogo Completo</a></li>
+                            <li><a href="#">Estuco Premium</a></li>
+                            <li><a href="#">Basecoat Industrial</a></li>
+                            <li><a href="#">Acabados Especializados</a></li>
+                            <li><a href="#">Adhesivos de Alta Resistencia</a></li>
+                        </ul>
                     </div>
-                    <div class="link-group">
-                        <h4>Empresa</h4>
-                        <a href="#">Nosotros</a>
-                        <a href="#">Tecnología</a>
-                        <a href="#">Contacto</a>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-title">Tecnología</h4>
+                        <ul class="footer-list">
+                            <li><a href="#">Laboratorio de Investigación</a></li>
+                            <li><a href="#">Procesos de Fabricación</a></li>
+                            <li><a href="#">Control de Calidad</a></li>
+                            <li><a href="#">Innovación Continua</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-title">Empresa</h4>
+                        <ul class="footer-list">
+                            <li><a href="#">Nosotros</a></li>
+                            <li><a href="#">Historia</a></li>
+                            <li><a href="#">Misión y Visión</a></li>
+                            <li><a href="#">Certificaciones</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-title">Contacto</h4>
+                        <ul class="footer-list">
+                            <li><a href="#contacto">Formulario de Contacto</a></li>
+                            <li><a href="#">Distribuidores</a></li>
+                            <li><a href="#">Soporte Técnico</a></li>
+                            <li><a href="#">Consultas Comerciales</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
+
+            <!-- Mobile Footer -->
+            <div class="footer-mobile">
+                <!-- Brand Section -->
+                <div class="footer-brand-mobile">
+                    <div class="footer-logo">
+                        <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="footer-logo-image">
+                    </div>
+                </div>
+
+                <!-- Collapsible Sections -->
+                <div class="footer-accordion">
+                    <div class="footer-accordion-item">
+                        <button class="footer-accordion-header">
+                            <span>Productos</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="footer-accordion-content">
+                            <ul class="footer-list">
+                                <li><a href="catalogo.html">Catálogo Completo</a></li>
+                                <li><a href="#">Estuco Premium</a></li>
+                                <li><a href="#">Basecoat Industrial</a></li>
+                                <li><a href="#">Acabados Especializados</a></li>
+                                <li><a href="#">Adhesivos de Alta Resistencia</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="footer-accordion-item">
+                        <button class="footer-accordion-header">
+                            <span>Tecnología</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="footer-accordion-content">
+                            <ul class="footer-list">
+                                <li><a href="#">Laboratorio de Investigación</a></li>
+                                <li><a href="#">Procesos de Fabricación</a></li>
+                                <li><a href="#">Control de Calidad</a></li>
+                                <li><a href="#">Innovación Continua</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="footer-accordion-item">
+                        <button class="footer-accordion-header">
+                            <span>Empresa</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="footer-accordion-content">
+                            <ul class="footer-list">
+                                <li><a href="#">Nosotros</a></li>
+                                <li><a href="#">Historia</a></li>
+                                <li><a href="#">Misión y Visión</a></li>
+                                <li><a href="#">Certificaciones</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="footer-accordion-item">
+                        <button class="footer-accordion-header">
+                            <span>Contacto</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="footer-accordion-content">
+                            <ul class="footer-list">
+                                <li><a href="#contacto">Formulario de Contacto</a></li>
+                                <li><a href="#">Distribuidores</a></li>
+                                <li><a href="#">Soporte Técnico</a></li>
+                                <li><a href="#">Consultas Comerciales</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
             <div class="footer-bottom">
-                <p>&copy; 2024 S-35 Technology. Todos los derechos reservados.</p>
+                <div class="footer-bottom-content">
+                    <div class="footer-copyright">
+                        <p>&copy; 2024 S-35 Technology. Todos los derechos reservados.</p>
+                    </div>
+                    <div class="footer-legal">
+                        <a href="#">Términos de Servicio</a>
+                        <span class="divider">|</span>
+                        <a href="#">Política de Privacidad</a>
+                        <span class="divider">|</span>
+                        <a href="#">Cookies</a>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>
