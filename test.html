@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test S-35</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-image {
+            max-width: 200px;
+            height: auto;
+            margin: 10px;
+            border: 1px solid #ddd;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test de Despliegue S-35</h1>
+        
+        <div class="status success">
+            ✅ Página HTML cargada correctamente
+        </div>
+        
+        <div class="status success">
+            ✅ Estilos CSS aplicados
+        </div>
+        
+        <h2>Test de Imágenes:</h2>
+        
+        <div>
+            <h3>Imagen de Logo:</h3>
+            <img src="Assets/Logotipo Principal.png" alt="Logo S-35" class="test-image" onload="showSuccess('logo')" onerror="showError('logo')">
+            <div id="logo-status"></div>
+        </div>
+        
+        <div>
+            <h3>Imagen de Producto (Estuco):</h3>
+            <img src="Assets/productos_background/estuco-base.png" alt="Estuco Base" class="test-image" onload="showSuccess('estuco')" onerror="showError('estuco')">
+            <div id="estuco-status"></div>
+        </div>
+        
+        <div>
+            <h3>Imagen de Producto (Basecoat):</h3>
+            <img src="Assets/productos_background/basecoat-blanco.png" alt="Basecoat Blanco" class="test-image" onload="showSuccess('basecoat')" onerror="showError('basecoat')">
+            <div id="basecoat-status"></div>
+        </div>
+        
+        <div class="status success">
+            ✅ JavaScript funcionando
+        </div>
+        
+        <p><strong>Fecha de test:</strong> <span id="date"></span></p>
+        <p><strong>URL:</strong> <span id="url"></span></p>
+    </div>
+
+    <script>
+        function showSuccess(id) {
+            document.getElementById(id + '-status').innerHTML = '<div class="status success">✅ Imagen cargada correctamente</div>';
+        }
+        
+        function showError(id) {
+            document.getElementById(id + '-status').innerHTML = '<div class="status error">❌ Error cargando imagen</div>';
+        }
+        
+        document.getElementById('date').textContent = new Date().toLocaleString();
+        document.getElementById('url').textContent = window.location.href;
+    </script>
+</body>
+</html>
