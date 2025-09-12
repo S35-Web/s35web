@@ -1896,6 +1896,7 @@ body {
     .products-showcase {
         height: 100vh;
         min-height: 500px;
+        margin-bottom: 0;
     }
     
     .product-sample {
@@ -1935,6 +1936,7 @@ body {
     .products-showcase {
         height: 100vh;
         min-height: 400px;
+        margin-bottom: 0;
     }
     
     .product-sample {
