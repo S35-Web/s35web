@@ -1,16 +1,4 @@
 {
   "version": 2,
-  "name": "s35web",
-  "builds": [
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ]
+  "name": "s35web"
 }
