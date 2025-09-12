@@ -2222,7 +2222,11 @@ body {
 
 @media (max-width: 768px) {
     .quality-guarantees {
-        min-height: 80vh;
+        min-height: 100vh;
+    }
+    
+    .quality-guarantees .container {
+        padding: 0;
     }
     
     .quality-header {
@@ -2243,6 +2247,10 @@ body {
 }
 
 @media (max-width: 480px) {
+    .quality-guarantees .container {
+        padding: 0;
+    }
+    
     .quality-title {
         font-size: clamp(2rem, 8vw, 3rem);
     }
