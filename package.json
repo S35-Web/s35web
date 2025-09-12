@@ -1,13 +1,17 @@
 {
-  "name": "s35-technology-website",
+  "name": "s35web",
   "version": "1.0.0",
-  "description": "S-35 Technology website",
+  "description": "S-35 Technology website - Tecnología en construcción",
   "main": "index.html",
   "scripts": {
-    "build": "echo 'No build needed'",
-    "start": "echo 'Static site'"
+    "build": "echo 'Static site - no build required'",
+    "start": "echo 'Static site'",
+    "dev": "echo 'Static site'"
   },
-  "keywords": ["website", "construction", "technology"],
+  "keywords": ["website", "construction", "technology", "estuco", "construccion"],
   "author": "S-35 Technology",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
 }

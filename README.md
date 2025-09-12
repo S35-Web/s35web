@@ -1,6 +1,28 @@
-# S-35 Productos - Página Web
+# S-35 Technology - Sitio Web
 
-Una página web moderna y profesional para mostrar productos industriales S-35.
+Sitio web oficial de S-35 Technology - Tecnología en construcción.
+
+## 🚀 Despliegue en Vercel
+
+Este proyecto está configurado para desplegarse automáticamente en Vercel.
+
+### Configuración de Vercel
+- **Framework**: Static Site
+- **Build Command**: No requerido
+- **Output Directory**: `/` (raíz)
+- **Node Version**: 14.x o superior
+
+### Archivos principales
+- `index.html` - Página principal
+- `catalogo.html` - Catálogo de productos
+- `conoce-mas.html` - Página informativa
+- `styles.css` - Estilos principales
+- `script.js` - JavaScript principal
+
+### Assets
+- `Assets/` - Imágenes, videos y recursos
+- `Assets/productos_background/` - Imágenes de productos
+- `Assets/productos_background_optimized/` - Imágenes optimizadas
 
 ## 🚀 Características
 
