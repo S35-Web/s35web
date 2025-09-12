@@ -45,6 +45,11 @@ Assets/control_optimized.mp4
 # Keep smaller videos that fit in Vercel
 !Assets/landing.mp4
 
+# Create optimized versions for Vercel
+!Assets/agua_optimized.mp4
+!Assets/mezcla_optimized.mp4
+!Assets/control_optimized.mp4
+
 # Large product images (optimize these later)
 Productos 2025/*.jpg
 Assets/productos_imagenes/*.jpg
