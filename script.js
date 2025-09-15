@@ -854,34 +854,64 @@ document.addEventListener('DOMContentLoaded', function() {
     
     contactForms.forEach(contactForm => {
         if (contactForm) {
-            contactForm.addEventListener('submit', function(e) {
+            contactForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                       // Get form data
-                       const formData = new FormData(this);
-                       const nombre = formData.get('nombre');
-                       const email = formData.get('email');
-                       const empresa = formData.get('empresa');
-                       const mensaje = formData.get('mensaje');
-                       const newsletter = formData.get('newsletter');
-                       
-                       // Simple validation
-                       if (!nombre || !email || !mensaje) {
-                           alert('Por favor completa todos los campos obligatorios.');
-                           return;
-                       }
-                       
-                       // Prepare success message
-                       let successMessage = '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.';
-                       if (newsletter) {
-                           successMessage += ' También te has suscrito a nuestro newsletter.';
-                       }
-                       
-                       // Show success message
-                       alert(successMessage);
-                
-                // Reset form
-                this.reset();
+                const submitBtn = this.querySelector('.submit-btn');
+                const originalBtnText = submitBtn ? submitBtn.textContent : '';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Enviando...';
+                }
+
+                // Get form data
+                const formData = new FormData(this);
+                const payload = {
+                    nombre: formData.get('nombre') || formData.get('nombre-mobile') || '',
+                    email: formData.get('email') || formData.get('email-mobile') || '',
+                    empresa: formData.get('empresa') || formData.get('empresa-mobile') || '',
+                    mensaje: formData.get('mensaje') || formData.get('mensaje-mobile') || '',
+                    newsletter: !!formData.get('newsletter') || !!formData.get('newsletter-mobile'),
+                    website: formData.get('website') || '' // honeypot
+                };
+
+                // Simple validation
+                if (!payload.nombre || !payload.email || !payload.mensaje) {
+                    alert('Por favor completa todos los campos obligatorios.');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalBtnText;
+                    }
+                    return;
+                }
+
+                try {
+                    const resp = await fetch('/api/contact', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await resp.json();
+                    if (!resp.ok || !data.ok) {
+                        throw new Error(data.error || 'No se pudo enviar el mensaje');
+                    }
+
+                    let successMessage = '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.';
+                    if (payload.newsletter) {
+                        successMessage += ' También te has suscrito a nuestro newsletter.';
+                    }
+                    alert(successMessage);
+                    this.reset();
+                } catch (error) {
+                    console.error('Error enviando mensaje:', error);
+                    alert('Ocurrió un error al enviar tu mensaje. Inténtalo de nuevo más tarde.');
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalBtnText;
+                    }
+                }
             });
         }
     });

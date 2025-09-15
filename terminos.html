@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Ajuste específico de la portada en Términos */
+        .terms-hero {
+            min-height: 100vh;
+        }
         .terms-hero .article-background img.terms-hero-image {
             position: absolute;
             top: 0;
@@ -20,11 +23,74 @@
         }
         .terms-hero .article-overlay { z-index: 2; }
         .terms-hero .article-hero-content { z-index: 3; }
-        /* Móvil: pantalla completa */
-        @media (max-width: 768px) {
-            .terms-hero { min-height: 100vh; }
+        /* Sin borde aquí; lo movemos a .article-meta para controlar el espaciado */
+        .terms-hero { border-bottom: none; }
+        /* Desktop/Móvil: ya usamos 100vh arriba */
+
+        /* Orden y espaciado para evitar encimado */
+        .terms-hero .article-hero-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: var(--space-lg);
+            padding: calc(60px + var(--space-xl)) var(--space-lg) var(--space-3xl);
+            position: relative;
+            min-height: 100vh;
         }
-        /* Desktop: banner/recibidor (ya es 60vh por defecto) */
+        .terms-hero .article-breadcrumb {
+            margin-bottom: var(--space-sm);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            opacity: 0.9;
+            position: absolute;
+            top: calc(60px + 12px);
+            left: var(--space-lg);
+            transform: none;
+            width: calc(100% - (var(--space-lg) * 2));
+            justify-content: flex-start;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .terms-hero .article-title { 
+            margin-bottom: var(--space-xl);
+            text-align: center;
+        }
+        .terms-hero .article-title .title-small {
+            display: inline-block;
+            font-size: 0.84rem;
+            text-transform: none;
+            letter-spacing: 0.1em;
+            font-weight: 300;
+            color: var(--primary-black);
+            opacity: 0.9;
+        }
+        .terms-hero .scroll-indicator {
+            position: absolute; 
+            bottom: calc(10vh + var(--space-xl)); 
+            left: 50%; 
+            transform: translateX(-50%);
+        }
+
+        /* Animación de flotación para la flecha */
+        @keyframes floatY {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, -8px); }
+        }
+        .terms-hero .scroll-indicator i {
+            display: inline-block;
+            animation: floatY 1.8s ease-in-out infinite;
+        }
+
+        /* Línea superior con el mismo espaciado que abajo (usar space-md) */
+        .article-meta { 
+            border-top: 1px solid var(--gray-200);
+            padding-top: var(--space-md);
+        }
     </style>
 </head>
 <body>
@@ -60,7 +126,7 @@
             </div>
             <h1 class="article-title">
                 <span class="title-line">Términos de Servicio</span>
-                <span class="title-line">S-35 Tecnología</span>
+                <span class="title-line title-small">S-35® Tech.</span>
             </h1>
             <div class="scroll-indicator" style="color: var(--primary-black);">
                 <i class="fas fa-arrow-down"></i>
@@ -84,7 +150,7 @@
 
             <div class="article-body">
                 <div class="article-intro">
-                    <p class="lead">Estos términos rigen el acceso y uso del sitio web de S-35® Tecnología en Construcción ("S-35"), empresa mexicana con proyección internacional dedicada a la formulación, fabricación y desarrollo de materiales y tecnologías aplicables a la construcción y a otras industrias relacionadas.</p>
+                    <p class="lead">El uso de este sitio y sus servicios se sujeta a las presentes condiciones. S-35® Tecnología en Construcción ("S-35") es una empresa mexicana con alcance internacional enfocada en el diseño, formulación y fabricación de materiales y soluciones tecnológicas para la construcción y sectores relacionados.</p>
                 </div>
 
                 <div class="article-section">

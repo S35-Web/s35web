@@ -7,6 +7,81 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Ajustes específicos de la portada en Cookies */
+        .cookies-hero { min-height: 100vh; }
+        .cookies-hero .article-background img.cookies-hero-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        .cookies-hero .article-overlay { z-index: 2; }
+        .cookies-hero .article-hero-content { z-index: 3; }
+        .cookies-hero .article-hero-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: var(--space-lg);
+            padding: calc(60px + var(--space-xl)) var(--space-lg) var(--space-3xl);
+            position: relative;
+            min-height: 100vh;
+        }
+        .cookies-hero .article-breadcrumb {
+            margin-bottom: var(--space-sm);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            opacity: 0.9;
+            position: absolute;
+            top: calc(60px + 12px);
+            left: var(--space-lg);
+            transform: none;
+            width: calc(100% - (var(--space-lg) * 2));
+            justify-content: flex-start;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .cookies-hero .article-title { 
+            margin-bottom: var(--space-xl);
+            text-align: center;
+        }
+        .cookies-hero .article-title .title-small {
+            display: inline-block;
+            font-size: 0.84rem;
+            text-transform: none;
+            letter-spacing: 0.1em;
+            font-weight: 300;
+            color: var(--primary-black);
+            opacity: 0.9;
+        }
+        .cookies-hero .scroll-indicator {
+            position: absolute; 
+            bottom: calc(10vh + var(--space-xl)); 
+            left: 50%; 
+            transform: translateX(-50%);
+        }
+        @keyframes floatY {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, -8px); }
+        }
+        .cookies-hero .scroll-indicator i {
+            display: inline-block;
+            animation: floatY 1.8s ease-in-out infinite;
+        }
+        /* Línea superior con mismo espaciado que abajo */
+        .article-meta { 
+            border-top: 1px solid var(--gray-200);
+            padding-top: var(--space-md);
+        }
+    </style>
 </head>
 <body>
     <nav class="nav">
@@ -28,8 +103,10 @@
         <div class="pixel-tracker" id="pixelTracker"></div>
     </nav>
 
-    <section class="article-hero">
-        <div class="article-background"></div>
+    <section class="article-hero cookies-hero">
+        <div class="article-background">
+            <img src="Assets/terminos.jpg" alt="Portada Aviso de Cookies S-35" class="cookies-hero-image" loading="eager">
+        </div>
         <div class="article-overlay"></div>
         <div class="article-hero-content">
             <div class="article-breadcrumb">
@@ -39,8 +116,12 @@
             </div>
             <h1 class="article-title">
                 <span class="title-line">Aviso de Cookies</span>
-                <span class="title-line">S-35 Tecnología</span>
+                <span class="title-line title-small">S-35® Tech.</span>
             </h1>
+            <div class="scroll-indicator" style="color: var(--primary-black);">
+                <i class="fas fa-arrow-down"></i>
+                <span>Desliza para leer</span>
+            </div>
         </div>
     </section>
 
