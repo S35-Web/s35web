@@ -7,6 +7,25 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Ajuste específico de la portada en Términos */
+        .terms-hero .article-background img.terms-hero-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        .terms-hero .article-overlay { z-index: 2; }
+        .terms-hero .article-hero-content { z-index: 3; }
+        /* Móvil: pantalla completa */
+        @media (max-width: 768px) {
+            .terms-hero { min-height: 100vh; }
+        }
+        /* Desktop: banner/recibidor (ya es 60vh por defecto) */
+    </style>
 </head>
 <body>
     <nav class="nav">
@@ -28,8 +47,10 @@
         <div class="pixel-tracker" id="pixelTracker"></div>
     </nav>
 
-    <section class="article-hero">
-        <div class="article-background"></div>
+    <section class="article-hero terms-hero">
+        <div class="article-background">
+            <img src="Assets/terminos.jpg" alt="Portada Términos S-35" class="terms-hero-image" loading="eager">
+        </div>
         <div class="article-overlay"></div>
         <div class="article-hero-content">
             <div class="article-breadcrumb">
@@ -41,6 +62,10 @@
                 <span class="title-line">Términos de Servicio</span>
                 <span class="title-line">S-35 Tecnología</span>
             </h1>
+            <div class="scroll-indicator" style="color: var(--primary-black);">
+                <i class="fas fa-arrow-down"></i>
+                <span>Desliza para leer</span>
+            </div>
         </div>
     </section>
 
