@@ -1,11 +1,10 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/contact.js",
-      "use": "@vercel/node@3.0.7"
+  "functions": {
+    "api/contact.js": {
+      "runtime": "nodejs18.x"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|mp4|avif|glb|obj|woff|woff2|ttf|eot))",
