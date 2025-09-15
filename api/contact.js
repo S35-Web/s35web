@@ -44,7 +44,16 @@ module.exports = async (req, res) => {
     const from = process.env.MAIL_FROM;
 
     if (!to || !from) {
-      return res.status(500).json({ ok: false, error: 'Config de correo incompleta' });
+      console.log('Missing environment variables:', { to: !!to, from: !!from, resendKey: !!process.env.RESEND_API_KEY });
+      return res.status(500).json({ 
+        ok: false, 
+        error: 'Config de correo incompleta',
+        debug: {
+          hasTo: !!to,
+          hasFrom: !!from,
+          hasResendKey: !!process.env.RESEND_API_KEY
+        }
+      });
     }
 
     const subject = `Nuevo mensaje de contacto: ${nombre}`;
@@ -60,6 +69,8 @@ module.exports = async (req, res) => {
       </div>
     `;
 
+    console.log('Sending email:', { from, to, subject });
+    
     const result = await resend.emails.send({
       from,
       to,
@@ -67,10 +78,14 @@ module.exports = async (req, res) => {
       html
     });
 
+    console.log('Resend result:', result);
+
     if (result && result.error) {
+      console.error('Resend error:', result.error);
       return res.status(500).json({ ok: false, error: result.error.message || 'Error al enviar' });
     }
 
+    console.log('Email sent successfully');
     return res.status(200).json({ ok: true });
   } catch (err) {
     return res.status(500).json({ ok: false, error: err.message || 'Error inesperado' });
