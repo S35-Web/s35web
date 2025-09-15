@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-35 | Tecnología en Construcción</title>
+    <!-- Updated: Removed period from hero title -->
+    <!-- Version v1.1.3 - Force cache bust -->
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image">
+            </div>
+            <div class="nav-menu">
+                <div class="nav-dropdown">
+                    <a href="#" class="nav-link">Login <i class="fas fa-chevron-down"></i></a>
+                </div>
+                <a href="#noticias" class="nav-link">Noticias</a>
+                <a href="#contacto" class="nav-link contact-btn">Contacto</a>
+            </div>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        <!-- Pixel rastreador invisible para detectar color de fondo -->
+        <div class="pixel-tracker" id="pixelTracker"></div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero">
+        <div class="hero-background">
+            <video class="hero-video" autoplay muted loop playsinline>
+                <source src="Assets/landing.mp4" type="video/mp4">
+                Tu navegador no soporta videos HTML5.
+            </video>
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    <span class="title-line">Tecnología</span>
+                    <span class="title-line">en materiales.</span>
+                </h1>
+                <p class="hero-subtitle">
+                    ECOLOGÍA, INNOVACIÓN, HUMANIDAD.
+                </p>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="scroll-chevron">
+            </div>
+            <span>DESCUBRE NUESTRAS FÓRMULAS</span>
+        </div>
+    </section>
+
+    <!-- Vision Section -->
+    <section class="vision">
+        <div class="vision-background">
+            <div class="vision-pattern">
+                <img src="Assets/polvo.avif" alt="Patrón de polvo" class="polvo-image">
+            </div>
+        </div>
+        <div class="vision-content">
+            <div class="vision-text">
+                <div class="vision-line"></div>
+                <h2 class="vision-header">NUESTRA VISIÓN</h2>
+                <h1 class="vision-title">
+                    Crear fórmulas que inspiren, apoyen y fortalezcan a la industria de la construcción.
+                </h1>
+                <p class="vision-description">
+                    Formulamos una amplia gama de productos utilizando agregados de la más alta calidad, integrados con nuestra tecnología en adhesivos, hidrofugantes y aditivos de vanguardia, con <strong>el objetivo de desarrollar fórmulas únicas y sobresalientes en su desempeño.</strong>
+                </p>
+                <p class="vision-commitment">
+                    Reafirmando nuestro compromiso de ofrecer soluciones innovadoras y de calidad superior 
+                    en el sector de la construcción.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3D Interactive Block Section -->
+    <section class="interactive-3d-section">
+        <div class="container">
+            <div class="interactive-header">
+                <h2 class="interactive-section-title">NUESTRAS FÓRMULAS</h2>
+                <h1 class="interactive-main-title">Procesos tradicionales, formulados en laboratorio.</h1>
+            </div>
+            <div class="cards-container" id="cardsContainer">
+                <div class="cards-stack" id="cardsStack">
+                    <!-- Primera serie de cards -->
+                    <div class="card-item" data-card="1" data-title="Estuco Premium" data-description="Fórmula avanzada para acabados de alta calidad con durabilidad excepcional y acabado profesional.">
+                        <img src="Assets/card.png" alt="Estuco Premium" />
+                    </div>
+                    <div class="card-item" data-card="2" data-title="Basecoat Industrial" data-description="Base de aplicación para sistemas de revestimiento con excelente adherencia y resistencia.">
+                        <img src="Assets/card2.png" alt="Basecoat Industrial" />
+                    </div>
+                    <div class="card-item" data-card="3" data-title="Acabado Texturizado" data-description="Acabados especiales con texturas únicas para proyectos arquitectónicos de vanguardia.">
+                        <img src="Assets/card3.png" alt="Acabado Texturizado" />
+                    </div>
+                    <div class="card-item" data-card="4" data-title="Sistema Completo" data-description="Solución integral que combina base, estuco y acabado para resultados profesionales.">
+                        <img src="Assets/card4.png" alt="Sistema Completo" />
+                    </div>
+                    <div class="card-item" data-card="5" data-title="Fórmula Especializada" data-description="Desarrollos personalizados para necesidades específicas de construcción industrial.">
+                        <img src="Assets/card5.png" alt="Fórmula Especializada" />
+                    </div>
+                    
+                    <!-- Segunda serie de cards -->
+                    <div class="card-item" data-card="1" data-title="Estuco Premium" data-description="Fórmula avanzada para acabados de alta calidad con durabilidad excepcional y acabado profesional.">
+                        <img src="Assets/card.png" alt="Estuco Premium" />
+                    </div>
+                    <div class="card-item" data-card="2" data-title="Basecoat Industrial" data-description="Base de aplicación para sistemas de revestimiento con excelente adherencia y resistencia.">
+                        <img src="Assets/card2.png" alt="Basecoat Industrial" />
+                    </div>
+                    <div class="card-item" data-card="3" data-title="Acabado Texturizado" data-description="Acabados especiales con texturas únicas para proyectos arquitectónicos de vanguardia.">
+                        <img src="Assets/card3.png" alt="Acabado Texturizado" />
+                    </div>
+                    <div class="card-item" data-card="4" data-title="Sistema Completo" data-description="Solución integral que combina base, estuco y acabado para resultados profesionales.">
+                        <img src="Assets/card4.png" alt="Sistema Completo" />
+                    </div>
+                    <div class="card-item" data-card="5" data-title="Fórmula Especializada" data-description="Desarrollos personalizados para necesidades específicas de construcción industrial.">
+                        <img src="Assets/card5.png" alt="Fórmula Especializada" />
+                    </div>
+                    
+                    <!-- Tercera serie de cards -->
+                    <div class="card-item" data-card="1" data-title="Estuco Premium" data-description="Fórmula avanzada para acabados de alta calidad con durabilidad excepcional y acabado profesional.">
+                        <img src="Assets/card.png" alt="Estuco Premium" />
+                    </div>
+                    <div class="card-item" data-card="2" data-title="Basecoat Industrial" data-description="Base de aplicación para sistemas de revestimiento con excelente adherencia y resistencia.">
+                        <img src="Assets/card2.png" alt="Basecoat Industrial" />
+                    </div>
+                    <div class="card-item" data-card="3" data-title="Acabado Texturizado" data-description="Acabados especiales con texturas únicas para proyectos arquitectónicos de vanguardia.">
+                        <img src="Assets/card3.png" alt="Acabado Texturizado" />
+                    </div>
+                    <div class="card-item" data-card="4" data-title="Sistema Completo" data-description="Solución integral que combina base, estuco y acabado para resultados profesionales.">
+                        <img src="Assets/card4.png" alt="Sistema Completo" />
+                    </div>
+                    <div class="card-item" data-card="5" data-title="Fórmula Especializada" data-description="Desarrollos personalizados para necesidades específicas de construcción industrial.">
+                        <img src="Assets/card5.png" alt="Fórmula Especializada" />
+                    </div>
+                    
+                    <!-- Cuarta serie de cards -->
+                    <div class="card-item" data-card="1" data-title="Estuco Premium" data-description="Fórmula avanzada para acabados de alta calidad con durabilidad excepcional y acabado profesional.">
+                        <img src="Assets/card.png" alt="Estuco Premium" />
+                    </div>
+                    <div class="card-item" data-card="2" data-title="Basecoat Industrial" data-description="Base de aplicación para sistemas de revestimiento con excelente adherencia y resistencia.">
+                        <img src="Assets/card2.png" alt="Basecoat Industrial" />
+                    </div>
+                    <div class="card-item" data-card="3" data-title="Acabado Texturizado" data-description="Acabados especiales con texturas únicas para proyectos arquitectónicos de vanguardia.">
+                        <img src="Assets/card3.png" alt="Acabado Texturizado" />
+                    </div>
+                    <div class="card-item" data-card="4" data-title="Sistema Completo" data-description="Solución integral que combina base, estuco y acabado para resultados profesionales.">
+                        <img src="Assets/card4.png" alt="Sistema Completo" />
+                    </div>
+                    <div class="card-item" data-card="5" data-title="Fórmula Especializada" data-description="Desarrollos personalizados para necesidades específicas de construcción industrial.">
+                        <img src="Assets/card5.png" alt="Fórmula Especializada" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Water Section -->
+    <section class="water-section">
+        <div class="water-background">
+            <video class="water-video" autoplay muted loop playsinline>
+                <source src="Assets/agua_optimized.mp4" type="video/mp4">
+                <source src="Assets/landing.mp4" type="video/mp4">
+                Tu navegador no soporta videos HTML5.
+            </video>
+            <div class="water-overlay"></div>
+        </div>
+        <div class="water-content">
+            <div class="water-text">
+                <h2 class="water-title">TODOS NUESTROS PRODUCTOS SON FORMULADOS EN SECO, SOLO AGREGUE AGUA Y LISTO.</h2>
+                <div class="water-stats">
+                    <div class="water-stat">
+                        <span class="stat-number">H2O</span>
+                        <span class="stat-label">Solo agregue agua</span>
+                    </div>
+                    <div class="water-stat">
+                        <span class="stat-number">98%</span>
+                        <span class="stat-label">Fórmulas más certeras</span>
+                    </div>
+                </div>
+                <p class="water-description">
+                    La fórmulas pre-mezcladas en seco, al ser cuidadosamente elaboradas en condiciones controladas de laboratorio, aseguran una consistencia del 98% en comparación con las mezclas realizadas en obra.
+                </p>
+                <a href="conoce-mas.html" class="water-cta">
+                    <span>CONOCE MÁS</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="process-section">
+        <div class="process-background">
+            <video class="process-video" autoplay muted loop playsinline>
+                <source src="Assets/mezcla_optimized.mp4" type="video/mp4">
+                <source src="Assets/landing.mp4" type="video/mp4">
+                Tu navegador no soporta videos HTML5.
+            </video>
+            <div class="process-overlay"></div>
+        </div>
+        <div class="process-content">
+            <div class="process-text">
+                <h2 class="process-title">PROCESO DE MEZCLA</h2>
+                <h1 class="process-main-title">
+                    Precisión molecular en cada formulación
+                </h1>
+                <p class="process-description">
+                    Nuestro proceso de mezcla controlado garantiza la consistencia perfecta 
+                    en cada lote, utilizando tecnología de vanguardia para lograr 
+                    formulaciones de precisión industrial.
+                </p>
+                <div class="process-stats">
+                    <div class="process-stat">
+                        <span class="stat-number">99.8%</span>
+                        <span class="stat-label">Precisión molecular</span>
+            </div>
+                    <div class="process-stat">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">Control de calidad</span>
+                    </div>
+                </div>
+                <div class="process-features">
+                    <div class="process-feature">
+                        <div class="feature-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 12l2 2 4-4"/>
+                                <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
+                                <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
+                                <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"/>
+                                <path d="M12 21c0-1 1-3 3-3s3 2 3 3-1 3-3 3-3-2-3-3"/>
+                            </svg>
+                        </div>
+                        <div class="feature-content">
+                            <h3>Análisis Microscópico</h3>
+                            <p>Verificación molecular de cada componente</p>
+                        </div>
+                    </div>
+                    <div class="process-feature">
+                        <div class="feature-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                <line x1="8" y1="21" x2="16" y2="21"/>
+                                <line x1="12" y1="17" x2="12" y2="21"/>
+                                <circle cx="6" cy="8" r="1"/>
+                                <circle cx="10" cy="8" r="1"/>
+                                <circle cx="14" cy="8" r="1"/>
+                                <circle cx="18" cy="8" r="1"/>
+                                <path d="M6 12h2"/>
+                                <path d="M10 12h2"/>
+                                <path d="M14 12h2"/>
+                                <path d="M18 12h2"/>
+                                <path d="M6 16h2"/>
+                                <path d="M10 16h2"/>
+                                <path d="M14 16h2"/>
+                                <path d="M18 16h2"/>
+                            </svg>
+                        </div>
+                        <div class="feature-content">
+                            <h3>Automatización Industrial</h3>
+                            <p>Procesos controlados por sistemas avanzados</p>
+                        </div>
+                    </div>
+                    <div class="process-feature">
+                        <div class="feature-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <div class="feature-content">
+                            <h3>Formulación Química</h3>
+                            <p>Desarrollo de compuestos de alta precisión</p>
+                </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-background">
+            <video class="stats-video" autoplay muted loop playsinline>
+                <source src="Assets/mezcla_optimized.mp4" type="video/mp4">
+                <source src="Assets/landing.mp4" type="video/mp4">
+                Tu navegador no soporta videos HTML5.
+            </video>
+            <div class="stats-overlay"></div>
+        </div>
+        <div class="stats-content">
+            <div class="stats-text">
+                <h2 class="stats-subtitle">INVESTIGACIÓN</h2>
+                <h1 class="stats-title">INNOVACIÓN <span class="ampersand">&</span> CONSTRUCCIÓN</h1>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number" data-target="18">
+                            <span class="number">0</span>
+                        </span>
+                        <div class="stat-divider"></div>
+                        <span class="stat-label">Productos comerciales</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-target="60" data-prefix="+">
+                            <span class="prefix">+</span><span class="number">0</span>
+                        </span>
+                        <div class="stat-divider"></div>
+                        <span class="stat-label">Fórmulas creadas</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-target="24.1" data-dynamic="years">
+                            <span class="number">0</span>
+                        </span>
+                        <div class="stat-divider"></div>
+                        <span class="stat-label">Años de trayectoria</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-target="50" data-prefix="+">
+                            <span class="prefix">+</span><span class="number">0</span>
+                        </span>
+                        <div class="stat-divider"></div>
+                        <span class="stat-label">Distribuidores</span>
+                    </div>
+                </div>
+                <p class="stats-description">
+                    A través de los años hemos diseñado 18 productos de línea, disponibles en todo momento y más de 60 fórmulas disponibles sobre pedido.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="productos" class="products-showcase white-bg-section">
+        <!-- Infinite Slider Background -->
+        <div class="products-slider">
+            <div class="slider-track">
+                <!-- Row 1 -->
+                <div class="product-sample" style="transform: rotate(-15deg) translateY(-100px);">
+                    <img src="Assets/card.png" alt="Estuco Base Pro+" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(8deg) translateY(-80px);">
+                    <img src="Assets/card2.png" alt="Basecoat Blanco" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-5deg) translateY(-120px);">
+                    <img src="Assets/card3.png" alt="Waxtard Blanco" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(12deg) translateY(-90px);">
+                    <img src="Assets/card4.png" alt="Ultraforce" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-8deg) translateY(-110px);">
+                    <img src="Assets/card5.png" alt="Cellbond" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(6deg) translateY(-85px);">
+                    <img src="Assets/card.png" alt="Styrobond" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-10deg) translateY(-95px);">
+                    <img src="Assets/card2.png" alt="Mixandready" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(4deg) translateY(-105px);">
+                    <img src="Assets/card3.png" alt="Porcelánico Universal" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-12deg) translateY(-75px);">
+                    <img src="Assets/card4.png" alt="Cemento Plástico" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(7deg) translateY(-115px);">
+                    <img src="Assets/card5.png" alt="Piso Sobre Piso" loading="lazy" />
+                </div>
+                
+                <!-- Row 2 -->
+                <div class="product-sample" style="transform: rotate(-6deg) translateY(20px);">
+                    <img src="Assets/card.png" alt="Pastablock" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(9deg) translateY(10px);">
+                    <img src="Assets/card2.png" alt="Cerámico" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-4deg) translateY(30px);">
+                    <img src="Assets/card3.png" alt="Basecoat Gris" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(11deg) translateY(5px);">
+                    <img src="Assets/card3.png" alt="Basecoat Gris" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-7deg) translateY(25px);">
+                    <img src="Assets/card4.png" alt="Waxtard Gris" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(5deg) translateY(15px);">
+                    <img src="Assets/card4.png" alt="Cemento Plástico" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-13deg) translateY(35px);">
+                    <img src="Assets/card.png" alt="Estuco Base Pro+" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(3deg) translateY(0px);">
+                    <img src="Assets/card2.png" alt="Basecoat Blanco" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-9deg) translateY(40px);">
+                    <img src="Assets/card3.png" alt="Waxtard Blanco" loading="lazy" />
+                </div>
+                <div class="product-sample" style="transform: rotate(14deg) translateY(-5px);">
+                    <img src="Assets/card4.png" alt="Ultraforce" loading="lazy" />
+                </div>
+                
+                <!-- Row 3 -->
+                <div class="product-sample" style="transform: rotate(-2deg) translateY(120px);">
+                    <img src="Assets/card5.png" alt="Cellbond" />
+                </div>
+                <div class="product-sample" style="transform: rotate(10deg) translateY(110px);">
+                    <img src="Assets/card.png" alt="Styrobond" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-11deg) translateY(125px);">
+                    <img src="Assets/card2.png" alt="Mixandready" />
+                </div>
+                <div class="product-sample" style="transform: rotate(1deg) translateY(105px);">
+                    <img src="Assets/card3.png" alt="Porcelánico Universal" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-14deg) translateY(115px);">
+                    <img src="Assets/card4.png" alt="Cemento Plástico" />
+                </div>
+                <div class="product-sample" style="transform: rotate(6deg) translateY(100px);">
+                    <img src="Assets/card5.png" alt="Piso Sobre Piso" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-3deg) translateY(130px);">
+                    <img src="Assets/card.png" alt="Pastablock" />
+                </div>
+                <div class="product-sample" style="transform: rotate(13deg) translateY(95px);">
+                    <img src="Assets/card2.png" alt="Cerámico" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-8deg) translateY(135px);">
+                    <img src="Assets/card3.png" alt="Basecoat Gris" />
+                </div>
+                <div class="product-sample" style="transform: rotate(2deg) translateY(90px);">
+                    <img src="Assets/card3.png" alt="Basecoat Gris" />
+                </div>
+                
+                <!-- Duplicate set for seamless loop -->
+                <div class="product-sample" style="transform: rotate(-15deg) translateY(-100px);">
+                    <img src="Assets/estuco-base.png" alt="Estuco Base Pro+" />
+                </div>
+                <div class="product-sample" style="transform: rotate(8deg) translateY(-80px);">
+                    <img src="Assets/card2.png" alt="Basecoat Blanco" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-5deg) translateY(-120px);">
+                    <img src="Assets/card3.png" alt="Waxtard Blanco" />
+                </div>
+                <div class="product-sample" style="transform: rotate(12deg) translateY(-90px);">
+                    <img src="Assets/card4.png" alt="Ultraforce" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-8deg) translateY(-110px);">
+                    <img src="Assets/card5.png" alt="Cellbond" />
+                </div>
+                <div class="product-sample" style="transform: rotate(6deg) translateY(-85px);">
+                    <img src="Assets/card.png" alt="Styrobond" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-10deg) translateY(-95px);">
+                    <img src="Assets/card2.png" alt="Mixandready" />
+                </div>
+                <div class="product-sample" style="transform: rotate(4deg) translateY(-105px);">
+                    <img src="Assets/card3.png" alt="Porcelánico Universal" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-12deg) translateY(-75px);">
+                    <img src="Assets/card4.png" alt="Cemento Plástico" />
+                </div>
+                <div class="product-sample" style="transform: rotate(7deg) translateY(-115px);">
+                    <img src="Assets/card5.png" alt="Piso Sobre Piso" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-6deg) translateY(20px);">
+                    <img src="Assets/card.png" alt="Pastablock" />
+                </div>
+                <div class="product-sample" style="transform: rotate(9deg) translateY(10px);">
+                    <img src="Assets/card2.png" alt="Cerámico" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-4deg) translateY(30px);">
+                    <img src="Assets/card3.png" alt="Basecoat Gris" />
+                </div>
+                <div class="product-sample" style="transform: rotate(11deg) translateY(5px);">
+                    <img src="Assets/card3.png" alt="Basecoat Gris" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-7deg) translateY(25px);">
+                    <img src="Assets/card4.png" alt="Waxtard Gris" />
+                </div>
+                <div class="product-sample" style="transform: rotate(5deg) translateY(15px);">
+                    <img src="Assets/card4.png" alt="Cemento Plástico" />
+                </div>
+                
+                <!-- Second duplicate set for better coverage -->
+                <div class="product-sample" style="transform: rotate(-13deg) translateY(-100px);">
+                    <img src="Assets/estuco-base.png" alt="Estuco Base Pro+" />
+                </div>
+                <div class="product-sample" style="transform: rotate(9deg) translateY(-80px);">
+                    <img src="Assets/card2.png" alt="Basecoat Blanco" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-7deg) translateY(-120px);">
+                    <img src="Assets/card3.png" alt="Waxtard Blanco" />
+                </div>
+                <div class="product-sample" style="transform: rotate(11deg) translateY(-90px);">
+                    <img src="Assets/card4.png" alt="Ultraforce" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-9deg) translateY(-110px);">
+                    <img src="Assets/card5.png" alt="Cellbond" />
+                </div>
+                <div class="product-sample" style="transform: rotate(7deg) translateY(-85px);">
+                    <img src="Assets/card.png" alt="Styrobond" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-11deg) translateY(-95px);">
+                    <img src="Assets/card2.png" alt="Mixandready" />
+                </div>
+                <div class="product-sample" style="transform: rotate(5deg) translateY(-105px);">
+                    <img src="Assets/card3.png" alt="Porcelánico Universal" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-14deg) translateY(-75px);">
+                    <img src="Assets/card4.png" alt="Cemento Plástico" />
+                </div>
+                <div class="product-sample" style="transform: rotate(8deg) translateY(-115px);">
+                    <img src="Assets/card5.png" alt="Piso Sobre Piso" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-5deg) translateY(20px);">
+                    <img src="Assets/card.png" alt="Pastablock" />
+                </div>
+                <div class="product-sample" style="transform: rotate(10deg) translateY(10px);">
+                    <img src="Assets/card2.png" alt="Cerámico" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-6deg) translateY(30px);">
+                    <img src="Assets/card3.png" alt="Basecoat Gris" />
+                </div>
+                <div class="product-sample" style="transform: rotate(12deg) translateY(5px);">
+                    <img src="Assets/card3.png" alt="Basecoat Gris" />
+                </div>
+                <div class="product-sample" style="transform: rotate(-8deg) translateY(25px);">
+                    <img src="Assets/card4.png" alt="Waxtard Gris" />
+                </div>
+                <div class="product-sample" style="transform: rotate(6deg) translateY(15px);">
+                    <img src="Assets/card4.png" alt="Cemento Plástico" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Front Content -->
+        <div class="products-content">
+            <!-- Background layer for flashlight effect -->
+            <div class="products-background"></div>
+        </div>
+        
+        <!-- Text layer - completely separate from flashlight effect -->
+        <div class="products-text-layer">
+            <div class="products-text">
+                <div class="products-counter">
+                    <span class="products-counter-number" data-target="18">
+                        <span class="number">0</span>
+                    </span>
+                    <span class="products-counter-label">Productos comerciales</span>
+                </div>
+                <h1 class="products-main-title">Gama Completa de Soluciones</h1>
+                <h2 class="products-tagline">Cada producto, una solución excepcional</h2>
+                <p class="products-main-description">
+                    Desde la preparación del sustrato hasta el acabado final, nuestra línea de productos cubre cada etapa del proceso constructivo con formulaciones de precisión que garantizan resultados superiores en cada proyecto.
+                </p>
+                <a href="catalogo.html" class="products-cta-btn">
+                    <span>EXPLORAR CATÁLOGO</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        
+    </section>
+
+    <!-- Quality Guarantees Section with Video Background -->
+    <section class="quality-guarantees">
+        <!-- Video Background -->
+        <div class="video-background">
+            <video autoplay muted loop playsinline preload="metadata">
+                <source src="Assets/control_optimized.mp4" type="video/mp4">
+                <source src="Assets/landing.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="container">
+            <div class="quality-content">
+                <div class="quality-header">
+                    <h2 class="quality-subtitle">CONTROL</h2>
+                    <h1 class="quality-title">GARANTÍAS<br>DE CALIDAD</h1>
+                </div>
+                
+                <div class="quality-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            <span class="counter" data-target="98" data-prefix="" data-suffix="%">0</span>
+                        </div>
+                        <div class="stat-label">Consistencia garantizada</div>
+                        <div class="stat-description">
+                            Se logra al solo agregar agua en vez de formular en obra, 
+                            garantizando resultados uniformes en cada aplicación.
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            <span class="counter" data-target="40" data-prefix="+" data-suffix="%">0</span>
+                        </div>
+                        <div class="stat-label">Eficiencia en tiempo</div>
+                        <div class="stat-description">
+                            Reducción significativa en el tiempo de preparación y aplicación, 
+                            optimizando los cronogramas de obra.
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            <span class="counter" data-target="60" data-prefix="-" data-suffix="%">0</span>
+                        </div>
+                        <div class="stat-label">Desperdicio de material</div>
+                        <div class="stat-description">
+                            Los productos pre-formulados tienen tiempos de vida útil extendidos 
+                            y mejor aprovechamiento del material.
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            <span class="counter" data-target="100" data-prefix="" data-suffix="%">0</span>
+                        </div>
+                        <div class="stat-label">Control de calidad</div>
+                        <div class="stat-description">
+                            Cada lote pasa por rigurosas pruebas de laboratorio antes 
+                            de salir a producción.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contacto" class="contact-section">
+        <div class="contact-container">
+            <div class="contact-content">
+                <!-- Left Panel - Architectural Image -->
+                <div class="contact-left">
+                    <div class="contact-image">
+                        <img src="Assets/contact.jpg" alt="Architectural Background" />
+                        <div class="image-overlay">
+                            <div class="overlay-content">
+                                <h2>Diseña tu futuro,<br>una fórmula a la vez.</h2>
+                                <h3>Únete a una comunidad de constructores que moldean el mañana.</h3>
+                                <p>S-35® Tu aliado en la excelencia constructiva.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Panel - Contact Form -->
+                <div class="contact-right">
+                    <div class="contact-form-container">
+                        <div class="form-header">
+                            <h1>Envíanos un mensaje</h1>
+                            <p>Conecta con nuestro equipo y descubre cómo podemos transformar tu próximo proyecto constructivo.</p>
+                        </div>
+                        
+                        <form class="contact-form">
+                            <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute; left:-9999px; opacity:0; height:0; width:0;" aria-hidden="true">
+                            <div class="form-group">
+                                <label for="nombre">Nombre completo *</label>
+                                <input type="text" id="nombre" name="nombre" placeholder="e.g. Juan Pérez" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Dirección de email *</label>
+                                <input type="email" id="email" name="email" placeholder="e.g. juan@empresa.com" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="empresa">Empresa</label>
+                                <input type="text" id="empresa" name="empresa" placeholder="e.g. Constructora ABC">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="mensaje">Mensaje *</label>
+                                <textarea id="mensaje" name="mensaje" placeholder="Cuéntanos sobre tu proyecto..." rows="4" required></textarea>
+                            </div>
+                            
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="newsletter" name="newsletter" class="checkbox-input">
+                                    <span class="checkbox-custom"></span>
+                                    <span class="checkbox-text">Conecta con nuestro equipo y descubre cómo podemos transformar tu próximo proyecto constructivo. Suscríbete a nuestro newsletter y mantente informado de nuestros avances.</span>
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="submit-btn">
+                                Enviar mensaje
+                            </button>
+                            
+                            <div class="form-footer">
+                                <p class="terms">Un asesor especializado estará contigo para dar seguimiento a tu consulta y brindarte la mejor solución y/o asesoría constructiva.</p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Layout -->
+            <div class="contact-mobile">
+                <!-- Mobile Image -->
+                <div class="contact-mobile-image">
+                    <img src="Assets/contact.jpg" alt="Architectural Background" />
+                </div>
+                
+                <!-- Mobile Text Section -->
+                <div class="contact-mobile-text">
+                    <h2>Diseña tu futuro,<br>una fórmula a la vez.</h2>
+                    <h3>Únete a una comunidad de constructores que moldean el mañana.</h3>
+                    <p>S-35® Tu aliado en la excelencia constructiva.</p>
+                </div>
+                
+                <!-- Mobile Divider -->
+                <div class="contact-mobile-divider"></div>
+                
+                <!-- Mobile Form -->
+                <div class="contact-mobile-form">
+                    <div class="form-header">
+                        <h1>Envíanos un mensaje</h1>
+                        <p>Conecta con nuestro equipo y descubre cómo podemos transformar tu próximo proyecto constructivo.</p>
+                    </div>
+                    
+                    <form class="contact-form">
+                        <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute; left:-9999px; opacity:0; height:0; width:0;" aria-hidden="true">
+                        <div class="form-group">
+                            <label for="nombre-mobile">Nombre completo *</label>
+                            <input type="text" id="nombre-mobile" name="nombre" placeholder="e.g. Juan Pérez" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email-mobile">Dirección de email *</label>
+                            <input type="email" id="email-mobile" name="email" placeholder="e.g. juan@empresa.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="empresa-mobile">Empresa</label>
+                            <input type="text" id="empresa-mobile" name="empresa" placeholder="e.g. Constructora ABC">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mensaje-mobile">Mensaje *</label>
+                            <textarea id="mensaje-mobile" name="mensaje" placeholder="Cuéntanos sobre tu proyecto..." rows="4" required></textarea>
+                        </div>
+                        
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="newsletter-mobile" name="newsletter" class="checkbox-input">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">Conecta con nuestro equipo y descubre cómo podemos transformar tu próximo proyecto constructivo. Suscríbete a nuestro newsletter y mantente informado de nuestros avances.</span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">
+                            Enviar mensaje
+                        </button>
+                        
+                        <div class="form-footer">
+                            <p class="terms">Un asesor especializado estará contigo para dar seguimiento a tu consulta y brindarte la mejor solución y/o asesoría constructiva.</p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Spacer for desktop -->
+    <div class="footer-spacer"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Main Footer Content -->
+            <div class="footer-main">
+                <!-- Brand Section -->
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="footer-logo-image">
+                    </div>
+                    <p class="footer-tagline">Tecnología en construcción para el futuro</p>
+                </div>
+
+                <!-- Links Grid -->
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4 class="footer-title">Productos</h4>
+                        <ul class="footer-list">
+                            <li><a href="catalogo.html">Catálogo Completo</a></li>
+                            <li><a href="#">Estuco Premium</a></li>
+                            <li><a href="#">Basecoat Industrial</a></li>
+                            <li><a href="#">Acabados Especializados</a></li>
+                            <li><a href="#">Adhesivos de Alta Resistencia</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-title">Tecnología</h4>
+                        <ul class="footer-list">
+                            <li><a href="#">Laboratorio de Investigación</a></li>
+                            <li><a href="#">Procesos de Fabricación</a></li>
+                            <li><a href="#">Control de Calidad</a></li>
+                            <li><a href="#">Innovación Continua</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-title">Empresa</h4>
+                        <ul class="footer-list">
+                            <li><a href="#">Nosotros</a></li>
+                            <li><a href="#">Historia</a></li>
+                            <li><a href="#">Misión y Visión</a></li>
+                            <li><a href="#">Certificaciones</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4 class="footer-title">Contacto</h4>
+                        <ul class="footer-list">
+                            <li><a href="#contacto">Formulario de Contacto</a></li>
+                            <li><a href="#">Distribuidores</a></li>
+                            <li><a href="#">Soporte Técnico</a></li>
+                            <li><a href="#">Consultas Comerciales</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Footer -->
+            <div class="footer-mobile">
+                <!-- Brand Section -->
+                <div class="footer-brand-mobile">
+                    <div class="footer-logo">
+                        <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="footer-logo-image">
+                    </div>
+                </div>
+
+                <!-- Collapsible Sections -->
+                <div class="footer-accordion">
+                    <div class="footer-accordion-item">
+                        <button class="footer-accordion-header">
+                            <span>Productos</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="footer-accordion-content">
+                            <ul class="footer-list">
+                                <li><a href="catalogo.html">Catálogo Completo</a></li>
+                                <li><a href="#">Estuco Premium</a></li>
+                                <li><a href="#">Basecoat Industrial</a></li>
+                                <li><a href="#">Acabados Especializados</a></li>
+                                <li><a href="#">Adhesivos de Alta Resistencia</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="footer-accordion-item">
+                        <button class="footer-accordion-header">
+                            <span>Tecnología</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="footer-accordion-content">
+                            <ul class="footer-list">
+                                <li><a href="#">Laboratorio de Investigación</a></li>
+                                <li><a href="#">Procesos de Fabricación</a></li>
+                                <li><a href="#">Control de Calidad</a></li>
+                                <li><a href="#">Innovación Continua</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="footer-accordion-item">
+                        <button class="footer-accordion-header">
+                            <span>Empresa</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="footer-accordion-content">
+                            <ul class="footer-list">
+                                <li><a href="#">Nosotros</a></li>
+                                <li><a href="#">Historia</a></li>
+                                <li><a href="#">Misión y Visión</a></li>
+                                <li><a href="#">Certificaciones</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="footer-accordion-item">
+                        <button class="footer-accordion-header">
+                            <span>Contacto</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="footer-accordion-content">
+                            <ul class="footer-list">
+                                <li><a href="#contacto">Formulario de Contacto</a></li>
+                                <li><a href="#">Distribuidores</a></li>
+                                <li><a href="#">Soporte Técnico</a></li>
+                                <li><a href="#">Consultas Comerciales</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <div class="footer-copyright">
+                        <p>© 2025 S-35® Tech Web Team. Todos los derechos reservados. | v1.1.3</p>
+                    </div>
+                    <div class="footer-legal">
+                        <a href="terminos.html">Términos de Servicio</a>
+                        <span class="divider">|</span>
+                        <a href="privacidad.html">Política de Privacidad</a>
+                        <span class="divider">|</span>
+                        <a href="cookies.html">Cookies</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <script src="script.js"></script>
+    <!-- Deployment test - $(date) -->
+</body>
+</html>
