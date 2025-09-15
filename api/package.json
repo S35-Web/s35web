@@ -1,0 +1,9 @@
+{
+  "name": "s35web-api",
+  "version": "1.0.0",
+  "description": "API functions for S-35 website",
+  "main": "contact.js",
+  "dependencies": {
+    "resend": "^3.2.0"
+  }
+}
