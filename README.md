@@ -164,9 +164,41 @@ const productos = [
 - **Teléfono**: +1 (555) 123-4567
 - **Email**: info@s35productos.com
 
+## 📧 Formulario de Contacto
+
+El formulario de contacto está **completamente funcional** y utiliza:
+
+### Backend API
+- **Endpoint**: `/api/contact`
+- **Método**: POST
+- **Servicio de email**: Resend
+- **Validación**: Campos obligatorios y honeypot anti-spam
+
+### Configuración en Vercel
+Para que el formulario funcione, configura estas variables de entorno en Vercel:
+
+```bash
+# API Key de Resend (obtén una en https://resend.com)
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Email de destino (donde llegarán los mensajes)
+MAIL_TO=contacto@s35.com.mx
+
+# Email de origen (debe estar verificado en Resend)
+MAIL_FROM=noreply@s35.com.mx
+```
+
+### Características del Formulario
+- ✅ Validación en tiempo real
+- ✅ Protección anti-spam (honeypot)
+- ✅ Notificaciones de éxito/error
+- ✅ Suscripción opcional a newsletter
+- ✅ Envío de emails HTML formateados
+- ✅ Responsive design
+
 ## 🔧 Próximas Mejoras
 
-- [ ] Integración con backend para formulario de contacto
+- [x] ~~Integración con backend para formulario de contacto~~ ✅ COMPLETADO
 - [ ] Sistema de carrito de compras
 - [ ] Galería de imágenes para productos
 - [ ] Blog de noticias
