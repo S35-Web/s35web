@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S-35 | Panel de Control</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root{
+            --bg: #0b0c0f;
+            --panel: #111319;
+            --elev: rgba(255,255,255,0.06);
+            --text: #e6e7ea;
+            --muted: #a9aeb6;
+            --primary: #0a84ff;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --card: #0f1116;
+            --border: rgba(255,255,255,0.12);
+            --accent: #8b5cf6;
+        }
+        [data-theme="light"]{
+            --bg: #f6f7f9;
+            --panel: #ffffff;
+            --elev: rgba(0,0,0,0.04);
+            --text: #0e1013;
+            --muted: #4b5563;
+            --primary: #0a84ff;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --card: #ffffff;
+            --border: rgba(0,0,0,0.08);
+            --accent: #7c3aed;
+        }
+        *{ box-sizing: border-box; }
+        body{ margin:0; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif; font-weight:300; color:var(--text); background:var(--bg); }
+        .app{ display:grid; grid-template-rows: 64px 1fr; min-height:100vh; }
+        .topbar{
+            display:flex; align-items:center; gap:16px; padding:0 20px; background:var(--panel); border-bottom:1px solid var(--border);
+        }
+        .brand{ display:flex; align-items:center; gap:12px; }
+        .brand img{ height:26px; }
+        .brand span{ letter-spacing:.4px; font-size:15px; color:var(--muted); }
+        .actions{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+        .iconbtn{ height:36px; width:36px; display:grid; place-items:center; border:1px solid var(--border); background:transparent; color:var(--text); border-radius:10px; cursor:pointer; }
+        .container{ display:grid; grid-template-columns: 300px 1fr; min-height:0; }
+        .sidebar{ border-right:1px solid var(--border); background:var(--panel); padding:16px; }
+        .nav{ display:grid; gap:6px; }
+        .nav a{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; color:var(--text); text-decoration:none; border:1px solid transparent; }
+        .nav a.active, .nav a:hover{ background:var(--elev); border-color:var(--border); }
+        .content{ padding:22px; }
+        .grid{ display:grid; grid-template-columns: repeat(12, 1fr); gap:16px; }
+        .card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; }
+        .card h3{ margin:0 0 8px; font-weight:400; letter-spacing:.3px; }
+        .muted{ color:var(--muted); font-size:13px; }
+        .kpis{ display:grid; grid-template-columns: repeat(4,1fr); gap:16px; margin-bottom:16px; }
+        .kpi{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; display:grid; gap:6px; }
+        .kpi .val{ font-size:22px; font-weight:400; }
+        .badge{ display:inline-grid; place-items:center; padding:2px 8px; border-radius:999px; font-size:12px; }
+        .b-success{ background:rgba(34,197,94,.12); color:#34d399; }
+        .b-warning{ background:rgba(245,158,11,.12); color:#fbbf24; }
+        .b-danger{ background:rgba(239,68,68,.12); color:#fca5a5; }
+        .b-primary{ background:rgba(10,132,255,.12); color:#60a5fa; }
+        table{ width:100%; border-collapse:collapse; }
+        th, td{ text-align:left; padding:10px 8px; border-bottom:1px solid var(--border); font-size:14px; }
+        .row-actions{ display:flex; gap:8px; }
+        .btn{ padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer; }
+        .btn.primary{ background:var(--primary); border-color:transparent; color:#fff; }
+        .btn.success{ background:var(--success); border-color:transparent; color:#fff; }
+        .btn.danger{ background:var(--danger); border-color:transparent; color:#fff; }
+        .btn.link{ border:none; color:var(--primary); background:transparent; }
+        .toolbar{ display:flex; gap:10px; align-items:center; margin-bottom:12px; }
+        .search{ flex:1; height:36px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text); padding:0 12px; }
+        .table-card{ overflow:auto; }
+        .form-grid{ display:grid; grid-template-columns: repeat(2,1fr); gap:16px; }
+        .form-group{ display:grid; gap:6px; }
+        .form-group label{ font-size:12px; color:var(--muted); letter-spacing:.3px; }
+        .form-group input, .form-group select, .form-group textarea{ 
+            padding:10px 12px; border-radius:8px; border:1px solid var(--border); 
+            background:transparent; color:var(--text); font-size:14px;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus{ 
+            outline:none; border-color:var(--primary); 
+        }
+        .modal{ position:fixed; inset:0; background:rgba(0,0,0,.8); display:grid; place-items:center; z-index:1000; }
+        .modal-content{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; width:min(90vw,800px); max-height:90vh; overflow:auto; }
+        .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+        .modal-title{ font-size:18px; font-weight:400; }
+        .close-btn{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:20px; }
+        .chart-container{ height:300px; background:var(--elev); border-radius:10px; display:grid; place-items:center; color:var(--muted); }
+        .settings-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:16px; }
+        .setting-card{ background:var(--elev); border:1px solid var(--border); border-radius:10px; padding:16px; }
+        .setting-title{ font-weight:400; margin-bottom:8px; }
+        .setting-desc{ color:var(--muted); font-size:13px; margin-bottom:12px; }
+        .toggle{ position:relative; width:44px; height:24px; background:var(--border); border-radius:12px; cursor:pointer; transition:background .2s; }
+        .toggle.active{ background:var(--primary); }
+        .toggle::after{ content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:transform .2s; }
+        .toggle.active::after{ transform:translateX(20px); }
+        @media(max-width: 960px){ 
+            .container{ grid-template-columns: 1fr; } 
+            .sidebar{ position:sticky; top:0; z-index:2; } 
+            .kpis{ grid-template-columns: repeat(2,1fr);} 
+            .form-grid{ grid-template-columns: 1fr; }
+            .settings-grid{ grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="topbar">
+            <div class="brand">
+                <img src="Assets/Logotipo Principal.png" alt="S-35"/>
+                <span>Panel de Control</span>
+            </div>
+            <div class="actions">
+                <button class="iconbtn" id="themeBtn" title="Tema"><i class="fa-solid fa-circle-half-stroke"></i></button>
+                <button class="iconbtn" id="logoutBtn" title="Salir"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </header>
+        <div class="container">
+            <aside class="sidebar">
+                <nav class="nav">
+                    <a href="#dashboard" class="active"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                    <a href="#usuarios"><i class="fa-solid fa-users"></i> Usuarios</a>
+                    <a href="#productos"><i class="fa-solid fa-cube"></i> Productos</a>
+                    <a href="#ventas"><i class="fa-solid fa-chart-line"></i> Ventas</a>
+                    <a href="#inventario"><i class="fa-solid fa-warehouse"></i> Inventario</a>
+                    <a href="#configuracion"><i class="fa-solid fa-cogs"></i> Configuración</a>
+                    <a href="#reportes"><i class="fa-solid fa-chart-bar"></i> Reportes</a>
+                    <a href="#sistema"><i class="fa-solid fa-server"></i> Sistema</a>
+                </nav>
+            </aside>
+            <main class="content">
+                <section id="dashboard">
+                    <div class="kpis">
+                        <div class="kpi"><span class="muted">Usuarios Activos</span><span class="val" id="kpiUsers">127</span></div>
+                        <div class="kpi"><span class="muted">Ventas del Mes</span><span class="val" id="kpiSales">$245,680</span></div>
+                        <div class="kpi"><span class="muted">Productos</span><span class="val" id="kpiProducts">18</span></div>
+                        <div class="kpi"><span class="muted">Sistema</span><span class="val" id="kpiSystem">99.9%</span></div>
+                    </div>
+
+                    <div class="grid">
+                        <div class="card" style="grid-column: span 8;">
+                            <h3>Actividad Reciente</h3>
+                            <div class="table-card">
+                                <table id="tblActivity">
+                                    <thead>
+                                        <tr><th>Usuario</th><th>Acción</th><th>Fecha</th><th>IP</th><th>Estatus</th></tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card" style="grid-column: span 4;">
+                            <h3>Estado del Sistema</h3>
+                            <div style="display:grid; gap:12px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span>API</span>
+                                    <span class="badge b-success">Operativo</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span>Base de Datos</span>
+                                    <span class="badge b-success">Operativo</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span>Email</span>
+                                    <span class="badge b-warning">Lento</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span>Almacenamiento</span>
+                                    <span class="badge b-success">75%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="usuarios" style="display:none;">
+                    <div class="toolbar">
+                        <input class="search" placeholder="Buscar usuarios..."/>
+                        <button class="btn primary" onclick="openModal('newUser')"><i class="fa-solid fa-plus"></i> Nuevo Usuario</button>
+                    </div>
+                    <div class="card table-card">
+                        <table id="tblUsers">
+                            <thead>
+                                <tr><th>Usuario</th><th>Tipo</th><th>Email</th><th>Último Acceso</th><th>Estado</th><th></th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="productos" style="display:none;">
+                    <div class="toolbar">
+                        <input class="search" placeholder="Buscar productos..."/>
+                        <button class="btn primary" onclick="openModal('newProduct')"><i class="fa-solid fa-plus"></i> Nuevo Producto</button>
+                    </div>
+                    <div class="card table-card">
+                        <table id="tblProducts">
+                            <thead>
+                                <tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Estado</th><th></th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="ventas" style="display:none;">
+                    <div class="grid">
+                        <div class="card" style="grid-column: span 8;">
+                            <h3>Ventas por Período</h3>
+                            <div class="chart-container">
+                                <i class="fa-solid fa-chart-line" style="font-size:48px; margin-bottom:16px;"></i>
+                                <div>Gráfico de ventas interactivo</div>
+                            </div>
+                        </div>
+                        <div class="card" style="grid-column: span 4;">
+                            <h3>Top Vendedores</h3>
+                            <div style="display:grid; gap:8px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Juan Pérez</span>
+                                    <span class="badge b-success">$45,230</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>María García</span>
+                                    <span class="badge b-success">$38,450</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span>Carlos López</span>
+                                    <span class="badge b-success">$32,180</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="inventario" style="display:none;">
+                    <div class="toolbar">
+                        <input class="search" placeholder="Buscar en inventario..."/>
+                        <button class="btn primary" onclick="openModal('adjustInventory')"><i class="fa-solid fa-edit"></i> Ajustar Inventario</button>
+                    </div>
+                    <div class="card table-card">
+                        <table id="tblInventory">
+                            <thead>
+                                <tr><th>Producto</th><th>Stock Actual</th><th>Stock Mínimo</th><th>Última Actualización</th><th>Estado</th><th></th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="configuracion" style="display:none;">
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <div class="setting-title">Notificaciones por Email</div>
+                            <div class="setting-desc">Enviar notificaciones automáticas por email</div>
+                            <div class="toggle" onclick="toggleSetting(this)"></div>
+                        </div>
+                        <div class="setting-card">
+                            <div class="setting-title">Backup Automático</div>
+                            <div class="setting-desc">Realizar respaldos automáticos diarios</div>
+                            <div class="toggle active" onclick="toggleSetting(this)"></div>
+                        </div>
+                        <div class="setting-card">
+                            <div class="setting-title">Modo Mantenimiento</div>
+                            <div class="setting-desc">Activar modo mantenimiento del sistema</div>
+                            <div class="toggle" onclick="toggleSetting(this)"></div>
+                        </div>
+                        <div class="setting-card">
+                            <div class="setting-title">Logs Detallados</div>
+                            <div class="setting-desc">Registrar actividad detallada del sistema</div>
+                            <div class="toggle active" onclick="toggleSetting(this)"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="reportes" style="display:none;">
+                    <div class="card">
+                        <h3>Generar Reportes</h3>
+                        <div style="display:grid; gap:12px; margin-top:16px;">
+                            <button class="btn"><i class="fa-solid fa-chart-bar"></i> Reporte de Ventas</button>
+                            <button class="btn"><i class="fa-solid fa-users"></i> Reporte de Usuarios</button>
+                            <button class="btn"><i class="fa-solid fa-cube"></i> Reporte de Inventario</button>
+                            <button class="btn"><i class="fa-solid fa-file-export"></i> Exportar Todos los Datos</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="sistema" style="display:none;">
+                    <div class="card">
+                        <h3>Información del Sistema</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Versión del Sistema</label>
+                                <input type="text" value="S-35 ERP v2.1.0" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Última Actualización</label>
+                                <input type="text" value="2025-01-15 14:30:00" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Uptime</label>
+                                <input type="text" value="15 días, 8 horas" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Memoria Usada</label>
+                                <input type="text" value="2.4 GB / 8 GB" readonly>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:16px;">
+                            <button class="btn primary" onclick="restartSystem()"><i class="fa-solid fa-power-off"></i> Reiniciar Sistema</button>
+                            <button class="btn danger" onclick="backupSystem()"><i class="fa-solid fa-download"></i> Crear Backup</button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Usuario -->
+    <div class="modal" id="newUserModal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nuevo Usuario</h3>
+                <button class="close-btn" onclick="closeModal('newUserModal')">&times;</button>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="userName" placeholder="Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="userEmail" placeholder="juan@empresa.com">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Usuario</label>
+                    <select id="userType">
+                        <option value="client">Cliente</option>
+                        <option value="sales_rep">Representante de Ventas</option>
+                        <option value="admin">Administrador</option>
+                        <option value="system_admin">Administrador del Sistema</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="userPassword" placeholder="••••••••">
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+                <button class="btn" onclick="closeModal('newUserModal')">Cancelar</button>
+                <button class="btn primary" onclick="createUser()">Crear Usuario</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tema claro/oscuro
+        (function(){
+            const root = document.documentElement;
+            const saved = localStorage.getItem('pdcTheme');
+            if(saved){ root.setAttribute('data-theme', saved); }
+            document.getElementById('themeBtn').addEventListener('click', ()=>{
+                const now = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                root.setAttribute('data-theme', now);
+                localStorage.setItem('pdcTheme', now);
+            });
+        })();
+
+        // Navegación
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                document.querySelectorAll('main section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.querySelector(link.getAttribute('href')).style.display = 'block';
+            });
+        });
+
+        // Mock data
+        const activity = [
+            { user:'Juan Pérez', action:'Inició sesión', date:'2025-01-15 14:30', ip:'192.168.1.100', status:'Exitoso' },
+            { user:'María García', action:'Creó pedido S35-10234', date:'2025-01-15 14:25', ip:'192.168.1.101', status:'Exitoso' },
+            { user:'Carlos López', action:'Actualizó inventario', date:'2025-01-15 14:20', ip:'192.168.1.102', status:'Exitoso' },
+            { user:'Admin', action:'Configuró sistema', date:'2025-01-15 14:15', ip:'192.168.1.103', status:'Exitoso' }
+        ];
+
+        const users = [
+            { name:'Juan Pérez', type:'Representante de Ventas', email:'juan@s35.com', lastAccess:'2025-01-15 14:30', status:'Activo' },
+            { name:'María García', type:'Representante de Ventas', email:'maria@s35.com', lastAccess:'2025-01-15 14:25', status:'Activo' },
+            { name:'Carlos López', type:'Administrador', email:'carlos@s35.com', lastAccess:'2025-01-15 14:20', status:'Activo' },
+            { name:'Constructora ABC', type:'Cliente', email:'contacto@constructora.com', lastAccess:'2025-01-15 10:15', status:'Activo' }
+        ];
+
+        const products = [
+            { name:'Basecoat Blanco', category:'Base', price:'$450', stock:'150', status:'Disponible' },
+            { name:'Estuco Premium', category:'Acabado', price:'$380', stock:'89', status:'Disponible' },
+            { name:'Ultraforce', category:'Adhesivo', price:'$520', stock:'12', status:'Bajo Stock' },
+            { name:'Cellbond', category:'Adhesivo', price:'$680', stock:'45', status:'Disponible' }
+        ];
+
+        function statusBadge(s){
+            if(/activo|disponible|exitoso/i.test(s)) return '<span class="badge b-success">'+s+'</span>';
+            if(/bajo stock|pendiente/i.test(s)) return '<span class="badge b-warning">'+s+'</span>';
+            return '<span class="badge b-danger">'+s+'</span>';
+        }
+
+        function fillData(){
+            // Actividad reciente
+            const tbody = document.querySelector('#tblActivity tbody');
+            tbody.innerHTML = activity.map(a => `<tr>
+                <td>${a.user}</td><td>${a.action}</td><td>${a.date}</td><td>${a.ip}</td><td>${statusBadge(a.status)}</td>
+            </tr>`).join('');
+
+            // Usuarios
+            const usersTbody = document.querySelector('#tblUsers tbody');
+            usersTbody.innerHTML = users.map(u => `<tr>
+                <td>${u.name}</td><td>${u.type}</td><td>${u.email}</td><td>${u.lastAccess}</td><td>${statusBadge(u.status)}</td>
+                <td class="row-actions"><button class="btn link">Editar</button></td>
+            </tr>`).join('');
+
+            // Productos
+            const productsTbody = document.querySelector('#tblProducts tbody');
+            productsTbody.innerHTML = products.map(p => `<tr>
+                <td>${p.name}</td><td>${p.category}</td><td>${p.price}</td><td>${p.stock}</td><td>${statusBadge(p.status)}</td>
+                <td class="row-actions"><button class="btn link">Editar</button></td>
+            </tr>`).join('');
+        }
+
+        function openModal(modalId){
+            document.getElementById(modalId + 'Modal').style.display = 'grid';
+        }
+
+        function closeModal(modalId){
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function createUser(){
+            alert('Usuario creado exitosamente');
+            closeModal('newUserModal');
+        }
+
+        function toggleSetting(toggle){
+            toggle.classList.toggle('active');
+        }
+
+        function restartSystem(){
+            if(confirm('¿Estás seguro de que quieres reiniciar el sistema?')){
+                alert('Sistema reiniciado');
+            }
+        }
+
+        function backupSystem(){
+            alert('Backup creado exitosamente');
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', ()=>{
+            localStorage.removeItem('pdcToken');
+            window.location.href = 'pdc-login.html';
+        });
+
+        fillData();
+    </script>
+</body>
+</html>

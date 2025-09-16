@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S-35 | Punto de Venta</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root{
+            --bg: #0b0c0f;
+            --panel: #111319;
+            --elev: rgba(255,255,255,0.06);
+            --text: #e6e7ea;
+            --muted: #a9aeb6;
+            --primary: #0a84ff;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --card: #0f1116;
+            --border: rgba(255,255,255,0.12);
+            --accent: #8b5cf6;
+        }
+        [data-theme="light"]{
+            --bg: #f6f7f9;
+            --panel: #ffffff;
+            --elev: rgba(0,0,0,0.04);
+            --text: #0e1013;
+            --muted: #4b5563;
+            --primary: #0a84ff;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --card: #ffffff;
+            --border: rgba(0,0,0,0.08);
+            --accent: #7c3aed;
+        }
+        *{ box-sizing: border-box; }
+        body{ margin:0; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif; font-weight:300; color:var(--text); background:var(--bg); }
+        .app{ display:grid; grid-template-rows: 64px 1fr; min-height:100vh; }
+        .topbar{
+            display:flex; align-items:center; gap:16px; padding:0 20px; background:var(--panel); border-bottom:1px solid var(--border);
+        }
+        .brand{ display:flex; align-items:center; gap:12px; }
+        .brand img{ height:26px; }
+        .brand span{ letter-spacing:.4px; font-size:15px; color:var(--muted); }
+        .actions{ margin-left:auto; display:flex; align-items:center; gap:10px; }
+        .iconbtn{ height:36px; width:36px; display:grid; place-items:center; border:1px solid var(--border); background:transparent; color:var(--text); border-radius:10px; cursor:pointer; }
+        .container{ display:grid; grid-template-columns: 280px 1fr; min-height:0; }
+        .sidebar{ border-right:1px solid var(--border); background:var(--panel); padding:16px; }
+        .nav{ display:grid; gap:6px; }
+        .nav a{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; color:var(--text); text-decoration:none; border:1px solid transparent; }
+        .nav a.active, .nav a:hover{ background:var(--elev); border-color:var(--border); }
+        .content{ padding:22px; }
+        .grid{ display:grid; grid-template-columns: repeat(12, 1fr); gap:16px; }
+        .card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; }
+        .card h3{ margin:0 0 8px; font-weight:400; letter-spacing:.3px; }
+        .muted{ color:var(--muted); font-size:13px; }
+        .kpis{ display:grid; grid-template-columns: repeat(4,1fr); gap:16px; margin-bottom:16px; }
+        .kpi{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; display:grid; gap:6px; }
+        .kpi .val{ font-size:22px; font-weight:400; }
+        .badge{ display:inline-grid; place-items:center; padding:2px 8px; border-radius:999px; font-size:12px; }
+        .b-success{ background:rgba(34,197,94,.12); color:#34d399; }
+        .b-warning{ background:rgba(245,158,11,.12); color:#fbbf24; }
+        .b-danger{ background:rgba(239,68,68,.12); color:#fca5a5; }
+        .b-primary{ background:rgba(10,132,255,.12); color:#60a5fa; }
+        table{ width:100%; border-collapse:collapse; }
+        th, td{ text-align:left; padding:10px 8px; border-bottom:1px solid var(--border); font-size:14px; }
+        .row-actions{ display:flex; gap:8px; }
+        .btn{ padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer; }
+        .btn.primary{ background:var(--primary); border-color:transparent; color:#fff; }
+        .btn.success{ background:var(--success); border-color:transparent; color:#fff; }
+        .btn.link{ border:none; color:var(--primary); background:transparent; }
+        .toolbar{ display:flex; gap:10px; align-items:center; margin-bottom:12px; }
+        .search{ flex:1; height:36px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text); padding:0 12px; }
+        .table-card{ overflow:auto; }
+        .form-grid{ display:grid; grid-template-columns: repeat(2,1fr); gap:16px; }
+        .form-group{ display:grid; gap:6px; }
+        .form-group label{ font-size:12px; color:var(--muted); letter-spacing:.3px; }
+        .form-group input, .form-group select, .form-group textarea{ 
+            padding:10px 12px; border-radius:8px; border:1px solid var(--border); 
+            background:transparent; color:var(--text); font-size:14px;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus{ 
+            outline:none; border-color:var(--primary); 
+        }
+        .modal{ position:fixed; inset:0; background:rgba(0,0,0,.8); display:grid; place-items:center; z-index:1000; }
+        .modal-content{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; width:min(90vw,600px); max-height:90vh; overflow:auto; }
+        .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+        .modal-title{ font-size:18px; font-weight:400; }
+        .close-btn{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:20px; }
+        .product-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
+        .product-card{ background:var(--elev); border:1px solid var(--border); border-radius:10px; padding:12px; cursor:pointer; transition:all .2s; }
+        .product-card:hover{ border-color:var(--primary); }
+        .product-card.selected{ border-color:var(--primary); background:rgba(10,132,255,.1); }
+        .product-name{ font-weight:400; margin-bottom:4px; }
+        .product-price{ color:var(--success); font-size:14px; }
+        .cart-item{ display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
+        .cart-item:last-child{ border-bottom:none; }
+        .cart-controls{ display:flex; align-items:center; gap:8px; }
+        .qty-input{ width:60px; padding:4px 8px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--text); text-align:center; }
+        @media(max-width: 960px){ 
+            .container{ grid-template-columns: 1fr; } 
+            .sidebar{ position:sticky; top:0; z-index:2; } 
+            .kpis{ grid-template-columns: repeat(2,1fr);} 
+            .form-grid{ grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="topbar">
+            <div class="brand">
+                <img src="Assets/Logotipo Principal.png" alt="S-35"/>
+                <span>Punto de Venta</span>
+            </div>
+            <div class="actions">
+                <button class="iconbtn" id="themeBtn" title="Tema"><i class="fa-solid fa-circle-half-stroke"></i></button>
+                <button class="iconbtn" id="logoutBtn" title="Salir"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </header>
+        <div class="container">
+            <aside class="sidebar">
+                <nav class="nav">
+                    <a href="#dashboard" class="active"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                    <a href="#pedidos"><i class="fa-solid fa-box"></i> Pedidos</a>
+                    <a href="#cotizaciones"><i class="fa-solid fa-file-invoice"></i> Cotizaciones</a>
+                    <a href="#clientes"><i class="fa-solid fa-users"></i> Clientes</a>
+                    <a href="#productos"><i class="fa-solid fa-cube"></i> Productos</a>
+                    <a href="#reportes"><i class="fa-solid fa-chart-line"></i> Reportes</a>
+                </nav>
+            </aside>
+            <main class="content">
+                <section id="dashboard">
+                    <div class="kpis">
+                        <div class="kpi"><span class="muted">Ventas Hoy</span><span class="val" id="kpiToday">$12,450</span></div>
+                        <div class="kpi"><span class="muted">Pedidos Pendientes</span><span class="val" id="kpiPending">8</span></div>
+                        <div class="kpi"><span class="muted">Clientes Activos</span><span class="val" id="kpiClients">24</span></div>
+                        <div class="kpi"><span class="muted">Meta Mensual</span><span class="val" id="kpiTarget">78%</span></div>
+                    </div>
+
+                    <div class="grid">
+                        <div class="card" style="grid-column: span 8;">
+                            <h3>Pedidos Recientes</h3>
+                            <div class="table-card">
+                                <table id="tblRecentOrders">
+                                    <thead>
+                                        <tr><th>Folio</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Estatus</th><th></th></tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card" style="grid-column: span 4;">
+                            <h3>Acciones Rápidas</h3>
+                            <div style="display:grid; gap:8px;">
+                                <button class="btn primary" onclick="openModal('newOrder')"><i class="fa-solid fa-plus"></i> Nuevo Pedido</button>
+                                <button class="btn success" onclick="openModal('newQuote')"><i class="fa-solid fa-file-invoice"></i> Nueva Cotización</button>
+                                <button class="btn" onclick="openModal('newClient')"><i class="fa-solid fa-user-plus"></i> Nuevo Cliente</button>
+                                <button class="btn" onclick="openModal('searchProducts')"><i class="fa-solid fa-search"></i> Buscar Productos</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="pedidos" style="display:none;">
+                    <div class="toolbar">
+                        <input class="search" placeholder="Buscar pedidos..."/>
+                        <button class="btn primary" onclick="openModal('newOrder')"><i class="fa-solid fa-plus"></i> Nuevo Pedido</button>
+                    </div>
+                    <div class="card table-card">
+                        <table id="tblOrders">
+                            <thead>
+                                <tr><th>Folio</th><th>Cliente</th><th>Fecha</th><th>Productos</th><th>Total</th><th>Estatus</th><th></th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="cotizaciones" style="display:none;">
+                    <div class="toolbar">
+                        <input class="search" placeholder="Buscar cotizaciones..."/>
+                        <button class="btn primary" onclick="openModal('newQuote')"><i class="fa-solid fa-plus"></i> Nueva Cotización</button>
+                    </div>
+                    <div class="card table-card">
+                        <table id="tblQuotes">
+                            <thead>
+                                <tr><th>Folio</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Válida Hasta</th><th>Estatus</th><th></th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="clientes" style="display:none;">
+                    <div class="toolbar">
+                        <input class="search" placeholder="Buscar clientes..."/>
+                        <button class="btn primary" onclick="openModal('newClient')"><i class="fa-solid fa-plus"></i> Nuevo Cliente</button>
+                    </div>
+                    <div class="card table-card">
+                        <table id="tblClients">
+                            <thead>
+                                <tr><th>Cliente</th><th>Empresa</th><th>Email</th><th>Teléfono</th><th>Último Pedido</th><th></th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="productos" style="display:none;">
+                    <div class="toolbar">
+                        <input class="search" placeholder="Buscar productos..."/>
+                    </div>
+                    <div class="product-grid" id="productGrid"></div>
+                </section>
+
+                <section id="reportes" style="display:none;">
+                    <div class="card">
+                        <h3>Reportes de Ventas</h3>
+                        <p class="muted">Análisis de rendimiento y métricas de ventas</p>
+                        <div style="display:grid; gap:12px; margin-top:16px;">
+                            <button class="btn"><i class="fa-solid fa-chart-bar"></i> Ventas por Período</button>
+                            <button class="btn"><i class="fa-solid fa-chart-pie"></i> Productos Más Vendidos</button>
+                            <button class="btn"><i class="fa-solid fa-users"></i> Análisis de Clientes</button>
+                            <button class="btn"><i class="fa-solid fa-file-export"></i> Exportar Datos</button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Pedido -->
+    <div class="modal" id="newOrderModal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nuevo Pedido</h3>
+                <button class="close-btn" onclick="closeModal('newOrderModal')">&times;</button>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <select id="orderClient">
+                        <option value="">Seleccionar cliente...</option>
+                        <option value="1">Constructora ABC</option>
+                        <option value="2">Ingeniería XYZ</option>
+                        <option value="3">Arquitectos Unidos</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha de Entrega</label>
+                    <input type="date" id="orderDate">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Productos</label>
+                <div class="product-grid" id="orderProducts"></div>
+            </div>
+            <div class="form-group">
+                <label>Carrito</label>
+                <div id="orderCart"></div>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+                <button class="btn" onclick="closeModal('newOrderModal')">Cancelar</button>
+                <button class="btn primary" onclick="createOrder()">Crear Pedido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nueva Cotización -->
+    <div class="modal" id="newQuoteModal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nueva Cotización</h3>
+                <button class="close-btn" onclick="closeModal('newQuoteModal')">&times;</button>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Cliente</label>
+                    <select id="quoteClient">
+                        <option value="">Seleccionar cliente...</option>
+                        <option value="1">Constructora ABC</option>
+                        <option value="2">Ingeniería XYZ</option>
+                        <option value="3">Arquitectos Unidos</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Válida Hasta</label>
+                    <input type="date" id="quoteValidUntil">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Productos</label>
+                <div class="product-grid" id="quoteProducts"></div>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+                <button class="btn" onclick="closeModal('newQuoteModal')">Cancelar</button>
+                <button class="btn primary" onclick="createQuote()">Crear Cotización</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Cliente -->
+    <div class="modal" id="newClientModal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nuevo Cliente</h3>
+                <button class="close-btn" onclick="closeModal('newClientModal')">&times;</button>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="clientName" placeholder="Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label>Empresa</label>
+                    <input type="text" id="clientCompany" placeholder="Constructora ABC">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="clientEmail" placeholder="juan@empresa.com">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" id="clientPhone" placeholder="+52 667 123 4567">
+                </div>
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <textarea id="clientAddress" placeholder="Calle, Colonia, Ciudad"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea id="clientNotes" placeholder="Información adicional..."></textarea>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:16px;">
+                <button class="btn" onclick="closeModal('newClientModal')">Cancelar</button>
+                <button class="btn primary" onclick="createClient()">Crear Cliente</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tema claro/oscuro
+        (function(){
+            const root = document.documentElement;
+            const saved = localStorage.getItem('posTheme');
+            if(saved){ root.setAttribute('data-theme', saved); }
+            document.getElementById('themeBtn').addEventListener('click', ()=>{
+                const now = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                root.setAttribute('data-theme', now);
+                localStorage.setItem('posTheme', now);
+            });
+        })();
+
+        // Navegación
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                document.querySelectorAll('main section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.querySelector(link.getAttribute('href')).style.display = 'block';
+            });
+        });
+
+        // Mock data
+        const recentOrders = [
+            { folio:'S35-10234', cliente:'Constructora ABC', fecha:'2025-01-15', total:'$12,450', estatus:'En preparación' },
+            { folio:'S35-10233', cliente:'Ingeniería XYZ', fecha:'2025-01-14', total:'$8,920', estatus:'Entregado' },
+            { folio:'S35-10232', cliente:'Arquitectos Unidos', fecha:'2025-01-13', total:'$15,680', estatus:'Pendiente' }
+        ];
+
+        const products = [
+            { id:1, name:'Basecoat Blanco', price:450, category:'Base' },
+            { id:2, name:'Estuco Premium', price:380, category:'Acabado' },
+            { id:3, name:'Ultraforce', price:520, category:'Adhesivo' },
+            { id:4, name:'Cellbond', price:680, category:'Adhesivo' },
+            { id:5, name:'Styrobond', price:420, category:'Adhesivo' },
+            { id:6, name:'Mixandready', price:350, category:'Base' }
+        ];
+
+        function statusBadge(s){
+            if(/entregado/i.test(s)) return '<span class="badge b-success">'+s+'</span>';
+            if(/prepar|pendiente/i.test(s)) return '<span class="badge b-warning">'+s+'</span>';
+            return '<span class="badge b-danger">'+s+'</span>';
+        }
+
+        function fillData(){
+            // Pedidos recientes
+            const tbody = document.querySelector('#tblRecentOrders tbody');
+            tbody.innerHTML = recentOrders.map(o => `<tr>
+                <td>${o.folio}</td><td>${o.cliente}</td><td>${o.fecha}</td><td>${o.total}</td><td>${statusBadge(o.estatus)}</td>
+                <td class="row-actions"><button class="btn link">Ver</button></td>
+            </tr>`).join('');
+
+            // Productos
+            const productGrid = document.getElementById('productGrid');
+            productGrid.innerHTML = products.map(p => `<div class="product-card" data-id="${p.id}">
+                <div class="product-name">${p.name}</div>
+                <div class="product-price">$${p.price}</div>
+                <div class="muted">${p.category}</div>
+            </div>`).join('');
+
+            // Eventos de productos
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    card.classList.toggle('selected');
+                });
+            });
+        }
+
+        function openModal(modalId){
+            document.getElementById(modalId + 'Modal').style.display = 'grid';
+        }
+
+        function closeModal(modalId){
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function createOrder(){
+            alert('Pedido creado exitosamente');
+            closeModal('newOrderModal');
+        }
+
+        function createQuote(){
+            alert('Cotización creada exitosamente');
+            closeModal('newQuoteModal');
+        }
+
+        function createClient(){
+            alert('Cliente creado exitosamente');
+            closeModal('newClientModal');
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', ()=>{
+            localStorage.removeItem('posToken');
+            window.location.href = 'pos-login.html';
+        });
+
+        fillData();
+    </script>
+</body>
+</html>
