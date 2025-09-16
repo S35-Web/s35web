@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root { --overlay: rgba(0,0,0,.55); }
-        body { margin: 0; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 300; }
+        body { margin: 0; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 300; background:#000; }
         .page {
             min-height: 100vh;
             position: relative;
@@ -52,9 +52,8 @@
 </head>
 <body>
     <div class="page">
-        <video class="bg-video" muted playsinline webkit-playsinline autoplay loop preload="metadata" poster="Assets/contact.jpg">
-            <source src="Assets/mezcla_optimized.mp4" type="video/mp4" media="(max-width: 768px)">
-            <source src="Assets/colaboradores_background.mp4" type="video/mp4">
+        <video class="bg-video" muted playsinline webkit-playsinline autoplay loop preload="metadata">
+            <source src="Assets/colaboradores_login.mp4" type="video/mp4">
         </video>
         <div class="overlay"></div>
 
@@ -125,20 +124,19 @@
             const video = document.querySelector('.bg-video');
             const overlay = document.querySelector('.overlay');
             if (!video) return;
-            const showPoster = () => overlay && overlay.classList.add('is-poster');
+            const hideVideo = () => { video.style.display='none'; /* fondo negro queda */ };
             const tryPlay = () => {
                 const p = video.play();
                 if (p && typeof p.then === 'function') {
                     p.catch(() => {
-                        showPoster();
-                        const once = () => { video.play().finally(() => document.removeEventListener('touchend', once)); };
+                        hideVideo();
+                        const once = () => { video.style.display=''; video.play().finally(() => document.removeEventListener('touchend', once)); };
                         document.addEventListener('touchend', once, { once: true });
                     });
                 }
             };
             if (video.readyState >= 2) { tryPlay(); } else { video.addEventListener('canplay', tryPlay, { once: true }); }
-            // Si pasa 1.5s y no reproduce, forzar poster
-            setTimeout(() => { if (video.paused) showPoster(); }, 1500);
+            setTimeout(() => { if (video.paused) hideVideo(); }, 1200);
         });
     </script>
 </body>
