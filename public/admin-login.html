@@ -145,31 +145,6 @@
         .back-link a:hover {
             color: var(--primary-white);
         }
-
-        .user-type-selector {
-            display: flex;
-            gap: var(--space-sm);
-            margin-bottom: var(--space-lg);
-        }
-
-        .user-type-btn {
-            flex: 1;
-            padding: var(--space-sm) var(--space-md);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--gray-400);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .user-type-btn.active {
-            background: var(--primary-blue);
-            color: var(--primary-white);
-            border-color: var(--primary-blue);
-        }
     </style>
 </head>
 <body>
@@ -181,11 +156,6 @@
             
             <h1 class="admin-title">Acceso de Colaboradores</h1>
             <p class="admin-subtitle">Sistema de administración S-35</p>
-
-            <div class="user-type-selector">
-                <button class="user-type-btn" onclick="selectUserType('clientes')">Clientes</button>
-                <button class="user-type-btn active" onclick="selectUserType('colaboradores')">Colaboradores</button>
-            </div>
 
             <form class="admin-form" id="loginForm">
                 <div class="form-group">
@@ -212,16 +182,6 @@
     </div>
 
     <script>
-        let currentUserType = 'colaboradores';
-
-        function selectUserType(type) {
-            currentUserType = type;
-            document.querySelectorAll('.user-type-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-        }
-
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -244,18 +204,15 @@
                     body: JSON.stringify({
                         username,
                         password,
-                        userType: currentUserType
+                        userType: 'colaboradores'
                     })
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Guardar token en localStorage
                     localStorage.setItem('adminToken', data.token);
-                    localStorage.setItem('userType', currentUserType);
-                    
-                    // Redirigir al dashboard
+                    localStorage.setItem('userType', 'colaboradores');
                     window.location.href = 'admin-dashboard.html';
                 } else {
                     errorMessage.textContent = data.message || 'Credenciales incorrectas';
