@@ -7,10 +7,11 @@ module.exports = async (req, res) => {
 
   try {
     const { username, password, userType } = req.body;
+    const normalizedUsername = typeof username === 'string' ? username.toLowerCase() : '';
 
     // Verificar credenciales
     if (userType === 'colaboradores') {
-      if (username === 'admin' && password === 'password') {
+      if (normalizedUsername === 'admin' && password === 'password') {
         // Generar token JWT
         const token = jwt.sign(
           { 
