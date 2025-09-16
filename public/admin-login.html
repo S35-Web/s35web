@@ -22,6 +22,7 @@
         /* Si el rendimiento es bajo, podemos reactivar este media query con una imagen */
         @media (max-width: 480px){ .bg-video{ display:none; } .overlay{ background: linear-gradient(180deg, rgba(0,0,0,.7), rgba(0,0,0,.9)); } }
         .overlay { position: absolute; inset: 0; background: radial-gradient(1200px 600px at 70% 20%, rgba(0,0,0,.15), transparent), linear-gradient(180deg, var(--overlay), rgba(0,0,0,.75)); }
+        .overlay.is-poster { background: url('Assets/contact.jpg') center/cover fixed, linear-gradient(180deg, rgba(0,0,0,.65), rgba(0,0,0,.85)); }
         .card {
             position: relative;
             width: min(92vw, 420px);
@@ -52,9 +53,8 @@
 <body>
     <div class="page">
         <video class="bg-video" muted playsinline webkit-playsinline autoplay loop preload="metadata" poster="Assets/contact.jpg">
-            <source src="Assets/colaboradores_background.mp4" type="video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\"">
-            <source src="Assets/mezcla_optimized.mp4" type="video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\"">
-            <source src="Assets/agua_optimized.mp4" type="video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\"">
+            <source src="Assets/mezcla_optimized.mp4" type="video/mp4" media="(max-width: 768px)">
+            <source src="Assets/colaboradores_background.mp4" type="video/mp4">
         </video>
         <div class="overlay"></div>
 
@@ -123,24 +123,22 @@
         // Forzar autoplay en iOS si el video está listo
         document.addEventListener('DOMContentLoaded', () => {
             const video = document.querySelector('.bg-video');
+            const overlay = document.querySelector('.overlay');
             if (!video) return;
+            const showPoster = () => overlay && overlay.classList.add('is-poster');
             const tryPlay = () => {
                 const p = video.play();
                 if (p && typeof p.then === 'function') {
                     p.catch(() => {
-                        // Si falla, intentamos de nuevo tras interacción (tap en pantalla)
-                        const once = () => {
-                            video.play().finally(() => document.removeEventListener('touchend', once));
-                        };
+                        showPoster();
+                        const once = () => { video.play().finally(() => document.removeEventListener('touchend', once)); };
                         document.addEventListener('touchend', once, { once: true });
                     });
                 }
             };
-            if (video.readyState >= 2) {
-                tryPlay();
-            } else {
-                video.addEventListener('canplay', tryPlay, { once: true });
-            }
+            if (video.readyState >= 2) { tryPlay(); } else { video.addEventListener('canplay', tryPlay, { once: true }); }
+            // Si pasa 1.5s y no reproduce, forzar poster
+            setTimeout(() => { if (video.paused) showPoster(); }, 1500);
         });
     </script>
 </body>
