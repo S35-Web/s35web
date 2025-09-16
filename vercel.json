@@ -2,7 +2,19 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/*.js",
+      "src": "api/contact.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/admin-login.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/admin-stats.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/admin-messages.js",
       "use": "@vercel/node"
     },
     {

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S-35 Admin | Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .admin-dashboard {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: var(--primary-white);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .admin-header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: var(--space-lg) var(--space-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .admin-logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .admin-logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .user-role {
+            color: var(--gray-400);
+            font-size: 0.75rem;
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: var(--space-sm) var(--space-md);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .admin-content {
+            padding: var(--space-xl);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: var(--space-xl);
+            min-height: calc(100vh - 120px);
+        }
+
+        .admin-sidebar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: var(--space-lg);
+            height: fit-content;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: var(--space-sm);
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            color: var(--gray-400);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: rgba(0, 123, 255, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .admin-main {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: var(--space-xl);
+        }
+
+        .section-header {
+            margin-bottom: var(--space-xl);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 var(--space-sm) 0;
+        }
+
+        .section-subtitle {
+            color: var(--gray-400);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        .messages-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        .message-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: var(--space-lg);
+            transition: all 0.3s ease;
+        }
+
+        .message-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-md);
+        }
+
+        .message-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 var(--space-xs) 0;
+        }
+
+        .message-info p {
+            color: var(--gray-400);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        .message-meta {
+            display: flex;
+            gap: var(--space-sm);
+            align-items: center;
+        }
+
+        .message-date {
+            color: var(--gray-500);
+            font-size: 0.75rem;
+        }
+
+        .message-status {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-new {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+        }
+
+        .status-read {
+            background: rgba(107, 114, 128, 0.1);
+            color: #9ca3af;
+        }
+
+        .message-content {
+            margin-top: var(--space-md);
+        }
+
+        .message-text {
+            color: var(--gray-300);
+            line-height: 1.6;
+            margin-bottom: var(--space-md);
+        }
+
+        .message-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 0.875rem;
+            color: var(--primary-white);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--space-6xl) var(--space-xl);
+            color: var(--gray-400);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: var(--space-lg);
+            opacity: 0.5;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: var(--space-6xl) var(--space-xl);
+            color: var(--gray-400);
+        }
+
+        .loading-state i {
+            font-size: 2rem;
+            margin-bottom: var(--space-lg);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: var(--space-lg);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-label {
+            color: var(--gray-400);
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-sidebar {
+                order: 2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-dashboard">
+        <header class="admin-header">
+            <div class="admin-logo">
+                <img src="Assets/Logotipo Principal.png" alt="S-35 Technology">
+                <h1>Admin Panel</h1>
+            </div>
+            <div class="admin-user">
+                <div class="user-info">
+                    <div class="user-name" id="userName">Admin</div>
+                    <div class="user-role" id="userRole">Colaborador</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <div class="dashboard-grid">
+                <nav class="admin-sidebar">
+                    <ul class="sidebar-nav">
+                        <li><a href="#dashboard" class="active" onclick="showSection('dashboard')">
+                            <i class="fas fa-chart-line"></i> Dashboard
+                        </a></li>
+                        <li><a href="#messages" onclick="showSection('messages')">
+                            <i class="fas fa-envelope"></i> Mensajes
+                        </a></li>
+                        <li><a href="#settings" onclick="showSection('settings')">
+                            <i class="fas fa-cog"></i> Configuración
+                        </a></li>
+                    </ul>
+                </nav>
+
+                <main class="admin-main">
+                    <!-- Dashboard Section -->
+                    <div id="dashboard-section" class="admin-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Dashboard</h2>
+                            <p class="section-subtitle">Resumen general del sistema</p>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number" id="totalMessages">0</div>
+                                <div class="stat-label">Total Mensajes</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="newMessages">0</div>
+                                <div class="stat-label">Mensajes Nuevos</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="todayMessages">0</div>
+                                <div class="stat-label">Hoy</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Messages Section -->
+                    <div id="messages-section" class="admin-section" style="display: none;">
+                        <div class="section-header">
+                            <h2 class="section-title">Mensajes de Contacto</h2>
+                            <p class="section-subtitle">Gestiona los mensajes recibidos del formulario</p>
+                        </div>
+
+                        <div id="messages-container" class="messages-container">
+                            <div class="loading-state">
+                                <i class="fas fa-spinner"></i>
+                                <p>Cargando mensajes...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Section -->
+                    <div id="settings-section" class="admin-section" style="display: none;">
+                        <div class="section-header">
+                            <h2 class="section-title">Configuración</h2>
+                            <p class="section-subtitle">Ajustes del sistema</p>
+                        </div>
+                        <p>Configuración en desarrollo...</p>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificar autenticación
+        function checkAuth() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = 'admin-login.html';
+                return;
+            }
+        }
+
+        // Mostrar sección
+        function showSection(section) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.admin-section').forEach(s => {
+                s.style.display = 'none';
+            });
+            
+            // Remover active de todos los enlaces
+            document.querySelectorAll('.sidebar-nav a').forEach(a => {
+                a.classList.remove('active');
+            });
+            
+            // Mostrar sección seleccionada
+            document.getElementById(section + '-section').style.display = 'block';
+            
+            // Marcar enlace como activo
+            event.target.classList.add('active');
+            
+            // Cargar datos si es necesario
+            if (section === 'messages') {
+                loadMessages();
+            } else if (section === 'dashboard') {
+                loadDashboardStats();
+            }
+        }
+
+        // Cargar estadísticas del dashboard
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch('/api/admin-stats', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('adminToken')
+                    }
+                });
+                
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('totalMessages').textContent = stats.totalMessages || 0;
+                    document.getElementById('newMessages').textContent = stats.newMessages || 0;
+                    document.getElementById('todayMessages').textContent = stats.todayMessages || 0;
+                }
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+            }
+        }
+
+        // Cargar mensajes
+        async function loadMessages() {
+            const container = document.getElementById('messages-container');
+            
+            try {
+                const response = await fetch('/api/admin-messages', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('adminToken')
+                    }
+                });
+                
+                if (response.ok) {
+                    const messages = await response.json();
+                    displayMessages(messages);
+                } else {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error cargando mensajes</p></div>';
+                }
+            } catch (error) {
+                console.error('Error cargando mensajes:', error);
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error de conexión</p></div>';
+            }
+        }
+
+        // Mostrar mensajes
+        function displayMessages(messages) {
+            const container = document.getElementById('messages-container');
+            
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-envelope-open"></i><p>No hay mensajes disponibles</p></div>';
+                return;
+            }
+            
+            container.innerHTML = messages.map(message => `
+                <div class="message-card">
+                    <div class="message-header">
+                        <div class="message-info">
+                            <h3>${message.nombre}</h3>
+                            <p>${message.email}</p>
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-date">${new Date(message.createdAt).toLocaleDateString('es-ES')}</span>
+                            <span class="message-status ${message.read ? 'status-read' : 'status-new'}">
+                                ${message.read ? 'Leído' : 'Nuevo'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-text">${message.mensaje}</div>
+                        <div class="message-details">
+                            ${message.empresa ? `<div class="detail-item"><div class="detail-label">Empresa</div><div class="detail-value">${message.empresa}</div></div>` : ''}
+                            <div class="detail-item">
+                                <div class="detail-label">Newsletter</div>
+                                <div class="detail-value">${message.newsletter ? 'Sí' : 'No'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Cerrar sesión
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('userType');
+            window.location.href = 'admin-login.html';
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadDashboardStats();
+        });
+    </script>
+</body>
+</html>

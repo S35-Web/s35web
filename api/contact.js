@@ -71,6 +71,23 @@ module.exports = async (req, res) => {
 
     console.log('Sending email:', { from, to, subject });
     
+    // Guardar mensaje en "base de datos" (por ahora en memoria)
+    const message = {
+      id: Date.now().toString(),
+      nombre,
+      email,
+      empresa: empresa || '',
+      mensaje,
+      newsletter: !!newsletter,
+      createdAt: new Date().toISOString(),
+      read: false
+    };
+
+    // Aquí normalmente guardarías en una base de datos real
+    // Por ahora solo logueamos
+    console.log('Mensaje guardado:', message);
+
+    // Enviar email
     const result = await resend.emails.send({
       from,
       to,
@@ -86,7 +103,10 @@ module.exports = async (req, res) => {
     }
 
     console.log('Email sent successfully');
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ 
+      ok: true, 
+      message: 'Mensaje enviado correctamente. Nos pondremos en contacto contigo pronto.' 
+    });
   } catch (err) {
     return res.status(500).json({ ok: false, error: err.message || 'Error inesperado' });
   }

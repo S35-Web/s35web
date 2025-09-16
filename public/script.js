@@ -897,11 +897,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         throw new Error(data.error || 'No se pudo enviar el mensaje');
                     }
 
-                    let successMessage = '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.';
-                    if (payload.newsletter) {
-                        successMessage += ' También te has suscrito a nuestro newsletter.';
-                    }
-                    alert(successMessage);
+                    // Mostrar mensaje de éxito
+                    const successMessage = data.message || '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.';
+                    
+                    // Crear modal de éxito
+                    showSuccessModal(successMessage);
                     this.reset();
                 } catch (error) {
                     console.error('Error enviando mensaje:', error);
@@ -1582,3 +1582,68 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', () => {
     new PixelTracker();
 });
+
+// Modal de éxito para formulario de contacto
+function showSuccessModal(message) {
+    // Crear overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        backdrop-filter: blur(10px);
+    `;
+
+    // Crear modal
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        color: white;
+        font-family: 'Inter', sans-serif;
+    `;
+
+    modal.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+            <i class="fas fa-check-circle" style="font-size: 3rem; color: #4ade80; margin-bottom: 1rem;"></i>
+        </div>
+        <h3 style="margin: 0 0 1rem 0; font-size: 1.25rem; font-weight: 600;">¡Mensaje Enviado!</h3>
+        <p style="margin: 0 0 1.5rem 0; color: #9ca3af; line-height: 1.5;">${message}</p>
+        <button onclick="this.closest('.overlay').remove()" style="
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+            Entendido
+        </button>
+    `;
+
+    overlay.className = 'overlay';
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Cerrar al hacer clic en el overlay
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            overlay.remove();
+        }
+    });
+}
