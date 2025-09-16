@@ -5,49 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S-35 | Acceso de Clientes</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .login-container { min-height: 100vh; background: linear-gradient(135deg, #000 0%, #1a1a1a 100%); display: flex; align-items: center; justify-content: center; padding: var(--space-lg); }
-        .login-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: var(--space-6xl); width: 100%; max-width: 400px; text-align: center; }
-        .logo { margin-bottom: var(--space-2xl); }
-        .logo img { height: 60px; width: auto; }
-        .title { font-family: 'Inter', sans-serif; font-size: 2rem; font-weight: 700; color: var(--primary-white); margin-bottom: var(--space-sm); }
-        .subtitle { font-family: 'Inter', sans-serif; font-size: 1rem; color: var(--gray-400); margin-bottom: var(--space-2xl); }
-        .form { display: flex; flex-direction: column; gap: var(--space-lg); }
-        .form-group label { display: block; font-family: 'Inter', sans-serif; font-size: .875rem; font-weight: 500; color: var(--primary-white); margin-bottom: var(--space-xs); }
-        .form-group input { width: 100%; padding: var(--space-md); border: 1px solid rgba(255,255,255,.2); border-radius: 12px; background: rgba(255,255,255,.05); color: #fff; font-family: 'Inter', sans-serif; font-size: 1rem; transition: all .3s; }
-        .form-group input:focus { outline: none; border-color: var(--primary-blue); background: rgba(255,255,255,.1); }
-        .btn { width: 100%; padding: var(--space-md); background: linear-gradient(135deg, var(--primary-blue) 0%, #0066cc 100%); border: none; border-radius: 12px; color: #fff; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all .3s; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,123,255,.3); }
-        .error { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); color: #fca5a5; padding: var(--space-md); border-radius: 12px; font-family: 'Inter', sans-serif; font-size: .875rem; margin-top: var(--space-md); display: none; }
-        .back a { color: var(--gray-400); text-decoration: none; font-family: 'Inter', sans-serif; font-size: .875rem; transition: color .3s; }
-        .back a:hover { color: #fff; }
+        :root { --overlay: rgba(0,0,0,.55); }
+        body { margin: 0; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 300; }
+        .page { min-height: 100vh; position: relative; display: grid; place-items: center; overflow: hidden; background: #000; }
+        .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.95) brightness(.9); }
+        .overlay { position: absolute; inset: 0; background: radial-gradient(1200px 600px at 20% 20%, rgba(0,0,0,.18), transparent), linear-gradient(180deg, var(--overlay), rgba(0,0,0,.75)); }
+        .card { position: relative; width: min(92vw, 420px); border-radius: 20px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(18px); box-shadow: 0 10px 50px rgba(0,0,0,.35); padding: 36px 28px; }
+        .logo { display: grid; place-items: center; margin-bottom: 18px; }
+        .logo img { height: 56px; width: auto; }
+        .title { margin: 0 0 6px; color: #fff; font-weight: 300; letter-spacing: .4px; font-size: 28px; text-align: center; }
+        .subtitle { margin: 0 0 22px; color: #bfbfbf; font-weight: 300; font-size: 14px; text-align: center; }
+        .form { display: grid; gap: 16px; }
+        .label { color: #e8e8e8; font-size: 12px; margin-bottom: 6px; letter-spacing: .3px; }
+        .input { width: 100%; padding: 14px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #fff; outline: none; transition: border-color .2s, background .2s; font-weight: 300; }
+        .input::placeholder { color: #9aa0a6; }
+        .input:focus { border-color: #4da3ff; background: rgba(255,255,255,.1); }
+        .btn { width: 100%; padding: 14px 16px; border-radius: 12px; border: 0; background: linear-gradient(135deg,#0a84ff,#0066cc); color: #fff; font-weight: 500; letter-spacing: .2px; cursor: pointer; box-shadow: 0 12px 30px rgba(10,132,255,.25); transition: transform .15s ease; }
+        .btn:hover { transform: translateY(-1px); }
+        .error { display: none; margin-top: 8px; border-radius: 12px; border: 1px solid rgba(239,68,68,.35); background: rgba(239,68,68,.08); color: #fca5a5; padding: 12px 14px; font-size: 13px; }
+        .back { text-align: center; margin-top: 18px; }
+        .back a { color: #c7c7c7; text-decoration: none; font-size: 13px; }
+        @media (max-width: 640px){ .card{ padding: 32px 22px; width: min(88vw, 440px);} }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-card">
+    <div class="page">
+        <video class="bg-video" autoplay muted loop playsinline>
+            <source src="Assets/agua_optimized.mp4" type="video/mp4">
+        </video>
+        <div class="overlay"></div>
+
+        <div class="card">
             <div class="logo"><img src="Assets/Logotipo Principal.png" alt="S-35 Technology"></div>
             <h1 class="title">Acceso de Clientes</h1>
             <p class="subtitle">Portal exclusivo para clientes</p>
-
             <form class="form" id="clientForm">
-                <div class="form-group">
-                    <label for="username">Usuario o correo</label>
-                    <input id="username" name="username" type="text" placeholder="Ingresa tu usuario" required>
+                <div>
+                    <div class="label">Usuario o correo</div>
+                    <input class="input" id="username" name="username" type="text" placeholder="Ingresa tu usuario" required>
                 </div>
-                <div class="form-group">
-                    <label for="password">Contraseña</label>
-                    <input id="password" name="password" type="password" placeholder="Ingresa tu contraseña" required>
+                <div>
+                    <div class="label">Contraseña</div>
+                    <input class="input" id="password" name="password" type="password" placeholder="Ingresa tu contraseña" required>
                 </div>
                 <button type="submit" class="btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</button>
                 <div class="error" id="errorMessage"></div>
             </form>
-
-            <div class="back" style="margin-top: var(--space-xl);">
-                <a href="index.html"><i class="fas fa-arrow-left"></i> Volver al sitio principal</a>
-            </div>
+            <div class="back"><a href="index.html"><i class="fas fa-arrow-left"></i> Volver al sitio principal</a></div>
         </div>
     </div>
 
@@ -58,19 +64,16 @@
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
             const loginBtn = document.getElementById('loginBtn');
-
             loginBtn.disabled = true;
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
             errorMessage.style.display = 'none';
             try {
                 const response = await fetch('/api/admin-login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password, userType: 'clientes' })
                 });
                 const data = await response.json();
                 if (data.success) {
-                    // Aquí podríamos redirigir a un portal de clientes
                     window.location.href = 'index.html#contacto';
                 } else {
                     errorMessage.textContent = data.message || 'Credenciales incorrectas';
