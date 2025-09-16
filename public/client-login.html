@@ -44,7 +44,7 @@
             <form class="form" id="clientForm">
                 <div>
                     <div class="label">Usuario o correo</div>
-                    <input class="input" id="username" name="username" type="text" placeholder="Ingresa tu usuario" required>
+                    <input class="input" id="username" name="username" type="text" placeholder="Ingresa tu usuario" required autocapitalize="none" autocorrect="off" autocomplete="username">
                 </div>
                 <div>
                     <div class="label">Contraseña</div>
@@ -60,7 +60,7 @@
     <script>
         document.getElementById('clientForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('username').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
             const loginBtn = document.getElementById('loginBtn');
@@ -81,7 +81,8 @@
                     throw new Error('Respuesta no válida del servidor');
                 }
                 if (data.success) {
-                    window.location.href = 'index.html#contacto';
+                    localStorage.setItem('clientToken', data.token || 'client');
+                    window.location.href = 'client-dashboard.html';
                 } else {
                     errorMessage.textContent = data.message || 'Credenciales incorrectas';
                     errorMessage.style.display = 'block';
