@@ -51,6 +51,62 @@ module.exports = async (req, res) => {
           role: 'client'
         }
       });
+    } else if (userType === 'pos') {
+      // Para representantes de ventas (POS)
+      if (normalizedUsername === 'vendedor' && password === 'ventas123') {
+        const token = jwt.sign(
+          { 
+            username: 'vendedor', 
+            userType: 'pos',
+            role: 'sales_rep'
+          },
+          process.env.JWT_SECRET || 's35-admin-secret-key-2024',
+          { expiresIn: '24h' }
+        );
+        return res.status(200).json({
+          success: true,
+          message: 'Login exitoso',
+          token: token,
+          user: {
+            username: 'vendedor',
+            userType: 'pos',
+            role: 'sales_rep'
+          }
+        });
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: 'Credenciales incorrectas'
+        });
+      }
+    } else if (userType === 'pdc') {
+      // Para administradores del panel de control
+      if (normalizedUsername === 'admin' && password === 'admin123') {
+        const token = jwt.sign(
+          { 
+            username: 'admin', 
+            userType: 'pdc',
+            role: 'system_admin'
+          },
+          process.env.JWT_SECRET || 's35-admin-secret-key-2024',
+          { expiresIn: '24h' }
+        );
+        return res.status(200).json({
+          success: true,
+          message: 'Login exitoso',
+          token: token,
+          user: {
+            username: 'admin',
+            userType: 'pdc',
+            role: 'system_admin'
+          }
+        });
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: 'Credenciales incorrectas'
+        });
+      }
     } else {
       return res.status(400).json({
         success: false,
