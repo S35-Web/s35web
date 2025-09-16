@@ -84,11 +84,20 @@
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
             errorMessage.style.display = 'none';
             try {
-                const response = await fetch('/api/admin-login', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                const response = await fetch(window.location.origin + '/api/admin-login', {
+                    method: 'POST',
+                    mode: 'same-origin',
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ username, password, userType: 'colaboradores' })
                 });
-                const data = await response.json();
+                let data;
+                try { data = await response.json(); } catch(parseErr){
+                    throw new Error('Respuesta no válida del servidor');
+                }
                 if (data.success) {
                     localStorage.setItem('adminToken', data.token);
                     localStorage.setItem('userType', 'colaboradores');
