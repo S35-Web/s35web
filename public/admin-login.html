@@ -51,8 +51,10 @@
 </head>
 <body>
     <div class="page">
-        <video class="bg-video" autoplay muted loop playsinline webkit-playsinline preload="metadata" poster="Assets/contact.jpg">
-            <source src="Assets/colaboradores_background.mp4" type="video/mp4">
+        <video class="bg-video" muted playsinline webkit-playsinline autoplay loop preload="metadata" poster="Assets/contact.jpg">
+            <source src="Assets/colaboradores_background.mp4" type="video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\"">
+            <source src="Assets/mezcla_optimized.mp4" type="video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\"">
+            <source src="Assets/agua_optimized.mp4" type="video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\"">
         </video>
         <div class="overlay"></div>
 
@@ -115,6 +117,29 @@
             } finally {
                 loginBtn.disabled = false;
                 loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
+            }
+        });
+
+        // Forzar autoplay en iOS si el video está listo
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.querySelector('.bg-video');
+            if (!video) return;
+            const tryPlay = () => {
+                const p = video.play();
+                if (p && typeof p.then === 'function') {
+                    p.catch(() => {
+                        // Si falla, intentamos de nuevo tras interacción (tap en pantalla)
+                        const once = () => {
+                            video.play().finally(() => document.removeEventListener('touchend', once));
+                        };
+                        document.addEventListener('touchend', once, { once: true });
+                    });
+                }
+            };
+            if (video.readyState >= 2) {
+                tryPlay();
+            } else {
+                video.addEventListener('canplay', tryPlay, { once: true });
             }
         });
     </script>
