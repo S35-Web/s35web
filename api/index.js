@@ -122,9 +122,11 @@ module.exports = async (req, res) => {
     try {
         const { method, url } = req;
         const path = url.split('?')[0];
+        
+        console.log('Request:', method, path); // Debug log
 
         // GET /api - Información del sistema
-        if (method === 'GET' && path === '/api') {
+        if (method === 'GET' && (path === '/api' || path === '/')) {
             return res.status(200).json({
                 success: true,
                 message: 'Sistema S-35 ERP funcionando',
@@ -135,7 +137,7 @@ module.exports = async (req, res) => {
         }
 
         // GET /api/products - Obtener productos
-        if (method === 'GET' && path === '/api/products') {
+        if (method === 'GET' && (path === '/api/products' || path === '/products')) {
             return res.status(200).json({
                 success: true,
                 data: products,
@@ -144,7 +146,7 @@ module.exports = async (req, res) => {
         }
 
         // POST /api/products - Crear producto
-        if (method === 'POST' && path === '/api/products') {
+        if (method === 'POST' && (path === '/api/products' || path === '/products')) {
             authenticateToken(req, res, () => {
                 const newProduct = JSON.parse(req.body);
                 newProduct._id = (products.length + 1).toString();
@@ -162,7 +164,7 @@ module.exports = async (req, res) => {
         }
 
         // GET /api/users - Obtener usuarios
-        if (method === 'GET' && path === '/api/users') {
+        if (method === 'GET' && (path === '/api/users' || path === '/users')) {
             return res.status(200).json({
                 success: true,
                 data: users,
@@ -171,7 +173,7 @@ module.exports = async (req, res) => {
         }
 
         // POST /api/users - Crear usuario
-        if (method === 'POST' && path === '/api/users') {
+        if (method === 'POST' && (path === '/api/users' || path === '/users')) {
             authenticateToken(req, res, () => {
                 const newUser = JSON.parse(req.body);
                 newUser._id = (users.length + 1).toString();
@@ -188,7 +190,7 @@ module.exports = async (req, res) => {
         }
 
         // POST /api/login - Login
-        if (method === 'POST' && path === '/api/login') {
+        if (method === 'POST' && (path === '/api/login' || path === '/login')) {
             const { username, password } = JSON.parse(req.body);
             const user = users.find(u => u.username === username && u.password === password);
             
@@ -219,7 +221,7 @@ module.exports = async (req, res) => {
         }
 
         // GET /api/orders - Obtener pedidos
-        if (method === 'GET' && path === '/api/orders') {
+        if (method === 'GET' && (path === '/api/orders' || path === '/orders')) {
             return res.status(200).json({
                 success: true,
                 data: orders,
@@ -228,7 +230,7 @@ module.exports = async (req, res) => {
         }
 
         // POST /api/orders - Crear pedido
-        if (method === 'POST' && path === '/api/orders') {
+        if (method === 'POST' && (path === '/api/orders' || path === '/orders')) {
             authenticateToken(req, res, () => {
                 const newOrder = JSON.parse(req.body);
                 newOrder._id = (orders.length + 1).toString();
@@ -245,7 +247,7 @@ module.exports = async (req, res) => {
         }
 
         // GET /api/clients - Obtener clientes
-        if (method === 'GET' && path === '/api/clients') {
+        if (method === 'GET' && (path === '/api/clients' || path === '/clients')) {
             return res.status(200).json({
                 success: true,
                 data: clients,
@@ -254,7 +256,7 @@ module.exports = async (req, res) => {
         }
 
         // POST /api/clients - Crear cliente
-        if (method === 'POST' && path === '/api/clients') {
+        if (method === 'POST' && (path === '/api/clients' || path === '/clients')) {
             authenticateToken(req, res, () => {
                 const newClient = JSON.parse(req.body);
                 newClient._id = (clients.length + 1).toString();
@@ -271,7 +273,7 @@ module.exports = async (req, res) => {
         }
 
         // GET /api/stats - Estadísticas
-        if (method === 'GET' && path === '/api/stats') {
+        if (method === 'GET' && (path === '/api/stats' || path === '/stats')) {
             return res.status(200).json({
                 success: true,
                 data: {
