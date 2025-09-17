@@ -129,37 +129,51 @@ module.exports = async (req, res) => {
 
         // POST /api/products - Crear producto
         if (method === 'POST' && path === '/api/products') {
-            console.log('Body type:', typeof req.body);
-            console.log('Body content:', req.body);
-            
-            // En Vercel, el body ya viene parseado como objeto
-            const body = req.body || {};
-            
-            // Validación básica
-            if (!body.name || !body.price || !body.category) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: 'Faltan campos requeridos: name, price, category' 
-                });
-            }
+            try {
+                console.log('=== PRODUCT CREATION DEBUG ===');
+                console.log('Method:', method);
+                console.log('Path:', path);
+                console.log('Body type:', typeof req.body);
+                console.log('Body content:', req.body);
+                console.log('Headers:', req.headers);
+                
+                // En Vercel, el body ya viene parseado como objeto
+                const body = req.body || {};
+                console.log('Processed body:', body);
+                
+                // Validación básica
+                if (!body.name || !body.price || !body.category) {
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: 'Faltan campos requeridos: name, price, category' 
+                    });
+                }
 
-            body.createdAt = new Date();
-            body.updatedAt = new Date();
-            body.status = body.stock > body.minStock ? 'active' : (body.stock > 0 ? 'low_stock' : 'out_of_stock');
+                body.createdAt = new Date();
+                body.updatedAt = new Date();
+                body.status = body.stock > body.minStock ? 'active' : (body.stock > 0 ? 'low_stock' : 'out_of_stock');
 
-            if (useMongoDB) {
-                const result = await collections.products.insertOne(body);
-                return res.status(201).json({ 
-                    success: true, 
-                    message: 'Producto creado exitosamente',
-                    data: { _id: result.insertedId, ...body } 
-                });
-            } else {
-                body._id = (Date.now()).toString();
-                return res.status(201).json({ 
-                    success: true, 
-                    message: 'Producto creado exitosamente',
-                    data: body 
+                if (useMongoDB) {
+                    const result = await collections.products.insertOne(body);
+                    return res.status(201).json({ 
+                        success: true, 
+                        message: 'Producto creado exitosamente',
+                        data: { _id: result.insertedId, ...body } 
+                    });
+                } else {
+                    body._id = (Date.now()).toString();
+                    return res.status(201).json({ 
+                        success: true, 
+                        message: 'Producto creado exitosamente',
+                        data: body 
+                    });
+                }
+            } catch (error) {
+                console.error('Error in product creation:', error);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error interno del servidor',
+                    error: error.message
                 });
             }
         }
