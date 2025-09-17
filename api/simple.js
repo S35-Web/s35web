@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
 
         // ==================== LOGIN ====================
         if (method === 'POST' && path === '/api/login') {
-            const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+            const body = req.body || {};
             const { username, password } = body;
 
             let user;
@@ -132,18 +132,8 @@ module.exports = async (req, res) => {
             console.log('Body type:', typeof req.body);
             console.log('Body content:', req.body);
             
-            let body;
-            try {
-                body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-                console.log('Parsed body:', body);
-            } catch (error) {
-                console.error('JSON parse error:', error);
-                return res.status(400).json({ 
-                    success: false, 
-                    message: 'Error al procesar los datos del producto',
-                    error: error.message
-                });
-            }
+            // En Vercel, el body ya viene parseado como objeto
+            const body = req.body || {};
             
             // Validación básica
             if (!body.name || !body.price || !body.category) {
@@ -177,7 +167,7 @@ module.exports = async (req, res) => {
         // PUT /api/products/:id - Actualizar producto
         if (method === 'PUT' && path.startsWith('/api/products/')) {
             const productId = path.split('/')[3];
-            const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+            const body = req.body || {};
             
             body.updatedAt = new Date();
             body.status = body.stock > body.minStock ? 'active' : (body.stock > 0 ? 'low_stock' : 'out_of_stock');
@@ -249,7 +239,7 @@ module.exports = async (req, res) => {
 
         // POST /api/users - Crear usuario
         if (method === 'POST' && path === '/api/users') {
-            const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+            const body = req.body || {};
             
             // Validación básica
             if (!body.username || !body.password || !body.userType) {
@@ -282,7 +272,7 @@ module.exports = async (req, res) => {
         // PUT /api/users/:id - Actualizar usuario
         if (method === 'PUT' && path.startsWith('/api/users/')) {
             const userId = path.split('/')[3];
-            const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+            const body = req.body || {};
             
             body.updatedAt = new Date();
 
@@ -369,7 +359,7 @@ module.exports = async (req, res) => {
 
         // POST /api/clients - Crear cliente
         if (method === 'POST' && path === '/api/clients') {
-            const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+            const body = req.body || {};
             
             // Validación básica
             if (!body.name || !body.email || !body.phone) {
@@ -402,7 +392,7 @@ module.exports = async (req, res) => {
         // PUT /api/clients/:id - Actualizar cliente
         if (method === 'PUT' && path.startsWith('/api/clients/')) {
             const clientId = path.split('/')[3];
-            const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+            const body = req.body || {};
             
             body.updatedAt = new Date();
 
