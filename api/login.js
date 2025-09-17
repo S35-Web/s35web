@@ -38,6 +38,11 @@ module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
+    // Debug logging
+    console.log('Login API - Method:', req.method);
+    console.log('Login API - URL:', req.url);
+    console.log('Login API - Headers:', req.headers);
+
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
@@ -73,9 +78,15 @@ module.exports = async (req, res) => {
             });
         }
 
+        // Si no es POST, devolver información de debug
         return res.status(405).json({
             success: false,
-            message: 'Método no permitido'
+            message: 'Método no permitido',
+            debug: {
+                method: req.method,
+                url: req.url,
+                expected: 'POST'
+            }
         });
 
     } catch (error) {
