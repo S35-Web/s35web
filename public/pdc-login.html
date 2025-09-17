@@ -84,6 +84,7 @@
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
             errorMessage.style.display = 'none';
             try {
+                console.log('Enviando login:', { username, password });
                 const response = await fetch(window.location.origin + '/api/login', {
                     method: 'POST',
                     mode: 'same-origin',
@@ -94,8 +95,15 @@
                     },
                     body: JSON.stringify({ username, password })
                 });
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
                 let data;
-                try { data = await response.json(); } catch(parseErr){
+                try { 
+                    data = await response.json(); 
+                    console.log('Response data:', data);
+                } catch(parseErr){
+                    console.error('Error parsing JSON:', parseErr);
                     throw new Error('Respuesta no válida del servidor');
                 }
                 if (data.success && data.user.userType === 'pdc') {
@@ -108,7 +116,9 @@
                     errorMessage.style.display = 'block';
                 }
             } catch (err) {
-                errorMessage.textContent = 'Error de conexión. Intenta nuevamente.';
+                console.error('Error en login:', err);
+                console.error('Response data:', data);
+                errorMessage.textContent = `Error: ${err.message || 'Error de conexión. Intenta nuevamente.'}`;
                 errorMessage.style.display = 'block';
             } finally {
                 loginBtn.disabled = false;
