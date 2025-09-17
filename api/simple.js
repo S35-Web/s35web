@@ -131,12 +131,7 @@ module.exports = async (req, res) => {
         if (method === 'POST' && path === '/api/products') {
             return res.status(201).json({ 
                 success: true, 
-                message: 'Producto creado exitosamente',
-                data: {
-                    _id: '123',
-                    name: 'Producto Test',
-                    price: 100
-                }
+                message: 'Producto creado exitosamente'
             });
         }
 
