@@ -1,7 +1,7 @@
-// api.js - API única que maneja todo
+// api/index.js - API principal de Vercel
 const jwt = require('jsonwebtoken');
 
-// Datos en memoria (temporal)
+// Datos en memoria
 let products = [
     {
         _id: '1',
