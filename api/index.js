@@ -1,4 +1,4 @@
-// api/index.js - API principal de Vercel (Redirige a main.js)
-const mainAPI = require('./main');
+// api/index.js - API principal de Vercel (Redirige a simple.js)
+const simpleAPI = require('./simple');
 
-module.exports = mainAPI;
+module.exports = simpleAPI;
