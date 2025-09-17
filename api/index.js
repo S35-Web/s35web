@@ -272,19 +272,114 @@ module.exports = async (req, res) => {
             });
         }
 
-        // GET /api/stats - Estadísticas
-        if (method === 'GET' && (path === '/api/stats' || path === '/stats')) {
-            return res.status(200).json({
-                success: true,
-                data: {
-                    products: products.length,
-                    users: users.length,
-                    orders: orders.length,
-                    clients: clients.length,
-                    totalRevenue: orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
-                }
-            });
-        }
+            // GET /api/stats - Estadísticas
+            if (method === 'GET' && (path === '/api/stats' || path === '/stats')) {
+                return res.status(200).json({
+                    success: true,
+                    data: {
+                        products: products.length,
+                        users: users.length,
+                        orders: orders.length,
+                        clients: clients.length,
+                        totalRevenue: orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0)
+                    }
+                });
+            }
+
+            // GET /api/orders/stats - Estadísticas de pedidos
+            if (method === 'GET' && (path === '/api/orders/stats' || path === '/orders/stats')) {
+                const mockStats = {
+                    totalOrders: 45,
+                    totalQuotes: 23,
+                    totalClients: 12,
+                    totalRevenue: 245680,
+                    recentOrders: [
+                        {
+                            _id: '1',
+                            clientName: 'Constructora del Norte',
+                            totalAmount: 12500,
+                            status: 'delivered',
+                            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+                        },
+                        {
+                            _id: '2',
+                            clientName: 'Inmobiliaria del Pacífico',
+                            totalAmount: 8900,
+                            status: 'processing',
+                            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
+                        }
+                    ],
+                    recentQuotes: [
+                        {
+                            _id: '1',
+                            clientName: 'Arquitectura Moderna',
+                            totalAmount: 15600,
+                            status: 'pending',
+                            createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+                        }
+                    ]
+                };
+
+                return res.status(200).json({
+                    success: true,
+                    data: mockStats
+                });
+            }
+
+            // GET /api/quotes - Obtener cotizaciones
+            if (method === 'GET' && (path === '/api/quotes' || path === '/quotes')) {
+                const mockQuotes = [
+                    {
+                        _id: '1',
+                        clientId: '1',
+                        clientName: 'Constructora del Norte S.A. de C.V.',
+                        items: [
+                            {
+                                productId: '1',
+                                productName: 'Basecoat Blanco Absoluto',
+                                quantity: 20,
+                                price: 450
+                            },
+                            {
+                                productId: '2',
+                                productName: 'Estuco Base Pro+',
+                                quantity: 15,
+                                price: 380
+                            }
+                        ],
+                        totalAmount: 17700,
+                        status: 'pending',
+                        orderType: 'quote',
+                        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+                        updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+                    },
+                    {
+                        _id: '2',
+                        clientId: '2',
+                        clientName: 'Inmobiliaria del Pacífico',
+                        items: [
+                            {
+                                productId: '3',
+                                productName: 'Ultraforce Adhesivo',
+                                quantity: 10,
+                                price: 520
+                            }
+                        ],
+                        totalAmount: 5200,
+                        status: 'payment_received',
+                        orderType: 'quote',
+                        paymentProof: 'https://example.com/payment-proof-2.pdf',
+                        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+                        updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
+                    }
+                ];
+
+                return res.status(200).json({
+                    success: true,
+                    data: mockQuotes,
+                    total: mockQuotes.length
+                });
+            }
 
         // Ruta no encontrada
         return res.status(404).json({
