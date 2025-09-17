@@ -4,6 +4,7 @@
   "description": "API functions for S-35 website",
   "main": "contact.js",
   "dependencies": {
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.0.0"
   }
 }

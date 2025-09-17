@@ -1,79 +1,7 @@
-// API simplificada de productos sin MongoDB
+// api/products.js - API de productos con MongoDB
 const jwt = require('jsonwebtoken');
-
-// Base de datos simulada
-const products = [
-    {
-        _id: '1',
-        name: 'Basecoat Blanco Absoluto',
-        category: 'Base',
-        price: 450,
-        stock: 150,
-        minStock: 20,
-        description: 'Base para estuco de alta calidad, color blanco absoluto',
-        image: 'basecoat-blanco-absoluto.png',
-        sku: 'BC-BLANCO-ABS-001',
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date()
-    },
-    {
-        _id: '2',
-        name: 'Estuco Base Pro+',
-        category: 'Acabado',
-        price: 380,
-        stock: 89,
-        minStock: 15,
-        description: 'Estuco de acabado premium para interiores y exteriores',
-        image: 'estuco-base-pro.png',
-        sku: 'EST-BASE-PRO-001',
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date()
-    },
-    {
-        _id: '3',
-        name: 'Ultraforce',
-        category: 'Adhesivo',
-        price: 520,
-        stock: 12,
-        minStock: 10,
-        description: 'Adhesivo de ultra fuerza para materiales pesados',
-        image: 'ultraforce.png',
-        sku: 'ADH-ULTRA-001',
-        status: 'low_stock',
-        createdAt: new Date(),
-        updatedAt: new Date()
-    },
-    {
-        _id: '4',
-        name: 'Cellbond',
-        category: 'Adhesivo',
-        price: 680,
-        stock: 45,
-        minStock: 15,
-        description: 'Adhesivo celular de alta resistencia para construcción',
-        image: 'cellbond.png',
-        sku: 'ADH-CELL-001',
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date()
-    },
-    {
-        _id: '5',
-        name: 'WAXTARD Blanco Absoluto',
-        category: 'Premium',
-        price: 650,
-        stock: 40,
-        minStock: 10,
-        description: 'Línea premium WAXTARD en blanco absoluto',
-        image: 'WAXTARD-BLANCO-ABSOLUTO.png',
-        sku: 'WAX-BLANCO-ABS-001',
-        status: 'active',
-        createdAt: new Date(),
-        updatedAt: new Date()
-    }
-];
+const { getCollections } = require('./mongodb');
+const { validateDocument, buildSearchQuery, buildSortOptions } = require('./models');
 
 // Middleware de autenticación
 function authenticateToken(req, res, next) {
@@ -93,6 +21,18 @@ function authenticateToken(req, res, next) {
     });
 }
 
+// Función para actualizar el estado del producto basado en stock
+function updateProductStatus(product) {
+    if (product.stock <= 0) {
+        product.status = 'out_of_stock';
+    } else if (product.stock <= product.minStock) {
+        product.status = 'low_stock';
+    } else {
+        product.status = 'active';
+    }
+    return product;
+}
+
 module.exports = async (req, res) => {
     // CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -106,21 +46,52 @@ module.exports = async (req, res) => {
     try {
         const { method, url } = req;
         const path = url.split('?')[0];
+        const queryParams = new URLSearchParams(url.split('?')[1] || '');
+        
+        const collections = await getCollections();
 
-        // Obtener todos los productos
+        // GET /api/products - Obtener todos los productos con filtros
         if (method === 'GET' && path === '/api/products') {
+            const page = parseInt(queryParams.get('page')) || 1;
+            const limit = parseInt(queryParams.get('limit')) || 50;
+            const search = queryParams.get('search') || '';
+            const category = queryParams.get('category') || '';
+            const status = queryParams.get('status') || '';
+            const sortBy = queryParams.get('sortBy') || 'name';
+            const sortOrder = queryParams.get('sortOrder') || 'asc';
+
+            // Construir query de búsqueda
+            const query = buildSearchQuery({ search, category, status });
+            const sortOptions = buildSortOptions(sortBy, sortOrder);
+
+            // Ejecutar consulta con paginación
+            const skip = (page - 1) * limit;
+            const products = await collections.products
+                .find(query)
+                .sort(sortOptions)
+                .skip(skip)
+                .limit(limit)
+                .toArray();
+
+            const total = await collections.products.countDocuments(query);
+
             return res.status(200).json({
                 success: true,
                 data: products,
-                total: products.length
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    pages: Math.ceil(total / limit)
+                }
             });
         }
 
-        // Obtener producto por ID
+        // GET /api/products/:id - Obtener producto por ID
         if (method === 'GET' && path.startsWith('/api/products/') && !path.includes('/stats') && !path.includes('/low-stock')) {
             const productId = path.split('/')[3];
-            const product = products.find(p => p._id === productId);
-            
+            const product = await collections.products.findOne({ _id: productId });
+
             if (!product) {
                 return res.status(404).json({
                     success: false,
@@ -134,10 +105,176 @@ module.exports = async (req, res) => {
             });
         }
 
-        // Obtener productos con stock bajo
+        // POST /api/products - Crear nuevo producto (solo PDC)
+        if (method === 'POST' && path === '/api/products') {
+            authenticateToken(req, res, async () => {
+                if (req.user.userType !== 'pdc') {
+                    return res.status(403).json({ 
+                        success: false, 
+                        message: 'Solo el PDC puede crear productos' 
+                    });
+                }
+
+                const productData = JSON.parse(req.body);
+                
+                // Validar datos
+                const errors = validateDocument('product', productData);
+                if (errors.length > 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Datos inválidos',
+                        errors
+                    });
+                }
+
+                // Verificar que el SKU no exista
+                const existingProduct = await collections.products.findOne({ sku: productData.sku });
+                if (existingProduct) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'El SKU ya existe'
+                    });
+                }
+
+                // Preparar datos del producto
+                const newProduct = {
+                    ...productData,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+
+                // Actualizar estado basado en stock
+                updateProductStatus(newProduct);
+
+                // Insertar en la base de datos
+                const result = await collections.products.insertOne(newProduct);
+                newProduct._id = result.insertedId;
+
+                return res.status(201).json({
+                    success: true,
+                    data: newProduct
+                });
+            });
+        }
+
+        // PUT /api/products/:id - Actualizar producto (solo PDC)
+        if (method === 'PUT' && path.startsWith('/api/products/')) {
+            authenticateToken(req, res, async () => {
+                if (req.user.userType !== 'pdc') {
+                    return res.status(403).json({ 
+                        success: false, 
+                        message: 'Solo el PDC puede actualizar productos' 
+                    });
+                }
+
+                const productId = path.split('/')[3];
+                const updateData = JSON.parse(req.body);
+
+                // Validar datos
+                const errors = validateDocument('product', updateData);
+                if (errors.length > 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Datos inválidos',
+                        errors
+                    });
+                }
+
+                // Verificar que el producto existe
+                const existingProduct = await collections.products.findOne({ _id: productId });
+                if (!existingProduct) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Producto no encontrado'
+                    });
+                }
+
+                // Preparar datos de actualización
+                const updatedProduct = {
+                    ...updateData,
+                    updatedAt: new Date()
+                };
+
+                // Actualizar estado basado en stock
+                updateProductStatus(updatedProduct);
+
+                // Actualizar en la base de datos
+                await collections.products.updateOne(
+                    { _id: productId },
+                    { $set: updatedProduct }
+                );
+
+                return res.status(200).json({
+                    success: true,
+                    data: updatedProduct
+                });
+            });
+        }
+
+        // POST /api/products/update-stock - Actualizar stock
+        if (method === 'POST' && path === '/api/products/update-stock') {
+            authenticateToken(req, res, async () => {
+                const { productId, quantityChange, reason } = JSON.parse(req.body);
+
+                const product = await collections.products.findOne({ _id: productId });
+                if (!product) {
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Producto no encontrado'
+                    });
+                }
+
+                // Actualizar stock
+                const newStock = product.stock + quantityChange;
+                if (newStock < 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Stock insuficiente'
+                    });
+                }
+
+                const updatedProduct = {
+                    ...product,
+                    stock: newStock,
+                    updatedAt: new Date()
+                };
+
+                // Actualizar estado basado en stock
+                updateProductStatus(updatedProduct);
+
+                // Actualizar en la base de datos
+                await collections.products.updateOne(
+                    { _id: productId },
+                    { $set: updatedProduct }
+                );
+
+                // Registrar movimiento de inventario
+                await collections.inventory.insertOne({
+                    productId,
+                    productName: product.name,
+                    quantityChange,
+                    newStock,
+                    reason: reason || 'Ajuste manual',
+                    userId: req.user.userId,
+                    createdAt: new Date()
+                });
+
+                return res.status(200).json({
+                    success: true,
+                    data: updatedProduct
+                });
+            });
+        }
+
+        // GET /api/products/low-stock - Productos con stock bajo
         if (method === 'GET' && path === '/api/products/low-stock') {
-            const lowStockProducts = products.filter(p => p.stock <= p.minStock && p.status !== 'out_of_stock');
-            
+            const lowStockProducts = await collections.products
+                .find({ 
+                    $expr: { $lte: ['$stock', '$minStock'] },
+                    status: { $ne: 'out_of_stock' }
+                })
+                .toArray();
+
             return res.status(200).json({
                 success: true,
                 data: lowStockProducts,
@@ -145,21 +282,43 @@ module.exports = async (req, res) => {
             });
         }
 
-        // Obtener estadísticas de productos
+        // GET /api/products/stats - Estadísticas de productos
         if (method === 'GET' && path === '/api/products/stats') {
-            const stats = {
-                total: products.length,
-                active: products.filter(p => p.status === 'active').length,
-                lowStock: products.filter(p => p.status === 'low_stock').length,
-                outOfStock: products.filter(p => p.status === 'out_of_stock').length,
-                totalValue: products.reduce((sum, p) => sum + (p.price * p.stock), 0),
-                avgPrice: products.reduce((sum, p) => sum + p.price, 0) / products.length,
-                totalStock: products.reduce((sum, p) => sum + p.stock, 0)
+            const pipeline = [
+                {
+                    $group: {
+                        _id: null,
+                        totalProducts: { $sum: 1 },
+                        activeProducts: {
+                            $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] }
+                        },
+                        lowStockProducts: {
+                            $sum: { $cond: [{ $eq: ['$status', 'low_stock'] }, 1, 0] }
+                        },
+                        outOfStockProducts: {
+                            $sum: { $cond: [{ $eq: ['$status', 'out_of_stock'] }, 1, 0] }
+                        },
+                        totalValue: { $sum: { $multiply: ['$price', '$stock'] } },
+                        avgPrice: { $avg: '$price' },
+                        totalStock: { $sum: '$stock' }
+                    }
+                }
+            ];
+
+            const stats = await collections.products.aggregate(pipeline).toArray();
+            const result = stats[0] || {
+                totalProducts: 0,
+                activeProducts: 0,
+                lowStockProducts: 0,
+                outOfStockProducts: 0,
+                totalValue: 0,
+                avgPrice: 0,
+                totalStock: 0
             };
 
             return res.status(200).json({
                 success: true,
-                data: stats
+                data: result
             });
         }
 

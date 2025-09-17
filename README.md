@@ -469,6 +469,46 @@ graph TD
 1. Ve a https://www.mongodb.com/atlas
 2. Crea una cuenta gratuita
 3. Crea un nuevo cluster (gratuito)
+
+### **2. Configurar cluster**
+- **Región:** Elige la más cercana a México
+- **Tipo:** M0 Sandbox (gratuito)
+- **Nombre:** `s35-erp-cluster`
+
+### **3. Crear usuario de base de datos**
+- **Username:** `s35-admin`
+- **Password:** Genera una contraseña segura
+- **Privileges:** Read and write to any database
+
+### **4. Configurar IP Whitelist**
+- Agregar `0.0.0.0/0` para acceso desde cualquier IP
+
+### **5. Obtener string de conexión**
+- Ve a **Database** → **Connect** → **Connect your application**
+- **Driver:** Node.js
+- **Version:** 4.1 or later
+- Copia el string de conexión
+
+### **6. Configurar en Vercel**
+1. Ve a tu proyecto en Vercel
+2. **Settings** → **Environment Variables**
+3. **Name:** `MONGODB_URI`
+4. **Value:** El string de conexión completo
+5. **Environment:** Production, Preview, Development
+6. **Save**
+
+### **7. Poblar base de datos**
+- Después del despliegue, accede a: `https://tu-sitio.vercel.app/api/seed-database`
+- Esto creará las colecciones y datos iniciales
+
+### **8. Verificar funcionamiento**
+- **APIs:** `GET /api/products`, `GET /api/clients`, `GET /api/orders/stats`
+- **Dashboards:** Login con las credenciales de prueba
+
+### **Credenciales de prueba:**
+- **PDC:** `admin` / `admin123`
+- **POS:** `ventas1` / `ventas123`
+- **Cliente:** `cliente1` / `cliente123`
 4. Configura el acceso a la base de datos
 
 ### **2. Obtener la cadena de conexión**
