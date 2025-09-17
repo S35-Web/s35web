@@ -23,7 +23,6 @@
   ],
   "env": {
     "JWT_SECRET": "s35-admin-secret-key-2024",
-    "MONGODB_URI": "@mongodb_uri",
     "RESEND_API_KEY": "@resend_api_key",
     "MAIL_TO": "contacto@s35.com.mx",
     "MAIL_FROM": "noreply@s35.com.mx"
