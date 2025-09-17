@@ -78,6 +78,17 @@ module.exports = async (req, res) => {
             });
         }
 
+        // GET para probar (temporal)
+        if (req.method === 'GET') {
+            return res.status(200).json({
+                success: true,
+                message: 'Login API funcionando',
+                method: req.method,
+                url: req.url,
+                users: users.map(u => ({ username: u.username, userType: u.userType }))
+            });
+        }
+
         // Si no es POST, devolver información de debug
         return res.status(405).json({
             success: false,
