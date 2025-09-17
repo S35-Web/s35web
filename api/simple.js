@@ -137,8 +137,25 @@ module.exports = async (req, res) => {
                 console.log('Body content:', req.body);
                 console.log('Headers:', req.headers);
                 
-                // En Vercel, el body ya viene parseado como objeto
-                const body = req.body || {};
+                // Manejar el body correctamente para Vercel
+                let body;
+                if (typeof req.body === 'string') {
+                    try {
+                        body = JSON.parse(req.body);
+                    } catch (parseError) {
+                        console.error('JSON parse error:', parseError);
+                        return res.status(400).json({
+                            success: false,
+                            message: 'Error al procesar los datos del producto',
+                            error: parseError.message
+                        });
+                    }
+                } else if (req.body && typeof req.body === 'object') {
+                    body = req.body;
+                } else {
+                    body = {};
+                }
+                
                 console.log('Processed body:', body);
                 
                 // Validación básica
