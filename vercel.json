@@ -13,9 +13,6 @@
     }
   ],
   "env": {
-    "JWT_SECRET": "s35-admin-secret-key-2024",
-    "MONGODB_URI": "mongodb+srv://productoss35_db_user:9ANHbDqa7Pt7tgMi@clusters35.j5s3xxa.mongodb.net/?retryWrites=true&w=majority&appName=ClusterS35",
-    "MAIL_TO": "contacto@s35.com.mx",
-    "MAIL_FROM": "noreply@s35.com.mx"
+    "JWT_SECRET": "s35-admin-secret-key-2024"
   }
 }
