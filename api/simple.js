@@ -129,7 +129,21 @@ module.exports = async (req, res) => {
 
         // POST /api/products - Crear producto
         if (method === 'POST' && path === '/api/products') {
-            const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+            console.log('Body type:', typeof req.body);
+            console.log('Body content:', req.body);
+            
+            let body;
+            try {
+                body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+                console.log('Parsed body:', body);
+            } catch (error) {
+                console.error('JSON parse error:', error);
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Error al procesar los datos del producto',
+                    error: error.message
+                });
+            }
             
             // Validación básica
             if (!body.name || !body.price || !body.category) {
