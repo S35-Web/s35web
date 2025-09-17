@@ -1,5 +1,5 @@
 // api/seed-database.js - Poblar base de datos con datos iniciales
-const { getCollections } = require('./mongodb');
+// const { getCollections } = require('./mongodb');
 
 // Datos iniciales de productos S-35
 const initialProducts = [
@@ -235,37 +235,17 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const collections = await getCollections();
-
-        // Verificar si ya hay datos
-        const existingProducts = await collections.products.countDocuments();
-        const existingClients = await collections.clients.countDocuments();
-        const existingUsers = await collections.users.countDocuments();
-
-        if (existingProducts > 0 || existingClients > 0 || existingUsers > 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'La base de datos ya contiene datos. Use /api/seed-database/reset para limpiar y repoblar.'
-            });
-        }
-
-        // Insertar productos
-        const productResult = await collections.products.insertMany(initialProducts);
-        
-        // Insertar clientes
-        const clientResult = await collections.clients.insertMany(initialClients);
-        
-        // Insertar usuarios
-        const userResult = await collections.users.insertMany(initialUsers);
-
+        // Por ahora, solo devolver los datos sin conectar a MongoDB
         return res.status(200).json({
             success: true,
-            message: 'Base de datos poblada exitosamente',
+            message: 'API de seed funcionando - MongoDB pendiente de configuración',
             data: {
-                products: productResult.insertedCount,
-                clients: clientResult.insertedCount,
-                users: userResult.insertedCount
-            }
+                products: initialProducts.length,
+                clients: initialClients.length,
+                users: initialUsers.length,
+                mongodb_configured: !!process.env.MONGODB_URI
+            },
+            note: 'Para habilitar MongoDB, asegúrate de que MONGODB_URI esté configurada en Vercel'
         });
 
     } catch (error) {
