@@ -133,18 +133,18 @@ module.exports = async (req, res) => {
                 success: true, 
                 message: 'Producto creado exitosamente',
                 data: {
-                    _id: Date.now().toString(),
+                    _id: '123',
                     name: 'Producto Test',
                     description: 'Producto de prueba',
                     price: 100,
                     cost: 50,
                     category: 'Base',
-                    sku: `SKU-${Date.now()}`,
+                    sku: 'SKU-123',
                     stock: 10,
                     minStock: 5,
                     status: 'active',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
+                    createdAt: '2024-01-01T00:00:00.000Z',
+                    updatedAt: '2024-01-01T00:00:00.000Z'
                 }
             });
         }
