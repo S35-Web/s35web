@@ -84,7 +84,7 @@
             loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
             errorMessage.style.display = 'none';
             try {
-                const response = await fetch(window.location.origin + '/api/admin-login', {
+                const response = await fetch(window.location.origin + '/api/login', {
                     method: 'POST',
                     mode: 'same-origin',
                     credentials: 'same-origin',
@@ -92,18 +92,19 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username, password, userType: 'pdc' })
+                    body: JSON.stringify({ username, password })
                 });
                 let data;
                 try { data = await response.json(); } catch(parseErr){
                     throw new Error('Respuesta no válida del servidor');
                 }
-                if (data.success) {
+                if (data.success && data.user.userType === 'pdc') {
                     localStorage.setItem('pdcToken', data.token);
+                    localStorage.setItem('pdcUser', JSON.stringify(data.user));
                     localStorage.setItem('userType', 'pdc');
                     window.location.href = 'pdc-dashboard.html';
                 } else {
-                    errorMessage.textContent = data.message || 'Credenciales incorrectas';
+                    errorMessage.textContent = data.message || 'Credenciales incorrectas o usuario no autorizado para PDC';
                     errorMessage.style.display = 'block';
                 }
             } catch (err) {
