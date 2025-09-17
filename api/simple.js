@@ -135,16 +135,7 @@ module.exports = async (req, res) => {
                 data: {
                     _id: '123',
                     name: 'Producto Test',
-                    description: 'Producto de prueba',
-                    price: 100,
-                    cost: 50,
-                    category: 'Base',
-                    sku: 'SKU-123',
-                    stock: 10,
-                    minStock: 5,
-                    status: 'active',
-                    createdAt: '2024-01-01T00:00:00.000Z',
-                    updatedAt: '2024-01-01T00:00:00.000Z'
+                    price: 100
                 }
             });
         }
