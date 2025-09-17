@@ -127,6 +127,95 @@ module.exports = async (req, res) => {
             return res.status(200).json({ success: true, data: products, total: products.length });
         }
 
+        // POST /api/products - Crear producto
+        if (method === 'POST' && path === '/api/products') {
+            const body = JSON.parse(req.body);
+            
+            // Validación básica
+            if (!body.name || !body.price || !body.category) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Faltan campos requeridos: name, price, category' 
+                });
+            }
+
+            body.createdAt = new Date();
+            body.updatedAt = new Date();
+            body.status = body.stock > body.minStock ? 'active' : (body.stock > 0 ? 'low_stock' : 'out_of_stock');
+
+            if (useMongoDB) {
+                const result = await collections.products.insertOne(body);
+                return res.status(201).json({ 
+                    success: true, 
+                    message: 'Producto creado exitosamente',
+                    data: { _id: result.insertedId, ...body } 
+                });
+            } else {
+                body._id = (Date.now()).toString();
+                return res.status(201).json({ 
+                    success: true, 
+                    message: 'Producto creado exitosamente',
+                    data: body 
+                });
+            }
+        }
+
+        // PUT /api/products/:id - Actualizar producto
+        if (method === 'PUT' && path.startsWith('/api/products/')) {
+            const productId = path.split('/')[3];
+            const body = JSON.parse(req.body);
+            
+            body.updatedAt = new Date();
+            body.status = body.stock > body.minStock ? 'active' : (body.stock > 0 ? 'low_stock' : 'out_of_stock');
+
+            if (useMongoDB) {
+                const { ObjectId } = require('mongodb');
+                if (!ObjectId.isValid(productId)) {
+                    return res.status(400).json({ success: false, message: 'ID de producto inválido' });
+                }
+                const result = await collections.products.findOneAndUpdate(
+                    { _id: new ObjectId(productId) },
+                    { $set: body },
+                    { returnDocument: 'after' }
+                );
+                if (!result.value) {
+                    return res.status(404).json({ success: false, message: 'Producto no encontrado' });
+                }
+                return res.status(200).json({ 
+                    success: true, 
+                    message: 'Producto actualizado exitosamente',
+                    data: result.value 
+                });
+            } else {
+                return res.status(200).json({ 
+                    success: true, 
+                    message: 'Producto actualizado exitosamente',
+                    data: { ...body, _id: productId } 
+                });
+            }
+        }
+
+        // DELETE /api/products/:id - Eliminar producto
+        if (method === 'DELETE' && path.startsWith('/api/products/')) {
+            const productId = path.split('/')[3];
+
+            if (useMongoDB) {
+                const { ObjectId } = require('mongodb');
+                if (!ObjectId.isValid(productId)) {
+                    return res.status(400).json({ success: false, message: 'ID de producto inválido' });
+                }
+                const result = await collections.products.deleteOne({ _id: new ObjectId(productId) });
+                if (result.deletedCount === 0) {
+                    return res.status(404).json({ success: false, message: 'Producto no encontrado' });
+                }
+            }
+
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Producto eliminado exitosamente' 
+            });
+        }
+
         // ==================== USUARIOS ====================
         if (method === 'GET' && path === '/api/users') {
             let users;
@@ -142,6 +231,93 @@ module.exports = async (req, res) => {
             }
 
             return res.status(200).json({ success: true, data: users, total: users.length });
+        }
+
+        // POST /api/users - Crear usuario
+        if (method === 'POST' && path === '/api/users') {
+            const body = JSON.parse(req.body);
+            
+            // Validación básica
+            if (!body.username || !body.password || !body.userType) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Faltan campos requeridos: username, password, userType' 
+                });
+            }
+
+            body.createdAt = new Date();
+            body.updatedAt = new Date();
+
+            if (useMongoDB) {
+                const result = await collections.users.insertOne(body);
+                return res.status(201).json({ 
+                    success: true, 
+                    message: 'Usuario creado exitosamente',
+                    data: { _id: result.insertedId, ...body } 
+                });
+            } else {
+                body._id = (Date.now()).toString();
+                return res.status(201).json({ 
+                    success: true, 
+                    message: 'Usuario creado exitosamente',
+                    data: body 
+                });
+            }
+        }
+
+        // PUT /api/users/:id - Actualizar usuario
+        if (method === 'PUT' && path.startsWith('/api/users/')) {
+            const userId = path.split('/')[3];
+            const body = JSON.parse(req.body);
+            
+            body.updatedAt = new Date();
+
+            if (useMongoDB) {
+                const { ObjectId } = require('mongodb');
+                if (!ObjectId.isValid(userId)) {
+                    return res.status(400).json({ success: false, message: 'ID de usuario inválido' });
+                }
+                const result = await collections.users.findOneAndUpdate(
+                    { _id: new ObjectId(userId) },
+                    { $set: body },
+                    { returnDocument: 'after' }
+                );
+                if (!result.value) {
+                    return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+                }
+                return res.status(200).json({ 
+                    success: true, 
+                    message: 'Usuario actualizado exitosamente',
+                    data: result.value 
+                });
+            } else {
+                return res.status(200).json({ 
+                    success: true, 
+                    message: 'Usuario actualizado exitosamente',
+                    data: { ...body, _id: userId } 
+                });
+            }
+        }
+
+        // DELETE /api/users/:id - Eliminar usuario
+        if (method === 'DELETE' && path.startsWith('/api/users/')) {
+            const userId = path.split('/')[3];
+
+            if (useMongoDB) {
+                const { ObjectId } = require('mongodb');
+                if (!ObjectId.isValid(userId)) {
+                    return res.status(400).json({ success: false, message: 'ID de usuario inválido' });
+                }
+                const result = await collections.users.deleteOne({ _id: new ObjectId(userId) });
+                if (result.deletedCount === 0) {
+                    return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+                }
+            }
+
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Usuario eliminado exitosamente' 
+            });
         }
 
         // ==================== CLIENTES ====================
@@ -175,6 +351,93 @@ module.exports = async (req, res) => {
             }
 
             return res.status(200).json({ success: true, data: clients, total: clients.length });
+        }
+
+        // POST /api/clients - Crear cliente
+        if (method === 'POST' && path === '/api/clients') {
+            const body = JSON.parse(req.body);
+            
+            // Validación básica
+            if (!body.name || !body.email || !body.phone) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Faltan campos requeridos: name, email, phone' 
+                });
+            }
+
+            body.createdAt = new Date();
+            body.updatedAt = new Date();
+
+            if (useMongoDB) {
+                const result = await collections.clients.insertOne(body);
+                return res.status(201).json({ 
+                    success: true, 
+                    message: 'Cliente creado exitosamente',
+                    data: { _id: result.insertedId, ...body } 
+                });
+            } else {
+                body._id = (Date.now()).toString();
+                return res.status(201).json({ 
+                    success: true, 
+                    message: 'Cliente creado exitosamente',
+                    data: body 
+                });
+            }
+        }
+
+        // PUT /api/clients/:id - Actualizar cliente
+        if (method === 'PUT' && path.startsWith('/api/clients/')) {
+            const clientId = path.split('/')[3];
+            const body = JSON.parse(req.body);
+            
+            body.updatedAt = new Date();
+
+            if (useMongoDB) {
+                const { ObjectId } = require('mongodb');
+                if (!ObjectId.isValid(clientId)) {
+                    return res.status(400).json({ success: false, message: 'ID de cliente inválido' });
+                }
+                const result = await collections.clients.findOneAndUpdate(
+                    { _id: new ObjectId(clientId) },
+                    { $set: body },
+                    { returnDocument: 'after' }
+                );
+                if (!result.value) {
+                    return res.status(404).json({ success: false, message: 'Cliente no encontrado' });
+                }
+                return res.status(200).json({ 
+                    success: true, 
+                    message: 'Cliente actualizado exitosamente',
+                    data: result.value 
+                });
+            } else {
+                return res.status(200).json({ 
+                    success: true, 
+                    message: 'Cliente actualizado exitosamente',
+                    data: { ...body, _id: clientId } 
+                });
+            }
+        }
+
+        // DELETE /api/clients/:id - Eliminar cliente
+        if (method === 'DELETE' && path.startsWith('/api/clients/')) {
+            const clientId = path.split('/')[3];
+
+            if (useMongoDB) {
+                const { ObjectId } = require('mongodb');
+                if (!ObjectId.isValid(clientId)) {
+                    return res.status(400).json({ success: false, message: 'ID de cliente inválido' });
+                }
+                const result = await collections.clients.deleteOne({ _id: new ObjectId(clientId) });
+                if (result.deletedCount === 0) {
+                    return res.status(404).json({ success: false, message: 'Cliente no encontrado' });
+                }
+            }
+
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Cliente eliminado exitosamente' 
+            });
         }
 
         // ==================== PEDIDOS ====================
