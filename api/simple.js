@@ -129,44 +129,27 @@ module.exports = async (req, res) => {
 
         // POST /api/products - Crear producto
         if (method === 'POST' && path === '/api/products') {
-            try {
-                console.log('=== PRODUCT CREATION DEBUG ===');
-                console.log('Method:', method);
-                console.log('Path:', path);
-                console.log('Body type:', typeof req.body);
-                console.log('Body content:', req.body);
-                
-                // Crear producto de prueba sin validación compleja
-                const newProduct = {
-                    _id: Date.now().toString(),
-                    name: req.body?.name || 'Producto Test',
-                    description: req.body?.description || '',
-                    price: req.body?.price || 0,
-                    cost: req.body?.cost || 0,
-                    category: req.body?.category || 'Base',
-                    sku: req.body?.sku || `SKU-${Date.now()}`,
-                    stock: req.body?.stock || 0,
-                    minStock: req.body?.minStock || 0,
-                    status: 'active',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                };
+            // Crear producto de prueba sin validación compleja
+            const newProduct = {
+                _id: Date.now().toString(),
+                name: 'Producto Test',
+                description: 'Producto de prueba',
+                price: 100,
+                cost: 50,
+                category: 'Base',
+                sku: `SKU-${Date.now()}`,
+                stock: 10,
+                minStock: 5,
+                status: 'active',
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
 
-                console.log('Created product:', newProduct);
-
-                return res.status(201).json({ 
-                    success: true, 
-                    message: 'Producto creado exitosamente',
-                    data: newProduct 
-                });
-            } catch (error) {
-                console.error('Error in product creation:', error);
-                return res.status(500).json({
-                    success: false,
-                    message: 'Error interno del servidor',
-                    error: error.message
-                });
-            }
+            return res.status(201).json({ 
+                success: true, 
+                message: 'Producto creado exitosamente',
+                data: newProduct 
+            });
         }
 
         // PUT /api/products/:id - Actualizar producto
