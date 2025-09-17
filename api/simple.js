@@ -129,26 +129,23 @@ module.exports = async (req, res) => {
 
         // POST /api/products - Crear producto
         if (method === 'POST' && path === '/api/products') {
-            // Crear producto de prueba sin validación compleja
-            const newProduct = {
-                _id: Date.now().toString(),
-                name: 'Producto Test',
-                description: 'Producto de prueba',
-                price: 100,
-                cost: 50,
-                category: 'Base',
-                sku: `SKU-${Date.now()}`,
-                stock: 10,
-                minStock: 5,
-                status: 'active',
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
-
             return res.status(201).json({ 
                 success: true, 
                 message: 'Producto creado exitosamente',
-                data: newProduct 
+                data: {
+                    _id: Date.now().toString(),
+                    name: 'Producto Test',
+                    description: 'Producto de prueba',
+                    price: 100,
+                    cost: 50,
+                    category: 'Base',
+                    sku: `SKU-${Date.now()}`,
+                    stock: 10,
+                    minStock: 5,
+                    status: 'active',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                }
             });
         }
 
