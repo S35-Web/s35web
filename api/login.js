@@ -49,7 +49,20 @@ module.exports = async (req, res) => {
 
     try {
         if (req.method === 'POST') {
-            const { username, password } = JSON.parse(req.body);
+            // Debug del body
+            console.log('Body type:', typeof req.body);
+            console.log('Body content:', req.body);
+            
+            // Manejar el body correctamente para Vercel
+            let body;
+            if (typeof req.body === 'string') {
+                body = JSON.parse(req.body);
+            } else {
+                body = req.body;
+            }
+            
+            console.log('Parsed body:', body);
+            const { username, password } = body;
             const user = users.find(u => u.username === username && u.password === password);
             
             if (!user) {
