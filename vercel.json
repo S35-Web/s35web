@@ -1,3 +1,31 @@
 {
-  "version": 2
+  "version": 2,
+  "name": "s35-technology-v1.1.6",
+  "builds": [
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+  ],
+  "env": {
+    "JWT_SECRET": "s35-admin-secret-key-2024",
+    "MONGODB_URI": "@mongodb_uri",
+    "RESEND_API_KEY": "@resend_api_key",
+    "MAIL_TO": "contacto@s35.com.mx",
+    "MAIL_FROM": "noreply@s35.com.mx"
+  }
 }

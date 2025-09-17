@@ -174,6 +174,12 @@
     </div>
 
     <script>
+        // Variables globales
+        let currentUser = null;
+        let orders = [];
+        let quotes = [];
+        let invoices = [];
+
         // Tema claro/oscuro
         (function(){
             const root = document.documentElement;
@@ -186,54 +192,292 @@
             });
         })();
 
-        // Mock data (hasta conectar API real)
-        const recentOrders = [
-            { folio:'S35-10234', fecha:'2025-09-05', productos:'Basecoat + Estuco', total:'$12,450', estatus:'En preparación' },
-            { folio:'S35-10212', fecha:'2025-08-21', productos:'Porcelánico', total:'$4,980', estatus:'Entregado' }
-        ];
-        const invoices = [
-            { folio:'F-9041', fecha:'2025-09-06', importe:'$12,450', estatus:'Pendiente' },
-            { folio:'F-8980', fecha:'2025-08-22', importe:'$4,980', estatus:'Pagado' }
-        ];
-
-        function statusBadge(s){
-            if(/entregado|pagado/i.test(s)) return '<span class="badge b-ok">'+s+'</span>';
-            if(/prepar|proceso|pendiente/i.test(s)) return '<span class="badge b-warn">'+s+'</span>';
-            return '<span class="badge b-danger">'+s+'</span>';
+        // Verificar autenticación
+        function checkAuth() {
+            const token = localStorage.getItem('clientToken');
+            if (!token) {
+                window.location.href = 'client-login.html';
+                return;
+            }
+            
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                currentUser = payload;
+                console.log('Cliente autenticado:', currentUser);
+            } catch (error) {
+                console.error('Token inválido:', error);
+                localStorage.removeItem('clientToken');
+                window.location.href = 'client-login.html';
+            }
         }
 
-        function fill(){
-            // KPIs
-            document.getElementById('kpiOpen').textContent = recentOrders.filter(o=>/prepar|curso/i.test(o.estatus)).length;
-            document.getElementById('kpiLast').textContent = recentOrders[0]?.folio || '—';
-            document.getElementById('kpiBalance').textContent = '$0';
-            document.getElementById('kpiInvoices').textContent = invoices.filter(i=>/pend/i.test(i.estatus)).length;
+        // Navegación
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                document.querySelectorAll('main section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.querySelector(link.getAttribute('href')).style.display = 'block';
+                
+                // Cargar datos específicos de la sección
+                const section = link.getAttribute('href').substring(1);
+                loadSectionData(section);
+            });
+        });
 
-            const tbodyR = document.querySelector('#tblRecent tbody');
-            tbodyR.innerHTML = recentOrders.map(o=>`<tr>
-                <td>${o.folio}</td><td>${o.fecha}</td><td>${o.productos}</td><td>${o.total}</td><td>${statusBadge(o.estatus)}</td>
-                <td class="row-actions"><button class="btn link">Ver</button></td>
-            </tr>`).join('');
+        // Cargar datos de sección
+        async function loadSectionData(section) {
+            switch(section) {
+                case 'resumen':
+                    await loadDashboardData();
+                    break;
+                case 'pedidos':
+                    await loadOrders();
+                    break;
+                case 'facturas':
+                    await loadInvoices();
+                    break;
+                case 'surtido':
+                    await loadFulfillment();
+                    break;
+                case 'soporte':
+                    await loadSupport();
+                    break;
+            }
+        }
 
-            const tbodyI = document.querySelector('#tblInvoices tbody');
-            tbodyI.innerHTML = invoices.map(i=>`<tr>
-                <td>${i.folio}</td><td>${i.fecha}</td><td>${i.importe}</td><td>${statusBadge(i.estatus)}</td>
-            </tr>`).join('');
+        // API calls
+        async function apiCall(endpoint, options = {}) {
+            const token = localStorage.getItem('clientToken');
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            };
 
-            document.querySelector('#tblOrders tbody').innerHTML = tbodyR.innerHTML;
-            document.querySelector('#tblAllInvoices tbody').innerHTML = tbodyI.innerHTML;
+            const response = await fetch(endpoint, { ...defaultOptions, ...options });
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Error en la API');
+            }
+            
+            return data;
+        }
 
-            // Fulfillment demo
-            document.getElementById('fulfillment').innerHTML = recentOrders.map(o=>`<div class="card" style="margin-top:10px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div><strong>${o.folio}</strong> <span class="muted">${o.fecha}</span></div>
-                    <div>${statusBadge(o.estatus)}</div>
-                </div>
-                <div class="muted" style="margin-top:6px;">${o.productos}</div>
-                <div style="margin-top:10px; height:8px; background:var(--elev); border-radius:999px; overflow:hidden;">
-                    <div style="width:${/Entregado/i.test(o.estatus)?'100%':/prepar|curso/i.test(o.estatus)?'60%':'20%'}; height:100%; background:var(--primary);"></div>
-                </div>
-            </div>`).join('');
+        // Cargar datos del dashboard
+        async function loadDashboardData() {
+            try {
+                const [ordersData, quotesData] = await Promise.all([
+                    apiCall('/api/orders'),
+                    apiCall('/api/quotes')
+                ]);
+
+                orders = ordersData.data;
+                quotes = quotesData.data;
+
+                // Filtrar solo los pedidos del cliente actual
+                const clientOrders = orders.filter(order => order.clientId === currentUser.clientId);
+                const clientQuotes = quotes.filter(quote => quote.clientId === currentUser.clientId);
+
+                // Actualizar KPIs
+                const openOrders = clientOrders.filter(o => ['confirmed', 'preparing', 'ready'].includes(o.status));
+                const lastOrder = clientOrders[0];
+                const pendingInvoices = clientOrders.filter(o => o.paymentStatus === 'pending');
+
+                document.getElementById('kpiOpen').textContent = openOrders.length;
+                document.getElementById('kpiLast').textContent = lastOrder?.folio || '—';
+                document.getElementById('kpiBalance').textContent = '$0'; // Implementar cálculo de saldo
+                document.getElementById('kpiInvoices').textContent = pendingInvoices.length;
+
+                // Actualizar tabla de pedidos recientes
+                const tbody = document.querySelector('#tblRecent tbody');
+                tbody.innerHTML = clientOrders.slice(0, 5).map(order => `<tr>
+                    <td>${order.folio}</td>
+                    <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>${order.items.map(item => item.productName).join(', ')}</td>
+                    <td>$${order.total.toLocaleString()}</td>
+                    <td>${statusBadge(order.status)}</td>
+                    <td class="row-actions"><button class="btn link" onclick="viewOrder(${order.id})">Ver</button></td>
+                </tr>`).join('');
+
+                // Actualizar tabla de facturas
+                const tbodyI = document.querySelector('#tblInvoices tbody');
+                tbodyI.innerHTML = clientOrders.map(order => `<tr>
+                    <td>${order.folio}</td>
+                    <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>$${order.total.toLocaleString()}</td>
+                    <td>${statusBadge(order.paymentStatus === 'verified' ? 'Pagado' : 'Pendiente')}</td>
+                </tr>`).join('');
+
+            } catch (error) {
+                console.error('Error cargando dashboard:', error);
+                showNotification('Error cargando datos del dashboard', 'error');
+            }
+        }
+
+        // Cargar pedidos
+        async function loadOrders() {
+            try {
+                const data = await apiCall('/api/orders');
+                orders = data.data;
+
+                // Filtrar solo los pedidos del cliente actual
+                const clientOrders = orders.filter(order => order.clientId === currentUser.clientId);
+
+                const tbody = document.querySelector('#tblOrders tbody');
+                tbody.innerHTML = clientOrders.map(order => `<tr>
+                    <td>${order.folio}</td>
+                    <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>${order.items.map(item => item.productName).join(', ')}</td>
+                    <td>$${order.total.toLocaleString()}</td>
+                    <td>${statusBadge(order.status)}</td>
+                    <td class="row-actions"><button class="btn link" onclick="viewOrder(${order.id})">Ver</button></td>
+                </tr>`).join('');
+
+            } catch (error) {
+                console.error('Error cargando pedidos:', error);
+                showNotification('Error cargando pedidos', 'error');
+            }
+        }
+
+        // Cargar facturas
+        async function loadInvoices() {
+            try {
+                const data = await apiCall('/api/orders');
+                orders = data.data;
+
+                // Filtrar solo los pedidos del cliente actual
+                const clientOrders = orders.filter(order => order.clientId === currentUser.clientId);
+
+                const tbody = document.querySelector('#tblAllInvoices tbody');
+                tbody.innerHTML = clientOrders.map(order => `<tr>
+                    <td>${order.folio}</td>
+                    <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>$${order.total.toLocaleString()}</td>
+                    <td>${statusBadge(order.paymentStatus === 'verified' ? 'Pagado' : 'Pendiente')}</td>
+                    <td class="row-actions"><button class="btn link" onclick="downloadInvoice(${order.id})">Descargar</button></td>
+                </tr>`).join('');
+
+            } catch (error) {
+                console.error('Error cargando facturas:', error);
+                showNotification('Error cargando facturas', 'error');
+            }
+        }
+
+        // Cargar estado de surtido
+        async function loadFulfillment() {
+            try {
+                const data = await apiCall('/api/orders');
+                orders = data.data;
+
+                // Filtrar solo los pedidos del cliente actual
+                const clientOrders = orders.filter(order => order.clientId === currentUser.clientId);
+
+                const fulfillmentContainer = document.getElementById('fulfillment');
+                fulfillmentContainer.innerHTML = clientOrders.map(order => {
+                    const progress = getOrderProgress(order.status);
+                    return `<div class="card" style="margin-top:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div><strong>${order.folio}</strong> <span class="muted">${new Date(order.createdAt).toLocaleDateString()}</span></div>
+                            <div>${statusBadge(order.status)}</div>
+                        </div>
+                        <div class="muted" style="margin-top:6px;">${order.items.map(item => item.productName).join(', ')}</div>
+                        <div style="margin-top:10px; height:8px; background:var(--elev); border-radius:999px; overflow:hidden;">
+                            <div style="width:${progress}%; height:100%; background:var(--primary);"></div>
+                        </div>
+                        <div style="margin-top:8px; font-size:12px; color:var(--muted);">
+                            ${getOrderStatusText(order.status)}
+                        </div>
+                    </div>`;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error cargando estado de surtido:', error);
+                showNotification('Error cargando estado de surtido', 'error');
+            }
+        }
+
+        // Cargar soporte
+        async function loadSupport() {
+            // Implementar funcionalidad de soporte
+            console.log('Cargando soporte...');
+        }
+
+        // Funciones de utilidad
+        function statusBadge(status) {
+            const statusMap = {
+                'pending': '<span class="badge b-warn">Pendiente</span>',
+                'confirmed': '<span class="badge b-ok">Confirmado</span>',
+                'preparing': '<span class="badge b-warn">En preparación</span>',
+                'ready': '<span class="badge b-ok">Listo</span>',
+                'delivered': '<span class="badge b-ok">Entregado</span>',
+                'pagado': '<span class="badge b-ok">Pagado</span>',
+                'pendiente': '<span class="badge b-warn">Pendiente</span>'
+            };
+            return statusMap[status] || '<span class="badge b-danger">Desconocido</span>';
+        }
+
+        function getOrderProgress(status) {
+            const progressMap = {
+                'pending': 20,
+                'confirmed': 40,
+                'preparing': 60,
+                'ready': 80,
+                'delivered': 100
+            };
+            return progressMap[status] || 0;
+        }
+
+        function getOrderStatusText(status) {
+            const statusTextMap = {
+                'pending': 'Esperando confirmación',
+                'confirmed': 'Pedido confirmado, preparando',
+                'preparing': 'En proceso de preparación',
+                'ready': 'Listo para entrega',
+                'delivered': 'Entregado exitosamente'
+            };
+            return statusTextMap[status] || 'Estado desconocido';
+        }
+
+        function showNotification(message, type = 'info') {
+            // Implementar sistema de notificaciones
+            alert(message);
+        }
+
+        // Ver pedido
+        function viewOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                const orderDetails = `
+                    <div style="text-align: left;">
+                        <h3>Detalles del Pedido ${order.folio}</h3>
+                        <p><strong>Fecha:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                        <p><strong>Estado:</strong> ${order.status}</p>
+                        <p><strong>Total:</strong> $${order.total.toLocaleString()}</p>
+                        <p><strong>Productos:</strong></p>
+                        <ul>
+                            ${order.items.map(item => `<li>${item.productName} - Cantidad: ${item.quantity} - $${item.total.toLocaleString()}</li>`).join('')}
+                        </ul>
+                        ${order.deliveryDate ? `<p><strong>Fecha de entrega:</strong> ${new Date(order.deliveryDate).toLocaleDateString()}</p>` : ''}
+                    </div>
+                `;
+                alert(orderDetails);
+            }
+        }
+
+        // Descargar factura
+        function downloadInvoice(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                showNotification('Descargando factura...');
+                // Implementar descarga de factura
+            }
         }
 
         // Logout
@@ -242,7 +486,11 @@
             window.location.href = 'client-login.html';
         });
 
-        fill();
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadDashboardData();
+        });
     </script>
 </body>
 </html>

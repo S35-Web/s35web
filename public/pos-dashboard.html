@@ -89,9 +89,93 @@
         .modal-title{ font-size:18px; font-weight:400; }
         .close-btn{ background:none; border:none; color:var(--muted); cursor:pointer; font-size:20px; }
         .product-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; }
-        .product-card{ background:var(--elev); border:1px solid var(--border); border-radius:10px; padding:12px; cursor:pointer; transition:all .2s; }
-        .product-card:hover{ border-color:var(--primary); }
+        .product-card{ 
+            background:var(--elev); 
+            border:1px solid var(--border); 
+            border-radius:12px; 
+            padding:16px; 
+            cursor:pointer; 
+            transition:all .2s; 
+            position:relative;
+            overflow:hidden;
+        }
+        .product-card:hover{ 
+            border-color:var(--primary); 
+            transform:translateY(-2px);
+            box-shadow:0 8px 24px rgba(0,0,0,0.15);
+        }
         .product-card.selected{ border-color:var(--primary); background:rgba(10,132,255,.1); }
+        .product-image{
+            position:relative;
+            width:100%;
+            height:120px;
+            margin-bottom:12px;
+            border-radius:8px;
+            overflow:hidden;
+        }
+        .product-image img{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+        }
+        .product-status{
+            position:absolute;
+            top:8px;
+            right:8px;
+            padding:4px 8px;
+            border-radius:12px;
+            font-size:10px;
+            font-weight:600;
+            text-transform:uppercase;
+        }
+        .product-status.active{ background:var(--success); color:white; }
+        .product-status.low_stock{ background:var(--warning); color:white; }
+        .product-status.out_of_stock{ background:var(--danger); color:white; }
+        .product-info h4{
+            margin:0 0 8px 0;
+            font-size:14px;
+            font-weight:600;
+            color:var(--text);
+            line-height:1.3;
+        }
+        .product-category{
+            font-size:11px;
+            color:var(--muted);
+            margin:0 0 4px 0;
+            text-transform:uppercase;
+            font-weight:500;
+        }
+        .product-sku{
+            font-size:10px;
+            color:var(--muted);
+            margin:0 0 8px 0;
+            font-family:monospace;
+        }
+        .product-price{
+            font-size:16px;
+            font-weight:700;
+            color:var(--success);
+            margin:0 0 8px 0;
+        }
+        .product-stock{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            font-size:11px;
+            margin:0 0 8px 0;
+        }
+        .product-stock span{ color:var(--muted); }
+        .min-stock{ color:var(--warning) !important; font-weight:500; }
+        .product-description{
+            font-size:11px;
+            color:var(--muted);
+            margin:0;
+            line-height:1.4;
+            display:-webkit-box;
+            -webkit-line-clamp:2;
+            -webkit-box-orient:vertical;
+            overflow:hidden;
+        }
         .product-name{ font-weight:400; margin-bottom:4px; }
         .product-price{ color:var(--success); font-size:14px; }
         .cart-item{ display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
@@ -209,20 +293,61 @@
 
                 <section id="productos" style="display:none;">
                     <div class="toolbar">
-                        <input class="search" placeholder="Buscar productos..."/>
+                        <input class="search" placeholder="Buscar productos..." id="productSearch" onkeyup="filterProducts()"/>
+                        <select id="categoryFilter" onchange="filterProducts()" style="width: auto;">
+                            <option value="">Todas las categorías</option>
+                            <option value="Base">Base</option>
+                            <option value="Acabado">Acabado</option>
+                            <option value="Adhesivo">Adhesivo</option>
+                            <option value="Piso">Piso</option>
+                            <option value="Especializado">Especializado</option>
+                            <option value="Premium">Premium</option>
+                        </select>
+                        <button class="btn" onclick="loadProducts()"><i class="fa-solid fa-refresh"></i> Actualizar</button>
                     </div>
                     <div class="product-grid" id="productGrid"></div>
                 </section>
 
                 <section id="reportes" style="display:none;">
-                    <div class="card">
-                        <h3>Reportes de Ventas</h3>
-                        <p class="muted">Análisis de rendimiento y métricas de ventas</p>
-                        <div style="display:grid; gap:12px; margin-top:16px;">
-                            <button class="btn"><i class="fa-solid fa-chart-bar"></i> Ventas por Período</button>
-                            <button class="btn"><i class="fa-solid fa-chart-pie"></i> Productos Más Vendidos</button>
-                            <button class="btn"><i class="fa-solid fa-users"></i> Análisis de Clientes</button>
-                            <button class="btn"><i class="fa-solid fa-file-export"></i> Exportar Datos</button>
+                    <div class="toolbar">
+                        <input type="date" id="reportStartDate" class="search" style="width: auto;">
+                        <input type="date" id="reportEndDate" class="search" style="width: auto;">
+                        <button class="btn primary" onclick="loadReports()"><i class="fa-solid fa-chart-line"></i> Generar Reporte</button>
+                    </div>
+                    
+                    <div class="grid">
+                        <div class="card" style="grid-column: span 8;">
+                            <h3>Ventas por Período</h3>
+                            <div id="salesChart" class="chart-container">
+                                <i class="fa-solid fa-chart-line" style="font-size:48px; margin-bottom:16px;"></i>
+                                <div>Selecciona un período para ver el gráfico</div>
+                            </div>
+                        </div>
+                        <div class="card" style="grid-column: span 4;">
+                            <h3>Top Productos</h3>
+                            <div id="topProducts" style="display:grid; gap:8px;">
+                                <div class="muted">Cargando productos...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid" style="margin-top: 16px;">
+                        <div class="card" style="grid-column: span 6;">
+                            <h3>Análisis de Clientes</h3>
+                            <div id="clientAnalysis" class="table-card">
+                                <table>
+                                    <thead>
+                                        <tr><th>Cliente</th><th>Pedidos</th><th>Total</th><th>Categoría</th></tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card" style="grid-column: span 6;">
+                            <h3>Estado del Inventario</h3>
+                            <div id="inventoryStatus">
+                                <div class="muted">Cargando estado del inventario...</div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -341,6 +466,15 @@
     </div>
 
     <script>
+        // Variables globales
+        let currentUser = null;
+        let products = [];
+        let clients = [];
+        let orders = [];
+        let quotes = [];
+        let currentCart = [];
+        let currentQuote = null;
+
         // Tema claro/oscuro
         (function(){
             const root = document.documentElement;
@@ -353,6 +487,25 @@
             });
         })();
 
+        // Verificar autenticación
+        function checkAuth() {
+            const token = localStorage.getItem('posToken');
+            if (!token) {
+                window.location.href = 'pos-login.html';
+                return;
+            }
+            
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                currentUser = payload;
+                console.log('Usuario autenticado:', currentUser);
+            } catch (error) {
+                console.error('Token inválido:', error);
+                localStorage.removeItem('posToken');
+                window.location.href = 'pos-login.html';
+            }
+        }
+
         // Navegación
         document.querySelectorAll('.nav a').forEach(link => {
             link.addEventListener('click', (e) => {
@@ -364,76 +517,696 @@
                     section.style.display = 'none';
                 });
                 document.querySelector(link.getAttribute('href')).style.display = 'block';
+                
+                // Cargar datos específicos de la sección
+                const section = link.getAttribute('href').substring(1);
+                loadSectionData(section);
             });
         });
 
-        // Mock data
-        const recentOrders = [
-            { folio:'S35-10234', cliente:'Constructora ABC', fecha:'2025-01-15', total:'$12,450', estatus:'En preparación' },
-            { folio:'S35-10233', cliente:'Ingeniería XYZ', fecha:'2025-01-14', total:'$8,920', estatus:'Entregado' },
-            { folio:'S35-10232', cliente:'Arquitectos Unidos', fecha:'2025-01-13', total:'$15,680', estatus:'Pendiente' }
-        ];
-
-        const products = [
-            { id:1, name:'Basecoat Blanco', price:450, category:'Base' },
-            { id:2, name:'Estuco Premium', price:380, category:'Acabado' },
-            { id:3, name:'Ultraforce', price:520, category:'Adhesivo' },
-            { id:4, name:'Cellbond', price:680, category:'Adhesivo' },
-            { id:5, name:'Styrobond', price:420, category:'Adhesivo' },
-            { id:6, name:'Mixandready', price:350, category:'Base' }
-        ];
-
-        function statusBadge(s){
-            if(/entregado/i.test(s)) return '<span class="badge b-success">'+s+'</span>';
-            if(/prepar|pendiente/i.test(s)) return '<span class="badge b-warning">'+s+'</span>';
-            return '<span class="badge b-danger">'+s+'</span>';
+        // Cargar datos de sección
+        async function loadSectionData(section) {
+            switch(section) {
+                case 'dashboard':
+                    await loadDashboardData();
+                    break;
+                case 'pedidos':
+                    await loadOrders();
+                    break;
+                case 'cotizaciones':
+                    await loadQuotes();
+                    break;
+                case 'clientes':
+                    await loadClients();
+                    break;
+                case 'productos':
+                    await loadProducts();
+                    break;
+                case 'reportes':
+                    await loadReports();
+                    break;
+            }
         }
 
-        function fillData(){
-            // Pedidos recientes
-            const tbody = document.querySelector('#tblRecentOrders tbody');
-            tbody.innerHTML = recentOrders.map(o => `<tr>
-                <td>${o.folio}</td><td>${o.cliente}</td><td>${o.fecha}</td><td>${o.total}</td><td>${statusBadge(o.estatus)}</td>
-                <td class="row-actions"><button class="btn link">Ver</button></td>
-            </tr>`).join('');
+        // API calls
+        async function apiCall(endpoint, options = {}) {
+            const token = localStorage.getItem('posToken');
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            };
 
-            // Productos
-            const productGrid = document.getElementById('productGrid');
-            productGrid.innerHTML = products.map(p => `<div class="product-card" data-id="${p.id}">
-                <div class="product-name">${p.name}</div>
-                <div class="product-price">$${p.price}</div>
-                <div class="muted">${p.category}</div>
-            </div>`).join('');
+            const response = await fetch(endpoint, { ...defaultOptions, ...options });
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Error en la API');
+            }
+            
+            return data;
+        }
 
-            // Eventos de productos
-            document.querySelectorAll('.product-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    card.classList.toggle('selected');
-                });
+        // Cargar datos del dashboard
+        async function loadDashboardData() {
+            try {
+                const [ordersData, quotesData, statsData] = await Promise.all([
+                    apiCall('/api/orders'),
+                    apiCall('/api/quotes'),
+                    apiCall('/api/orders/stats')
+                ]);
+
+                orders = ordersData.data;
+                quotes = quotesData.data;
+
+                // Actualizar KPIs
+                document.getElementById('kpiToday').textContent = `$${statsData.data.todayRevenue.toLocaleString()}`;
+                document.getElementById('kpiPending').textContent = statsData.data.pendingOrders;
+                document.getElementById('kpiClients').textContent = statsData.data.totalClients || 0;
+                document.getElementById('kpiTarget').textContent = '78%';
+
+                // Actualizar tabla de pedidos recientes
+                const tbody = document.querySelector('#tblRecentOrders tbody');
+                tbody.innerHTML = orders.slice(0, 5).map(order => `<tr>
+                    <td>${order.folio}</td>
+                    <td>${order.clientName}</td>
+                    <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>$${order.total.toLocaleString()}</td>
+                    <td>${statusBadge(order.status)}</td>
+                    <td class="row-actions"><button class="btn link" onclick="viewOrder(${order.id})">Ver</button></td>
+                </tr>`).join('');
+
+            } catch (error) {
+                console.error('Error cargando dashboard:', error);
+                showNotification('Error cargando datos del dashboard', 'error');
+            }
+        }
+
+        // Cargar pedidos
+        async function loadOrders() {
+            try {
+                const data = await apiCall('/api/orders');
+                orders = data.data;
+
+                const tbody = document.querySelector('#tblOrders tbody');
+                tbody.innerHTML = orders.map(order => `<tr>
+                    <td>${order.folio}</td>
+                    <td>${order.clientName}</td>
+                    <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>${order.items.length} productos</td>
+                    <td>$${order.total.toLocaleString()}</td>
+                    <td>${statusBadge(order.status)}</td>
+                    <td class="row-actions">
+                        <button class="btn link" onclick="viewOrder(${order.id})">Ver</button>
+                        <button class="btn link" onclick="updateOrderStatus(${order.id})">Actualizar</button>
+                    </td>
+                </tr>`).join('');
+
+            } catch (error) {
+                console.error('Error cargando pedidos:', error);
+                showNotification('Error cargando pedidos', 'error');
+            }
+        }
+
+        // Cargar cotizaciones
+        async function loadQuotes() {
+            try {
+                const data = await apiCall('/api/quotes');
+                quotes = data.data;
+
+                const tbody = document.querySelector('#tblQuotes tbody');
+                tbody.innerHTML = quotes.map(quote => `<tr>
+                    <td>${quote.folio}</td>
+                    <td>${quote.clientName}</td>
+                    <td>${new Date(quote.createdAt).toLocaleDateString()}</td>
+                    <td>$${quote.total.toLocaleString()}</td>
+                    <td>${new Date(quote.validUntil).toLocaleDateString()}</td>
+                    <td>${statusBadge(quote.status)}</td>
+                    <td class="row-actions">
+                        <button class="btn link" onclick="viewQuote(${quote.id})">Ver</button>
+                        ${quote.status === 'paid' ? `<button class="btn primary" onclick="convertToOrder(${quote.id})">Convertir a Pedido</button>` : ''}
+                        ${quote.status === 'pending' ? `<button class="btn success" onclick="uploadPaymentProof(${quote.id})">Subir Comprobante</button>` : ''}
+                    </td>
+                </tr>`).join('');
+
+            } catch (error) {
+                console.error('Error cargando cotizaciones:', error);
+                showNotification('Error cargando cotizaciones', 'error');
+            }
+        }
+
+        // Cargar clientes
+        async function loadClients() {
+            try {
+                const data = await apiCall('/api/clients');
+                clients = data.data;
+
+                const tbody = document.querySelector('#tblClients tbody');
+                tbody.innerHTML = clients.map(client => `<tr>
+                    <td>${client.contact}</td>
+                    <td>${client.name}</td>
+                    <td>${client.email}</td>
+                    <td>${client.phone}</td>
+                    <td>${new Date(client.createdAt).toLocaleDateString()}</td>
+                    <td class="row-actions">
+                        <button class="btn link" onclick="editClient(${client.id})">Editar</button>
+                    </td>
+                </tr>`).join('');
+
+            } catch (error) {
+                console.error('Error cargando clientes:', error);
+                showNotification('Error cargando clientes', 'error');
+            }
+        }
+
+        // Cargar productos
+        async function loadProducts() {
+            try {
+                const data = await apiCall('/api/products?limit=100');
+                products = data.data || [];
+                updateProductGrid();
+            } catch (error) {
+                console.error('Error cargando productos:', error);
+                showNotification('Error cargando productos', 'error');
+            }
+        }
+
+        // Filtrar productos
+        function filterProducts() {
+            const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            const filteredProducts = products.filter(product => {
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
+                                    (product.description && product.description.toLowerCase().includes(searchTerm)) ||
+                                    (product.sku && product.sku.toLowerCase().includes(searchTerm));
+                const matchesCategory = !categoryFilter || product.category === categoryFilter;
+                
+                return matchesSearch && matchesCategory;
             });
+            
+            updateProductGrid(filteredProducts);
         }
 
-        function openModal(modalId){
+        // Actualizar grid de productos
+        function updateProductGrid(productsToShow = products) {
+            const grid = document.getElementById('productGrid');
+            
+            if (productsToShow.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--muted);">
+                        <i class="fa-solid fa-search" style="font-size: 48px; margin-bottom: 16px;"></i>
+                        <div>No se encontraron productos</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = productsToShow.map(product => `
+                <div class="product-card" onclick="addToCart('${product._id}')">
+                    <div class="product-image">
+                        <img src="Assets/${product.image}" alt="${product.name}" onerror="this.src='Assets/card.png'"/>
+                        <div class="product-status ${product.status}">
+                            ${product.status === 'low_stock' ? 'Stock Bajo' : 
+                              product.status === 'out_of_stock' ? 'Agotado' : 
+                              product.status === 'active' ? 'Disponible' : product.status}
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h4>${product.name}</h4>
+                        <p class="product-category">${product.category}</p>
+                        ${product.sku ? `<p class="product-sku">SKU: ${product.sku}</p>` : ''}
+                        <p class="product-price">$${product.price.toLocaleString()}</p>
+                        <div class="product-stock">
+                            <span>Stock: ${product.stock}</span>
+                            <span class="min-stock">Mín: ${product.minStock}</span>
+                        </div>
+                        ${product.description ? `<p class="product-description">${product.description}</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Cargar reportes
+        async function loadReports() {
+            try {
+                const startDate = document.getElementById('reportStartDate').value || new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split('T')[0];
+                const endDate = document.getElementById('reportEndDate').value || new Date().toISOString().split('T')[0];
+
+                const [dashboardData, topProductsData, clientData, inventoryData] = await Promise.all([
+                    apiCall(`/api/sales-reports/dashboard?startDate=${startDate}&endDate=${endDate}`),
+                    apiCall(`/api/sales-reports/top-products?startDate=${startDate}&endDate=${endDate}&limit=5`),
+                    apiCall(`/api/sales-reports/clients?startDate=${startDate}&endDate=${endDate}`),
+                    apiCall(`/api/sales-reports/inventory?startDate=${startDate}&endDate=${endDate}`)
+                ]);
+
+                // Actualizar gráfico de ventas
+                updateSalesChart(dashboardData.data.sales || []);
+                
+                // Actualizar top productos
+                updateTopProducts(topProductsData.data.topProducts || []);
+                
+                // Actualizar análisis de clientes
+                updateClientAnalysis(clientData.data.clients || []);
+                
+                // Actualizar estado del inventario
+                updateInventoryStatus(inventoryData.data);
+
+            } catch (error) {
+                console.error('Error cargando reportes:', error);
+                showNotification('Error cargando reportes', 'error');
+            }
+        }
+
+        // Actualizar gráfico de ventas
+        function updateSalesChart(salesData) {
+            const chartContainer = document.getElementById('salesChart');
+            
+            if (salesData.length === 0) {
+                chartContainer.innerHTML = `
+                    <i class="fa-solid fa-chart-line" style="font-size:48px; margin-bottom:16px;"></i>
+                    <div>No hay datos de ventas para el período seleccionado</div>
+                `;
+                return;
+            }
+
+            const maxValue = Math.max(...salesData.map(item => item.totalSales));
+            const chartHeight = 200;
+            
+            chartContainer.innerHTML = `
+                <div style="display: flex; align-items: end; height: ${chartHeight}px; gap: 4px; padding: 16px;">
+                    ${salesData.map(item => {
+                        const height = (item.totalSales / maxValue) * (chartHeight - 40);
+                        const date = new Date(item._id.year, (item._id.month || 1) - 1, item._id.day || 1);
+                        return `
+                            <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
+                                <div style="background: var(--primary); height: ${height}px; width: 100%; border-radius: 4px 4px 0 0; margin-bottom: 8px;"></div>
+                                <div style="font-size: 10px; color: var(--muted); text-align: center;">
+                                    ${date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
+                                </div>
+                                <div style="font-size: 9px; color: var(--success); font-weight: bold;">
+                                    $${item.totalSales.toLocaleString()}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Actualizar top productos
+        function updateTopProducts(products) {
+            const container = document.getElementById('topProducts');
+            
+            if (products.length === 0) {
+                container.innerHTML = '<div class="muted">No hay datos de productos</div>';
+                return;
+            }
+
+            container.innerHTML = products.map((product, index) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: var(--elev); border-radius: 8px;">
+                    <div>
+                        <div style="font-weight: 500;">${index + 1}. ${product.productName}</div>
+                        <div style="font-size: 12px; color: var(--muted);">${product.totalQuantity} unidades</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: bold; color: var(--success);">$${product.totalRevenue.toLocaleString()}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Actualizar análisis de clientes
+        function updateClientAnalysis(clients) {
+            const tbody = document.querySelector('#clientAnalysis tbody');
+            
+            if (clients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="muted">No hay datos de clientes</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = clients.slice(0, 10).map(client => `
+                <tr>
+                    <td>${client.clientName}</td>
+                    <td>${client.totalOrders}</td>
+                    <td>$${client.totalSpent.toLocaleString()}</td>
+                    <td>
+                        <span class="badge ${client.category === 'Oro' ? 'b-success' : client.category === 'Plata' ? 'b-warning' : 'b-primary'}">
+                            ${client.category}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Actualizar estado del inventario
+        function updateInventoryStatus(data) {
+            const container = document.getElementById('inventoryStatus');
+            
+            container.innerHTML = `
+                <div style="display: grid; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Productos con stock bajo:</span>
+                        <span class="badge b-warning">${data.summary.lowStockCount}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Productos agotados:</span>
+                        <span class="badge b-danger">${data.summary.outOfStockCount}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Valor total inventario:</span>
+                        <span class="badge b-success">$${data.summary.totalValue.toLocaleString()}</span>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <div style="font-size: 12px; color: var(--muted); margin-bottom: 4px;">Productos más vendidos vs Stock:</div>
+                        ${data.stockAnalysis.slice(0, 3).map(product => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--border);">
+                                <span style="font-size: 12px;">${product.productName}</span>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <span style="font-size: 11px; color: var(--muted);">Stock: ${product.currentStock}</span>
+                                    <span class="badge ${product.status === 'low_stock' ? 'b-warning' : product.status === 'out_of_stock' ? 'b-danger' : 'b-success'}">
+                                        ${product.status}
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Funciones de utilidad
+        function statusBadge(status) {
+            const statusMap = {
+                'pending': '<span class="badge b-warning">Pendiente</span>',
+                'confirmed': '<span class="badge b-primary">Confirmado</span>',
+                'preparing': '<span class="badge b-warning">En preparación</span>',
+                'ready': '<span class="badge b-success">Listo</span>',
+                'delivered': '<span class="badge b-success">Entregado</span>',
+                'paid': '<span class="badge b-success">Pagado</span>',
+                'converted': '<span class="badge b-primary">Convertido</span>'
+            };
+            return statusMap[status] || '<span class="badge b-danger">Desconocido</span>';
+        }
+
+        function showNotification(message, type = 'info') {
+            // Implementar sistema de notificaciones
+            alert(message);
+        }
+
+        // Funciones de modales
+        function openModal(modalId) {
             document.getElementById(modalId + 'Modal').style.display = 'grid';
+            
+            // Cargar datos específicos del modal
+            if (modalId === 'newOrder' || modalId === 'newQuote') {
+                loadClientsForSelect();
+                loadProductsForSelect();
+            }
         }
 
-        function closeModal(modalId){
+        function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
 
-        function createOrder(){
-            alert('Pedido creado exitosamente');
-            closeModal('newOrderModal');
+        // Cargar clientes para select
+        async function loadClientsForSelect() {
+            try {
+                const data = await apiCall('/api/clients');
+                const select = document.getElementById('orderClient') || document.getElementById('quoteClient');
+                if (select) {
+                    select.innerHTML = '<option value="">Seleccionar cliente...</option>' +
+                        data.data.map(client => `<option value="${client.id}">${client.name} - ${client.contact}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Error cargando clientes:', error);
+            }
         }
 
-        function createQuote(){
-            alert('Cotización creada exitosamente');
-            closeModal('newQuoteModal');
+        // Cargar productos para select
+        async function loadProductsForSelect() {
+            try {
+                const data = await apiCall('/api/products');
+                const container = document.getElementById('orderProducts') || document.getElementById('quoteProducts');
+                if (container) {
+                    container.innerHTML = data.data.map(product => `<div class="product-card" data-id="${product.id}" onclick="addToCart(${product.id})">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">$${product.price.toLocaleString()}</div>
+                        <div class="muted">${product.category} - Stock: ${product.stock}</div>
+                    </div>`).join('');
+                }
+            } catch (error) {
+                console.error('Error cargando productos:', error);
+            }
         }
 
-        function createClient(){
-            alert('Cliente creado exitosamente');
-            closeModal('newClientModal');
+        // Funciones de negocio
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingItem = currentCart.find(item => item.productId === productId);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                currentCart.push({
+                    productId: product.id,
+                    productName: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    total: product.price
+                });
+            }
+
+            updateCartDisplay();
+        }
+
+        function updateCartDisplay() {
+            const cartContainer = document.getElementById('orderCart');
+            if (!cartContainer) return;
+
+            cartContainer.innerHTML = currentCart.map(item => `
+                <div class="cart-item">
+                    <div>
+                        <div>${item.productName}</div>
+                        <div class="muted">$${item.price.toLocaleString()} c/u</div>
+                    </div>
+                    <div class="cart-controls">
+                        <button onclick="updateQuantity(${item.productId}, -1)">-</button>
+                        <input type="number" class="qty-input" value="${item.quantity}" min="1" onchange="setQuantity(${item.productId}, this.value)">
+                        <button onclick="updateQuantity(${item.productId}, 1)">+</button>
+                        <button onclick="removeFromCart(${item.productId})">×</button>
+                    </div>
+                    <div>$${(item.price * item.quantity).toLocaleString()}</div>
+                </div>
+            `).join('');
+
+            const total = currentCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartContainer.innerHTML += `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-weight: bold;">
+                Total: $${total.toLocaleString()}
+            </div>`;
+        }
+
+        function updateQuantity(productId, change) {
+            const item = currentCart.find(item => item.productId === productId);
+            if (item) {
+                item.quantity = Math.max(1, item.quantity + change);
+                item.total = item.price * item.quantity;
+                updateCartDisplay();
+            }
+        }
+
+        function setQuantity(productId, quantity) {
+            const item = currentCart.find(item => item.productId === productId);
+            if (item) {
+                item.quantity = Math.max(1, parseInt(quantity));
+                item.total = item.price * item.quantity;
+                updateCartDisplay();
+            }
+        }
+
+        function removeFromCart(productId) {
+            currentCart = currentCart.filter(item => item.productId !== productId);
+            updateCartDisplay();
+        }
+
+        // Crear pedido
+        async function createOrder() {
+            try {
+                const clientId = document.getElementById('orderClient').value;
+                const deliveryDate = document.getElementById('orderDate').value;
+
+                if (!clientId || currentCart.length === 0) {
+                    showNotification('Selecciona un cliente y agrega productos', 'error');
+                    return;
+                }
+
+                const orderData = {
+                    clientId: parseInt(clientId),
+                    items: currentCart,
+                    deliveryDate,
+                    notes: ''
+                };
+
+                const response = await apiCall('/api/orders', {
+                    method: 'POST',
+                    body: JSON.stringify(orderData)
+                });
+
+                showNotification('Pedido creado exitosamente');
+                closeModal('newOrderModal');
+                currentCart = [];
+                loadOrders();
+
+            } catch (error) {
+                console.error('Error creando pedido:', error);
+                showNotification('Error creando pedido: ' + error.message, 'error');
+            }
+        }
+
+        // Crear cotización
+        async function createQuote() {
+            try {
+                const clientId = document.getElementById('quoteClient').value;
+                const validUntil = document.getElementById('quoteValidUntil').value;
+
+                if (!clientId || currentCart.length === 0) {
+                    showNotification('Selecciona un cliente y agrega productos', 'error');
+                    return;
+                }
+
+                const quoteData = {
+                    clientId: parseInt(clientId),
+                    items: currentCart,
+                    validUntil,
+                    notes: ''
+                };
+
+                const response = await apiCall('/api/quotes', {
+                    method: 'POST',
+                    body: JSON.stringify(quoteData)
+                });
+
+                showNotification('Cotización creada exitosamente');
+                closeModal('newQuoteModal');
+                currentCart = [];
+                loadQuotes();
+
+            } catch (error) {
+                console.error('Error creando cotización:', error);
+                showNotification('Error creando cotización: ' + error.message, 'error');
+            }
+        }
+
+        // Crear cliente
+        async function createClient() {
+            try {
+                const clientData = {
+                    name: document.getElementById('clientName').value,
+                    contact: document.getElementById('clientCompany').value,
+                    email: document.getElementById('clientEmail').value,
+                    phone: document.getElementById('clientPhone').value,
+                    address: document.getElementById('clientAddress').value,
+                    notes: document.getElementById('clientNotes').value
+                };
+
+                const response = await apiCall('/api/clients', {
+                    method: 'POST',
+                    body: JSON.stringify(clientData)
+                });
+
+                showNotification('Cliente creado exitosamente');
+                closeModal('newClientModal');
+                loadClients();
+
+            } catch (error) {
+                console.error('Error creando cliente:', error);
+                showNotification('Error creando cliente: ' + error.message, 'error');
+            }
+        }
+
+        // Subir comprobante de pago
+        function uploadPaymentProof(quoteId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf,.jpg,.jpeg,.png';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // En una implementación real, subirías el archivo a un servidor
+                // Por ahora simulamos la subida
+                try {
+                    const response = await apiCall(`/api/quotes/${quoteId}/payment-proof`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            paymentProof: `comprobante_${quoteId}_${Date.now()}.${file.name.split('.').pop()}`
+                        })
+                    });
+
+                    showNotification('Comprobante subido exitosamente');
+                    loadQuotes();
+
+                } catch (error) {
+                    console.error('Error subiendo comprobante:', error);
+                    showNotification('Error subiendo comprobante: ' + error.message, 'error');
+                }
+            };
+            input.click();
+        }
+
+        // Convertir cotización a pedido
+        async function convertToOrder(quoteId) {
+            try {
+                const response = await apiCall(`/api/quotes/${quoteId}`, {
+                    method: 'POST'
+                });
+
+                showNotification('Cotización convertida a pedido exitosamente');
+                loadQuotes();
+                loadOrders();
+
+            } catch (error) {
+                console.error('Error convirtiendo cotización:', error);
+                showNotification('Error convirtiendo cotización: ' + error.message, 'error');
+            }
+        }
+
+        // Ver pedido
+        function viewOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                alert(`Pedido: ${order.folio}\nCliente: ${order.clientName}\nTotal: $${order.total.toLocaleString()}\nEstado: ${order.status}`);
+            }
+        }
+
+        // Ver cotización
+        function viewQuote(quoteId) {
+            const quote = quotes.find(q => q.id === quoteId);
+            if (quote) {
+                alert(`Cotización: ${quote.folio}\nCliente: ${quote.clientName}\nTotal: $${quote.total.toLocaleString()}\nEstado: ${quote.status}`);
+            }
+        }
+
+        // Actualizar estado de pedido
+        function updateOrderStatus(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                const newStatus = prompt('Nuevo estado:', order.status);
+                if (newStatus && newStatus !== order.status) {
+                    // Implementar actualización de estado
+                    showNotification('Estado actualizado');
+                }
+            }
+        }
+
+        // Editar cliente
+        function editClient(clientId) {
+            const client = clients.find(c => c.id === clientId);
+            if (client) {
+                alert(`Editar cliente: ${client.name}\nContacto: ${client.contact}\nEmail: ${client.email}`);
+            }
         }
 
         // Logout
@@ -442,7 +1215,11 @@
             window.location.href = 'pos-login.html';
         });
 
-        fillData();
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadDashboardData();
+        });
     </script>
 </body>
 </html>
