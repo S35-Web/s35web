@@ -1,5 +1,10 @@
 {
   "version": 2,
+  "functions": {
+    "api.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "env": {
     "JWT_SECRET": "s35-admin-secret-key-2024"
   }
