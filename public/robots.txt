@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://s35web.vercel.app/sitemap.xml
+
+# Disallow admin pages
+Disallow: /admin.html
+Disallow: /admin-login.html
+
+# Allow all other content
+Allow: /Assets/
+Allow: /catalogo.html
+Allow: /conoce-mas.html
+Allow: /terminos.html
+Allow: /privacidad.html
+Allow: /cookies.html
+
+# Crawl delay (optional)
+Crawl-delay: 1
