@@ -1,18 +1,34 @@
 // Simple admin login that issues a short-lived JWT
 const jwt = require('jsonwebtoken');
 
+function parseBody(req) {
+  try {
+    if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+      return req.body;
+    }
+    if (req.body && Buffer.isBuffer(req.body)) {
+      return JSON.parse(req.body.toString('utf8'));
+    }
+    if (typeof req.body === 'string') {
+      return JSON.parse(req.body);
+    }
+  } catch (_) {}
+  return {};
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ ok: false, error: 'Method Not Allowed' });
     return;
   }
 
-  const { password } = req.body && typeof req.body === 'object' ? req.body : {};
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const body = parseBody(req);
+  const { password } = body;
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
   const jwtSecret = process.env.JWT_SECRET || 'dev-secret';
 
-  if (!adminPassword) {
-    res.status(500).json({ ok: false, error: 'Falta ADMIN_PASSWORD' });
+  if (!password) {
+    res.status(400).json({ ok: false, error: 'Falta contraseña' });
     return;
   }
 
