@@ -34,7 +34,7 @@
         .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .messages-table { min-width: 780px; width: 100%; border-collapse: separate; border-spacing: 0; }
         .messages-table thead th { position: sticky; top: 0; background: rgba(255,255,255,0.04); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.08); text-align: left; font-weight: 600; color: #cfd1d4; font-size: 11px; padding: 10px 12px; }
-        .messages-table tbody td { border-bottom: 1px solid rgba(255,255,255,0.06); padding: 10px 12px; color: #dde0e4; vertical-align: top; font-size: 13px; word-break: break-word; }
+        .messages-table tbody td { border-bottom: 1px solid rgba(255,255,255,0.06); padding: 10px 12px; color: #dde0e4; vertical-align: top; font-size: 13px; }
         /* Make message cell feel clickable */
         .messages-table tbody tr td:nth-child(5) { cursor: pointer; color: #dfe3e7; }
         .messages-table tbody tr:hover td:nth-child(5) { text-decoration: underline; color: #ffffff; }
@@ -64,6 +64,23 @@
             .tools { width: 100%; justify-content: space-between; }
             .search input { width: 100%; }
             .field { grid-template-columns: 1fr; }
+        }
+
+        /* Desktop/tablet optimizations */
+        @media (min-width: 641px) {
+            /* Allow natural wrapping but avoid character-per-line in long strings */
+            .messages-table tbody td { word-break: normal; overflow-wrap: anywhere; }
+            /* Email column a bit narrower and wrap nicely */
+            .messages-table tbody td:nth-child(3) { max-width: 180px; }
+            /* Clamp message to 3 lines for readability */
+            .messages-table tbody td:nth-child(5) {
+                max-width: 560px;
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                white-space: normal;
+            }
         }
 
         /* Mobile optimizations to avoid horizontal scroll */
