@@ -5,53 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | S-35 Colaboradores</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .admin-container { max-width: 1000px; margin: 120px auto 60px; padding: 0 var(--space-lg); }
-        .messages-table { width: 100%; border-collapse: collapse; }
-        .messages-table th, .messages-table td { padding: 12px; border-bottom: 1px solid var(--gray-200); text-align: left; }
-        .messages-table th { background: var(--gray-50); font-weight: 600; }
-        .toolbar { display:flex; justify-content: space-between; align-items:center; margin-bottom: 16px; }
-        .danger-btn { background: #b91c1c; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
-        .logout-btn { background: var(--primary-blue); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
-        .muted { color: var(--gray-600); font-size: 12px; }
+        :root {
+            --panel-bg: radial-gradient(1000px 700px at 0% -10%, rgba(0, 119, 255, 0.10), transparent 60%),
+                        radial-gradient(900px 700px at 120% 110%, rgba(0,0,0,0.10), transparent 60%);
+        }
+        body { background: var(--panel-bg), #0b0d10; color: #e8eaed; }
+        .nav.visible.on-white-bg { background: transparent; box-shadow: none; }
+        .nav .logo-image { filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25)); }
+
+        .admin-wrap { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+        .admin-header { display:flex; align-items:center; justify-content: space-between; padding: 18px var(--space-lg); }
+        .logout-btn { background: linear-gradient(180deg, #0a66ff, #0053cc); color: #fff; border: 1px solid rgba(0,119,255,0.6); padding: 8px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 8px 20px rgba(10,102,255,0.28); }
+
+        .panel-container { max-width: 1100px; margin: 24px auto 48px; padding: 0 var(--space-lg); }
+        .panel-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); border-radius: 16px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.25); overflow: hidden; }
+        .panel-head { display:flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .panel-title { font-size: 1.1rem; font-weight: 600; color: #e8eaed; }
+        .panel-sub { color: #a5a7ab; font-size: 12px; }
+        .tools { display:flex; gap: 8px; align-items:center; }
+        .search { position: relative; }
+        .search input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09); color: #e8eaed; padding: 10px 12px 10px 34px; border-radius: 10px; outline: none; width: 220px; }
+        .search i { position:absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #8b8e94; }
+        .refresh-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09); color: #e8eaed; padding: 10px 12px; border-radius: 10px; cursor: pointer; }
+
+        .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .messages-table { min-width: 780px; width: 100%; border-collapse: separate; border-spacing: 0; }
+        .messages-table thead th { position: sticky; top: 0; background: rgba(255,255,255,0.04); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.08); text-align: left; font-weight: 600; color: #cfd1d4; font-size: 12px; padding: 12px 14px; }
+        .messages-table tbody td { border-bottom: 1px solid rgba(255,255,255,0.06); padding: 14px; color: #dde0e4; vertical-align: top; }
         .nowrap { white-space: nowrap; }
+        .muted { color: #a5a7ab; font-size: 12px; }
+        .danger-btn { background: #b91c1c; color: white; border: none; padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+        .pill { display:inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 12px; background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.35); }
+        .pill.no { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.35); }
+
+        @media (max-width: 640px) {
+            .panel-head { align-items: flex-start; gap: 10px; }
+            .tools { width: 100%; justify-content: space-between; }
+            .search input { width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <nav class="nav visible on-white-bg">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <a href="index.html">
-                    <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image">
-                </a>
-            </div>
-            <div class="nav-menu">
-                <button id="logoutBtn" class="logout-btn">Salir</button>
-            </div>
-        </div>
-    </nav>
+    <div class="admin-wrap">
+        <header class="admin-header">
+            <a href="index.html" aria-label="Inicio"><img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image" style="height:28px"></a>
+            <button id="logoutBtn" class="logout-btn">Salir</button>
+        </header>
 
-    <div class="admin-container">
-        <div class="toolbar">
-            <h1>Mensajes de Contacto</h1>
-            <span class="muted">Máx 200 más recientes</span>
-        </div>
-        <table class="messages-table">
-            <thead>
-                <tr>
-                    <th class="nowrap">Fecha</th>
-                    <th>Nombre</th>
-                    <th>Email</th>
-                    <th>Empresa</th>
-                    <th>Mensaje</th>
-                    <th>Newsletter</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="messagesBody"></tbody>
-        </table>
+        <main class="panel-container">
+            <section class="panel-card">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Mensajes de Contacto</div>
+                        <div class="panel-sub">Máx 200 más recientes</div>
+                    </div>
+                    <div class="tools">
+                        <div class="search">
+                            <i class="fas fa-search"></i>
+                            <input id="searchInput" type="text" placeholder="Buscar… (nombre, email, empresa)">
+                        </div>
+                        <button id="refreshBtn" class="refresh-btn" title="Actualizar"><i class="fas fa-rotate"></i></button>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table class="messages-table">
+                        <thead>
+                            <tr>
+                                <th class="nowrap">Fecha</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Empresa</th>
+                                <th>Mensaje</th>
+                                <th>Newsletter</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="messagesBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script>
@@ -59,13 +95,11 @@
     function requireAuth() { if (!getToken()) window.location.href = 'admin-login.html'; }
     requireAuth();
 
-    async function loadMessages() {
-        const resp = await fetch('/api/messages', { headers: { Authorization: 'Bearer ' + getToken() } });
-        if (!resp.ok) { if (resp.status === 401) { localStorage.removeItem('s35_admin_token'); location.href = 'admin-login.html'; return; } alert('Error cargando mensajes'); return; }
-        const data = await resp.json();
+    let allMessages = [];
+    function renderMessages(list) {
         const tbody = document.getElementById('messagesBody');
         tbody.innerHTML = '';
-        (data.items || []).forEach(m => {
+        list.forEach(m => {
             const tr = document.createElement('tr');
             const created = m.createdAt ? new Date(m.createdAt) : null;
             tr.innerHTML = `
@@ -74,11 +108,19 @@
                 <td>${m.email || ''}</td>
                 <td>${m.empresa || ''}</td>
                 <td>${(m.mensaje || '').replace(/</g,'&lt;')}</td>
-                <td>${m.newsletter ? 'Sí' : 'No'}</td>
+                <td>${m.newsletter ? '<span class="pill">Sí</span>' : '<span class="pill no">No</span>'}</td>
                 <td><button class="danger-btn" data-id="${m._id}">Eliminar</button></td>
             `;
             tbody.appendChild(tr);
         });
+    }
+
+    async function loadMessages() {
+        const resp = await fetch('/api/messages', { headers: { Authorization: 'Bearer ' + getToken() } });
+        if (!resp.ok) { if (resp.status === 401) { localStorage.removeItem('s35_admin_token'); location.href = 'admin-login.html'; return; } alert('Error cargando mensajes'); return; }
+        const data = await resp.json();
+        allMessages = data.items || [];
+        renderMessages(allMessages);
     }
 
     document.getElementById('messagesBody').addEventListener('click', async (e) => {
@@ -91,6 +133,16 @@
     });
 
     document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('s35_admin_token'); location.href = 'admin-login.html'; });
+
+    document.getElementById('refreshBtn').addEventListener('click', loadMessages);
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        const q = (e.target.value || '').toLowerCase();
+        if (!q) { renderMessages(allMessages); return; }
+        const filtered = allMessages.filter(m => {
+            return [m.nombre, m.email, m.empresa, m.mensaje].some(v => (v||'').toLowerCase().includes(q));
+        });
+        renderMessages(filtered);
+    });
 
     loadMessages();
     </script>
