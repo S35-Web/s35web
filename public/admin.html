@@ -72,16 +72,11 @@
             .messages-table { min-width: 100%; table-layout: fixed; display: block; }
             .messages-table thead { display: none; }
             .messages-table tbody { display: block; }
-            .messages-table tbody tr { display: grid; grid-template-rows: auto auto auto; gap: 8px; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-            .messages-table tbody td { display: flex; align-items: flex-start; padding: 0; border: 0; }
-            .messages-table tbody td::before { content: attr(data-col) ": "; color: #a5a7ab; font-size: 11px; min-width: 86px; flex: 0 0 auto; }
-            .messages-table tbody td:nth-child(1),
-            .messages-table tbody td:nth-child(2) { grid-row: 1; }
-            .messages-table tbody td:nth-child(3),
-            .messages-table tbody td:nth-child(4) { grid-row: 2; }
-            .messages-table tbody td:nth-child(5),
-            .messages-table tbody td:nth-child(6),
-            .messages-table tbody td:nth-child(7) { grid-row: 3; }
+            .messages-table tbody tr { display: block; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); border-radius: 12px; margin: 8px 0; }
+            .messages-table tbody td { display: block; padding: 6px 0; border: 0; }
+            .messages-table tbody td::before { content: attr(data-col); display: block; color: #a5a7ab; font-size: 11px; margin-bottom: 2px; }
+            .messages-table tbody td[data-col="Acciones"] { padding-top: 10px; }
+            .messages-table tbody td[data-col="Acciones"] .danger-btn { width: auto; }
             .nowrap { white-space: normal; }
         }
     </style>
@@ -161,12 +156,15 @@
             const created = m.createdAt ? new Date(m.createdAt) : null;
             tr.setAttribute('data-id', m._id || '');
             msgIndex.set(m._id, m);
+            const fecha = created ? created.toLocaleString() : '';
+            const fullMsg = (m.mensaje || '').replace(/</g,'&lt;');
+            const msgShort = fullMsg.length > 200 ? fullMsg.slice(0,200) + '…' : fullMsg;
             tr.innerHTML = `
-                <td class="nowrap" data-col="Fecha">${created ? created.toLocaleString() : ''}</td>
+                <td class="nowrap" data-col="Fecha">${fecha}</td>
                 <td data-col="Nombre">${m.nombre || ''}</td>
                 <td data-col="Email">${m.email || ''}</td>
                 <td data-col="Empresa">${m.empresa || ''}</td>
-                <td data-col="Mensaje">${(m.mensaje || '').replace(/</g,'&lt;')}</td>
+                <td data-col="Mensaje">${msgShort}</td>
                 <td data-col="Newsletter">${m.newsletter ? '<span class="pill">Sí</span>' : '<span class="pill no">No</span>'}</td>
                 <td data-col="Acciones"><button class="danger-btn" data-id="${m._id}">Eliminar</button></td>
             `;
