@@ -34,7 +34,7 @@
         .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .messages-table { min-width: 780px; width: 100%; border-collapse: separate; border-spacing: 0; }
         .messages-table thead th { position: sticky; top: 0; background: rgba(255,255,255,0.04); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.08); text-align: left; font-weight: 600; color: #cfd1d4; font-size: 11px; padding: 10px 12px; }
-        .messages-table tbody td { border-bottom: 1px solid rgba(255,255,255,0.06); padding: 10px 12px; color: #dde0e4; vertical-align: top; font-size: 13px; }
+        .messages-table tbody td { border-bottom: 1px solid rgba(255,255,255,0.06); padding: 10px 12px; color: #dde0e4; vertical-align: top; font-size: 13px; word-break: break-word; }
         /* Make message cell feel clickable */
         .messages-table tbody tr td:nth-child(5) { cursor: pointer; color: #dfe3e7; }
         .messages-table tbody tr:hover td:nth-child(5) { text-decoration: underline; color: #ffffff; }
@@ -64,6 +64,17 @@
             .tools { width: 100%; justify-content: space-between; }
             .search input { width: 100%; }
             .field { grid-template-columns: 1fr; }
+        }
+
+        /* Mobile optimizations to avoid horizontal scroll */
+        @media (max-width: 480px) {
+            .table-wrap { overflow-x: hidden; }
+            .messages-table { min-width: 100%; table-layout: fixed; }
+            .messages-table thead th:nth-child(4),
+            .messages-table tbody td:nth-child(4) { display: none; } /* hide Empresa on small screens */
+            .messages-table thead th:nth-child(7),
+            .messages-table tbody td:nth-child(7) { width: 64px; }
+            .nowrap { white-space: normal; }
         }
     </style>
 </head>
