@@ -165,6 +165,32 @@
 
     let allMessages = [];
     const msgIndex = new Map();
+
+    function formatRelativeDate(isoOrDate) {
+        const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
+        const now = new Date();
+        const ms = now - d;
+        const oneMin = 60 * 1000;
+        const oneHour = 60 * oneMin;
+        const oneDay = 24 * oneHour;
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfTarget = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const dayDiff = Math.floor((startOfToday - startOfTarget) / oneDay);
+        if (dayDiff === 0) {
+            if (ms < oneMin) return 'hace segundos';
+            if (ms < oneHour) return `hace ${Math.floor(ms / oneMin)} min`;
+            return `hace ${Math.floor(ms / oneHour)} h`;
+        }
+        if (dayDiff === 1) return 'ayer';
+        if (dayDiff === 2) return 'antier';
+        if (dayDiff < 7) return `hace ${dayDiff} días`;
+        const weeks = Math.floor(dayDiff / 7);
+        if (weeks < 5) return `hace ${weeks} ${weeks === 1 ? 'semana' : 'semanas'}`;
+        const months = Math.floor(dayDiff / 30);
+        if (months < 12) return `hace ${months} ${months === 1 ? 'mes' : 'meses'}`;
+        const years = Math.floor(dayDiff / 365);
+        return `hace ${years} ${years === 1 ? 'año' : 'años'}`;
+    }
     function renderMessages(list) {
         const tbody = document.getElementById('messagesBody');
         tbody.innerHTML = '';
@@ -177,7 +203,7 @@
             const fullMsg = (m.mensaje || '').replace(/</g,'&lt;');
             const msgShort = fullMsg.length > 200 ? fullMsg.slice(0,200) + '…' : fullMsg;
             tr.innerHTML = `
-                <td class="nowrap" data-col="Fecha">${fecha}</td>
+                <td class="nowrap" data-col="Fecha" title="${fecha}">${created ? formatRelativeDate(created) : ''}</td>
                 <td data-col="Nombre">${m.nombre || ''}</td>
                 <td data-col="Email">${m.email || ''}</td>
                 <td data-col="Empresa">${m.empresa || ''}</td>
@@ -219,8 +245,9 @@
     const modal = document.getElementById('detailModal');
     const closeBtn = document.getElementById('detailClose');
     function openDetail(m) {
-        const created = m.createdAt ? new Date(m.createdAt).toLocaleString() : '';
-        document.getElementById('dFecha').textContent = created;
+        const createdDate = m.createdAt ? new Date(m.createdAt) : null;
+        const createdExact = createdDate ? createdDate.toLocaleString() : '';
+        document.getElementById('dFecha').textContent = createdDate ? `${formatRelativeDate(createdDate)} (${createdExact})` : '';
         document.getElementById('dNombre').textContent = m.nombre || '';
         document.getElementById('dEmail').innerHTML = m.email ? `<a class="link" href="mailto:${m.email}">${m.email}</a>` : '';
         document.getElementById('dEmpresa').textContent = m.empresa || '';
