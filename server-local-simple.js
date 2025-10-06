@@ -105,20 +105,61 @@ const server = http.createServer((req, res) => {
                 const contactData = JSON.parse(body);
                 console.log('Datos de contacto recibidos:', contactData);
                 
-                // Simular envío exitoso
+                // Simular guardado e envío exitoso
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ 
-                    success: true, 
-                    message: 'Mensaje enviado exitosamente' 
+                    ok: true, 
+                    message: 'Mensaje enviado correctamente' 
                 }));
             } catch (error) {
                 res.writeHead(400, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ 
-                    success: false, 
-                    message: 'Error al procesar el mensaje' 
+                    ok: false, 
+                    error: 'Error al procesar el mensaje' 
                 }));
             }
         });
+        return;
+    }
+
+    // API de login (simulada)
+    if (req.method === 'POST' && pathname === '/api/login') {
+        let body = '';
+        req.on('data', chunk => { body += chunk.toString(); });
+        req.on('end', () => {
+            try {
+                const { password } = JSON.parse(body || '{}');
+                const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
+                if (password !== adminPass) {
+                    res.writeHead(401, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: 'Credenciales inválidas' }));
+                    return;
+                }
+                // Token simulado (no validar en local)
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true, token: 'local-dev-token' }));
+            } catch (e) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Solicitud inválida' }));
+            }
+        });
+        return;
+    }
+
+    // API de mensajes (simulada)
+    if (pathname === '/api/messages') {
+        if (req.method === 'GET') {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true, items: [] }));
+            return;
+        }
+        if (req.method === 'DELETE') {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true }));
+            return;
+        }
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed' }));
         return;
     }
 

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | S-35 Colaboradores</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .admin-container { max-width: 1000px; margin: 120px auto 60px; padding: 0 var(--space-lg); }
+        .messages-table { width: 100%; border-collapse: collapse; }
+        .messages-table th, .messages-table td { padding: 12px; border-bottom: 1px solid var(--gray-200); text-align: left; }
+        .messages-table th { background: var(--gray-50); font-weight: 600; }
+        .toolbar { display:flex; justify-content: space-between; align-items:center; margin-bottom: 16px; }
+        .danger-btn { background: #b91c1c; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+        .logout-btn { background: var(--primary-blue); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+        .muted { color: var(--gray-600); font-size: 12px; }
+        .nowrap { white-space: nowrap; }
+    </style>
+</head>
+<body>
+    <nav class="nav visible on-white-bg">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image">
+                </a>
+            </div>
+            <div class="nav-menu">
+                <button id="logoutBtn" class="logout-btn">Salir</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="toolbar">
+            <h1>Mensajes de Contacto</h1>
+            <span class="muted">Máx 200 más recientes</span>
+        </div>
+        <table class="messages-table">
+            <thead>
+                <tr>
+                    <th class="nowrap">Fecha</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Empresa</th>
+                    <th>Mensaje</th>
+                    <th>Newsletter</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="messagesBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+    function getToken() { return localStorage.getItem('s35_admin_token'); }
+    function requireAuth() { if (!getToken()) window.location.href = 'admin-login.html'; }
+    requireAuth();
+
+    async function loadMessages() {
+        const resp = await fetch('/api/messages', { headers: { Authorization: 'Bearer ' + getToken() } });
+        if (!resp.ok) { if (resp.status === 401) { localStorage.removeItem('s35_admin_token'); location.href = 'admin-login.html'; return; } alert('Error cargando mensajes'); return; }
+        const data = await resp.json();
+        const tbody = document.getElementById('messagesBody');
+        tbody.innerHTML = '';
+        (data.items || []).forEach(m => {
+            const tr = document.createElement('tr');
+            const created = m.createdAt ? new Date(m.createdAt) : null;
+            tr.innerHTML = `
+                <td class="nowrap">${created ? created.toLocaleString() : ''}</td>
+                <td>${m.nombre || ''}</td>
+                <td>${m.email || ''}</td>
+                <td>${m.empresa || ''}</td>
+                <td>${(m.mensaje || '').replace(/</g,'&lt;')}</td>
+                <td>${m.newsletter ? 'Sí' : 'No'}</td>
+                <td><button class="danger-btn" data-id="${m._id}">Eliminar</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.getElementById('messagesBody').addEventListener('click', async (e) => {
+        const btn = e.target.closest('button[data-id]');
+        if (!btn) return;
+        const id = btn.getAttribute('data-id');
+        if (!confirm('¿Eliminar mensaje?')) return;
+        const resp = await fetch('/api/messages?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { Authorization: 'Bearer ' + getToken() } });
+        if (resp.ok) loadMessages(); else alert('No se pudo eliminar');
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('s35_admin_token'); location.href = 'admin-login.html'; });
+
+    loadMessages();
+    </script>
+</body>
+</html>
+
+

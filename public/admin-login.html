@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Colaboradores | S-35</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="nav visible on-white-bg">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image">
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="article-content" style="padding-top: 120px;">
+        <div class="article-container" style="max-width: 520px;">
+            <h1 style="margin-bottom: 1rem;">Colaboradores</h1>
+            <p style="margin-bottom: 2rem; color: var(--gray-600)">Ingresa para ver los mensajes del formulario de contacto.</p>
+
+            <form id="adminLoginForm" class="contact-form">
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="submit-btn">Ingresar</button>
+            </form>
+        </div>
+    </section>
+
+    <script>
+    document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const password = document.getElementById('password').value;
+        const btn = this.querySelector('.submit-btn');
+        const original = btn.textContent;
+        btn.disabled = true; btn.textContent = 'Ingresando...';
+        try {
+            const resp = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+            const data = await resp.json();
+            if (!resp.ok || !data.ok) throw new Error(data.error || 'Error de login');
+            localStorage.setItem('s35_admin_token', data.token);
+            window.location.href = 'admin.html';
+        } catch (err) {
+            alert('Credenciales inválidas');
+        } finally {
+            btn.disabled = false; btn.textContent = original;
+        }
+    });
+    </script>
+</body>
+</html>
+
+
