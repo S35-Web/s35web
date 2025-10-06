@@ -41,10 +41,25 @@
         .pill { display:inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 12px; background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.35); }
         .pill.no { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.35); }
 
+        /* Detail modal */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 60; }
+        .modal-backdrop.show { display: flex; }
+        .modal-card { width: 100%; max-width: 720px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.35); color: #e8eaed; }
+        .modal-head { display:flex; align-items:center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+        .modal-title { font-size: 1rem; font-weight: 600; color: #e8eaed; }
+        .close-btn { background: none; border: 1px solid rgba(255,255,255,0.18); color: #cfd1d4; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
+        .modal-body { padding: 16px; display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .field { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: start; }
+        .field label { color: #a5a7ab; font-size: 12px; }
+        .msg-box { white-space: pre-wrap; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); padding: 12px; border-radius: 12px; color: #dde0e4; }
+        .link { color: #9cc2ff; text-decoration: none; }
+        .link:hover { text-decoration: underline; }
+
         @media (max-width: 640px) {
             .panel-head { align-items: flex-start; gap: 10px; }
             .tools { width: 100%; justify-content: space-between; }
             .search input { width: 100%; }
+            .field { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -90,18 +105,39 @@
         </main>
     </div>
 
+    <!-- Detail Modal -->
+    <div id="detailModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+            <div class="modal-head">
+                <div class="modal-title" id="detailTitle">Detalle del Mensaje</div>
+                <button id="detailClose" class="close-btn" type="button">Cerrar</button>
+            </div>
+            <div class="modal-body">
+                <div class="field"><label>Fecha</label><div id="dFecha"></div></div>
+                <div class="field"><label>Nombre</label><div id="dNombre"></div></div>
+                <div class="field"><label>Email</label><div id="dEmail"></div></div>
+                <div class="field"><label>Empresa</label><div id="dEmpresa"></div></div>
+                <div class="field"><label>Newsletter</label><div id="dNewsletter"></div></div>
+                <div class="field" style="grid-template-columns: 1fr;"><label>Mensaje</label><div id="dMensaje" class="msg-box"></div></div>
+            </div>
+        </div>
+    </div>
+
     <script>
     function getToken() { return localStorage.getItem('s35_admin_token'); }
     function requireAuth() { if (!getToken()) window.location.href = 'admin-login.html'; }
     requireAuth();
 
     let allMessages = [];
+    const msgIndex = new Map();
     function renderMessages(list) {
         const tbody = document.getElementById('messagesBody');
         tbody.innerHTML = '';
         list.forEach(m => {
             const tr = document.createElement('tr');
             const created = m.createdAt ? new Date(m.createdAt) : null;
+            tr.setAttribute('data-id', m._id || '');
+            msgIndex.set(m._id, m);
             tr.innerHTML = `
                 <td class="nowrap">${created ? created.toLocaleString() : ''}</td>
                 <td>${m.nombre || ''}</td>
@@ -123,14 +159,42 @@
         renderMessages(allMessages);
     }
 
-    document.getElementById('messagesBody').addEventListener('click', async (e) => {
-        const btn = e.target.closest('button[data-id]');
-        if (!btn) return;
-        const id = btn.getAttribute('data-id');
-        if (!confirm('¿Eliminar mensaje?')) return;
-        const resp = await fetch('/api/messages?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { Authorization: 'Bearer ' + getToken() } });
-        if (resp.ok) loadMessages(); else alert('No se pudo eliminar');
+    const tbodyEl = document.getElementById('messagesBody');
+    tbodyEl.addEventListener('click', async (e) => {
+        const delBtn = e.target.closest('button[data-id]');
+        if (delBtn) {
+            const id = delBtn.getAttribute('data-id');
+            if (!confirm('¿Eliminar mensaje?')) return;
+            const resp = await fetch('/api/messages?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { Authorization: 'Bearer ' + getToken() } });
+            if (resp.ok) loadMessages(); else alert('No se pudo eliminar');
+            return;
+        }
+        const row = e.target.closest('tr[data-id]');
+        if (row) {
+            const id = row.getAttribute('data-id');
+            const m = msgIndex.get(id);
+            if (m) openDetail(m);
+        }
     });
+
+    // Detail modal logic
+    const modal = document.getElementById('detailModal');
+    const closeBtn = document.getElementById('detailClose');
+    function openDetail(m) {
+        const created = m.createdAt ? new Date(m.createdAt).toLocaleString() : '';
+        document.getElementById('dFecha').textContent = created;
+        document.getElementById('dNombre').textContent = m.nombre || '';
+        document.getElementById('dEmail').innerHTML = m.email ? `<a class="link" href="mailto:${m.email}">${m.email}</a>` : '';
+        document.getElementById('dEmpresa').textContent = m.empresa || '';
+        document.getElementById('dNewsletter').innerHTML = m.newsletter ? '<span class="pill">Sí</span>' : '<span class="pill no">No</span>';
+        document.getElementById('dMensaje').textContent = m.mensaje || '';
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+    function closeDetail(){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); }
+    closeBtn.addEventListener('click', closeDetail);
+    modal.addEventListener('click', (e)=>{ if (e.target === modal) closeDetail(); });
+    document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closeDetail(); });
 
     document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('s35_admin_token'); location.href = 'admin-login.html'; });
 
