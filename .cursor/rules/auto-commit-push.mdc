@@ -1,0 +1,16 @@
+---
+description: Hacer commit y push a GitHub automáticamente tras cambios en el proyecto
+alwaysApply: true
+---
+
+# Commit y push automáticos
+
+Cuando edites archivos de este proyecto y completes una tarea con cambios en el código:
+
+1. Haz **commit** con un mensaje claro en español o inglés (1-2 frases, el "por qué").
+2. Haz **push** a `origin main` sin pedir confirmación extra.
+3. Incluye solo archivos relacionados con la tarea (no `.DS_Store`, `Editable Assets/` ni secretos).
+4. Si el push falla por permisos, informa al usuario y deja el commit local listo.
+5. No uses `--no-verify` ni force push salvo que el usuario lo pida explícitamente.
+
+Excepción: no hagas commit si el usuario dijo explícitamente que no suba cambios o que solo revise/explique.
