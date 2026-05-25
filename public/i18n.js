@@ -15,15 +15,6 @@
                 learnTitle: 'Learn More | S-35 Construction Technology',
                 learnDescription: 'Discover how pre-formulated products revolutionize construction quality and efficiency.'
             },
-            modal: {
-                title: 'Choose your language',
-                subtitle: 'Browse this site in English or Spanish',
-                en: 'English',
-                enSub: 'USA & International',
-                es: 'Español',
-                esSub: 'México y Latinoamérica',
-                mexicoLink: 'Visit S-35 Mexico site (S-35.com.mx)'
-            },
             nav: { login: 'Login', news: 'News', contact: 'Contact', back: 'Back' },
             hero: {
                 title1: 'Technology',
@@ -216,15 +207,6 @@
                 catalogDescription: 'Catálogo completo S-35: estuco, cemento plástico, porcelánico, basecoat, cellbond y más. Fórmulas secas premezcladas, solo agrega agua.',
                 learnTitle: 'Conoce Más | S-35 Tecnología en Construcción',
                 learnDescription: 'Descubre cómo los productos pre-formulados revolucionan la calidad y eficiencia en la construcción.'
-            },
-            modal: {
-                title: 'Elige tu idioma',
-                subtitle: 'Navega este sitio en inglés o español',
-                en: 'English',
-                enSub: 'EE.UU. e Internacional',
-                es: 'Español',
-                esSub: 'México y Latinoamérica',
-                mexicoLink: 'Visitar sitio S-35 México (S-35.com.mx)'
             },
             nav: { login: 'Iniciar sesión', news: 'Noticias', contact: 'Contacto', back: 'Volver' },
             hero: {
@@ -487,7 +469,6 @@
         if (lang !== 'en' && lang !== 'es') return;
         if (persist) {
             localStorage.setItem(STORAGE_KEY, lang);
-            localStorage.setItem('s35_language_preference', lang === 'en' ? 'global' : 'mexico');
         }
         document.querySelectorAll('.lang-btn').forEach((btn) => {
             btn.classList.toggle('active', btn.dataset.lang === lang);
@@ -518,53 +499,9 @@
         });
     }
 
-    function initLanguageModal() {
-        const modal = document.getElementById('languageModal');
-        const btnEn = document.getElementById('selectLangEn');
-        const btnEs = document.getElementById('selectLangEs');
-        if (!modal) return;
-
-        const stored = getStoredLang();
-        if (stored) {
-            modal.style.display = 'none';
-            modal.setAttribute('aria-hidden', 'true');
-            return;
-        }
-
-        setTimeout(() => {
-            modal.setAttribute('aria-hidden', 'false');
-            modal.style.display = 'flex';
-            requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('show')));
-        }, 300);
-
-        function closeModal() {
-            modal.setAttribute('aria-hidden', 'true');
-            modal.classList.remove('show');
-            setTimeout(() => { modal.style.display = 'none'; }, 300);
-        }
-
-        if (btnEn) {
-            btnEn.addEventListener('click', () => {
-                setLanguage('en');
-                localStorage.setItem('s35_modal_shown', 'true');
-                closeModal();
-            });
-        }
-        if (btnEs) {
-            btnEs.addEventListener('click', () => {
-                setLanguage('es');
-                localStorage.setItem('s35_modal_shown', 'true');
-                closeModal();
-            });
-        }
-        const backdrop = modal.querySelector('.language-modal-backdrop');
-        if (backdrop) backdrop.addEventListener('click', (e) => e.stopPropagation());
-    }
-
     function init() {
         injectLangSwitcher();
         setLanguage(getLanguage(), false);
-        initLanguageModal();
     }
 
     global.S35_I18N = { t, setLanguage, getLanguage, STRINGS };
