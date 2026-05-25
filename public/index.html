@@ -72,7 +72,7 @@
     }
     </script>
 </head>
-<body>
+<body data-i18n-page="index">
     <!-- Navigation -->
     <nav class="nav">
         <div class="nav-container">
@@ -81,10 +81,10 @@
             </div>
             <div class="nav-menu">
                 <div class="nav-dropdown">
-                    <a href="http://s-35.com/clientes/#login" class="nav-link" target="_blank">Login <i class="fas fa-chevron-right"></i></a>
+                    <a href="http://s-35.com/clientes/#login" class="nav-link" target="_blank" data-i18n="nav.login">Login <i class="fas fa-chevron-right"></i></a>
                 </div>
-                <a href="#noticias" class="nav-link">News</a>
-                <a href="#contacto" class="nav-link contact-btn">Contact</a>
+                <a href="#noticias" class="nav-link" data-i18n="nav.news">News</a>
+                <a href="#contacto" class="nav-link contact-btn" data-i18n="nav.contact">Contact</a>
             </div>
             <div class="nav-toggle">
                 <span></span>
@@ -108,10 +108,10 @@
         <div class="hero-content">
             <div class="hero-text">
                 <h1 class="hero-title">
-                    <span class="title-line">Technology</span>
-                    <span class="title-line">in materials.</span>
+                    <span class="title-line" data-i18n="hero.title1">Technology</span>
+                    <span class="title-line" data-i18n="hero.title2">in materials.</span>
                 </h1>
-                <p class="hero-subtitle">
+                <p class="hero-subtitle" data-i18n="hero.subtitle">
                     ECOLOGY, INNOVATION, HUMANITY & TECHNOLOGY.
                 </p>
             </div>
@@ -119,7 +119,7 @@
         <div class="scroll-indicator">
             <div class="scroll-chevron">
             </div>
-            <span>DISCOVER OUR FORMULAS</span>
+            <span data-i18n="hero.scroll">DISCOVER OUR FORMULAS</span>
         </div>
     </section>
 
@@ -133,14 +133,14 @@
         <div class="vision-content">
             <div class="vision-text">
                 <div class="vision-line"></div>
-                <h2 class="vision-header">OUR VISION</h2>
-                <h1 class="vision-title">
+                <h2 class="vision-header" data-i18n="vision.header">OUR VISION</h2>
+                <h1 class="vision-title" data-i18n="vision.title">
                     Creating formulas that inspire, support, and strengthen the construction industry.
                 </h1>
-                <p class="vision-description">
+                <p class="vision-description" data-i18n="vision.desc" data-i18n-html>
                     We formulate a wide range of products using the highest quality aggregates, integrated with our technology in adhesives, water repellents, and cutting-edge additives, with <strong>the goal of developing unique formulas with outstanding performance.</strong>
                 </p>
-                <p class="vision-commitment">
+                <p class="vision-commitment" data-i18n="vision.commitment">
                     Reaffirming our commitment to offering innovative solutions and superior quality 
                     in the construction sector.
                 </p>
@@ -152,8 +152,8 @@
     <section class="interactive-3d-section">
         <div class="container">
             <div class="interactive-header">
-                <h2 class="interactive-section-title">OUR FORMULAS</h2>
-                <h1 class="interactive-main-title">Traditional processes, formulated in the laboratory.</h1>
+                <h2 class="interactive-section-title" data-i18n="formulas.section">OUR FORMULAS</h2>
+                <h1 class="interactive-main-title" data-i18n="formulas.title">Traditional processes, formulated in the laboratory.</h1>
             </div>
             <div class="cards-container" id="cardsContainer">
                 <div class="cards-stack" id="cardsStack">
@@ -241,22 +241,22 @@
         </div>
         <div class="water-content">
             <div class="water-text">
-                <h2 class="water-title">ALL OUR PRODUCTS ARE FORMULATED DRY, JUST ADD WATER AND READY.</h2>
+                <h2 class="water-title" data-i18n="water.title">ALL OUR PRODUCTS ARE FORMULATED DRY, JUST ADD WATER AND READY.</h2>
                 <div class="water-stats">
                     <div class="water-stat">
                         <span class="stat-number">H2O</span>
-                        <span class="stat-label">Just add water</span>
+                        <span class="stat-label" data-i18n="water.stat1">Just add water</span>
                     </div>
                     <div class="water-stat">
                         <span class="stat-number">98%</span>
-                        <span class="stat-label">More accurate formulas</span>
+                        <span class="stat-label" data-i18n="water.stat2">More accurate formulas</span>
                     </div>
                 </div>
-                <p class="water-description">
+                <p class="water-description" data-i18n="water.desc">
                     Pre-mixed dry formulas, being carefully crafted under controlled laboratory conditions, ensure 98% consistency compared to on-site mixing.
                 </p>
                 <a href="conoce-mas.html" class="water-cta">
-                    <span>LEARN MORE</span>
+                    <span data-i18n="water.cta">LEARN MORE</span>
                     <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
@@ -275,11 +275,11 @@
         </div>
         <div class="process-content">
             <div class="process-text">
-                <h2 class="process-title">MIXING PROCESS</h2>
-                <h1 class="process-main-title">
+                <h2 class="process-title" data-i18n="process.title">MIXING PROCESS</h2>
+                <h1 class="process-main-title" data-i18n="process.main">
                     Molecular precision in every formulation
                 </h1>
-                <p class="process-description">
+                <p class="process-description" data-i18n="process.desc">
                     Our controlled mixing process ensures perfect consistency 
                     in every batch, using cutting-edge technology to achieve 
                     industrial precision formulations.
@@ -287,11 +287,11 @@
                 <div class="process-stats">
                     <div class="process-stat">
                         <span class="stat-number">99.8%</span>
-                        <span class="stat-label">Molecular precision</span>
+                        <span class="stat-label" data-i18n="process.stat1">Molecular precision</span>
             </div>
                     <div class="process-stat">
                         <span class="stat-number">100%</span>
-                        <span class="stat-label">Quality control</span>
+                        <span class="stat-label" data-i18n="process.stat2">Quality control</span>
                     </div>
                 </div>
                 <div class="process-features">
@@ -306,8 +306,8 @@
                             </svg>
                         </div>
                         <div class="feature-content">
-                            <h3>Microscopic Analysis</h3>
-                            <p>Molecular verification of each component</p>
+                            <h3 data-i18n="process.f1t">Microscopic Analysis</h3>
+                            <p data-i18n="process.f1d">Molecular verification of each component</p>
                         </div>
                     </div>
                     <div class="process-feature">
@@ -331,8 +331,8 @@
                             </svg>
                         </div>
                         <div class="feature-content">
-                            <h3>Industrial Automation</h3>
-                            <p>Processes controlled by advanced systems</p>
+                            <h3 data-i18n="process.f2t">Industrial Automation</h3>
+                            <p data-i18n="process.f2d">Processes controlled by advanced systems</p>
                         </div>
                     </div>
                     <div class="process-feature">
@@ -344,8 +344,8 @@
                             </svg>
                         </div>
                         <div class="feature-content">
-                            <h3>Chemical Formulation</h3>
-                            <p>Development of high-precision compounds</p>
+                            <h3 data-i18n="process.f3t">Chemical Formulation</h3>
+                            <p data-i18n="process.f3d">Development of high-precision compounds</p>
                 </div>
                     </div>
                 </div>
@@ -365,39 +365,39 @@
         </div>
         <div class="stats-content">
             <div class="stats-text">
-                <h2 class="stats-subtitle">RESEARCH</h2>
-                <h1 class="stats-title">INNOVATION <span class="ampersand">&</span> CONSTRUCTION</h1>
+                <h2 class="stats-subtitle" data-i18n="stats.sub">RESEARCH</h2>
+                <h1 class="stats-title" data-i18n="stats.title">INNOVATION & CONSTRUCTION</h1>
                 <div class="stats-grid">
                     <div class="stat-item">
                         <span class="stat-number" data-target="18">
                             <span class="number">0</span>
                         </span>
                         <div class="stat-divider"></div>
-                        <span class="stat-label">Commercial products</span>
+                        <span class="stat-label" data-i18n="stats.s1">Commercial products</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-number" data-target="60" data-prefix="+">
                             <span class="prefix">+</span><span class="number">0</span>
                         </span>
                         <div class="stat-divider"></div>
-                        <span class="stat-label">Formulas created</span>
+                        <span class="stat-label" data-i18n="stats.s2">Formulas created</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-number" data-target="24.1" data-dynamic="years">
                             <span class="number">0</span>
                         </span>
                         <div class="stat-divider"></div>
-                        <span class="stat-label">Years of experience</span>
+                        <span class="stat-label" data-i18n="stats.s3">Years of experience</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-number" data-target="50" data-prefix="+">
                             <span class="prefix">+</span><span class="number">0</span>
                         </span>
                         <div class="stat-divider"></div>
-                        <span class="stat-label">Distributors</span>
+                        <span class="stat-label" data-i18n="stats.s4">Distributors</span>
                     </div>
                 </div>
-                <p class="stats-description">
+                <p class="stats-description" data-i18n="stats.desc">
                     Over the years we have designed 18 line products, available at all times, and more than 60 formulas available on order.
                 </p>
             </div>
@@ -620,15 +620,15 @@
                     <span class="products-counter-number" data-target="18">
                         <span class="number">0</span>
                     </span>
-                    <span class="products-counter-label">Commercial products</span>
+                    <span class="products-counter-label" data-i18n="products.counter">Commercial products</span>
                 </div>
-                <h1 class="products-main-title">Complete Range of Solutions</h1>
-                <h2 class="products-tagline">Every product, an exceptional solution</h2>
-                <p class="products-main-description">
+                <h1 class="products-main-title" data-i18n="products.title">Complete Range of Solutions</h1>
+                <h2 class="products-tagline" data-i18n="products.tagline">Every product, an exceptional solution</h2>
+                <p class="products-main-description" data-i18n="products.desc">
                     From substrate preparation to final finish, our product line covers every stage of the construction process with precision formulations that guarantee superior results in every project.
                 </p>
                 <a href="catalogo.html" class="products-cta-btn">
-                    <span>EXPLORE CATALOG</span>
+                    <span data-i18n="products.cta">EXPLORE CATALOG</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M5 12h14M12 5l7 7-7 7"/>
                     </svg>
@@ -653,8 +653,8 @@
         <div class="container">
             <div class="quality-content">
                 <div class="quality-header">
-                    <h2 class="quality-subtitle">CONTROL</h2>
-                    <h1 class="quality-title">QUALITY<br>GUARANTEES</h1>
+                    <h2 class="quality-subtitle" data-i18n="quality.sub">CONTROL</h2>
+                    <h1 class="quality-title" data-i18n="quality.title" data-i18n-html>QUALITY<br>GUARANTEES</h1>
                 </div>
                 
                 <div class="quality-stats">
@@ -662,8 +662,8 @@
                         <div class="stat-number">
                             <span class="counter" data-target="98" data-prefix="" data-suffix="%">0</span>
                         </div>
-                        <div class="stat-label">Guaranteed consistency</div>
-                        <div class="stat-description">
+                        <div class="stat-label" data-i18n="quality.s1l">Guaranteed consistency</div>
+                        <div class="stat-description" data-i18n="quality.s1d">
                             Achieved by just adding water instead of formulating on site, 
                             ensuring uniform results in every application.
                         </div>
@@ -673,8 +673,8 @@
                         <div class="stat-number">
                             <span class="counter" data-target="40" data-prefix="+" data-suffix="%">0</span>
                         </div>
-                        <div class="stat-label">Time efficiency</div>
-                        <div class="stat-description">
+                        <div class="stat-label" data-i18n="quality.s2l">Time efficiency</div>
+                        <div class="stat-description" data-i18n="quality.s2d">
                             Significant reduction in preparation and application time, 
                             optimizing project schedules.
                         </div>
@@ -684,8 +684,8 @@
                         <div class="stat-number">
                             <span class="counter" data-target="60" data-prefix="-" data-suffix="%">0</span>
                         </div>
-                        <div class="stat-label">Material waste</div>
-                        <div class="stat-description">
+                        <div class="stat-label" data-i18n="quality.s3l">Material waste</div>
+                        <div class="stat-description" data-i18n="quality.s3d">
                             Pre-formulated products have extended shelf life 
                             and better material utilization.
                         </div>
@@ -695,8 +695,8 @@
                         <div class="stat-number">
                             <span class="counter" data-target="100" data-prefix="" data-suffix="%">0</span>
                         </div>
-                        <div class="stat-label">Quality control</div>
-                        <div class="stat-description">
+                        <div class="stat-label" data-i18n="quality.s4l">Quality control</div>
+                        <div class="stat-description" data-i18n="quality.s4d">
                             Every batch goes through rigorous laboratory testing before 
                             going into production.
                         </div>
@@ -716,9 +716,9 @@
                         <img src="Assets/contact.jpg" alt="Architectural Background" />
                         <div class="image-overlay">
                             <div class="overlay-content">
-                                <h2>Design your future,<br>one formula at a time.</h2>
-                                <h3>Join a community of builders shaping tomorrow.</h3>
-                                <p>S-35® Your partner in construction excellence.</p>
+                                <h2 data-i18n="contact.h2" data-i18n-html>Design your future,<br>one formula at a time.</h2>
+                                <h3 data-i18n="contact.h3">Join a community of builders shaping tomorrow.</h3>
+                                <p data-i18n="contact.p">S-35® Your partner in construction excellence.</p>
                             </div>
                         </div>
                     </div>
@@ -728,46 +728,46 @@
                 <div class="contact-right">
                     <div class="contact-form-container">
                         <div class="form-header">
-                            <h1>Send us a message</h1>
-                            <p>Connect with our team and discover how we can transform your next construction project.</p>
+                            <h1 data-i18n="contact.formTitle">Send us a message</h1>
+                            <p data-i18n="contact.formSub">Connect with our team and discover how we can transform your next construction project.</p>
                         </div>
                         
                         <form class="contact-form">
                             <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute; left:-9999px; opacity:0; height:0; width:0;" aria-hidden="true">
                             <div class="form-group">
-                                <label for="nombre">Full name *</label>
-                                <input type="text" id="nombre" name="nombre" placeholder="e.g. John Smith" required>
+                                <label for="nombre" data-i18n="contact.name">Full name *</label>
+                                <input type="text" id="nombre" name="nombre" data-i18n-placeholder="contact.namePh" placeholder="e.g. John Smith" required>
                             </div>
                             
                             <div class="form-group">
-                                <label for="email">Email address *</label>
-                                <input type="email" id="email" name="email" placeholder="e.g. john@company.com" required>
+                                <label for="email" data-i18n="contact.email">Email address *</label>
+                                <input type="email" id="email" name="email" data-i18n-placeholder="contact.emailPh" placeholder="e.g. john@company.com" required>
                             </div>
                             
                             <div class="form-group">
-                                <label for="empresa">Company</label>
-                                <input type="text" id="empresa" name="empresa" placeholder="e.g. ABC Construction">
+                                <label for="empresa" data-i18n="contact.company">Company</label>
+                                <input type="text" id="empresa" name="empresa" data-i18n-placeholder="contact.companyPh" placeholder="e.g. ABC Construction">
                             </div>
                             
                             <div class="form-group">
-                                <label for="mensaje">Message *</label>
-                                <textarea id="mensaje" name="mensaje" placeholder="Tell us about your project..." rows="4" required></textarea>
+                                <label for="mensaje" data-i18n="contact.message">Message *</label>
+                                <textarea id="mensaje" name="mensaje" data-i18n-placeholder="contact.messagePh" placeholder="Tell us about your project..." rows="4" required></textarea>
                             </div>
                             
                             <div class="form-group checkbox-group">
                                 <label class="checkbox-label">
                                     <input type="checkbox" id="newsletter" name="newsletter" class="checkbox-input">
                                     <span class="checkbox-custom"></span>
-                                    <span class="checkbox-text">Connect with our team and discover how we can transform your next construction project. Subscribe to our newsletter and stay informed about our advances.</span>
+                                    <span class="checkbox-text" data-i18n="contact.checkbox">Connect with our team and discover how we can transform your next construction project. Subscribe to our newsletter and stay informed about our advances.</span>
                                 </label>
                             </div>
                             
-                            <button type="submit" class="submit-btn">
+                            <button type="submit" class="submit-btn" data-i18n="contact.submit">
                                 Send message
                             </button>
                             
                             <div class="form-footer">
-                                <p class="terms">A specialized advisor will be with you to follow up on your inquiry and provide you with the best solution and/or construction advice.</p>
+                                <p class="terms" data-i18n="contact.terms">A specialized advisor will be with you to follow up on your inquiry and provide you with the best solution and/or construction advice.</p>
                             </div>
                         </form>
                     </div>
@@ -783,9 +783,9 @@
                 
                 <!-- Mobile Text Section -->
                 <div class="contact-mobile-text">
-                    <h2>Design your future,<br>one formula at a time.</h2>
-                    <h3>Join a community of builders shaping tomorrow.</h3>
-                    <p>S-35® Your partner in construction excellence.</p>
+                    <h2 data-i18n="contact.h2" data-i18n-html>Design your future,<br>one formula at a time.</h2>
+                    <h3 data-i18n="contact.h3">Join a community of builders shaping tomorrow.</h3>
+                    <p data-i18n="contact.p">S-35® Your partner in construction excellence.</p>
                 </div>
                 
                 <!-- Mobile Divider -->
@@ -794,46 +794,46 @@
                 <!-- Mobile Form -->
                 <div class="contact-mobile-form">
                     <div class="form-header">
-                        <h1>Send us a message</h1>
-                        <p>Connect with our team and discover how we can transform your next construction project.</p>
+                        <h1 data-i18n="contact.formTitle">Send us a message</h1>
+                        <p data-i18n="contact.formSub">Connect with our team and discover how we can transform your next construction project.</p>
                     </div>
                     
                     <form class="contact-form">
                         <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute; left:-9999px; opacity:0; height:0; width:0;" aria-hidden="true">
                         <div class="form-group">
-                            <label for="nombre-mobile">Full name *</label>
-                            <input type="text" id="nombre-mobile" name="nombre" placeholder="e.g. John Smith" required>
+                            <label for="nombre-mobile" data-i18n="contact.name">Full name *</label>
+                            <input type="text" id="nombre-mobile" name="nombre" data-i18n-placeholder="contact.namePh" placeholder="e.g. John Smith" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="email-mobile">Email address *</label>
-                            <input type="email" id="email-mobile" name="email" placeholder="e.g. john@company.com" required>
+                            <label for="email-mobile" data-i18n="contact.email">Email address *</label>
+                            <input type="email" id="email-mobile" name="email" data-i18n-placeholder="contact.emailPh" placeholder="e.g. john@company.com" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="empresa-mobile">Company</label>
-                            <input type="text" id="empresa-mobile" name="empresa" placeholder="e.g. ABC Construction">
+                            <label for="empresa-mobile" data-i18n="contact.company">Company</label>
+                            <input type="text" id="empresa-mobile" name="empresa" data-i18n-placeholder="contact.companyPh" placeholder="e.g. ABC Construction">
                         </div>
                         
                         <div class="form-group">
-                            <label for="mensaje-mobile">Message *</label>
-                            <textarea id="mensaje-mobile" name="mensaje" placeholder="Tell us about your project..." rows="4" required></textarea>
+                            <label for="mensaje-mobile" data-i18n="contact.message">Message *</label>
+                            <textarea id="mensaje-mobile" name="mensaje" data-i18n-placeholder="contact.messagePh" placeholder="Tell us about your project..." rows="4" required></textarea>
                         </div>
                         
                         <div class="form-group checkbox-group">
                             <label class="checkbox-label">
                                 <input type="checkbox" id="newsletter-mobile" name="newsletter" class="checkbox-input">
                                 <span class="checkbox-custom"></span>
-                                <span class="checkbox-text">Connect with our team and discover how we can transform your next construction project. Subscribe to our newsletter and stay informed about our advances.</span>
+                                <span class="checkbox-text" data-i18n="contact.checkbox">Connect with our team and discover how we can transform your next construction project. Subscribe to our newsletter and stay informed about our advances.</span>
                             </label>
                         </div>
                         
-                        <button type="submit" class="submit-btn">
+                        <button type="submit" class="submit-btn" data-i18n="contact.submit">
                             Send message
                         </button>
                         
                         <div class="form-footer">
-                            <p class="terms">A specialized advisor will be with you to follow up on your inquiry and provide you with the best solution and/or construction advice.</p>
+                            <p class="terms" data-i18n="contact.terms">A specialized advisor will be with you to follow up on your inquiry and provide you with the best solution and/or construction advice.</p>
                         </div>
                     </form>
                 </div>
@@ -854,50 +854,50 @@
                     <div class="footer-logo">
                         <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="footer-logo-image">
                     </div>
-                    <p class="footer-tagline">Construction technology for the future</p>
+                    <p class="footer-tagline" data-i18n="footer.tagline">Construction technology for the future</p>
                 </div>
 
                 <!-- Links Grid -->
                 <div class="footer-links">
                     <div class="footer-column">
-                        <h4 class="footer-title">Products</h4>
+                        <h4 class="footer-title" data-i18n="footer.products">Products</h4>
                         <ul class="footer-list">
-                            <li><a href="catalogo.html">Complete Catalog</a></li>
-                            <li><a href="#">Premium Stucco</a></li>
-                            <li><a href="#">Industrial Basecoat</a></li>
-                            <li><a href="#">Specialized Finishes</a></li>
-                            <li><a href="#">High-Strength Adhesives</a></li>
+                            <li><a href="catalogo.html" data-i18n="footer.catalog">Complete Catalog</a></li>
+                            <li><a href="#" data-i18n="footer.stucco">Premium Stucco</a></li>
+                            <li><a href="#" data-i18n="footer.basecoat">Industrial Basecoat</a></li>
+                            <li><a href="#" data-i18n="footer.finishes">Specialized Finishes</a></li>
+                            <li><a href="#" data-i18n="footer.adhesives">High-Strength Adhesives</a></li>
                         </ul>
                     </div>
                     
                     <div class="footer-column">
-                        <h4 class="footer-title">Technology</h4>
+                        <h4 class="footer-title" data-i18n="footer.technology">Technology</h4>
                         <ul class="footer-list">
-                            <li><a href="#">Research Laboratory</a></li>
-                            <li><a href="#">Manufacturing Processes</a></li>
-                            <li><a href="#">Quality Control</a></li>
-                            <li><a href="#">Continuous Innovation</a></li>
+                            <li><a href="#" data-i18n="footer.lab">Research Laboratory</a></li>
+                            <li><a href="#" data-i18n="footer.manufacturing">Manufacturing Processes</a></li>
+                            <li><a href="#" data-i18n="footer.qc">Quality Control</a></li>
+                            <li><a href="#" data-i18n="footer.innovation">Continuous Innovation</a></li>
                         </ul>
                     </div>
                     
                     <div class="footer-column">
-                        <h4 class="footer-title">Company</h4>
+                        <h4 class="footer-title" data-i18n="footer.company">Company</h4>
                         <ul class="footer-list">
-                            <li><a href="#">About Us</a></li>
-                            <li><a href="#">History</a></li>
-                            <li><a href="#">Mission and Vision</a></li>
-                            <li><a href="#">Certifications</a></li>
-                            <li><a href="admin-login.html" style="color: var(--primary-blue); font-weight: 500;"><i class="fas fa-user-shield"></i> Collaborators</a></li>
+                            <li><a href="#" data-i18n="footer.about">About Us</a></li>
+                            <li><a href="#" data-i18n="footer.history">History</a></li>
+                            <li><a href="#" data-i18n="footer.mission">Mission and Vision</a></li>
+                            <li><a href="#" data-i18n="footer.certs">Certifications</a></li>
+                            <li><a href="admin-login.html" style="color: var(--primary-blue); font-weight: 500;"><i class="fas fa-user-shield"></i> <span data-i18n="footer.collaborators">Collaborators</span></a></li>
                         </ul>
                     </div>
                     
                     <div class="footer-column">
-                        <h4 class="footer-title">Contact</h4>
+                        <h4 class="footer-title" data-i18n="footer.contactCol">Contact</h4>
                         <ul class="footer-list">
-                            <li><a href="#contacto">Contact Form</a></li>
-                            <li><a href="#">Distributors</a></li>
-                            <li><a href="#">Technical Support</a></li>
-                            <li><a href="#">Commercial Inquiries</a></li>
+                            <li><a href="#contacto" data-i18n="footer.form">Contact Form</a></li>
+                            <li><a href="#" data-i18n="footer.distributors">Distributors</a></li>
+                            <li><a href="#" data-i18n="footer.support">Technical Support</a></li>
+                            <li><a href="#" data-i18n="footer.commercial">Commercial Inquiries</a></li>
                         </ul>
                     </div>
                 </div>
@@ -916,62 +916,62 @@
                 <div class="footer-accordion">
                     <div class="footer-accordion-item">
                         <button class="footer-accordion-header">
-                            <span>Products</span>
+                            <span data-i18n="footer.products">Products</span>
                             <i class="fas fa-chevron-down"></i>
                         </button>
                         <div class="footer-accordion-content">
                             <ul class="footer-list">
-                                <li><a href="catalogo.html">Complete Catalog</a></li>
-                                <li><a href="#">Premium Stucco</a></li>
-                                <li><a href="#">Industrial Basecoat</a></li>
-                                <li><a href="#">Specialized Finishes</a></li>
-                                <li><a href="#">High-Strength Adhesives</a></li>
+                                <li><a href="catalogo.html" data-i18n="footer.catalog">Complete Catalog</a></li>
+                                <li><a href="#" data-i18n="footer.stucco">Premium Stucco</a></li>
+                                <li><a href="#" data-i18n="footer.basecoat">Industrial Basecoat</a></li>
+                                <li><a href="#" data-i18n="footer.finishes">Specialized Finishes</a></li>
+                                <li><a href="#" data-i18n="footer.adhesives">High-Strength Adhesives</a></li>
                             </ul>
                         </div>
                     </div>
 
                     <div class="footer-accordion-item">
                         <button class="footer-accordion-header">
-                            <span>Technology</span>
+                            <span data-i18n="footer.technology">Technology</span>
                             <i class="fas fa-chevron-down"></i>
                         </button>
                         <div class="footer-accordion-content">
                             <ul class="footer-list">
-                                <li><a href="#">Research Laboratory</a></li>
-                                <li><a href="#">Manufacturing Processes</a></li>
-                                <li><a href="#">Quality Control</a></li>
-                                <li><a href="#">Continuous Innovation</a></li>
+                                <li><a href="#" data-i18n="footer.lab">Research Laboratory</a></li>
+                                <li><a href="#" data-i18n="footer.manufacturing">Manufacturing Processes</a></li>
+                                <li><a href="#" data-i18n="footer.qc">Quality Control</a></li>
+                                <li><a href="#" data-i18n="footer.innovation">Continuous Innovation</a></li>
                             </ul>
                         </div>
                     </div>
 
                     <div class="footer-accordion-item">
                         <button class="footer-accordion-header">
-                            <span>Company</span>
+                            <span data-i18n="footer.company">Company</span>
                             <i class="fas fa-chevron-down"></i>
                         </button>
                         <div class="footer-accordion-content">
                             <ul class="footer-list">
-                                <li><a href="#">About Us</a></li>
-                                <li><a href="#">History</a></li>
-                                <li><a href="#">Mission and Vision</a></li>
-                                <li><a href="#">Certifications</a></li>
-                                <li><a href="admin-login.html" style="color: var(--primary-blue); font-weight: 500;"><i class="fas fa-user-shield"></i> Collaborators</a></li>
+                                <li><a href="#" data-i18n="footer.about">About Us</a></li>
+                                <li><a href="#" data-i18n="footer.history">History</a></li>
+                                <li><a href="#" data-i18n="footer.mission">Mission and Vision</a></li>
+                                <li><a href="#" data-i18n="footer.certs">Certifications</a></li>
+                                <li><a href="admin-login.html" style="color: var(--primary-blue); font-weight: 500;"><i class="fas fa-user-shield"></i> <span data-i18n="footer.collaborators">Collaborators</span></a></li>
                             </ul>
                         </div>
                     </div>
 
                     <div class="footer-accordion-item">
                         <button class="footer-accordion-header">
-                            <span>Contact</span>
+                            <span data-i18n="footer.contactCol">Contact</span>
                             <i class="fas fa-chevron-down"></i>
                         </button>
                         <div class="footer-accordion-content">
                             <ul class="footer-list">
-                                <li><a href="#contacto">Contact Form</a></li>
-                                <li><a href="#">Distributors</a></li>
-                                <li><a href="#">Technical Support</a></li>
-                                <li><a href="#">Commercial Inquiries</a></li>
+                                <li><a href="#contacto" data-i18n="footer.form">Contact Form</a></li>
+                                <li><a href="#" data-i18n="footer.distributors">Distributors</a></li>
+                                <li><a href="#" data-i18n="footer.support">Technical Support</a></li>
+                                <li><a href="#" data-i18n="footer.commercial">Commercial Inquiries</a></li>
                             </ul>
                         </div>
                     </div>
@@ -982,15 +982,15 @@
             <div class="footer-bottom">
                 <div class="footer-bottom-content">
                     <div class="footer-copyright">
-                        <p>© 2025 S-35® Tech Web Team. All rights reserved. | v1.1.7
+                        <p data-i18n="footer.copyright">© 2025 S-35® Tech Web Team. All rights reserved. | v1.1.7
                         </p>
                     </div>
                     <div class="footer-legal">
-                        <a href="terminos.html">Terms of Service</a>
+                        <a href="terminos.html" data-i18n="footer.terms">Terms of Service</a>
                         <span class="divider">|</span>
-                        <a href="privacidad.html">Privacy Policy</a>
+                        <a href="privacidad.html" data-i18n="footer.privacy">Privacy Policy</a>
                         <span class="divider">|</span>
-                        <a href="cookies.html">Cookies</a>
+                        <a href="cookies.html" data-i18n="footer.cookies">Cookies</a>
                         <span class="divider">|</span>
                         <a href="http://s-35.com/system/ventas_s35" style="color: var(--primary-blue); font-weight: 500;"><i class="fas fa-cash-register"></i> POS</a>
                         <span class="divider">|</span>
@@ -1006,27 +1006,31 @@
     <div id="languageModal" class="language-modal" aria-hidden="true">
         <div class="language-modal-backdrop"></div>
         <div class="language-modal-content">
-            <h2 class="language-modal-title">Select Your Region</h2>
-            <p class="language-modal-subtitle">Choose your preferred S-35 experience</p>
+            <h2 class="language-modal-title" data-i18n="modal.title">Choose your language</h2>
+            <p class="language-modal-subtitle" data-i18n="modal.subtitle">Browse this site in English or Spanish</p>
             <div class="language-modal-buttons">
-                <button class="language-btn language-btn-global" id="continueGlobalBtn">
+                <button class="language-btn language-btn-global" id="selectLangEn" type="button">
                     <span class="language-emoji">🇺🇸</span>
                     <span class="language-text">
-                        <strong>Continue in Global Page</strong>
-                        <small>English - USA & International</small>
+                        <strong data-i18n="modal.en">English</strong>
+                        <small data-i18n="modal.enSub">USA & International</small>
                     </span>
                 </button>
-                <button class="language-btn language-btn-mexico" id="goToMexicoBtn">
+                <button class="language-btn language-btn-mexico" id="selectLangEs" type="button">
                     <span class="language-emoji">🇲🇽</span>
                     <span class="language-text">
-                        <strong>Go to S-35 Mexico Page</strong>
-                        <small>Español - México</small>
+                        <strong data-i18n="modal.es">Español</strong>
+                        <small data-i18n="modal.esSub">México y Latinoamérica</small>
                     </span>
                 </button>
             </div>
+            <p class="language-modal-mexico">
+                <a href="https://www.S-35.com.mx" target="_blank" rel="noopener" data-i18n="modal.mexicoLink">Visit S-35 Mexico site (S-35.com.mx)</a>
+            </p>
         </div>
     </div>
 
+    <script src="i18n.js"></script>
     <script src="script.js"></script>
     <!-- Deployment test - $(date) -->
 </body>

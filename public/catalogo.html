@@ -31,7 +31,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
+<body data-i18n-page="catalog">
     <!-- Navigation -->
     <nav class="nav">
         <div class="nav-container">
@@ -44,8 +44,8 @@
                 <div class="nav-dropdown">
                     <a href="#" class="nav-link">Login <i class="fas fa-chevron-down"></i></a>
                 </div>
-                <a href="#noticias" class="nav-link">News</a>
-                <a href="#contacto" class="nav-link contact-btn">Contact</a>
+                <a href="index.html#noticias" class="nav-link" data-i18n="nav.news">News</a>
+                <a href="index.html#contacto" class="nav-link contact-btn" data-i18n="nav.contact">Contact</a>
             </div>
             <div class="nav-toggle">
                 <span></span>
@@ -61,12 +61,12 @@
     <section class="catalog-hero">
         <div class="catalog-hero-content">
             <div class="breadcrumb">
-                <a href="index.html">Home</a>
+                <a href="index.html" data-i18n="catalog.home">Home</a>
                 <span>/</span>
-                <span>Catalog</span>
+                <span data-i18n="catalog.catalog">Catalog</span>
             </div>
-            <h1 class="catalog-title">Product Catalog</h1>
-            <p class="catalog-subtitle">Industrial precision construction solutions</p>
+            <h1 class="catalog-title" data-i18n="catalog.title">Product Catalog</h1>
+            <p class="catalog-subtitle" data-i18n="catalog.subtitle">Industrial precision construction solutions</p>
         </div>
     </section>
 
@@ -75,11 +75,11 @@
         <div class="container">
             <div class="product-filters">
                 <div class="filter-group">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="estuco">Stucco</button>
-                    <button class="filter-btn" data-filter="basecoat">Basecoat</button>
-                    <button class="filter-btn" data-filter="acabados">Finishes</button>
-                    <button class="filter-btn" data-filter="adhesivos">Adhesives</button>
+                    <button class="filter-btn active" data-filter="all" data-i18n="catalog.all">All</button>
+                    <button class="filter-btn" data-filter="estuco" data-i18n="catalog.stucco">Stucco</button>
+                    <button class="filter-btn" data-filter="basecoat" data-i18n="catalog.basecoat">Basecoat</button>
+                    <button class="filter-btn" data-filter="acabados" data-i18n="catalog.finishes">Finishes</button>
+                    <button class="filter-btn" data-filter="adhesivos" data-i18n="catalog.adhesives">Adhesives</button>
                 </div>
             </div>
 
@@ -91,13 +91,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="estuco-base">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Estuco Base Pro+</h3>
-                        <p class="product-category">Stucco</p>
+                        <p class="product-category" data-i18n-category="estuco">Stucco</p>
                     </div>
                 </div>
 
@@ -108,13 +108,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="basecoat-blanco">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Basecoat Blanco</h3>
-                        <p class="product-category">Basecoat</p>
+                        <p class="product-category" data-i18n-category="basecoat">Basecoat</p>
                     </div>
                 </div>
 
@@ -125,13 +125,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="waxtard-blanco">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Waxtard Blanco Absoluto</h3>
-                        <p class="product-category">Finishes</p>
+                        <p class="product-category" data-i18n-category="acabados">Finishes</p>
                     </div>
                 </div>
 
@@ -142,13 +142,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="ultraforce">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Ultraforce</h3>
-                        <p class="product-category">Adhesives</p>
+                        <p class="product-category" data-i18n-category="adhesivos">Adhesives</p>
                     </div>
                 </div>
 
@@ -159,13 +159,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="cellbond">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Cellbond</h3>
-                        <p class="product-category">Adhesives</p>
+                        <p class="product-category" data-i18n-category="adhesivos">Adhesives</p>
                     </div>
                 </div>
 
@@ -176,13 +176,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="styrobond">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Styrobond</h3>
-                        <p class="product-category">Adhesives</p>
+                        <p class="product-category" data-i18n-category="adhesivos">Adhesives</p>
                     </div>
                 </div>
 
@@ -193,13 +193,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="mixandready">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Mixandready</h3>
-                        <p class="product-category">Stucco</p>
+                        <p class="product-category" data-i18n-category="estuco">Stucco</p>
                     </div>
                 </div>
 
@@ -210,13 +210,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="porcelanico">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Porcelánico Universal</h3>
-                        <p class="product-category">Finishes</p>
+                        <p class="product-category" data-i18n-category="acabados">Finishes</p>
                     </div>
                 </div>
 
@@ -227,13 +227,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="cemento-plastico">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Cemento Plástico</h3>
-                        <p class="product-category">Adhesives</p>
+                        <p class="product-category" data-i18n-category="adhesivos">Adhesives</p>
                     </div>
                 </div>
 
@@ -244,13 +244,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="piso-sobre-piso">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Piso Sobre Piso</h3>
-                        <p class="product-category">Finishes</p>
+                        <p class="product-category" data-i18n-category="acabados">Finishes</p>
                     </div>
                 </div>
 
@@ -261,13 +261,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="pastablock">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Pastablock</h3>
-                        <p class="product-category">Stucco</p>
+                        <p class="product-category" data-i18n-category="estuco">Stucco</p>
                     </div>
                 </div>
 
@@ -278,13 +278,13 @@
                         <div class="product-overlay">
                             <button class="view-product-btn" data-product="ceramico">
                                 <i class="fas fa-eye"></i>
-                                View Details
+                                <span data-i18n="catalog.viewDetails">View Details</span>
                             </button>
                         </div>
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">Cerámico</h3>
-                        <p class="product-category">Finishes</p>
+                        <p class="product-category" data-i18n-category="acabados">Finishes</p>
                     </div>
                 </div>
             </div>
@@ -332,28 +332,28 @@
                     </div>
 
                     <div class="product-description">
-                        <h3>Description</h3>
+                        <h3 data-i18n="catalog.description">Description</h3>
                         <p id="productDescription"></p>
                     </div>
 
                     <div class="product-features">
-                        <h3>Technical Features</h3>
+                        <h3 data-i18n="catalog.features">Technical Features</h3>
                         <ul id="productFeatures"></ul>
                     </div>
 
                     <div class="product-applications">
-                        <h3>Applications</h3>
+                        <h3 data-i18n="catalog.applications">Applications</h3>
                         <ul id="productApplications"></ul>
                     </div>
 
                     <div class="product-actions">
                         <button class="contact-btn-primary">
                             <i class="fas fa-phone"></i>
-                            Request Information
+                            <span data-i18n="catalog.requestInfo">Request Information</span>
                         </button>
                         <button class="download-btn">
                             <i class="fas fa-download"></i>
-                            Download Technical Sheet
+                            <span data-i18n="catalog.downloadSheet">Download Technical Sheet</span>
                         </button>
                     </div>
                 </div>
@@ -371,7 +371,7 @@
                     <div class="footer-logo">
                         <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="footer-logo-image">
                     </div>
-                    <p class="footer-tagline">Construction technology for the future</p>
+                    <p class="footer-tagline" data-i18n="footer.tagline">Construction technology for the future</p>
                 </div>
 
                 <!-- Links Grid -->
@@ -518,6 +518,35 @@
         </div>
     </footer>
 
+    <!-- Language Selection Modal -->
+    <div id="languageModal" class="language-modal" aria-hidden="true">
+        <div class="language-modal-backdrop"></div>
+        <div class="language-modal-content">
+            <h2 class="language-modal-title" data-i18n="modal.title">Choose your language</h2>
+            <p class="language-modal-subtitle" data-i18n="modal.subtitle">Browse this site in English or Spanish</p>
+            <div class="language-modal-buttons">
+                <button class="language-btn language-btn-global" id="selectLangEn" type="button">
+                    <span class="language-emoji">🇺🇸</span>
+                    <span class="language-text">
+                        <strong data-i18n="modal.en">English</strong>
+                        <small data-i18n="modal.enSub">USA & International</small>
+                    </span>
+                </button>
+                <button class="language-btn language-btn-mexico" id="selectLangEs" type="button">
+                    <span class="language-emoji">🇲🇽</span>
+                    <span class="language-text">
+                        <strong data-i18n="modal.es">Español</strong>
+                        <small data-i18n="modal.esSub">México y Latinoamérica</small>
+                    </span>
+                </button>
+            </div>
+            <p class="language-modal-mexico">
+                <a href="https://www.S-35.com.mx" target="_blank" rel="noopener" data-i18n="modal.mexicoLink">Visit S-35 Mexico site (S-35.com.mx)</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="i18n.js"></script>
     <script src="script.js"></script>
     <script src="catalogo.js"></script>
 </body>

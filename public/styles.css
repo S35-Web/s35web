@@ -4929,3 +4929,61 @@ html {
         font-size: 0.8rem;
     }
 }
+
+/* Language switcher (nav) */
+.lang-switcher {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-right: var(--space-md);
+    padding: 3px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.lang-btn {
+    font-family: var(--font-primary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.65);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.lang-btn:hover {
+    color: #fff;
+}
+
+.lang-btn.active {
+    background: var(--primary-blue);
+    color: #fff;
+}
+
+.language-modal-mexico {
+    margin-top: var(--space-md);
+    text-align: center;
+}
+
+.language-modal-mexico a {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.language-modal-mexico a:hover {
+    color: var(--primary-blue);
+}
+
+@media (max-width: 768px) {
+    .lang-switcher {
+        margin-right: 0;
+        margin-bottom: var(--space-sm);
+    }
+}

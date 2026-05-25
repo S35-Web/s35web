@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conoce Más | S-35 Tecnología en Construcción</title>
+    <title>Learn More | S-35 Construction Technology</title>
+    <meta name="description" content="Discover how pre-formulated products revolutionize construction quality and efficiency.">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
+<body data-i18n-page="learn">
     <!-- Navigation -->
     <nav class="nav">
         <div class="nav-container">
             <div class="nav-logo">
-                <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image">
+                <a href="index.html"><img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image"></a>
             </div>
             <div class="nav-menu">
                 <a href="index.html" class="nav-link back-btn">
                     <i class="fas fa-arrow-left"></i>
-                    Volver
+                    <span data-i18n="nav.back">Back</span>
                 </a>
             </div>
         </div>
@@ -36,14 +37,14 @@
         </div>
         <div class="article-hero-content">
             <div class="article-breadcrumb">
-                <a href="index.html">Inicio</a>
+                <a href="index.html" data-i18n="catalog.home">Home</a>
                 <span>/</span>
-                <span>Conoce Más</span>
+                <span data-i18n="article.breadcrumb">Learn More</span>
             </div>
             <h1 class="article-title">
-                <span class="title-line">Por qué los productos</span>
-                <span class="title-line">pre-formulados</span>
-                <span class="title-line">revolucionan la construcción</span>
+                <span class="title-line" data-i18n="article.title1">Why pre-formulated</span>
+                <span class="title-line" data-i18n="article.title2">products</span>
+                <span class="title-line" data-i18n="article.title3">revolutionize construction</span>
             </h1>
         </div>
     </section>
@@ -54,31 +55,25 @@
             <div class="article-meta">
                 <div class="article-date">
                     <i class="fas fa-calendar"></i>
-                    <span>Diciembre 2024</span>
+                    <span data-i18n="article.date">December 2024</span>
                 </div>
                 <div class="article-reading-time">
                     <i class="fas fa-clock"></i>
-                    <span>5 min de lectura</span>
+                    <span data-i18n="article.readTime">5 min read</span>
                 </div>
             </div>
 
             <div class="article-body">
                 <div class="article-intro">
-                    <p class="lead">
-                        Descubre cómo las fórmulas desarrolladas en laboratorio transforman 
-                        la eficiencia y calidad en la construcción mexicana. En la construcción 
-                        tradicional, la mezcla de materiales en obra ha sido una práctica común 
-                        durante décadas. Sin embargo, esta metodología presenta desafíos 
-                        significativos que impactan directamente en la calidad, eficiencia y 
-                        rentabilidad de los proyectos.
+                    <p class="lead" data-i18n="article.lead">
+                        Discover how laboratory-developed formulas transform efficiency and quality in construction.
                     </p>
                 </div>
 
                 <div class="article-section">
-                    <h2 class="section-title">El problema de la mezcla tradicional en obra</h2>
-                    <p>
-                        Cuando los materiales se mezclan directamente en la obra, múltiples factores 
-                        pueden comprometer la calidad final del producto:
+                    <h2 class="section-title" data-i18n="article.s1t">The problem with traditional on-site mixing</h2>
+                    <p data-i18n="article.s1p">
+                        When materials are mixed directly on site, multiple factors can compromise the final product quality:
                     </p>
                     
                     <div class="problem-grid">
@@ -86,42 +81,40 @@
                             <div class="problem-icon">
                                 <i class="fas fa-balance-scale"></i>
                             </div>
-                            <h3>Inconsistencia en las proporciones</h3>
-                            <p>Las mediciones manuales pueden variar significativamente entre diferentes trabajadores y días de trabajo.</p>
+                            <h3 data-i18n="article.p1t">Inconsistent proportions</h3>
+                            <p data-i18n="article.p1d">Manual measurements can vary significantly between workers and workdays.</p>
                         </div>
                         
                         <div class="problem-item">
                             <div class="problem-icon">
                                 <i class="fas fa-cloud-rain"></i>
                             </div>
-                            <h3>Condiciones ambientales variables</h3>
-                            <p>La humedad, temperatura y calidad del agua pueden afectar el resultado final de manera impredecible.</p>
+                            <h3 data-i18n="article.p2t">Variable environmental conditions</h3>
+                            <p data-i18n="article.p2d">Humidity, temperature, and water quality can unpredictably affect the final result.</p>
                         </div>
                         
                         <div class="problem-item">
                             <div class="problem-icon">
                                 <i class="fas fa-hourglass-half"></i>
                             </div>
-                            <h3>Tiempo de trabajo limitado</h3>
-                            <p>Los productos mezclados en obra tienen un tiempo de vida útil reducido, generando desperdicio.</p>
+                            <h3 data-i18n="article.p3t">Limited working time</h3>
+                            <p data-i18n="article.p3d">On-site mixed products have a shorter shelf life, generating waste.</p>
                         </div>
                         
                         <div class="problem-item">
                             <div class="problem-icon">
                                 <i class="fas fa-chart-bar"></i>
                             </div>
-                            <h3>Difícil control de calidad</h3>
-                            <p>Es complejo garantizar que cada lote tenga las mismas características y rendimiento.</p>
+                            <h3 data-i18n="article.p4t">Difficult quality control</h3>
+                            <p data-i18n="article.p4d">It is complex to guarantee that every batch has the same characteristics and performance.</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="article-section">
-                    <h2 class="section-title">La solución: Productos pre-formulados en laboratorio</h2>
-                    <p>
-                        Los productos S-35 son formulados en condiciones controladas de laboratorio, 
-                        donde cada variable puede ser medida, controlada y optimizada para obtener 
-                        resultados consistentes y superiores.
+                    <h2 class="section-title" data-i18n="article.s2t">The solution: Laboratory pre-formulated products</h2>
+                    <p data-i18n="article.s2p">
+                        S-35 products are formulated under controlled laboratory conditions, where every variable can be measured, controlled, and optimized for consistent, superior results.
                     </p>
 
                     <div class="consistency-grid">
@@ -130,10 +123,9 @@
                                 <span class="counter" data-target="98" data-prefix="" data-suffix="%">0</span>
                             </div>
                             <div class="consistency-content">
-                                <h3 class="consistency-title">Consistencia garantizada</h3>
-                                <p class="consistency-description">
-                                    Cada producto mantiene las mismas características físicas y químicas, 
-                                    independientemente del lote o fecha de producción.
+                                <h3 class="consistency-title" data-i18n="article.c1t">Guaranteed consistency</h3>
+                                <p class="consistency-description" data-i18n="article.c1d">
+                                    Each product maintains the same physical and chemical characteristics, regardless of batch or production date.
                                 </p>
                             </div>
                         </div>
@@ -143,10 +135,9 @@
                                 <span class="counter" data-target="40" data-prefix="+" data-suffix="%">0</span>
                             </div>
                             <div class="consistency-content">
-                                <h3 class="consistency-title">Eficiencia en tiempo</h3>
-                                <p class="consistency-description">
-                                    Reducción significativa en el tiempo de preparación y aplicación, 
-                                    optimizando los cronogramas de obra.
+                                <h3 class="consistency-title" data-i18n="article.c2t">Time efficiency</h3>
+                                <p class="consistency-description" data-i18n="article.c2d">
+                                    Significant reduction in preparation and application time, optimizing project schedules.
                                 </p>
                             </div>
                         </div>
@@ -156,10 +147,9 @@
                                 <span class="counter" data-target="60" data-prefix="-" data-suffix="%">0</span>
                             </div>
                             <div class="consistency-content">
-                                <h3 class="consistency-title">Desperdicio de material</h3>
-                                <p class="consistency-description">
-                                    Los productos pre-formulados tienen tiempos de vida útil extendidos 
-                                    y mejor aprovechamiento del material.
+                                <h3 class="consistency-title" data-i18n="article.c3t">Material waste</h3>
+                                <p class="consistency-description" data-i18n="article.c3d">
+                                    Pre-formulated products have extended shelf life and better material utilization.
                                 </p>
                             </div>
                         </div>
@@ -169,10 +159,9 @@
                                 <span class="counter" data-target="100" data-prefix="" data-suffix="%">0</span>
                             </div>
                             <div class="consistency-content">
-                                <h3 class="consistency-title">Control de calidad</h3>
-                                <p class="consistency-description">
-                                    Cada lote pasa por rigurosas pruebas de laboratorio antes 
-                                    de salir a producción.
+                                <h3 class="consistency-title" data-i18n="article.c4t">Quality control</h3>
+                                <p class="consistency-description" data-i18n="article.c4d">
+                                    Every batch goes through rigorous laboratory testing before production.
                                 </p>
                             </div>
                         </div>
@@ -180,10 +169,9 @@
                 </div>
 
                 <div class="article-section">
-                    <h2 class="section-title">Impacto en la construcción mexicana</h2>
-                    <p>
-                        La adopción de productos pre-formulados está transformando la industria 
-                        de la construcción en México, generando beneficios tangibles:
+                    <h2 class="section-title" data-i18n="article.s3t">Impact on the construction industry</h2>
+                    <p data-i18n="article.s3p">
+                        Adopting pre-formulated products is transforming the construction industry, generating tangible benefits:
                     </p>
 
                     <div class="impact-list">
@@ -192,8 +180,8 @@
                                 <i class="fas fa-broom"></i>
                             </div>
                             <div class="impact-content">
-                                <h3>Obras más limpias</h3>
-                                <p>Menos polvo, menos residuos y un ambiente de trabajo más saludable para los trabajadores.</p>
+                                <h3 data-i18n="article.i1t">Cleaner job sites</h3>
+                                <p data-i18n="article.i1d">Less dust, less waste, and a healthier work environment for crews.</p>
                             </div>
                         </div>
                         
@@ -202,8 +190,8 @@
                                 <i class="fas fa-tachometer-alt"></i>
                             </div>
                             <div class="impact-content">
-                                <h3>Mayor eficiencia</h3>
-                                <p>Procesos optimizados que reducen tiempos de construcción y costos operativos.</p>
+                                <h3 data-i18n="article.i2t">Greater efficiency</h3>
+                                <p data-i18n="article.i2d">Optimized processes that reduce construction time and operating costs.</p>
                             </div>
                         </div>
                         
@@ -212,8 +200,8 @@
                                 <i class="fas fa-bullseye"></i>
                             </div>
                             <div class="impact-content">
-                                <h3>Fórmulas certeras</h3>
-                                <p>Resultados predecibles y consistentes que cumplen con los estándares de calidad más exigentes.</p>
+                                <h3 data-i18n="article.i3t">Precise formulas</h3>
+                                <p data-i18n="article.i3d">Predictable, consistent results that meet the most demanding quality standards.</p>
                             </div>
                         </div>
                         
@@ -222,36 +210,32 @@
                                 <i class="fas fa-leaf"></i>
                             </div>
                             <div class="impact-content">
-                                <h3>Sostenibilidad</h3>
-                                <p>Reducción del impacto ambiental a través de menor desperdicio y procesos más eficientes.</p>
+                                <h3 data-i18n="article.i4t">Sustainability</h3>
+                                <p data-i18n="article.i4d">Reduced environmental impact through less waste and more efficient processes.</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="article-section">
-                    <h2 class="section-title">El futuro de la construcción</h2>
-                    <p>
-                        En S-35, creemos que el futuro de la construcción mexicana está en la 
-                        innovación tecnológica aplicada a materiales tradicionales. Nuestros 
-                        productos pre-formulados representan un puente entre la sabiduría 
-                        constructiva tradicional y las exigencias modernas de eficiencia y calidad.
+                    <h2 class="section-title" data-i18n="article.s4t">The future of construction</h2>
+                    <p data-i18n="article.s4p">
+                        At S-35, we believe the future of construction lies in technological innovation applied to traditional materials.
                     </p>
                     
                     <blockquote class="article-quote">
-                        <p>
-                            "La construcción del futuro no se trata de reemplazar lo tradicional, 
-                            sino de perfeccionarlo a través de la ciencia y la tecnología."
+                        <p data-i18n="article.quote">
+                            "The construction of the future is not about replacing the traditional, but perfecting it through science and technology."
                         </p>
-                        <cite>— Equipo de Investigación y Desarrollo S-35</cite>
+                        <cite data-i18n="article.cite">— S-35 Research & Development Team</cite>
                     </blockquote>
                 </div>
 
                 <div class="article-cta">
-                    <h2>¿Listo para transformar tu próxima obra?</h2>
-                    <p>Descubre cómo nuestros productos pueden elevar la calidad y eficiencia de tu proyecto.</p>
+                    <h2 data-i18n="article.ctaTitle">Ready to transform your next project?</h2>
+                    <p data-i18n="article.ctaSub">Discover how our products can elevate the quality and efficiency of your project.</p>
                     <a href="index.html#contacto" class="cta-button">
-                        <span>Contactar Especialistas</span>
+                        <span data-i18n="article.ctaBtn">Contact Specialists</span>
                         <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
@@ -267,7 +251,7 @@
                     <div class="footer-logo">
                         <img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="footer-logo-image">
                     </div>
-                    <p>Tecnología en construcción para el futuro</p>
+                    <p data-i18n="footer.tagline">Construction technology for the future</p>
                 </div>
                 <div class="footer-links">
                     <div class="link-group">
@@ -291,6 +275,34 @@
         </div>
     </footer>
 
+    <div id="languageModal" class="language-modal" aria-hidden="true">
+        <div class="language-modal-backdrop"></div>
+        <div class="language-modal-content">
+            <h2 class="language-modal-title" data-i18n="modal.title">Choose your language</h2>
+            <p class="language-modal-subtitle" data-i18n="modal.subtitle">Browse this site in English or Spanish</p>
+            <div class="language-modal-buttons">
+                <button class="language-btn language-btn-global" id="selectLangEn" type="button">
+                    <span class="language-emoji">🇺🇸</span>
+                    <span class="language-text">
+                        <strong data-i18n="modal.en">English</strong>
+                        <small data-i18n="modal.enSub">USA & International</small>
+                    </span>
+                </button>
+                <button class="language-btn language-btn-mexico" id="selectLangEs" type="button">
+                    <span class="language-emoji">🇲🇽</span>
+                    <span class="language-text">
+                        <strong data-i18n="modal.es">Español</strong>
+                        <small data-i18n="modal.esSub">México y Latinoamérica</small>
+                    </span>
+                </button>
+            </div>
+            <p class="language-modal-mexico">
+                <a href="https://www.S-35.com.mx" target="_blank" rel="noopener" data-i18n="modal.mexicoLink">Visit S-35 Mexico site (S-35.com.mx)</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="i18n.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

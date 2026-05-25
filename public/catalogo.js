@@ -292,12 +292,109 @@ const productData = {
     }
 };
 
+const productDataEn = {
+    'estuco-base': {
+        category: 'Stucco',
+        description: 'Advanced base stucco formula designed to provide a solid, uniform base in coating systems. Developed with cutting-edge technology for exceptional adhesion and long-term durability.',
+        features: ['Superior adhesion on multiple substrates', 'Extended working time for easier application', 'Weather and UV resistance', 'Easy application with conventional tools', 'Fast, uniform drying'],
+        applications: ['Residential exterior coatings', 'Commercial and industrial buildings', 'Renovation of existing facades', 'Thermal insulation systems', 'Heritage restoration projects']
+    },
+    'basecoat-blanco': {
+        category: 'Basecoat',
+        description: 'High-quality white application base formulated for a uniform surface ready for final finishes. Ideal for projects requiring maximum reflectivity and flawless results.',
+        features: ['Pure, stable white color', 'Excellent coverage', 'Compatible with multiple finishes', 'Alkali resistance', 'Single-coat application'],
+        applications: ['Architectural coating systems', 'Commercial building facades', 'High-visibility projects', 'Public space renovation', 'Special decorative applications']
+    },
+    'waxtard-blanco': {
+        category: 'Finishes',
+        description: 'Premium final finish in absolute white, designed for lasting protection and exceptional aesthetics. Formulated with advanced technology to withstand the most demanding conditions.',
+        features: ['Absolute white with maximum reflectivity', 'Superior weather resistance', 'UV protection', 'Easy cleaning and maintenance', 'Uniform, professional finish'],
+        applications: ['High-end final finishes', 'Institutional buildings', 'Contemporary architecture projects', 'Historic monument renovation', 'Applications where aesthetics are critical']
+    },
+    'ultraforce': {
+        category: 'Adhesives',
+        description: 'Ultra high-strength adhesive for critical structural applications. Formulated with next-generation polymers for exceptionally strong, durable bonds.',
+        features: ['Exceptional bond strength', 'Application in adverse conditions', 'Optimized curing time', 'Compatible with multiple materials', 'Superior chemical resistance'],
+        applications: ['Critical structural joints', 'High-strength repairs', 'Industrial applications', 'Infrastructure projects', 'High mechanical demand situations']
+    },
+    'cellbond': {
+        category: 'Adhesives',
+        description: 'Specialized adhesive for cellular and porous bonds. Formulated to penetrate and create solid bonds in low-density materials.',
+        features: ['Deep penetration in porous materials', 'Superior adhesion on irregular surfaces', 'Extended working time', 'Moisture resistance', 'Versatile application'],
+        applications: ['Bonding cellular materials', 'Repair of porous surfaces', 'Foam and insulation applications', 'Restoration projects', 'Low-density material joints']
+    },
+    'styrobond': {
+        category: 'Adhesives',
+        description: 'Specialized adhesive for expanded polystyrene (EPS) and similar materials. Creates strong bonds without damaging the base material.',
+        features: ['Compatible with expanded polystyrene', 'Does not damage base material', 'Exceptional adhesion', 'Thermal resistance', 'Clean, controlled application'],
+        applications: ['Thermal insulation systems', 'EPS panel bonding', 'Green building applications', 'Energy efficiency projects', 'Ventilated facade systems']
+    },
+    'mixandready': {
+        category: 'Stucco',
+        description: 'Ready-to-use pre-mixed stucco designed to simplify application. Just add water for a perfect mix with guaranteed consistency and quality.',
+        features: ['Pre-mixed, just add water', 'Guaranteed consistency', 'Easy application', 'Optimized working time', 'Uniform quality in every batch'],
+        applications: ['Residential applications', 'Quick renovation projects', 'Maintenance work', 'Small job site applications', 'Projects where simplicity is key']
+    },
+    'porcelanico': {
+        category: 'Finishes',
+        description: 'Universal porcelain finish designed for exceptional durability and superior aesthetics. Compatible with multiple substrates and application conditions.',
+        features: ['Universal application', 'Exceptional durability', 'Superior chemical resistance', 'Uniform, professional finish', 'Easy maintenance'],
+        applications: ['High-durability finishes', 'Industrial applications', 'High-traffic spaces', 'Commercial projects', 'Applications where durability is critical']
+    },
+    'cemento-plastico': {
+        category: 'Adhesives',
+        description: 'High-flexibility cement for applications requiring movement and adaptability. Maintains adhesive properties under tension and deformation.',
+        features: ['High flexibility', 'Deformation resistance', 'Adhesion under movement conditions', 'Long-term durability', 'Versatile application'],
+        applications: ['Expansion joints', 'Applications with movement', 'Crack repair', 'Flexible joints', 'Projects requiring adaptability']
+    },
+    'piso-sobre-piso': {
+        category: 'Finishes',
+        description: 'Finish system designed specifically for application over existing floors. Provides a new, durable surface without removing the original floor.',
+        features: ['Application over existing floors', 'Exceptional adhesion', 'Smooth, uniform surface', 'Wear resistance', 'Fast, efficient installation'],
+        applications: ['Renovation of existing floors', 'Remodeling projects', 'Commercial applications', 'High-traffic spaces', 'Restoration projects']
+    },
+    'pastablock': {
+        category: 'Stucco',
+        description: 'Specialized stucco for concrete blocks and masonry. Provides exceptional adhesion and uniform finish on masonry surfaces.',
+        features: ['Superior masonry adhesion', 'Efficient joint filling', 'Uniform finish', 'Weather resistance', 'Economical application'],
+        applications: ['Block masonry', 'Traditional construction', 'Residential projects', 'Existing wall renovation', 'Rural construction applications']
+    },
+    'ceramico': {
+        category: 'Finishes',
+        description: 'High-quality ceramic finish for exceptional durability and superior aesthetics. Ideal where chemical and mechanical resistance is required.',
+        features: ['Superior chemical resistance', 'Exceptional durability', 'Authentic ceramic finish', 'Easy cleaning and maintenance', 'Abrasion resistance'],
+        applications: ['Industrial applications', 'High-demand spaces', 'Commercial projects', 'Chemical exposure applications', 'Applications where durability is critical']
+    }
+};
+
+function getCatalogLang() {
+    return window.S35_I18N?.getLanguage() || 'en';
+}
+
+function getLocalizedProduct(productId) {
+    const base = productData[productId];
+    if (!base) return null;
+    if (getCatalogLang() === 'es') return base;
+    const en = productDataEn[productId];
+    if (!en) return base;
+    return { ...base, ...en };
+}
+
+let activeModalProductId = null;
+
 // Initialize catalog functionality
 document.addEventListener('DOMContentLoaded', function() {
     initializeFilters();
     initializeProductCards();
     initializeModal();
     initializeImageZoom();
+});
+
+document.addEventListener('s35:languagechange', function() {
+    const modal = document.getElementById('productModal');
+    if (activeModalProductId && modal && modal.classList.contains('active')) {
+        openProductModal(activeModalProductId);
+    }
 });
 
 // Filter functionality
@@ -350,6 +447,7 @@ function initializeModal() {
     function closeModal() {
         modal.classList.remove('active');
         document.body.style.overflow = 'auto';
+        activeModalProductId = null;
     }
     
     closeBtn.addEventListener('click', closeModal);
@@ -366,7 +464,8 @@ function initializeModal() {
 // Open product modal
 function openProductModal(productId) {
     const modal = document.getElementById('productModal');
-    const product = productData[productId];
+    activeModalProductId = productId;
+    const product = getLocalizedProduct(productId);
     
     if (!product) return;
     
