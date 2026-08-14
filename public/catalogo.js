@@ -368,7 +368,7 @@ const productDataEn = {
 };
 
 function getCatalogLang() {
-    return window.S35_I18N?.getLanguage() || 'en';
+    return window.S35_I18N?.getLanguage() || 'es';
 }
 
 function getLocalizedProduct(productId) {

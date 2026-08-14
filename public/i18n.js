@@ -478,7 +478,7 @@
     }
 
     function getLanguage() {
-        return getStoredLang() || 'en';
+        return getStoredLang() || 'es';
     }
 
     function injectLangSwitcher() {
