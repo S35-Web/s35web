@@ -85,8 +85,9 @@ function s35Nav() {
     '    <div class="nav-logo"><a href="/"><img src="/Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image"></a></div>\n' +
     '    <div class="nav-menu">\n' +
     '      <div class="nav-dropdown"><a href="http://s-35.com/clientes/#login" class="nav-link" target="_blank" rel="noopener">Login <i class="fas fa-chevron-right"></i></a></div>\n' +
-    '      <a href="/#noticias" class="nav-link">News</a>\n' +
-    '      <a href="/#contacto" class="nav-link contact-btn">Contact</a>\n' +
+    '      <a href="/#noticias" class="nav-link" data-i18n="nav.news">News</a>\n' +
+    '      <a href="/materialab" class="nav-link" data-i18n="nav.materialab">MateriaLab</a>\n' +
+    '      <a href="/#contacto" class="nav-link contact-btn" data-i18n="nav.contact">Contact</a>\n' +
     '    </div>\n' +
     '    <div class="nav-toggle"><span></span><span></span><span></span></div>\n' +
     '  </div>\n' +

@@ -15,7 +15,7 @@
                 learnTitle: 'Learn More | S-35 Construction Technology',
                 learnDescription: 'Discover how pre-formulated products revolutionize construction quality and efficiency.'
             },
-            nav: { login: 'Login', news: 'News', contact: 'Contact', back: 'Back' },
+            nav: { login: 'Login', news: 'News', materialab: 'MateriaLab', contact: 'Contact', back: 'Back' },
             hero: {
                 title1: 'Technology',
                 title2: 'in materials.',
@@ -208,7 +208,7 @@
                 learnTitle: 'Conoce Más | S-35 Tecnología en Construcción',
                 learnDescription: 'Descubre cómo los productos pre-formulados revolucionan la calidad y eficiencia en la construcción.'
             },
-            nav: { login: 'Iniciar sesión', news: 'Noticias', contact: 'Contacto', back: 'Volver' },
+            nav: { login: 'Iniciar sesión', news: 'Noticias', materialab: 'MateriaLab', contact: 'Contacto', back: 'Volver' },
             hero: {
                 title1: 'Tecnología',
                 title2: 'en materiales.',
