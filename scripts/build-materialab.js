@@ -302,6 +302,12 @@ function datasheet(material) {
   add('Fineness modulus', p.finenessModulus);
   add('Grain range', p.grainRange);
   add('Whiteness', p.whiteness);
+  add('Calcination temperature', p.calcinationTemp);
+  add('Kiln temperature', p.kilnTemp);
+  add('pH (saturated / fresh paste)', p.phSaturated || p.phFresh);
+  add('Initial set', p.initialSet);
+  add('Strength class', p.strengthClass);
+  add('Water/cement ratio', p.waterCementRatio);
   (material.chemical || []).forEach(function (c) {
     add(c.compound, c.percent);
   });
@@ -381,7 +387,7 @@ function researchTable() {
 function pageMaterialsIndex() {
   var body = '<section class="ml-block" style="border-top:0;padding-top:3rem"><div class="ml-grid">' +
     '<p class="ml-label">MATERIAL INDEX</p><h1 class="ml-file-title" style="grid-column:1/-1;font-size:clamp(40px,8vw,96px)">Materials</h1>' +
-    '<p class="ml-lede">Dos fichas documentadas. El archivo empieza pequeño y crece a la vista.</p>' +
+    '<p class="ml-lede">' + pad2(stats.materialsDocumented) + ' MATERIALS DOCUMENTED. El archivo empieza pequeño y crece a la vista.</p>' +
     '<div class="ml-index-layout"><div class="ml-index-table-wrap"><p class="ml-scroll-hint">SCROLL FOR MORE →</p><table class="ml-table"><thead><tr><th scope="col">CODE</th><th scope="col">NAME</th><th scope="col">EN</th><th scope="col">CLASS</th><th scope="col">ORIGIN</th><th scope="col">STATUS</th></tr></thead><tbody>' +
     materialRows(true) + '</tbody></table></div>' + photoPanel() + '</div></div></section>';
   return layout({
@@ -517,14 +523,16 @@ function pageMaterial(m) {
     '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2">Resumen</h2><div class="ml-prose">' +
     paras.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') +
     '</div></div></section>' +
-    '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2">Datasheet</h2><div style="grid-column:1/-1">' + datasheet(m) + '</div></div></section>' +
-    '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2">Particle Analysis</h2>' +
+    '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2">Datasheet</h2><div style="grid-column:1/-1">' + datasheet(m) + '</div></div></section>';
+  if (m.granulometry) {
+    body += '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2">Particle Analysis</h2>' +
     '<div style="grid-column:1/-1">' + psdChart(m) + '</div>' +
-    '<dl class="ml-meta-row"><div><dt>D10</dt><dd>' + fmtVal(m.granulometry && m.granulometry.d10) + ' ' + prov(m.granulometry && m.granulometry.d10) + '</dd></div>' +
-    '<div><dt>D50</dt><dd>' + fmtVal(m.granulometry && m.granulometry.d50) + ' ' + prov(m.granulometry && m.granulometry.d50) + '</dd></div>' +
-    '<div><dt>D90</dt><dd>' + fmtVal(m.granulometry && m.granulometry.d90) + ' ' + prov(m.granulometry && m.granulometry.d90) + '</dd></div></dl>' +
-    '</div></section>' +
-    '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2">Chemical Composition</h2><div style="grid-column:1/-1">' + chemBlock(m) + '</div></div></section>' +
+    '<dl class="ml-meta-row"><div><dt>D10</dt><dd>' + fmtVal(m.granulometry.d10) + ' ' + prov(m.granulometry.d10) + '</dd></div>' +
+    '<div><dt>D50</dt><dd>' + fmtVal(m.granulometry.d50) + ' ' + prov(m.granulometry.d50) + '</dd></div>' +
+    '<div><dt>D90</dt><dd>' + fmtVal(m.granulometry.d90) + ' ' + prov(m.granulometry.d90) + '</dd></div></dl>' +
+    '</div></section>';
+  }
+  body += '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2">Chemical Composition</h2><div style="grid-column:1/-1">' + chemBlock(m) + '</div></div></section>' +
     '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2">Morphology</h2>' +
     '<div class="ml-micro-pending"><p class="ml-label">MICROGRAPHY</p><p>PENDING — SEM imaging not yet performed</p>' +
     (m.morphology ? '<p class="ml-prose" style="margin-top:1rem">' + esc((m.morphology.geometry && m.morphology.geometry.value) || '') + '. ' + esc((m.morphology.surface && m.morphology.surface.value) || '') + '</p>' : '') +
@@ -605,12 +613,15 @@ var urls = [
 ].concat(archive.documentedMaterials().map(function (m) {
   return ['https://s35web.vercel.app/materialab/materials/' + m.slug, '0.9'];
 }));
-var extra = urls.map(function (u) {
-  return '    <url>\n        <loc>' + u[0] + '</loc>\n        <lastmod>' + stats.lastUpdated + '</lastmod>\n        <changefreq>monthly</changefreq>\n        <priority>' + u[1] + '</priority>\n    </url>';
-}).join('\n');
 var sm = fs.readFileSync(sitemapPath, 'utf8');
-if (sm.indexOf('/materialab') === -1) {
-  sm = sm.replace('</urlset>', extra + '\n\n</urlset>');
+var extra = '';
+urls.forEach(function (u) {
+  if (sm.indexOf('<loc>' + u[0] + '</loc>') === -1) {
+    extra += '    <url>\n        <loc>' + u[0] + '</loc>\n        <lastmod>' + stats.lastUpdated + '</lastmod>\n        <changefreq>monthly</changefreq>\n        <priority>' + u[1] + '</priority>\n    </url>\n';
+  }
+});
+if (extra) {
+  sm = sm.replace('</urlset>', extra + '\n</urlset>');
   fs.writeFileSync(sitemapPath, sm);
   console.log('updated sitemap.xml');
 }

@@ -1,53 +1,103 @@
 const { dp } = require('../dp');
 
-function inStudy(opts) {
-  return {
-    code: opts.code,
-    slug: opts.slug,
-    slugEn: opts.slugEn,
-    name: opts.name,
-    scientificName: opts.scientificName,
-    category: opts.category,
-    classLabel: opts.classLabel,
-    status: 'in-study',
-    revision: 0,
-    publishedAt: '',
-    updatedAt: '2026-08-19',
-    revisionHistory: [],
-    summary: {
-      es: 'Material en estudio. La ficha pública se publicará cuando exista macrofotografía calibrada, al menos un dato medido y un resumen editorial.',
-      en: 'Material in study. A public file will be issued when a calibrated macro photograph, at least one measured data point, and an editorial summary exist.',
-    },
-    origin: dp(opts.origin, 'observation', { note: 'Región o clase declarada; caracterización instrumental pendiente.' }),
-    physical: {
-      color: dp(opts.color, 'observation', { method: 'Visual sobre fotografía de muestra real', date: '2026-08-11' }),
-      structure: dp(opts.structure, 'observation', { method: 'Visual', date: '2026-08-11' }),
-    },
-    chemical: [],
-    images: {
-      macro: [
-        {
-          id: opts.imageId,
-          alt: opts.name.es + ' — muestra fotografiada por S-35, ficha en estudio',
-          width: 1536,
-          height: 1024,
-        },
-      ],
-    },
-    whyItMatters: [],
-  };
-}
+const TYPICAL =
+  'Perfil típico de yeso de construcción grado comercial (~95 % de pureza declarada de clase), compilado en briefing interno S-35 FT-MP-015. Valores típicos de comercio/norma, no ensayo de este lote.';
 
-module.exports = inStudy({
+module.exports = {
   code: 'ML-BND-002',
   slug: 'yeso',
   slugEn: 'gypsum',
   name: { es: 'Yeso', en: 'Gypsum' },
   scientificName: 'CaSO₄·2H₂O',
   category: 'BND',
-  classLabel: 'CEMENTANTE',
-  origin: 'México',
-  color: 'Blanco a marfil',
-  structure: 'Polvo fino',
-  imageId: 'yeso',
-});
+  classLabel: 'SULFATO MINERAL · CEMENTANTE',
+  status: 'documented',
+  revision: 1,
+  publishedAt: '2026-08-19',
+  updatedAt: '2026-08-19',
+  revisionHistory: [
+    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: caracterización fotográfica y perfil típico de yeso. Sin ensayo de lote.' },
+  ],
+  summary: {
+    es: 'El yeso es el cementante más rápido del taller y el menos estructural. Piedra blanda (2 Mohs: se raya con la uña) que, al calentarse cerca de 150 °C, suelta parte de su agua de cristalización y se vuelve hemihidrato en polvo. Al amasarla, recristaliza en agujas entrelazadas y endurece en minutos. No seca: cristaliza. El ciclo es reversible; cada vuelta pierde finura y resistencia.\n\nLa muestra fotografiada por S-35 es un polvo blanco a marfil, fino, de presentación habitual. No se publica yacimiento ni proveedor. La clase se declara como sulfato de calcio dihidratado / hemihidrato de grado comercial, no como piedra de cantera ni como escayola de alta resistencia.\n\nEsa velocidad es la razón de usarlo y la razón de no usarlo. La ventana típica de fraguado inicial (8–15 min) obliga a colar de una sola vez. La expansión ligera al endurecer copia el molde con detalle. A cambio, es ligeramente soluble en agua (~2 g/L): el agua lo desgasta. Interiores, no saturación. Las sales solubles, si están, migran y dejan velos blancos; son el defecto a vigilar, no un número que esta ficha invente para este saco.\n\nLos valores de cabecera —≈21 % de su peso es agua cristalizada, 8–15 min de fraguado inicial, 150 °C de calcinación, 2 Mohs— y la química típica (SO₃ 44–46.5 %, CaO 31–33 %, agua de cristalización 18–21 %) son perfiles de literatura y de comercio. El lote fotografiado no tiene aún ensayo ASTM C472 ni tamizado. Donde no hay dato de este saco, se lee NOT YET MEASURED.\n\nMateriaLab describe el ciclo del sulfato. No describe la fórmula de un estuco S-35.',
+    en: 'Gypsum is the fastest binder in the shop and the least structural. The photographed sample is a fine white-to-ivory powder. Header figures and typical chemistry are commercial/literature profiles, not a lot assay.',
+  },
+  origin: dp('México', 'observation', {
+    note: 'Clase comercial. No se publica yacimiento ni proveedor.',
+    sampleId: 'ML-SMP-00004',
+    date: '2026-08-11',
+  }),
+  physical: {
+    bulkDensity: dp([0.7, 0.9], 'reference', {
+      unit: 'g/cm³',
+      source: TYPICAL + ' Densidad aparente típica de polvo de yeso; no medida en este lote.',
+    }),
+    specificGravity: dp([2.31, 2.35], 'reference', {
+      source: 'Densidad real típica del yeso. Klein & Dutrow / perfiles de yeso de construcción. No es densidad de este lote.',
+    }),
+    hardnessMohs: dp(2, 'reference', {
+      source: 'Dureza del yeso, escala de Mohs. Klein & Dutrow, Manual of Mineral Science.',
+    }),
+    waterAbsorption: dp(null, 'in-progress', { unit: '%', note: 'NOT YET MEASURED' }),
+    color: dp('Blanco a marfil', 'observation', {
+      sampleId: 'ML-SMP-00004',
+      date: '2026-08-11',
+      method: 'Visual, luz difusa sobre fondo blanco',
+    }),
+    structure: dp('Polvo fino de hemihidrato / dihidrato', 'observation', {
+      sampleId: 'ML-SMP-00004',
+      date: '2026-08-11',
+      method: 'Visual',
+    }),
+    initialSet: dp([8, 15], 'reference', {
+      unit: 'min',
+      source: TYPICAL + ' Fraguado inicial típico ASTM C472; no ejecutado sobre este lote.',
+      method: 'ASTM C472 (referencia de método)',
+    }),
+    calcinationTemp: dp(150, 'reference', {
+      unit: '°C',
+      source: TYPICAL + ' Temperatura típica de calcinación a hemihidrato.',
+    }),
+  },
+  chemical: [
+    { compound: 'Yeso', formula: 'CaSO₄·2H₂O', percent: dp([85, 95], 'reference', { unit: '%', source: TYPICAL }) },
+    { compound: 'Anhidrita', formula: 'CaSO₄', percent: dp([0, 5], 'reference', { unit: '%', source: TYPICAL, note: 'Límite típico superior.' }) },
+    { compound: 'Carbonatos (calcita / dolomita)', percent: dp([0, 5], 'reference', { unit: '%', source: TYPICAL, note: 'Límite típico superior.' }) },
+    { compound: 'Trióxido de azufre', formula: 'SO₃', percent: dp([44, 46.5], 'reference', { unit: '%', source: TYPICAL }) },
+    { compound: 'Óxido de calcio', formula: 'CaO', percent: dp([31, 33], 'reference', { unit: '%', source: TYPICAL }) },
+  ],
+  morphology: {
+    surface: dp('Polvo fino; cristales no resueltos a lupa de campo', 'observation', {
+      sampleId: 'ML-SMP-00004',
+      date: '2026-08-11',
+      method: 'Macrofotografía y lupa de campo sobre muestra real',
+    }),
+    geometry: dp('Partículas pulverulentas, sin forma de agregado', 'observation', {
+      sampleId: 'ML-SMP-00004',
+      date: '2026-08-11',
+    }),
+    voidStructure: dp(null, 'in-progress', { note: 'MICROGRAPHY PENDING — SEM imaging not yet performed' }),
+  },
+  images: {
+    macro: [{ id: 'yeso', alt: 'Muestra real de yeso fotografiada por S-35: montículo blanco sobre fondo blanco y detalle a lupa', width: 1536, height: 1024 }],
+  },
+  whyItMatters: [
+    { property: 'Fraguado en minutos', effect: 'Ventana de trabajo corta; hay que colar de una sola vez', direction: '↓' },
+    { property: 'Cristalización, no secado', effect: 'Copia el molde con detalle; suelta calor al fraguar', direction: '↑' },
+    { property: 'Solubilidad en agua', effect: 'El agua lo desgasta; uso de interiores, no saturación', direction: '↓' },
+    { property: 'Dureza 2 Mohs', effect: 'Se raya con la uña; no es material estructural', direction: '↓' },
+  ],
+  labNotes: [
+    {
+      date: '2026-08-11',
+      text: {
+        es: 'Se fotografió una muestra real de polvo blanco-marfil. No se realizó ASTM C472, ni tamizado, ni ensayo de sales solubles sobre este lote.',
+        en: 'A real white-ivory powder sample was photographed. No ASTM C472, sieve or soluble-salt test was run on this lot.',
+      },
+    },
+  ],
+  relatedMaterials: ['cemento-gris'],
+  relatedResearch: ['caracterizacion-yeso'],
+  applicationHref: '/catalogo.html',
+  applicationLabel: 'Sistemas de recubrimiento S-35',
+};
