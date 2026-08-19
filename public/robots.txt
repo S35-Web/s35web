@@ -12,9 +12,12 @@ Disallow: /admin-login.html
 Allow: /Assets/
 Allow: /catalogo.html
 Allow: /conoce-mas.html
+Allow: /materialab
+Allow: /materialab/
 Allow: /terminos.html
 Allow: /privacidad.html
 Allow: /cookies.html
 
 # Crawl delay (optional)
 Crawl-delay: 1
+

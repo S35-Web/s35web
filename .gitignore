@@ -24,6 +24,9 @@ s35web-zoom-update.zip
 # Old pages
 oldpage/
 
+# MateriaLab local previews
+.ml-preview/
+
 # IDE
 .vscode/
 .idea/

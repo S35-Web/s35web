@@ -1,10 +1,11 @@
 {
   "name": "s35web",
-  "version": "1.1.7",
+  "version": "1.1.6",
   "description": "S-35 Technology website - Tecnología en construcción",
   "main": "index.html",
   "scripts": {
-    "build": "echo 'Static site - no build required'",
+    "build": "node scripts/validate-research.js && node scripts/build-materialab.js",
+    "validate:research": "node scripts/validate-research.js",
     "start": "echo 'Static site'",
     "dev": "echo 'Static site'"
   },
@@ -15,8 +16,6 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
-    "resend": "^3.2.0",
-    "mongodb": "^6.9.0",
-    "jsonwebtoken": "^9.0.2"
+    "resend": "^3.2.0"
   }
 }
