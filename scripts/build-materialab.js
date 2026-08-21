@@ -640,7 +640,8 @@ function pageMaterial(m) {
   var tech = loadTechFile(m);
   var body = '<div hidden class="ml-banner" data-packaging-banner>' + i18n('ml.packaging', 'ESCANEADO DESDE EL EMPAQUE') + ' · ' + esc(m.code) + ' · ' + i18n('ml.packagingWelcome', 'BIENVENIDO AL ARCHIVO') + '</div>';
   if (tech) {
-    return layout(layoutOpts, body + '<article class="ml-sheet">' + tech + '</article>');
+    var sheetClass = 'ml-sheet' + (m.techMotion ? ' ml-sheet--motion' : '');
+    return layout(layoutOpts, body + '<article class="' + sheetClass + '">' + tech + '</article>');
   }
   body += '<article class="ml-ft-doc">' +
     '<div class="ml-ft-mast"><span data-i18n="ml.ftBrand">MATERIALAB · S-35® · ARCHIVO DE CARACTERIZACIÓN</span>' +

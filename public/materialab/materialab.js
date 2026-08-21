@@ -38,4 +38,45 @@
   if (!easeOk) {
     document.documentElement.classList.add('ml-reduced');
   }
+
+  (function sheetMotion() {
+    var sheet = qs('.ml-sheet--motion');
+    if (!sheet || !easeOk) return;
+
+    qsa('tbody', sheet).forEach(function (body) {
+      qsa('tr', body).forEach(function (tr, i) {
+        tr.style.setProperty('--i', String(Math.min(i, 10)));
+      });
+    });
+    qsa('.ml-m-curve', sheet).forEach(function (el) {
+      var len = 0;
+      try { len = el.getTotalLength(); } catch (e) { return; }
+      el.style.strokeDasharray = String(len);
+      el.style.strokeDashoffset = String(len);
+    });
+
+    qsa('.ml-m-grain', sheet).forEach(function (el, i) {
+      el.style.transitionDelay = (i * 0.12) + 's';
+    });
+
+    requestAnimationFrame(function () {
+      sheet.classList.add('is-armed');
+      requestAnimationFrame(function () {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-in');
+            qsa('.ml-m-curve', entry.target).forEach(function (el) {
+              el.style.strokeDashoffset = '0';
+            });
+            io.unobserve(entry.target);
+          });
+        }, { threshold: 0.14, rootMargin: '0px 0px -6% 0px' });
+
+        qsa('.ml-sheet-mast, .ml-m-hair, .ml-sheet-row, .ml-sheet-end', sheet).forEach(function (el) {
+          io.observe(el);
+        });
+      });
+    });
+  })();
 })();

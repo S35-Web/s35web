@@ -152,4 +152,5 @@ module.exports = {
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'arena-de-rio.html',
+  techMotion: true,
 };

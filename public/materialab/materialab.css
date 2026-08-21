@@ -528,6 +528,188 @@
   border-collapse: collapse;
 }
 
+.ml-m-rule {
+  height: 1px;
+  background: #000;
+  margin-bottom: 12px;
+}
+.ml-m-kpi {
+  border-top: 5px solid #000;
+  padding-top: 8px;
+}
+.ml-m-card {
+  border-top: 3px solid #000;
+  padding-top: 8px;
+}
+.ml-m-id {
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+.ml-m-notice {
+  border-top: 5px solid #000;
+}
+
+/* Arena de río — prueba de motion editorial */
+.ml-sheet--motion.is-armed .ml-m-hair,
+.ml-sheet--motion.is-armed .ml-m-rule,
+.ml-sheet--motion.is-armed .ml-m-id,
+.ml-sheet--motion.is-armed .ml-m-kpi,
+.ml-sheet--motion.is-armed .ml-m-card,
+.ml-sheet--motion.is-armed .ml-m-notice {
+  position: relative;
+}
+.ml-sheet--motion.is-armed .ml-m-hair {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-m-rule {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-m-kpi {
+  border-top-width: 0;
+}
+.ml-sheet--motion.is-armed .ml-m-kpi::after,
+.ml-sheet--motion.is-armed .ml-m-card::after,
+.ml-sheet--motion.is-armed .ml-m-notice::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: #000;
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+}
+.ml-sheet--motion.is-armed .ml-m-kpi::after {
+  height: 5px;
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-m-card {
+  border-top-width: 0;
+}
+.ml-sheet--motion.is-armed .ml-m-card::after {
+  height: 3px;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-m-notice {
+  border-top-width: 0;
+}
+.ml-sheet--motion.is-armed .ml-m-notice::after {
+  height: 5px;
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-m-id {
+  border-width: 0;
+}
+.ml-sheet--motion.is-armed .ml-m-id::before,
+.ml-sheet--motion.is-armed .ml-m-id::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #000;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-m-id::before { top: 0; }
+.ml-sheet--motion.is-armed .ml-m-id::after { bottom: 0; transition-delay: 0.12s; }
+
+.ml-sheet--motion.is-armed h1 {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-sheet-hero > p {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.12s, transform 1s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
+}
+.ml-sheet--motion.is-armed .ml-sheet-fig {
+  overflow: hidden;
+}
+.ml-sheet--motion.is-armed .ml-sheet-fig picture {
+  clip-path: inset(100% 0 0 0);
+  transform: scale(1.05);
+  transform-origin: center;
+  transition: clip-path 1.15s cubic-bezier(0.22, 1, 0.36, 1), transform 1.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ml-sheet--motion.is-armed .ml-m-kpi > div:first-child {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-m-plate {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-m-grain {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-m-chart-wrap {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-m-band {
+  opacity: 0;
+  transition: opacity 0.8s ease 0.15s;
+}
+.ml-sheet--motion.is-armed .ml-m-curve {
+  transition: stroke-dashoffset 1.35s cubic-bezier(0.16, 1, 0.3, 1) 0.28s;
+}
+.ml-sheet--motion.is-armed tbody tr {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--i, 0) * 45ms),
+    transform 0.55s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--i, 0) * 45ms);
+}
+
+.ml-sheet--motion .is-in .ml-m-rule,
+.ml-sheet--motion .is-in .ml-m-kpi::after,
+.ml-sheet--motion .is-in .ml-m-card::after,
+.ml-sheet--motion .is-in .ml-m-notice::after,
+.ml-sheet--motion .is-in .ml-m-id::before,
+.ml-sheet--motion .is-in .ml-m-id::after,
+.ml-sheet--motion .ml-m-hair.is-in {
+  transform: scaleX(1);
+}
+.ml-sheet--motion .is-in h1,
+.ml-sheet--motion .is-in .ml-sheet-hero > p,
+.ml-sheet--motion .is-in .ml-m-kpi > div:first-child,
+.ml-sheet--motion .is-in .ml-m-plate,
+.ml-sheet--motion .is-in .ml-m-grain,
+.ml-sheet--motion .is-in .ml-m-chart-wrap,
+.ml-sheet--motion .is-in .ml-m-band,
+.ml-sheet--motion .is-in tbody tr {
+  opacity: 1;
+  transform: none;
+}
+.ml-sheet--motion .is-in .ml-sheet-fig picture {
+  clip-path: inset(0);
+  transform: scale(1);
+}
+.ml-sheet--motion .is-in .ml-m-curve {
+  stroke-dashoffset: 0;
+}
+
+.ml-sheet--motion .is-in .ml-m-kpi:nth-child(2)::after,
+.ml-sheet--motion .is-in .ml-m-kpi:nth-child(2) > div:first-child { transition-delay: 0.08s; }
+.ml-sheet--motion .is-in .ml-m-kpi:nth-child(3)::after,
+.ml-sheet--motion .is-in .ml-m-kpi:nth-child(3) > div:first-child { transition-delay: 0.16s; }
+.ml-sheet--motion .is-in .ml-m-kpi:nth-child(4)::after,
+.ml-sheet--motion .is-in .ml-m-kpi:nth-child(4) > div:first-child { transition-delay: 0.24s; }
+.ml-sheet--motion .is-in .ml-m-card:nth-child(2)::after { transition-delay: 0.1s; }
+.ml-sheet--motion .is-in .ml-m-card:nth-child(3)::after { transition-delay: 0.2s; }
+
 @media (max-width: 800px) {
   .ml-sheet-row {
     grid-template-columns: 1fr !important;
@@ -1111,6 +1293,28 @@ h2.ml-h2 {
     transition: none !important;
   }
   .ml-featured:hover img { transform: none; }
+  .ml-sheet--motion.is-armed .ml-m-hair,
+  .ml-sheet--motion.is-armed .ml-m-rule,
+  .ml-sheet--motion.is-armed .ml-m-kpi::after,
+  .ml-sheet--motion.is-armed .ml-m-card::after,
+  .ml-sheet--motion.is-armed .ml-m-notice::after,
+  .ml-sheet--motion.is-armed .ml-m-id::before,
+  .ml-sheet--motion.is-armed .ml-m-id::after,
+  .ml-sheet--motion.is-armed h1,
+  .ml-sheet--motion.is-armed .ml-sheet-hero > p,
+  .ml-sheet--motion.is-armed .ml-sheet-fig picture,
+  .ml-sheet--motion.is-armed .ml-m-kpi > div:first-child,
+  .ml-sheet--motion.is-armed .ml-m-plate,
+  .ml-sheet--motion.is-armed .ml-m-grain,
+  .ml-sheet--motion.is-armed .ml-m-chart-wrap,
+  .ml-sheet--motion.is-armed .ml-m-band,
+  .ml-sheet--motion.is-armed .ml-m-curve,
+  .ml-sheet--motion.is-armed tbody tr {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    stroke-dashoffset: 0 !important;
+  }
 }
 
 @media print {
@@ -1124,6 +1328,28 @@ h2.ml-h2 {
   .ml-ft-title { font-size: 28pt; }
   .ml-ft-kpis, .ml-ft-hero, .ml-ft-sec { break-inside: avoid; }
   a { color: inherit; text-decoration: none; }
+  .ml-sheet--motion.is-armed .ml-m-hair,
+  .ml-sheet--motion.is-armed .ml-m-rule,
+  .ml-sheet--motion.is-armed .ml-m-kpi::after,
+  .ml-sheet--motion.is-armed .ml-m-card::after,
+  .ml-sheet--motion.is-armed .ml-m-notice::after,
+  .ml-sheet--motion.is-armed .ml-m-id::before,
+  .ml-sheet--motion.is-armed .ml-m-id::after,
+  .ml-sheet--motion.is-armed h1,
+  .ml-sheet--motion.is-armed .ml-sheet-hero > p,
+  .ml-sheet--motion.is-armed .ml-sheet-fig picture,
+  .ml-sheet--motion.is-armed .ml-m-kpi > div:first-child,
+  .ml-sheet--motion.is-armed .ml-m-plate,
+  .ml-sheet--motion.is-armed .ml-m-grain,
+  .ml-sheet--motion.is-armed .ml-m-chart-wrap,
+  .ml-sheet--motion.is-armed .ml-m-band,
+  .ml-sheet--motion.is-armed .ml-m-curve,
+  .ml-sheet--motion.is-armed tbody tr {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    stroke-dashoffset: 0 !important;
+  }
   .ml-footer::after {
     content: attr(data-print-url);
     display: block;
