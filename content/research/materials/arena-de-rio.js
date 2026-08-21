@@ -151,4 +151,5 @@ module.exports = {
   relatedResearch: ['caracterizacion-arena-de-rio'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
+  techFile: 'arena-de-rio.html',
 };

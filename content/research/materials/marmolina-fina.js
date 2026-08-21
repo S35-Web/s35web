@@ -146,4 +146,5 @@ module.exports = {
   relatedResearch: ['caracterizacion-marmolina-fina'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
+  techFile: 'marmolina-fina.html',
 };

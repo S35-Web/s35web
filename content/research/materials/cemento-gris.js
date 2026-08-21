@@ -104,4 +104,5 @@ module.exports = {
   relatedResearch: ['caracterizacion-cemento-gris'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
+  techFile: 'cemento-gris.html',
 };

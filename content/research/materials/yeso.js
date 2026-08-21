@@ -100,4 +100,5 @@ module.exports = {
   relatedResearch: ['caracterizacion-yeso'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
+  techFile: 'yeso.html',
 };

@@ -105,4 +105,5 @@ module.exports = {
   relatedResearch: ['caracterizacion-cemento-blanco'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
+  techFile: 'cemento-blanco.html',
 };
