@@ -235,6 +235,13 @@
   overflow-x: auto;
 }
 
+/* Direct child of the 12-col grid (Research index, home research block).
+   Nested wraps inside .ml-index-layout must NOT span, or they eat the photo panel. */
+.ml-grid > .ml-index-table-wrap {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
 .ml-table {
   width: 100%;
   border-collapse: collapse;
@@ -266,6 +273,7 @@
   font-size: 11px;
   letter-spacing: 0.04em;
   color: var(--ml-signal);
+  white-space: nowrap;
 }
 
 .ml-table a {
