@@ -43,14 +43,57 @@ function i18nHtml(key, esDefault) {
 }
 
 function locParas(obj) {
+  return locParasSlice(obj, 0);
+}
+
+function locParasSlice(obj, from, to) {
   if (!obj) return '';
-  var es = String(obj.es || '').split(/\n\n/).filter(Boolean).map(function (p) {
-    return '<p data-ml-lang="es">' + esc(p) + '</p>';
-  }).join('');
-  var en = String(obj.en || obj.es || '').split(/\n\n/).filter(Boolean).map(function (p) {
-    return '<p data-ml-lang="en" hidden>' + esc(p) + '</p>';
-  }).join('');
-  return es + en;
+  var es = String(obj.es || '').split(/\n\n/).filter(Boolean).slice(from, to);
+  var en = String(obj.en || obj.es || '').split(/\n\n/).filter(Boolean).slice(from, to);
+  return es.map(function (p) { return '<p data-ml-lang="es">' + esc(p) + '</p>'; }).join('') +
+    en.map(function (p) { return '<p data-ml-lang="en" hidden>' + esc(p) + '</p>'; }).join('');
+}
+
+function summaryHasRest(obj) {
+  return String((obj && obj.es) || '').split(/\n\n/).filter(Boolean).length > 2;
+}
+
+function ftSec(num, key, es, inner, extraClass) {
+  return '<section class="ml-ft-sec' + (extraClass ? ' ' + extraClass : '') + '">' +
+    '<div class="ml-ft-rail"><span class="ml-ft-n">' + num + '</span><h2 data-i18n="' + key + '">' + es + '</h2></div>' +
+    '<div class="ml-ft-body">' + inner + '</div></section>';
+}
+
+function headlineStats(m) {
+  var p = m.physical || {};
+  var candidates = [
+    { es: 'Índice de blancura', en: 'Whiteness index', point: p.whiteness },
+    { es: 'Resistencia a 28 d', en: '28-day strength', point: p.strengthClass },
+    { es: 'Relación a/c', en: 'Water/cement ratio', point: p.waterCementRatio },
+    { es: 'Dureza Mohs', en: 'Mohs hardness', point: p.hardnessMohs },
+    { es: 'Tamaño máximo', en: 'Maximum size', point: p.maxSize },
+    { es: 'Módulo de finura', en: 'Fineness modulus', point: p.finenessModulus },
+    { es: 'Densidad aparente', en: 'Bulk density', point: p.bulkDensity },
+    { es: 'Densidad relativa', en: 'Specific gravity', point: p.specificGravity },
+    { es: 'Absorción de agua', en: 'Water absorption', point: p.waterAbsorption },
+    { es: 'pH', en: 'pH', point: p.phSaturated || p.phFresh },
+  ];
+  (m.chemical || []).forEach(function (c) {
+    if (c.formula === 'Fe₂O₃' || c.formula === 'CaO' || c.formula === 'CaCO₃' || c.formula === 'Ca(OH)₂') {
+      candidates.splice(3, 0, {
+        es: (c.formula || c.compound) + ' típico',
+        en: 'Typical ' + (c.formula || c.compound),
+        point: c.percent,
+      });
+    }
+  });
+  var out = [];
+  candidates.forEach(function (c) {
+    if (out.length >= 4) return;
+    if (!c.point || c.point.value === null || typeof c.point.value === 'undefined') return;
+    out.push(c);
+  });
+  return out;
 }
 
 function fmtVal(point) {
@@ -75,12 +118,28 @@ function prov(point) {
   return '<span class="ml-prov" title="' + esc(title) + '">' + esc(lab ? lab.short : point.provenance) + '</span>';
 }
 
+function practicalCell(point) {
+  var n = point && point.note ? String(point.note).trim() : '';
+  if (n && n.length <= 110) return esc(n);
+  var src = point && point.source ? String(point.source).trim() : '';
+  if (src.length > 120) {
+    var parts = src.split(/\.\s+/);
+    var last = parts[parts.length - 1].replace(/\.$/, '');
+    if (last && last.length <= 110 && parts.length > 1) return esc(last);
+  }
+  return '<span class="ml-empty">—</span>';
+}
+
 function methodCell(point) {
   if (!point) return '';
   if (point.value === null || typeof point.value === 'undefined') {
     return i18n('ml.notMeasured', 'AÚN NO MEDIDO');
   }
-  return esc(point.method || point.source || point.note || '');
+  if (point.method) return esc(point.method);
+  var src = point.source ? String(point.source).trim() : '';
+  if (src && src.length <= 90) return esc(src);
+  if (src) return esc('Valores típicos de clase/norma, no ensayo de este lote.');
+  return esc(point.note || '');
 }
 
 function picture(id, opts) {
@@ -292,32 +351,20 @@ function psdChart(material) {
 function chemBlock(material) {
   if (!material.chemical || !material.chemical.length) return '';
   var rows = material.chemical.map(function (c) {
-    var v = c.percent && c.percent.value;
-    var width = '0%';
-    if (typeof v === 'number') width = Math.min(100, v) + '%';
-    else if (Array.isArray(v)) width = Math.min(100, v[1]) + '%';
-    return '<div class="ml-chem-row"><div>' + esc(c.compound) + (c.formula ? '<div class="ml-label">' + esc(c.formula) + '</div>' : '') + '</div>' +
-      '<div class="ml-chem-bar" style="grid-template-columns:' + width + ' 1fr"><span></span><i></i></div>' +
-      '<div>' + fmtVal(c.percent) + ' ' + prov(c.percent) + '</div></div>';
+    return '<tr><td>' + esc(c.compound) + (c.formula ? ' <span class="ml-label">' + esc(c.formula) + '</span>' : '') +
+      '</td><td>' + fmtVal(c.percent) + ' ' + prov(c.percent) + '</td></tr>';
   }).join('');
-  var hero = '';
-  var first = material.chemical[0];
-  if (first && first.percent && first.percent.value !== null) {
-    var hv = Array.isArray(first.percent.value) ? first.percent.value[0] + '–' + first.percent.value[1] : first.percent.value;
-    var unit = first.percent.unit ? ' ' + first.percent.unit : '';
-    hero = '<div class="ml-chem-hero"><strong>' + esc(String(hv) + unit) + '</strong>' +
-      '<div>' + esc(first.formula || first.compound) + '</div><div class="ml-label">' + esc(first.compound) + ' · ' + (PROVENANCE_LABEL[first.percent.provenance] || {}).short + '</div></div>';
-  }
-  return '<div class="ml-grid" style="padding-left:0;padding-right:0;max-width:none"><div class="ml-chem" style="grid-column:1/8">' + rows + '</div>' + hero + '</div>';
+  return '<table class="ml-ft-mini"><thead><tr><th scope="col" data-i18n="ml.ftOxide">ÓXIDO</th><th scope="col" data-i18n="ml.ftRange">RANGO %</th></tr></thead><tbody>' +
+    rows + '</tbody></table>';
 }
 
 function datasheet(material) {
   var rows = [];
   function add(key, esLabel, point) {
     if (!point) return;
-    rows.push('<tr><td' + (key ? ' data-i18n="' + key + '"' : '') + '>' + esLabel + '</td><td>' + fmtVal(point) + '</td><td>' + prov(point) + '</td><td>' + methodCell(point) + '</td></tr>');
+    rows.push('<tr><td' + (key ? ' data-i18n="' + key + '"' : '') + '>' + esLabel + '</td><td>' +
+      fmtVal(point) + ' ' + prov(point) + '</td><td>' + practicalCell(point) + '</td><td>' + methodCell(point) + '</td></tr>');
   }
-  add('ml.dsOrigin', 'Origen', material.origin);
   var p = material.physical || {};
   add('ml.dsBulk', 'Densidad aparente', p.bulkDensity);
   add('ml.dsSg', 'Densidad relativa', p.specificGravity);
@@ -344,7 +391,12 @@ function datasheet(material) {
     add('ml.dsGeometry', 'Geometría', material.morphology.geometry);
     add('ml.dsEdge', 'Perfil de arista', material.morphology.edgeProfile);
   }
-  return '<div class="ml-index-table-wrap"><p class="ml-scroll-hint" data-i18n="ml.scroll">DESPLAZA PARA VER MÁS →</p><table class="ml-table ml-datasheet"><thead><tr><th scope="col" data-i18n="ml.dsProperty">PROPIEDAD</th><th scope="col" data-i18n="ml.dsValue">VALOR</th><th scope="col" data-i18n="ml.dsProv">PROV.</th><th scope="col" data-i18n="ml.dsMethod">MÉTODO / FUENTE</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' + legend();
+  return '<div class="ml-index-table-wrap"><p class="ml-scroll-hint" data-i18n="ml.scroll">DESPLAZA PARA VER MÁS →</p><table class="ml-table ml-datasheet"><thead><tr>' +
+    '<th scope="col" data-i18n="ml.ftParam">PARÁMETRO</th>' +
+    '<th scope="col" data-i18n="ml.ftTypical">VALOR TÍPICO</th>' +
+    '<th scope="col" data-i18n="ml.ftPractical">EN TÉRMINOS PRÁCTICOS</th>' +
+    '<th scope="col" data-i18n="ml.ftNorm">NORMA / FUENTE</th>' +
+    '</tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' + legend();
 }
 
 function materialTableWrap(innerTable) {
@@ -517,7 +569,6 @@ function pageMethodology() {
 function pageMaterial(m) {
   var cat = CATEGORIES[m.category];
   var img = m.images.macro[0];
-  var codeParts = m.code.split('-');
   var sample = archive.samples.filter(function (s) { return s.materialSlug === m.slug; })[0];
   var relatedR = (m.relatedResearch || []).map(function (slug) {
     return archive.researchFiles.filter(function (r) { return r.slug === slug; })[0];
@@ -556,78 +607,103 @@ function pageMaterial(m) {
     });
   }
   var body = '<div hidden class="ml-banner" data-packaging-banner>' + i18n('ml.packaging', 'ESCANEADO DESDE EL EMPAQUE') + ' · ' + esc(m.code) + ' · ' + i18n('ml.packagingWelcome', 'BIENVENIDO AL ARCHIVO') + '</div>' +
-    '<header class="ml-file-head"><div class="ml-grid">' +
-    '<p class="ml-file-code">' + i18n('ml.filePrefix', 'FICHA DE INVESTIGACIÓN') + ' / ' + esc(codeParts.join(' / ')) + '</p>' +
-    '<h1 class="ml-file-title">' + locText(m.name) + '</h1>' +
-    '<p class="ml-file-sub ml-label">' + loc(esc(m.name.es.toUpperCase()), esc(m.name.en.toUpperCase())) + (m.scientificName ? ' · ' + esc(m.scientificName) : '') + '<br>' + locText(m.classLabel || catLabel) + '</p>' +
-    '<dl class="ml-meta-row">' +
-    '<div><dt data-i18n="ml.metaOrigin">ORIGEN</dt><dd>' + esc(m.origin.value || '—') + '</dd></div>' +
-    '<div><dt data-i18n="ml.metaClass">CLASE</dt><dd>' + esc(m.category) + ' · ' + locText(cat ? cat.singular : '') + '</dd></div>' +
-    '<div><dt data-i18n="ml.metaStatus">ESTADO</dt><dd>' + locText(STATUS[m.status]) + '</dd></div>' +
-    '<div><dt data-i18n="ml.metaRevision">REVISIÓN</dt><dd>' + pad2(m.revision) + '</dd></div>' +
-    '<div><dt data-i18n="ml.metaDate">FECHA</dt><dd>' + esc(m.updatedAt) + '</dd></div>' +
-    '<div><dt data-i18n="ml.metaSample">ID DE MUESTRA</dt><dd>' + esc(sample ? sample.id : '—') + '</dd></div>' +
-    '</dl></div></header>' +
-    '<figure class="ml-macro">' + picture(img.id, { alt: img.alt, width: img.width, height: img.height, priority: true, sizes: '100vw' }) +
-    '<figcaption class="ml-scale-pending ml-label" data-i18n="ml.scale">ESCALA 0—1—2—3—4—5 mm · CALIBRACIÓN PENDIENTE SOBRE ESTE CUADRO · LA MACROFOTOGRAFÍA ES REAL; LA ESCALA AÚN NO ESTÁ LEVANTADA</figcaption></figure>' +
-    '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2" data-i18n="ml.hSummary">Resumen</h2><div class="ml-prose">' +
-    locParas(m.summary) +
-    '</div></div></section>' +
-    '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2" data-i18n="ml.hDatasheet">Ficha de datos</h2><div style="grid-column:1/-1">' + datasheet(m) + '</div></div></section>';
-  if (m.granulometry) {
-    body += '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2" data-i18n="ml.hParticle">Análisis granulométrico</h2>' +
-    '<div style="grid-column:1/-1">' + psdChart(m) + '</div>' +
-    '<dl class="ml-meta-row"><div><dt>D10</dt><dd>' + fmtVal(m.granulometry.d10) + ' ' + prov(m.granulometry.d10) + '</dd></div>' +
-    '<div><dt>D50</dt><dd>' + fmtVal(m.granulometry.d50) + ' ' + prov(m.granulometry.d50) + '</dd></div>' +
-    '<div><dt>D90</dt><dd>' + fmtVal(m.granulometry.d90) + ' ' + prov(m.granulometry.d90) + '</dd></div></dl>' +
-    '</div></section>';
+    '<article class="ml-ft-doc">' +
+    '<div class="ml-ft-mast"><span data-i18n="ml.ftBrand">MATERIALAB · S-35® · ARCHIVO DE CARACTERIZACIÓN</span>' +
+    '<span>' + esc(m.code) + ' · REV ' + pad2(m.revision) + ' · ' + esc(m.updatedAt) + '</span></div>' +
+    '<div class="ml-ft-hero"><div>' +
+    '<h1 class="ml-ft-title">' + locText(m.name) + '</h1>' +
+    '<p class="ml-ft-kicker">' + locText(m.classLabel || catLabel) + '</p>' +
+    '<div class="ml-ft-lead">' + locParasSlice(m.summary, 0, 2) + '</div></div>' +
+    '<figure class="ml-ft-fig">' + picture(img.id, { alt: img.alt, width: img.width, height: img.height, priority: true, sizes: '(min-width: 900px) 42vw, 100vw' }) +
+    '<figcaption><span data-i18n="ml.ftFigA">FIG. A · MUESTRA REAL</span>' +
+    '<span class="ml-ft-scale" data-i18n="ml.scale">ESCALA 0—1—2—3—4—5 mm · CALIBRACIÓN PENDIENTE SOBRE ESTE CUADRO · LA MACROFOTOGRAFÍA ES REAL; LA ESCALA AÚN NO ESTÁ LEVANTADA</span></figcaption></figure></div>' +
+    '<dl class="ml-ft-id">' +
+    '<div><dt data-i18n="ml.ftChemName">NOMBRE QUÍMICO</dt><dd>' + esc(m.scientificName || m.name.es) + '</dd></div>' +
+    '<div><dt data-i18n="ml.ftFamily">FAMILIA</dt><dd>' + esc(m.category) + ' · ' + locText(cat ? cat.singular : '') + '</dd></div>' +
+    '<div><dt data-i18n="ml.metaOrigin">ORIGEN</dt><dd>' + esc(m.origin.value || '—') + (sample ? '<div class="ml-label">' + esc(sample.id) + '</div>' : '') + '</dd></div>' +
+    '</dl>';
+  var stats = headlineStats(m);
+  if (stats.length) {
+    body += '<div class="ml-ft-kpis">' + stats.map(function (s) {
+      return '<div class="ml-ft-kpi"><div class="ml-ft-kpi-val">' + fmtVal(s.point) + '</div>' +
+        '<div class="ml-ft-kpi-lab">' + loc(esc(s.es), esc(s.en)) + ' · ' + prov(s.point) + '</div></div>';
+    }).join('') + '</div>';
   }
-  body += '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2" data-i18n="ml.hChemical">Composición química</h2><div style="grid-column:1/-1">' + chemBlock(m) + '</div></div></section>' +
-    '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2" data-i18n="ml.hMorphology">Morfología</h2>' +
+  var sec = 0;
+  function nextSec() {
+    sec += 1;
+    return sec + '.0';
+  }
+  if (summaryHasRest(m.summary)) {
+    body += ftSec(nextSec(), 'ml.hSummary', 'Resumen', '<div class="ml-prose">' + locParasSlice(m.summary, 2) + '</div>');
+  }
+  if (m.chemical && m.chemical.length) {
+    body += ftSec(nextSec(), 'ml.ftComp', 'Composición', chemBlock(m));
+  }
+  body += ftSec(nextSec(), 'ml.ftProps', 'Propiedades y qué significan', datasheet(m));
+  if (m.granulometry) {
+    body += ftSec(nextSec(), 'ml.hParticle', 'Análisis granulométrico',
+      psdChart(m) +
+      '<dl class="ml-ft-id" style="border-top:0;padding-top:1rem">' +
+      '<div><dt>D10</dt><dd>' + fmtVal(m.granulometry.d10) + ' ' + prov(m.granulometry.d10) + '</dd></div>' +
+      '<div><dt>D50</dt><dd>' + fmtVal(m.granulometry.d50) + ' ' + prov(m.granulometry.d50) + '</dd></div>' +
+      '<div><dt>D90</dt><dd>' + fmtVal(m.granulometry.d90) + ' ' + prov(m.granulometry.d90) + '</dd></div></dl>');
+  }
+  body += ftSec(nextSec(), 'ml.hMorphology', 'Morfología',
     '<div class="ml-micro-pending"><p class="ml-label" data-i18n="ml.micrography">MICROGRAFÍA</p><p data-i18n="ml.microPending">PENDIENTE — aún no hay imagen SEM</p>' +
     (m.morphology ? '<p class="ml-prose" style="margin-top:1rem">' + esc((m.morphology.geometry && m.morphology.geometry.value) || '') + '. ' + esc((m.morphology.surface && m.morphology.surface.value) || '') + '</p>' : '') +
-    '</div></div></section>';
+    '</div>');
   if (m.whyItMatters && m.whyItMatters.length) {
-    body += '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2" data-i18n="ml.hWhy">Por qué importa</h2><ul class="ml-why">' +
-      m.whyItMatters.map(function (w) {
-        return '<li><span>' + loc(esc(w.property), esc(w.propertyEn || w.property)) + '</span><span class="ml-dir">' + w.direction + '</span><span>' + loc(esc(w.effect), esc(w.effectEn || w.effect)) + '</span></li>';
-      }).join('') + '</ul></div></section>';
+    body += ftSec(nextSec(), 'ml.hWhy', 'Por qué importa',
+      '<div class="ml-ft-why">' + m.whyItMatters.map(function (w, i) {
+        return '<article><span class="ml-label">' + String.fromCharCode(65 + i) + '</span><strong>' +
+          loc(esc(w.property), esc(w.propertyEn || w.property)) + '</strong><p>' +
+          loc(esc(w.effect), esc(w.effectEn || w.effect)) + '</p></article>';
+      }).join('') + '</div>');
   }
   if (m.labNotes && m.labNotes.length) {
-    body += '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2" data-i18n="ml.hNotes">Notas de laboratorio</h2><div class="ml-prose ml-notes">' +
+    body += ftSec(nextSec(), 'ml.hNotes', 'Notas de laboratorio',
+      '<div class="ml-ft-notes ml-notes">' +
       m.labNotes.map(function (n) { return '<p><time datetime="' + n.date + '">' + n.date + '</time> — ' + locText(n.text) + '</p>'; }).join('') +
-      '</div></div></section>';
+      '</div>');
   }
   var exps = archive.experiments.filter(function (e) {
     return sample && e.sampleIds && e.sampleIds.indexOf(sample.id) !== -1;
   });
   if (exps.length) {
-    body += '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2" data-i18n="ml.hExperiments">Registro de experimentos</h2><table class="ml-table"><thead><tr><th>ID</th><th data-i18n="ml.thTitle">TÍTULO</th><th data-i18n="ml.thDate">FECHA</th><th data-i18n="ml.thStatus">ESTADO</th></tr></thead><tbody>' +
+    body += ftSec(nextSec(), 'ml.hExperiments', 'Registro de experimentos',
+      '<table class="ml-table"><thead><tr><th>ID</th><th data-i18n="ml.thTitle">TÍTULO</th><th data-i18n="ml.thDate">FECHA</th><th data-i18n="ml.thStatus">ESTADO</th></tr></thead><tbody>' +
       exps.map(function (e) { return '<tr><td>' + esc(e.id) + '</td><td>' + esc(e.title) + '</td><td>' + esc(e.date) + '</td><td>' + esc(e.status) + '</td></tr>'; }).join('') +
-      '</tbody></table></div></section>';
+      '</tbody></table>');
   }
-  body += '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2" data-i18n="ml.hRevision">Historial de revisiones</h2><div style="grid-column:1/-1"><table class="ml-table"><thead><tr><th scope="col" data-i18n="ml.thRev">REV</th><th scope="col" data-i18n="ml.thDate">FECHA</th><th scope="col" data-i18n="ml.hRevision">CAMBIO</th></tr></thead><tbody>' +
+  body += ftSec(nextSec(), 'ml.hRevision', 'Historial de revisiones',
+    '<table class="ml-table"><thead><tr><th scope="col" data-i18n="ml.thRev">REV</th><th scope="col" data-i18n="ml.thDate">FECHA</th><th scope="col" data-i18n="ml.hRevision">CAMBIO</th></tr></thead><tbody>' +
     m.revisionHistory.map(function (r) {
       var change = typeof r.change === 'string' ? r.change : locText(r.change);
       return '<tr><td>' + pad2(r.rev) + '</td><td>' + esc(r.date) + '</td><td>' + (typeof r.change === 'string' ? esc(change) : change) + '</td></tr>';
-    }).join('') + '</tbody></table></div></div></section>';
+    }).join('') + '</tbody></table>');
   if (m.applicationHref) {
-    body += '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2" data-i18n="ml.hApplication">Aplicación de la investigación</h2><p class="ml-prose">' + i18n('ml.applicationLead', 'Esta caracterización informa sistemas de materiales S-35.') + ' <a href="' + esc(m.applicationHref) + '">' + esc(m.applicationLabel || 'S-35') + '</a></p></div></section>';
+    body += ftSec(nextSec(), 'ml.hApplication', 'Aplicación de la investigación',
+      '<p class="ml-prose">' + i18n('ml.applicationLead', 'Esta caracterización informa sistemas de materiales S-35.') + ' <a href="' + esc(m.applicationHref) + '">' + esc(m.applicationLabel || 'S-35') + '</a></p>');
   }
   if (relatedR.length || relatedM.length) {
-    body += '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2" data-i18n="ml.hRelated">Investigación relacionada</h2><div class="ml-prose">';
+    var relatedInner = '';
     relatedR.forEach(function (r) {
-      body += '<p><a href="/materialab/materials/' + r.materialSlug + '">' + esc(r.code) + ' — ' + locText(r.title) + '</a></p>';
+      relatedInner += '<p><a href="/materialab/materials/' + r.materialSlug + '">' + esc(r.code) + ' — ' + locText(r.title) + '</a></p>';
     });
     relatedM.forEach(function (rm) {
       if (rm.status === 'documented') {
-        body += '<p><a href="/materialab/materials/' + rm.slug + '">' + esc(rm.code) + ' — ' + locText(rm.name) + '</a></p>';
+        relatedInner += '<p><a href="/materialab/materials/' + rm.slug + '">' + esc(rm.code) + ' — ' + locText(rm.name) + '</a></p>';
       }
     });
-    body += '</div></div></section>';
+    body += ftSec(nextSec(), 'ml.hRelated', 'Investigación relacionada', '<div class="ml-prose">' + relatedInner + '</div>');
   }
-  body += '<section class="ml-block"><div class="ml-grid"><div class="ml-actions"><button type="button" data-print data-i18n="ml.download">DESCARGAR FICHA / PDF</button></div>' +
-    '<p class="ml-disclaimer" data-i18n="ml.disclaimer">Los datos de caracterización de materias primas publicados en MateriaLab tienen fines informativos y de divulgación técnica. No constituyen especificación de producto, ficha técnica ni garantía de desempeño de ningún producto S-35.</p></div></section>';
+  body += ftSec('AVISO', 'ml.ftAviso', 'Aviso',
+    '<div class="ml-actions"><button type="button" data-print data-i18n="ml.download">DESCARGAR FICHA / PDF</button></div>' +
+    '<p class="ml-disclaimer" data-i18n="ml.disclaimer">Los datos de caracterización de materias primas publicados en MateriaLab tienen fines informativos y de divulgación técnica. No constituyen especificación de producto, ficha técnica ni garantía de desempeño de ningún producto S-35.</p>',
+    'ml-ft-aviso') +
+    '<div class="ml-ft-end"><span>' + i18n('ml.ftDoc', 'DOCUMENTO TÉCNICO') + ' · ' + loc(esc(m.name.es.toUpperCase()), esc(m.name.en.toUpperCase())) + '</span>' +
+    '<span data-i18n="ml.ftOpen">ARCHIVO ABIERTO</span></div></article>';
   return layout({
     title: titleEs,
     description: descEs,

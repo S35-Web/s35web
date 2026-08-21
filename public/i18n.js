@@ -361,7 +361,24 @@
                 catFIB: 'FIBERS',
                 catSingularAGG: 'Aggregate',
                 catSingularBND: 'Binder',
-                catSingularFIL: 'Filler'
+                catSingularFIL: 'Filler',
+                ftBrand: 'MATERIALAB · S-35® · CHARACTERISATION ARCHIVE',
+                ftFigA: 'FIG. A · REAL SAMPLE',
+                ftChemName: 'CHEMICAL NAME',
+                ftFamily: 'FAMILY',
+                ftHeadline: 'HEADER DATA',
+                ftParam: 'PARAMETER',
+                ftTypical: 'TYPICAL VALUE',
+                ftPractical: 'IN PRACTICAL TERMS',
+                ftNorm: 'STANDARD / SOURCE',
+                ftOxide: 'OXIDE',
+                ftRange: 'RANGE %',
+                ftId: 'Identification',
+                ftComp: 'Composition',
+                ftProps: 'Properties and what they mean',
+                ftDoc: 'TECHNICAL DOCUMENT',
+                ftOpen: 'OPEN ARCHIVE',
+                ftAviso: 'NOTICE'
             }
         },
         es: {
@@ -719,7 +736,24 @@
                 catFIB: 'FIBRAS',
                 catSingularAGG: 'Agregado',
                 catSingularBND: 'Cementante',
-                catSingularFIL: 'Carga'
+                catSingularFIL: 'Carga',
+                ftBrand: 'MATERIALAB · S-35® · ARCHIVO DE CARACTERIZACIÓN',
+                ftFigA: 'FIG. A · MUESTRA REAL',
+                ftChemName: 'NOMBRE QUÍMICO',
+                ftFamily: 'FAMILIA',
+                ftHeadline: 'DATOS DE CABECERA',
+                ftParam: 'PARÁMETRO',
+                ftTypical: 'VALOR TÍPICO',
+                ftPractical: 'EN TÉRMINOS PRÁCTICOS',
+                ftNorm: 'NORMA / FUENTE',
+                ftOxide: 'ÓXIDO',
+                ftRange: 'RANGO %',
+                ftId: 'Identificación',
+                ftComp: 'Composición',
+                ftProps: 'Propiedades y qué significan',
+                ftDoc: 'DOCUMENTO TÉCNICO',
+                ftOpen: 'ARCHIVO ABIERTO',
+                ftAviso: 'AVISO'
             }
         }
     };
