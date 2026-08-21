@@ -340,6 +340,10 @@
   display: none;
 }
 
+.ml-photo-panel .ml-photo-slot.is-on {
+  display: block;
+}
+
 .ml-photo-panel:has(.ml-photo-slot.is-on) .ml-photo-empty {
   display: none;
 }
