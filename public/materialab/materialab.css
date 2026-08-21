@@ -630,15 +630,6 @@
   transform: translateY(10px);
   transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.12s, transform 1s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
 }
-.ml-sheet--motion.is-armed .ml-sheet-fig {
-  overflow: hidden;
-}
-.ml-sheet--motion.is-armed .ml-sheet-fig picture {
-  clip-path: inset(100% 0 0 0);
-  transform: scale(1.05);
-  transform-origin: center;
-  transition: clip-path 1.15s cubic-bezier(0.22, 1, 0.36, 1), transform 1.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
 .ml-sheet--motion.is-armed .ml-m-kpi > div:first-child {
   opacity: 0;
   transform: translateY(8px);
@@ -692,10 +683,6 @@
 .ml-sheet--motion .is-in tbody tr {
   opacity: 1;
   transform: none;
-}
-.ml-sheet--motion .is-in .ml-sheet-fig picture {
-  clip-path: inset(0);
-  transform: scale(1);
 }
 .ml-sheet--motion .is-in .ml-m-curve {
   stroke-dashoffset: 0;
@@ -1302,7 +1289,6 @@ h2.ml-h2 {
   .ml-sheet--motion.is-armed .ml-m-id::after,
   .ml-sheet--motion.is-armed h1,
   .ml-sheet--motion.is-armed .ml-sheet-hero > p,
-  .ml-sheet--motion.is-armed .ml-sheet-fig picture,
   .ml-sheet--motion.is-armed .ml-m-kpi > div:first-child,
   .ml-sheet--motion.is-armed .ml-m-plate,
   .ml-sheet--motion.is-armed .ml-m-grain,
@@ -1337,7 +1323,6 @@ h2.ml-h2 {
   .ml-sheet--motion.is-armed .ml-m-id::after,
   .ml-sheet--motion.is-armed h1,
   .ml-sheet--motion.is-armed .ml-sheet-hero > p,
-  .ml-sheet--motion.is-armed .ml-sheet-fig picture,
   .ml-sheet--motion.is-armed .ml-m-kpi > div:first-child,
   .ml-sheet--motion.is-armed .ml-m-plate,
   .ml-sheet--motion.is-armed .ml-m-grain,
