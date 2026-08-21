@@ -496,6 +496,51 @@
   padding: 3.5rem 0 2rem;
 }
 
+.ml-sheet {
+  max-width: 980px;
+  margin: 1.5rem auto 4rem;
+  padding: 0 1.5rem 3rem;
+  font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif;
+  color: #000;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ml-sheet h1 {
+  font-family: inherit;
+  text-transform: none;
+}
+
+.ml-sheet-logo {
+  height: 14px;
+  width: auto;
+  display: block;
+}
+
+.ml-sheet-fig picture,
+.ml-sheet-fig img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.ml-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+@media (max-width: 800px) {
+  .ml-sheet-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px 0 !important;
+  }
+  .ml-sheet-hero {
+    flex-direction: column;
+  }
+  .ml-sheet-hero > div[style*="width:320px"] {
+    width: 100% !important;
+  }
+}
+
 .ml-ft-doc {
   max-width: 1440px;
   margin: 0 auto;

@@ -19,8 +19,8 @@ module.exports = {
     { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: referencia visual y perfil típico de cal hidratada. Sin ensayo de lote.' },
   ],
   summary: {
-    es: 'La cal hidratada no es un polvo inerte. Es caliza que se coció, se apagó con agua y espera volver a piedra. El ciclo es el de siempre: CaCO₃ a unos 900 °C suelta CO₂ y queda cal viva (CaO); el agua la convierte en hidróxido de calcio, el polvo blanco de esta ficha; en la obra, esa pasta reabsorbe CO₂ del aire y endurece por carbonatación, meses más que minutos. No es un fraguado hidráulico. Es un regreso lento a carbonato.\n\nLa referencia visual muestra un polvo blanco, muy fino, de presentación habitual en saco. El grano es pulverulento, sin la angularidad de una marmolina ni el redondeo de una arena. No se publica planta ni proveedor. La clase declarada es cal hidratada de alto calcio, familia NMX-C-003-ONNCCE / ASTM C207 — no cal viva, no NHL, no cal en pasta. En obra esos nombres se intercambian; en el archivo, no.\n\nLo que la cal aporta a un mortero o a un estuco es plasticidad y retención de agua. El hidróxido alcaliniza (pH de solución saturada típico 12.4) y da tiempo de trabajo que el cemento no da. A cambio, el endurecimiento depende del aire: no se le pide resistencia estructural ni durabilidad en saturación permanente. La cal hidráulica (NHL) es otro material; si el certificado no lo dice, no se asume.\n\nLos números de cabecera —calcinación ~900 °C, Ca(OH)₂ ≥90 %, pH 12.4, fraguado en meses— y la composición típica (90–96 % Ca(OH)₂, CaCO₃ <5 %, MgO <2 %) son perfiles de comercio y de norma, no un análisis de este saco. Donde el lote no se ensayó, se lee NOT YET MEASURED.\n\nMateriaLab publica el ciclo y la clase. No publica la dosificación con la que S-35 la incorpora a un recubrimiento.',
-    en: 'Hydrated lime is cooked, slaked limestone waiting to become stone again. The visual reference is a fine white powder. Header figures and typical composition are commercial/normative profiles, not a lot assay. Unmeasured fields are NOT YET MEASURED.',
+    es: 'Hidróxido de calcio · cal común hidratada. Caliza cocida y apagada con agua. No endurece por hidratación como el cemento: fragua lentamente tomando CO₂ del aire hasta volver a ser piedra caliza. Aporta plasticidad, retención de agua y permeabilidad al vapor.',
+    en: 'Calcium hydroxide · common hydrated lime. Cooked limestone slaked with water. It does not harden by hydration like cement: it sets slowly by taking CO₂ from the air until it is limestone again.',
   },
   origin: dp('México', 'observation', {
     note: 'Clase comercial. No se publica planta ni proveedor.',
@@ -94,4 +94,5 @@ module.exports = {
   relatedResearch: ['caracterizacion-cal'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
+  techFile: 'cal.html',
 };

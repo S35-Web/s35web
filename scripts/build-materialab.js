@@ -233,7 +233,7 @@ function layout(opts, body) {
     '<meta name="theme-color" content="#000000">\n' +
     '<link rel="stylesheet" href="/styles.css">\n' +
     '<link rel="stylesheet" href="/materialab/materialab.css">\n' +
-    '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">\n' +
+    '<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">\n' +
     '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">\n' +
     jsonLd + '\n</head>\n<body ' + bodyAttrs + '>\n' +
     s35Nav() + '\n' +
@@ -566,6 +566,25 @@ function pageMethodology() {
   }, body);
 }
 
+function loadTechFile(m) {
+  if (!m.techFile) return '';
+  var full = path.join(__dirname, '..', 'content', 'research', 'tech-files', m.techFile);
+  var html = fs.readFileSync(full, 'utf8');
+  var img = m.images.macro[0];
+  var year = String(m.updatedAt || m.publishedAt || '').slice(0, 4);
+  html = html.split('{{IMAGE}}').join(picture(img.id, {
+    alt: img.alt,
+    width: img.width,
+    height: img.height,
+    priority: true,
+    sizes: '(min-width: 900px) 320px, 100vw',
+  }));
+  html = html.split('{{CODE}}').join(esc(m.code));
+  html = html.split('{{REV}}').join(pad2(m.revision));
+  html = html.split('{{YEAR}}').join(esc(year || '2026'));
+  return html;
+}
+
 function pageMaterial(m) {
   var cat = CATEGORIES[m.category];
   var img = m.images.macro[0];
@@ -606,8 +625,24 @@ function pageMaterial(m) {
         : 'Particle size distribution for ' + m.name.en,
     });
   }
-  var body = '<div hidden class="ml-banner" data-packaging-banner>' + i18n('ml.packaging', 'ESCANEADO DESDE EL EMPAQUE') + ' · ' + esc(m.code) + ' · ' + i18n('ml.packagingWelcome', 'BIENVENIDO AL ARCHIVO') + '</div>' +
-    '<article class="ml-ft-doc">' +
+  var layoutOpts = {
+    title: titleEs,
+    description: descEs,
+    titleEs: titleEs,
+    titleEn: titleEn,
+    descEs: descEs,
+    descEn: descEn,
+    path: '/materialab/materials/' + m.slug,
+    page: 'material',
+    og: config.siteOrigin + MEDIA + '/' + img.id + '-og.webp',
+    jsonLd: jsonLd,
+  };
+  var tech = loadTechFile(m);
+  var body = '<div hidden class="ml-banner" data-packaging-banner>' + i18n('ml.packaging', 'ESCANEADO DESDE EL EMPAQUE') + ' · ' + esc(m.code) + ' · ' + i18n('ml.packagingWelcome', 'BIENVENIDO AL ARCHIVO') + '</div>';
+  if (tech) {
+    return layout(layoutOpts, body + '<article class="ml-sheet">' + tech + '</article>');
+  }
+  body += '<article class="ml-ft-doc">' +
     '<div class="ml-ft-mast"><span data-i18n="ml.ftBrand">MATERIALAB · S-35® · ARCHIVO DE CARACTERIZACIÓN</span>' +
     '<span>' + esc(m.code) + ' · REV ' + pad2(m.revision) + ' · ' + esc(m.updatedAt) + '</span></div>' +
     '<div class="ml-ft-hero"><div>' +
@@ -703,18 +738,7 @@ function pageMaterial(m) {
     'ml-ft-aviso') +
     '<div class="ml-ft-end"><span>' + i18n('ml.ftDoc', 'DOCUMENTO TÉCNICO') + ' · ' + loc(esc(m.name.es.toUpperCase()), esc(m.name.en.toUpperCase())) + '</span>' +
     '<span data-i18n="ml.ftOpen">ARCHIVO ABIERTO</span></div></article>';
-  return layout({
-    title: titleEs,
-    description: descEs,
-    titleEs: titleEs,
-    titleEn: titleEn,
-    descEs: descEs,
-    descEn: descEn,
-    path: '/materialab/materials/' + m.slug,
-    page: 'material',
-    og: config.siteOrigin + MEDIA + '/' + img.id + '-og.webp',
-    jsonLd: jsonLd,
-  }, body);
+  return layout(layoutOpts, body);
 }
 
 function write(rel, html) {
