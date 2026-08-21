@@ -3,8 +3,8 @@ module.exports = {
   slug: 'caracterizacion-cal',
   materialSlug: 'cal',
   title: {
-    es: 'Caracterización fotográfica de cal hidratada',
-    en: 'Photographic characterisation of hydrated lime',
+    es: 'Caracterización de cal hidratada',
+    en: 'Characterisation of hydrated lime',
   },
   category: 'BND',
   date: '2026-08-11',
@@ -12,7 +12,7 @@ module.exports = {
   status: 'published',
   featured: false,
   summary: {
-    es: 'Registro de una muestra real de cal hidratada fotografiada por S-35, con el ciclo caliza–cal viva–hidróxido y perfil típico NMX-C-003 / ASTM C207.',
-    en: 'Record of a real hydrated-lime sample photographed by S-35, with the limestone–quicklime–hydroxide cycle and a typical NMX-C-003 / ASTM C207 profile.',
+    es: 'Referencia visual de cal hidratada, con el ciclo caliza–cal viva–hidróxido y perfil típico NMX-C-003 / ASTM C207.',
+    en: 'Visual reference of hydrated lime, with the limestone–quicklime–hydroxide cycle and a typical NMX-C-003 / ASTM C207 profile.',
   },
 };

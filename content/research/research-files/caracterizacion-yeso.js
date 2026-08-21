@@ -3,8 +3,8 @@ module.exports = {
   slug: 'caracterizacion-yeso',
   materialSlug: 'yeso',
   title: {
-    es: 'Caracterización fotográfica de yeso',
-    en: 'Photographic characterisation of gypsum',
+    es: 'Caracterización de yeso',
+    en: 'Characterisation of gypsum',
   },
   category: 'BND',
   date: '2026-08-11',
@@ -12,7 +12,7 @@ module.exports = {
   status: 'published',
   featured: false,
   summary: {
-    es: 'Registro de una muestra real de yeso fotografiada por S-35, con el ciclo dihidrato–hemihidrato y perfil típico de yeso de construcción.',
-    en: 'Record of a real gypsum sample photographed by S-35, with the dihydrate–hemihydrate cycle and a typical building-gypsum profile.',
+    es: 'Referencia visual de yeso, con el ciclo dihidrato–hemihidrato y perfil típico de yeso de construcción.',
+    en: 'Visual reference of gypsum, with the dihydrate–hemihydrate cycle and a typical building-gypsum profile.',
   },
 };

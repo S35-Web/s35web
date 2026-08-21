@@ -27,14 +27,14 @@ module.exports = {
   publishedAt: '2026-08-19',
   updatedAt: '2026-08-19',
   revisionHistory: [
-    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: caracterización fotográfica y marco normativo ASTM C33. Sin ensayo de lote.' },
+    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: referencia visual y marco normativo ASTM C33. Sin ensayo de lote.' },
   ],
   summary: {
-    es: 'La arena de río que entra a una planta de materiales no es un insumo genérico. Es el resultado de un transporte fluvial: la corriente arranca fragmentos de la sierra, los golpea entre sí durante kilómetros y deposita primero lo pesado y después lo fino. Ese viaje redondea aristas y clasifica tamaños. Un grano fluvial no se comporta como un grano de trituración: rueda entre sus vecinos en lugar de trabarse.\n\nEn Sinaloa, los depósitos aluviales arrastran una mineralogía mixta —cuarzo, feldespatos y líticos volcánicos de la Sierra Madre Occidental— visible a simple vista en la muestra fotografiada por S-35: partículas translúcidas junto a opacas grises y pardas, de contorno subredondeado. MateriaLab documenta esa muestra como caracterización de materia prima, no como curva objetivo de producción ni como ficha de un producto S-35.\n\nComo agregado fino, la arena de río ocupa el espacio entre las piedras más gruesas de un concreto o un mortero. Su forma redondeada reduce la demanda de agua respecto a una arena triturada de la misma granulometría; a cambio, aporta menos trabazón mecánica. Quien formula un estuco o un concreto tiene que decidir cuánta fluidez necesita y cuánta resistencia al corte espera del esqueleto granular. Esa decisión no se improvisa en obra: se documenta aquí, con procedencia a la vista.\n\nEsta ficha no publica un ensayo granulométrico del lote fotografiado. Publica el marco normativo contra el que ese ensayo se comparará —la banda de agregado fino de ASTM C33 / NMX-C-111-ONNCCE— y deja en NOT YET MEASURED lo que todavía no se midió sobre esta muestra: absorción, densidad aparente, módulo de finura del lote, equivalentes de arena. Los valores de cabecera (tamaño máximo 4.75 mm, módulo de finura admisible 2.3–3.1, densidad relativa típica 2.60) son perfiles de referencia de la norma y de la literatura, no resultados de este saco.\n\nEl archivo crece en ese orden a propósito: primero la fotografía real, después la observación, después el número medido. Publicar una curva inventada destruiría la razón de ser de MateriaLab.',
-    en: 'River sand arriving at a materials plant is not a generic input. It is the product of fluvial transport: the current strips fragments from the range, knocks them against each other for kilometres, and deposits the heavy fraction first. That journey rounds edges and sorts sizes. A fluvial grain does not behave like a crushed grain: it rolls among its neighbours instead of interlocking.\n\nIn Sinaloa, alluvial deposits carry mixed mineralogy — quartz, feldspars and volcanic lithics from the Sierra Madre Occidental — visible in the sample photographed by S-35. MateriaLab records that sample as raw-material characterisation, not as a production target curve and not as a product data sheet.\n\nThis file does not publish a sieve analysis of the photographed lot. It publishes the ASTM C33 / NMX-C-111 envelope against which that analysis will be compared, and marks unmeasured properties as NOT YET MEASURED.',
+    es: 'La arena de río que entra a una planta de materiales no es un insumo genérico. Es el resultado de un transporte fluvial: la corriente arranca fragmentos de la sierra, los golpea entre sí durante kilómetros y deposita primero lo pesado y después lo fino. Ese viaje redondea aristas y clasifica tamaños. Un grano fluvial no se comporta como un grano de trituración: rueda entre sus vecinos en lugar de trabarse.\n\nEn Sinaloa, los depósitos aluviales arrastran una mineralogía mixta —cuarzo, feldespatos y líticos volcánicos de la Sierra Madre Occidental— visible a simple vista en la referencia visual: partículas translúcidas junto a opacas grises y pardas, de contorno subredondeado. MateriaLab documenta esa presentación como caracterización de materia prima, no como curva objetivo de producción ni como ficha de un producto S-35.\n\nComo agregado fino, la arena de río ocupa el espacio entre las piedras más gruesas de un concreto o un mortero. Su forma redondeada reduce la demanda de agua respecto a una arena triturada de la misma granulometría; a cambio, aporta menos trabazón mecánica. Quien formula un estuco o un concreto tiene que decidir cuánta fluidez necesita y cuánta resistencia al corte espera del esqueleto granular. Esa decisión no se improvisa en obra: se documenta aquí, con procedencia a la vista.\n\nEsta ficha no publica un ensayo granulométrico de un lote medido. Publica el marco normativo contra el que ese ensayo se comparará —la banda de agregado fino de ASTM C33 / NMX-C-111-ONNCCE— y deja en NOT YET MEASURED lo que todavía no se midió: absorción, densidad aparente, módulo de finura del lote, equivalentes de arena. Los valores de cabecera (tamaño máximo 4.75 mm, módulo de finura admisible 2.3–3.1, densidad relativa típica 2.60) son perfiles de referencia de la norma y de la literatura, no resultados de un saco concreto.\n\nEl archivo crece en ese orden a propósito: primero la referencia visual, después la observación, después el número medido. Publicar una curva inventada destruiría la razón de ser de MateriaLab.',
+    en: 'River sand arriving at a materials plant is not a generic input. It is the product of fluvial transport: the current strips fragments from the range, knocks them against each other for kilometres, and deposits the heavy fraction first. That journey rounds edges and sorts sizes. A fluvial grain does not behave like a crushed grain: it rolls among its neighbours instead of interlocking.\n\nIn Sinaloa, alluvial deposits carry mixed mineralogy — quartz, feldspars and volcanic lithics from the Sierra Madre Occidental — visible in the visual reference. MateriaLab records that appearance as raw-material characterisation, not as a production target curve and not as a product data sheet.\n\nThis file does not publish a sieve analysis of a measured lot. It publishes the ASTM C33 / NMX-C-111 envelope against which that analysis will be compared, and marks unmeasured properties as NOT YET MEASURED.',
   },
   origin: dp('Sinaloa, MX', 'observation', {
-    note: 'Región de procedencia de la muestra fotografiada. No se publica banco ni proveedor.',
+    note: 'Región de procedencia declarada. No se publica banco ni proveedor.',
     sampleId: 'ML-SMP-00001',
     date: '2026-08-11',
   }),
@@ -53,7 +53,7 @@ module.exports = {
     color: dp('Beige a gris pardo, mixto', 'observation', {
       sampleId: 'ML-SMP-00001',
       date: '2026-08-11',
-      method: 'Visual, luz difusa sobre fondo blanco',
+      method: 'Referencia visual',
     }),
     structure: dp('Granular, granos sueltos, sin cementación', 'observation', {
       sampleId: 'ML-SMP-00001',
@@ -109,7 +109,7 @@ module.exports = {
     surface: dp('Lisa a ligeramente rugosa; aristas desgastadas', 'observation', {
       sampleId: 'ML-SMP-00001',
       date: '2026-08-11',
-      method: 'Macrofotografía y lupa de campo sobre muestra real',
+      method: 'Referencia visual de presentación habitual',
     }),
     geometry: dp('Subredondeado', 'observation', {
       sampleId: 'ML-SMP-00001',
@@ -126,7 +126,7 @@ module.exports = {
     macro: [
       {
         id: 'arena-de-rio',
-        alt: 'Muestra real de arena de río de Sinaloa fotografiada por S-35: montículo sobre fondo blanco y detalle de granos a lupa',
+        alt: 'Referencia visual de arena de río de Sinaloa: montículo sobre fondo blanco y detalle de granos',
         width: 1536,
         height: 1024,
       },
@@ -142,8 +142,8 @@ module.exports = {
     {
       date: '2026-08-11',
       text: {
-        es: 'Se fotografió una muestra real sobre fondo blanco, con detalle a lupa de campo. Los granos visibles mezclan cuarzo translúcido, opacos grises y partículas pardas; la forma predominante es subredondeada. No se realizó ensayo de mallas ni absorción sobre este lote.',
-        en: 'A real sample was photographed on a white field with a field-loupe inset. Visible grains mix translucent quartz, opaque greys and brown particles; the dominant shape is sub-rounded. No sieve or absorption test was run on this lot.',
+        es: 'La FIG. A es una referencia visual de presentación habitual, no la fotografía de un lote ensayado. En esa referencia los granos mezclan cuarzo translúcido, opacos grises y partículas pardas; la forma predominante es subredondeada. No hay ensayo de mallas ni absorción publicado.',
+        en: 'FIG. A is a visual reference of typical appearance, not a photograph of a tested lot. In that reference the grains mix translucent quartz, opaque greys and brown particles; the dominant shape is sub-rounded. No sieve or absorption test is published.',
       },
     },
   ],

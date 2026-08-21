@@ -16,11 +16,11 @@ module.exports = {
   publishedAt: '2026-08-19',
   updatedAt: '2026-08-19',
   revisionHistory: [
-    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: caracterización fotográfica y perfil típico de cemento blanco CPB 30. Sin ensayo de lote.' },
+    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: referencia visual y perfil típico de cemento blanco CPB 30. Sin ensayo de lote.' },
   ],
   summary: {
-    es: 'El cemento blanco no es un cemento distinto: es Portland con el hierro casi fuera. Se fabrica con caliza pura y caolín, se cuece más alto (~1 500 °C) y se enfría de modo que el hierro no oxide. El resultado es una base estable para pigmento y para acabados claros. Hidrata igual que el gris: gel C-S-H, reacción irreversible.\n\nLa muestra fotografiada por S-35 es un polvo blanco, ligeramente crema a simple vista. No se publica planta. La clase se declara CPB 30, familia NMX-C-414 / ASTM C150. El índice de blancura típico de comercio (≥85 % de reflectancia) no es una medición de este saco.\n\nLa química lo dice en una línea: Fe₂O₃ típico 0.15–0.50 %. Cada décima se ve; por encima de ~0.5 % el polvo toma tono crema. Manganeso y cromo tiñen aunque estén en trazas. La ferrita (C₄AF) queda casi ausente (0.5–2 %), frente al 5–15 % del gris. A cambio, suele molerse más fino (Blaine típico 3 800–5 000 cm²/g): más blancura aparente y un poco más de demanda de agua.\n\nResistencia de clase (≥30 MPa a 28 d), relación a/c 0.45–0.60 y pH 12.5–13.5 son los mismos órdenes que el cemento gris. El blanco no es más débil por ser blanco; es más caro de producir y más sensible al hierro. Este lote no tiene reflectometría, ni Blaine, ni resistencia medida.\n\nMateriaLab explica por qué es blanco. No explica la pigmentación de un producto S-35.',
-    en: 'White Portland cement is grey Portland with iron almost removed. The photographed sample is a white, slightly cream powder, class CPB 30. Whiteness and oxide ranges are commercial/class profiles, not a lot assay.',
+    es: 'El cemento blanco no es un cemento distinto: es Portland con el hierro casi fuera. Se fabrica con caliza pura y caolín, se cuece más alto (~1 500 °C) y se enfría de modo que el hierro no oxide. El resultado es una base estable para pigmento y para acabados claros. Hidrata igual que el gris: gel C-S-H, reacción irreversible.\n\nLa referencia visual muestra un polvo blanco, ligeramente crema a simple vista. No se publica planta. La clase se declara CPB 30, familia NMX-C-414 / ASTM C150. El índice de blancura típico de comercio (≥85 % de reflectancia) no es una medición de este saco.\n\nLa química lo dice en una línea: Fe₂O₃ típico 0.15–0.50 %. Cada décima se ve; por encima de ~0.5 % el polvo toma tono crema. Manganeso y cromo tiñen aunque estén en trazas. La ferrita (C₄AF) queda casi ausente (0.5–2 %), frente al 5–15 % del gris. A cambio, suele molerse más fino (Blaine típico 3 800–5 000 cm²/g): más blancura aparente y un poco más de demanda de agua.\n\nResistencia de clase (≥30 MPa a 28 d), relación a/c 0.45–0.60 y pH 12.5–13.5 son los mismos órdenes que el cemento gris. El blanco no es más débil por ser blanco; es más caro de producir y más sensible al hierro. Este lote no tiene reflectometría, ni Blaine, ni resistencia medida.\n\nMateriaLab explica por qué es blanco. No explica la pigmentación de un producto S-35.',
+    en: 'White Portland cement is grey Portland with iron almost removed. The visual reference is a white, slightly cream powder, class CPB 30. Whiteness and oxide ranges are commercial/class profiles, not a lot assay.',
   },
   origin: dp('México', 'observation', {
     note: 'Clase comercial CPB 30. No se publica planta ni marca.',
@@ -39,7 +39,7 @@ module.exports = {
     color: dp('Blanco, ligeramente crema', 'observation', {
       sampleId: 'ML-SMP-00006',
       date: '2026-08-11',
-      method: 'Visual, luz difusa sobre fondo blanco',
+      method: 'Referencia visual',
     }),
     structure: dp('Polvo hidráulico fino', 'observation', {
       sampleId: 'ML-SMP-00006',
@@ -75,7 +75,7 @@ module.exports = {
     surface: dp('Polvo fino blanco; grano no resuelto a lupa de campo', 'observation', {
       sampleId: 'ML-SMP-00006',
       date: '2026-08-11',
-      method: 'Macrofotografía y lupa de campo sobre muestra real',
+      method: 'Referencia visual de presentación habitual',
     }),
     geometry: dp('Partículas de molienda, sin forma de agregado', 'observation', {
       sampleId: 'ML-SMP-00006',
@@ -84,7 +84,7 @@ module.exports = {
     voidStructure: dp(null, 'in-progress', { note: 'MICROGRAPHY PENDING — SEM imaging not yet performed' }),
   },
   images: {
-    macro: [{ id: 'cemento-blanco', alt: 'Muestra real de cemento blanco fotografiada por S-35: montículo blanco sobre fondo blanco y detalle a lupa', width: 1536, height: 1024 }],
+    macro: [{ id: 'cemento-blanco', alt: 'Referencia visual de cemento blanco: montículo blanco sobre fondo blanco y detalle de polvo', width: 1536, height: 1024 }],
   },
   whyItMatters: [
     { property: 'Fe₂O₃ muy bajo', effect: 'Permite color claro y pigmentación fiel; cada décima de hierro se ve', direction: '↑' },
@@ -96,8 +96,8 @@ module.exports = {
     {
       date: '2026-08-11',
       text: {
-        es: 'Se fotografió una muestra real de polvo blanco. No se realizó reflectometría, ni Blaine, ni resistencia sobre este lote. El tono ligeramente crema se declara por observación, no por índice de blancura medido.',
-        en: 'A real white powder sample was photographed. No reflectometry, Blaine or strength test was run on this lot.',
+        es: 'La FIG. A es una referencia visual de presentación habitual, no la fotografía de un lote ensayado. No hay reflectometría, ni Blaine, ni resistencia publicados. El tono ligeramente crema se declara por la referencia visual, no por índice de blancura medido.',
+        en: 'FIG. A is a visual reference of typical appearance, not a photograph of a tested lot. No reflectometry, Blaine or strength test is published.',
       },
     },
   ],

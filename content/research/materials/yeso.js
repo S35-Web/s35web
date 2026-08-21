@@ -16,11 +16,11 @@ module.exports = {
   publishedAt: '2026-08-19',
   updatedAt: '2026-08-19',
   revisionHistory: [
-    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: caracterización fotográfica y perfil típico de yeso. Sin ensayo de lote.' },
+    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: referencia visual y perfil típico de yeso. Sin ensayo de lote.' },
   ],
   summary: {
-    es: 'El yeso es el cementante más rápido del taller y el menos estructural. Piedra blanda (2 Mohs: se raya con la uña) que, al calentarse cerca de 150 °C, suelta parte de su agua de cristalización y se vuelve hemihidrato en polvo. Al amasarla, recristaliza en agujas entrelazadas y endurece en minutos. No seca: cristaliza. El ciclo es reversible; cada vuelta pierde finura y resistencia.\n\nLa muestra fotografiada por S-35 es un polvo blanco a marfil, fino, de presentación habitual. No se publica yacimiento ni proveedor. La clase se declara como sulfato de calcio dihidratado / hemihidrato de grado comercial, no como piedra de cantera ni como escayola de alta resistencia.\n\nEsa velocidad es la razón de usarlo y la razón de no usarlo. La ventana típica de fraguado inicial (8–15 min) obliga a colar de una sola vez. La expansión ligera al endurecer copia el molde con detalle. A cambio, es ligeramente soluble en agua (~2 g/L): el agua lo desgasta. Interiores, no saturación. Las sales solubles, si están, migran y dejan velos blancos; son el defecto a vigilar, no un número que esta ficha invente para este saco.\n\nLos valores de cabecera —≈21 % de su peso es agua cristalizada, 8–15 min de fraguado inicial, 150 °C de calcinación, 2 Mohs— y la química típica (SO₃ 44–46.5 %, CaO 31–33 %, agua de cristalización 18–21 %) son perfiles de literatura y de comercio. El lote fotografiado no tiene aún ensayo ASTM C472 ni tamizado. Donde no hay dato de este saco, se lee NOT YET MEASURED.\n\nMateriaLab describe el ciclo del sulfato. No describe la fórmula de un estuco S-35.',
-    en: 'Gypsum is the fastest binder in the shop and the least structural. The photographed sample is a fine white-to-ivory powder. Header figures and typical chemistry are commercial/literature profiles, not a lot assay.',
+    es: 'El yeso es el cementante más rápido del taller y el menos estructural. Piedra blanda (2 Mohs: se raya con la uña) que, al calentarse cerca de 150 °C, suelta parte de su agua de cristalización y se vuelve hemihidrato en polvo. Al amasarla, recristaliza en agujas entrelazadas y endurece en minutos. No seca: cristaliza. El ciclo es reversible; cada vuelta pierde finura y resistencia.\n\nLa referencia visual muestra un polvo blanco a marfil, fino, de presentación habitual. No se publica yacimiento ni proveedor. La clase se declara como sulfato de calcio dihidratado / hemihidrato de grado comercial, no como piedra de cantera ni como escayola de alta resistencia.\n\nEsa velocidad es la razón de usarlo y la razón de no usarlo. La ventana típica de fraguado inicial (8–15 min) obliga a colar de una sola vez. La expansión ligera al endurecer copia el molde con detalle. A cambio, es ligeramente soluble en agua (~2 g/L): el agua lo desgasta. Interiores, no saturación. Las sales solubles, si están, migran y dejan velos blancos; son el defecto a vigilar, no un número que esta ficha invente para este saco.\n\nLos valores de cabecera —≈21 % de su peso es agua cristalizada, 8–15 min de fraguado inicial, 150 °C de calcinación, 2 Mohs— y la química típica (SO₃ 44–46.5 %, CaO 31–33 %, agua de cristalización 18–21 %) son perfiles de literatura y de comercio. El lote no tiene aún ensayo ASTM C472 ni tamizado. Donde no hay dato de este saco, se lee NOT YET MEASURED.\n\nMateriaLab describe el ciclo del sulfato. No describe la fórmula de un estuco S-35.',
+    en: 'Gypsum is the fastest binder in the shop and the least structural. The visual reference is a fine white-to-ivory powder. Header figures and typical chemistry are commercial/literature profiles, not a lot assay.',
   },
   origin: dp('México', 'observation', {
     note: 'Clase comercial. No se publica yacimiento ni proveedor.',
@@ -42,7 +42,7 @@ module.exports = {
     color: dp('Blanco a marfil', 'observation', {
       sampleId: 'ML-SMP-00004',
       date: '2026-08-11',
-      method: 'Visual, luz difusa sobre fondo blanco',
+      method: 'Referencia visual',
     }),
     structure: dp('Polvo fino de hemihidrato / dihidrato', 'observation', {
       sampleId: 'ML-SMP-00004',
@@ -70,7 +70,7 @@ module.exports = {
     surface: dp('Polvo fino; cristales no resueltos a lupa de campo', 'observation', {
       sampleId: 'ML-SMP-00004',
       date: '2026-08-11',
-      method: 'Macrofotografía y lupa de campo sobre muestra real',
+      method: 'Referencia visual de presentación habitual',
     }),
     geometry: dp('Partículas pulverulentas, sin forma de agregado', 'observation', {
       sampleId: 'ML-SMP-00004',
@@ -79,7 +79,7 @@ module.exports = {
     voidStructure: dp(null, 'in-progress', { note: 'MICROGRAPHY PENDING — SEM imaging not yet performed' }),
   },
   images: {
-    macro: [{ id: 'yeso', alt: 'Muestra real de yeso fotografiada por S-35: montículo blanco sobre fondo blanco y detalle a lupa', width: 1536, height: 1024 }],
+    macro: [{ id: 'yeso', alt: 'Referencia visual de yeso: montículo blanco sobre fondo blanco y detalle de polvo', width: 1536, height: 1024 }],
   },
   whyItMatters: [
     { property: 'Fraguado en minutos', effect: 'Ventana de trabajo corta; hay que colar de una sola vez', direction: '↓' },
@@ -91,8 +91,8 @@ module.exports = {
     {
       date: '2026-08-11',
       text: {
-        es: 'Se fotografió una muestra real de polvo blanco-marfil. No se realizó ASTM C472, ni tamizado, ni ensayo de sales solubles sobre este lote.',
-        en: 'A real white-ivory powder sample was photographed. No ASTM C472, sieve or soluble-salt test was run on this lot.',
+        es: 'La FIG. A es una referencia visual de presentación habitual, no la fotografía de un lote ensayado. No hay ASTM C472, ni tamizado, ni ensayo de sales solubles publicado.',
+        en: 'FIG. A is a visual reference of typical appearance, not a photograph of a tested lot. No ASTM C472, sieve or soluble-salt test is published.',
       },
     },
   ],

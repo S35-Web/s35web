@@ -16,11 +16,11 @@ module.exports = {
   publishedAt: '2026-08-19',
   updatedAt: '2026-08-19',
   revisionHistory: [
-    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: caracterización fotográfica y perfil típico de cal hidratada. Sin ensayo de lote.' },
+    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: referencia visual y perfil típico de cal hidratada. Sin ensayo de lote.' },
   ],
   summary: {
-    es: 'La cal hidratada no es un polvo inerte. Es caliza que se coció, se apagó con agua y espera volver a piedra. El ciclo es el de siempre: CaCO₃ a unos 900 °C suelta CO₂ y queda cal viva (CaO); el agua la convierte en hidróxido de calcio, el polvo blanco de esta ficha; en la obra, esa pasta reabsorbe CO₂ del aire y endurece por carbonatación, meses más que minutos. No es un fraguado hidráulico. Es un regreso lento a carbonato.\n\nLa muestra fotografiada por S-35 es un polvo blanco, muy fino, de presentación habitual en saco. A lupa el grano es pulverulento, sin la angularidad de una marmolina ni el redondeo de una arena. No se publica planta ni proveedor. La clase declarada es cal hidratada de alto calcio, familia NMX-C-003-ONNCCE / ASTM C207 — no cal viva, no NHL, no cal en pasta. En obra esos nombres se intercambian; en el archivo, no.\n\nLo que la cal aporta a un mortero o a un estuco es plasticidad y retención de agua. El hidróxido alcaliniza (pH de solución saturada típico 12.4) y da tiempo de trabajo que el cemento no da. A cambio, el endurecimiento depende del aire: no se le pide resistencia estructural ni durabilidad en saturación permanente. La cal hidráulica (NHL) es otro material; si el certificado no lo dice, no se asume.\n\nLos números de cabecera —calcinación ~900 °C, Ca(OH)₂ ≥90 %, pH 12.4, fraguado en meses— y la composición típica (90–96 % Ca(OH)₂, CaCO₃ <5 %, MgO <2 %) son perfiles de comercio y de norma, no un análisis de este saco. Donde el lote no se ensayó, se lee NOT YET MEASURED.\n\nMateriaLab publica el ciclo y la clase. No publica la dosificación con la que S-35 la incorpora a un recubrimiento.',
-    en: 'Hydrated lime is cooked, slaked limestone waiting to become stone again. The photographed sample is a fine white powder. Header figures and typical composition are commercial/normative profiles, not a lot assay. Unmeasured fields are NOT YET MEASURED.',
+    es: 'La cal hidratada no es un polvo inerte. Es caliza que se coció, se apagó con agua y espera volver a piedra. El ciclo es el de siempre: CaCO₃ a unos 900 °C suelta CO₂ y queda cal viva (CaO); el agua la convierte en hidróxido de calcio, el polvo blanco de esta ficha; en la obra, esa pasta reabsorbe CO₂ del aire y endurece por carbonatación, meses más que minutos. No es un fraguado hidráulico. Es un regreso lento a carbonato.\n\nLa referencia visual muestra un polvo blanco, muy fino, de presentación habitual en saco. El grano es pulverulento, sin la angularidad de una marmolina ni el redondeo de una arena. No se publica planta ni proveedor. La clase declarada es cal hidratada de alto calcio, familia NMX-C-003-ONNCCE / ASTM C207 — no cal viva, no NHL, no cal en pasta. En obra esos nombres se intercambian; en el archivo, no.\n\nLo que la cal aporta a un mortero o a un estuco es plasticidad y retención de agua. El hidróxido alcaliniza (pH de solución saturada típico 12.4) y da tiempo de trabajo que el cemento no da. A cambio, el endurecimiento depende del aire: no se le pide resistencia estructural ni durabilidad en saturación permanente. La cal hidráulica (NHL) es otro material; si el certificado no lo dice, no se asume.\n\nLos números de cabecera —calcinación ~900 °C, Ca(OH)₂ ≥90 %, pH 12.4, fraguado en meses— y la composición típica (90–96 % Ca(OH)₂, CaCO₃ <5 %, MgO <2 %) son perfiles de comercio y de norma, no un análisis de este saco. Donde el lote no se ensayó, se lee NOT YET MEASURED.\n\nMateriaLab publica el ciclo y la clase. No publica la dosificación con la que S-35 la incorpora a un recubrimiento.',
+    en: 'Hydrated lime is cooked, slaked limestone waiting to become stone again. The visual reference is a fine white powder. Header figures and typical composition are commercial/normative profiles, not a lot assay. Unmeasured fields are NOT YET MEASURED.',
   },
   origin: dp('México', 'observation', {
     note: 'Clase comercial. No se publica planta ni proveedor.',
@@ -39,7 +39,7 @@ module.exports = {
     color: dp('Blanco', 'observation', {
       sampleId: 'ML-SMP-00003',
       date: '2026-08-11',
-      method: 'Visual, luz difusa sobre fondo blanco',
+      method: 'Referencia visual',
     }),
     structure: dp('Polvo fino hidratado, no calcinado en esta presentación', 'observation', {
       sampleId: 'ML-SMP-00003',
@@ -64,7 +64,7 @@ module.exports = {
     surface: dp('Polvo pulverulento, grano no resuelto a lupa de campo', 'observation', {
       sampleId: 'ML-SMP-00003',
       date: '2026-08-11',
-      method: 'Macrofotografía y lupa de campo sobre muestra real',
+      method: 'Referencia visual de presentación habitual',
     }),
     geometry: dp('Partículas muy finas, sin forma de agregado', 'observation', {
       sampleId: 'ML-SMP-00003',
@@ -73,7 +73,7 @@ module.exports = {
     voidStructure: dp(null, 'in-progress', { note: 'MICROGRAPHY PENDING — SEM imaging not yet performed' }),
   },
   images: {
-    macro: [{ id: 'cal', alt: 'Muestra real de cal hidratada fotografiada por S-35: montículo blanco sobre fondo blanco y detalle a lupa', width: 1536, height: 1024 }],
+    macro: [{ id: 'cal', alt: 'Referencia visual de cal hidratada: montículo blanco sobre fondo blanco y detalle de polvo', width: 1536, height: 1024 }],
   },
   whyItMatters: [
     { property: 'Fraguado por carbonatación', effect: 'Endurece en meses, no en minutos; pide aire, no saturación permanente', direction: '→' },
@@ -85,8 +85,8 @@ module.exports = {
     {
       date: '2026-08-11',
       text: {
-        es: 'Se fotografió una muestra real de polvo blanco sobre fondo blanco. No se realizó ensayo de pureza Ca(OH)₂, ni pH, ni finura Blaine sobre este lote. La clase se declara como cal hidratada por presentación; no se distingue aquí de una NHL sin certificado.',
-        en: 'A real white powder sample was photographed. No Ca(OH)₂ purity, pH or Blaine test was run on this lot.',
+        es: 'La FIG. A es una referencia visual de presentación habitual, no la fotografía de un lote ensayado. No hay ensayo de pureza Ca(OH)₂, ni pH, ni finura Blaine publicado. La clase se declara como cal hidratada por presentación; no se distingue aquí de una NHL sin certificado.',
+        en: 'FIG. A is a visual reference of typical appearance, not a photograph of a tested lot. No Ca(OH)₂ purity, pH or Blaine test is published.',
       },
     },
   ],

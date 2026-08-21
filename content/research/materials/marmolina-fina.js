@@ -16,11 +16,11 @@ module.exports = {
   publishedAt: '2026-08-19',
   updatedAt: '2026-08-19',
   revisionHistory: [
-    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: caracterización fotográfica y perfil típico de marmolina fina. Sin ensayo de lote.' },
+    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: referencia visual y perfil típico de marmolina fina. Sin ensayo de lote.' },
   ],
   summary: {
-    es: 'La marmolina fina no es arena. Es mármol o caliza recristalizada, triturada y clasificada: un carbonato de calcio que conserva las caras de fractura del golpe y no ha pasado por un horno. Esa diferencia —triturado, no calcinado— explica casi todo su comportamiento en un estuco, un terrazo o un concreto arquitectónico.\n\nLa muestra fotografiada por S-35 es un polvo granular blanco de grado fino. A lupa, los granos son angulosos, de color blanco a gris muy claro, con alguna partícula parda. El origen se declara por región: Comarca Lagunera, Torreón, Coahuila. No se nombra cantera ni proveedor.\n\nQuímicamente, el mármol calcítico es CaCO₃. Esa composición le da afinidad con pastas de cal y de cemento que una arena silícea no tiene: el grano no es un inerte perfecto, participa de la matriz. También le quita resistencia a los ácidos —un chorro de vinagre o un limpiador ácido ataca el pulido— y fija la dureza en 3 Mohs, la de la calcita: se pule con facilidad y se raya con facilidad. No es un piso de alto tráfico; es un acabado que refleja luz en caras planas, no un blanco lechoso de carga ultrafina.\n\nLos números de esta ficha (pureza ≥95 % CaCO₃, rango 0.3–1.2 mm, blancura 90–95 %, absorción 0.3–1.0 %) son valores típicos de marmolina comercial de grado fino, no un análisis de este saco. El lote fotografiado no tiene aún ensayo de mallas, ni colorimetría, ni absorción medida. Donde el archivo no tiene dato, se lee NOT YET MEASURED.\n\nMateriaLab publica lo que se sabe de la materia prima. No publica la dosificación con la que S-35 la convierte en un recubrimiento. Esa frontera —caracterización versus formulación— es deliberada.',
-    en: 'Fine marble dust is not sand. It is crushed, classified marble or recrystallised limestone: calcium carbonate that keeps its fracture faces and has not been calcined. That difference explains its behaviour in stucco, terrazzo and architectural concrete.\n\nThe sample photographed by S-35 is a white fine-grade granular powder with angular grains. Origin is declared as a region — Comarca Lagunera, Torreón, Coahuila — not as a quarry or supplier.\n\nFigures in this file (CaCO₃ purity, 0.3–1.2 mm grade, whiteness, absorption) are typical commercial values for fine marble flour, not an assay of this lot. Unmeasured properties are marked NOT YET MEASURED.',
+    es: 'La marmolina fina no es arena. Es mármol o caliza recristalizada, triturada y clasificada: un carbonato de calcio que conserva las caras de fractura del golpe y no ha pasado por un horno. Esa diferencia —triturado, no calcinado— explica casi todo su comportamiento en un estuco, un terrazo o un concreto arquitectónico.\n\nLa referencia visual muestra un polvo granular blanco de grado fino. A simple vista, los granos son angulosos, de color blanco a gris muy claro, con alguna partícula parda. El origen se declara por región: Comarca Lagunera, Torreón, Coahuila. No se nombra cantera ni proveedor.\n\nQuímicamente, el mármol calcítico es CaCO₃. Esa composición le da afinidad con pastas de cal y de cemento que una arena silícea no tiene: el grano no es un inerte perfecto, participa de la matriz. También le quita resistencia a los ácidos —un chorro de vinagre o un limpiador ácido ataca el pulido— y fija la dureza en 3 Mohs, la de la calcita: se pule con facilidad y se raya con facilidad. No es un piso de alto tráfico; es un acabado que refleja luz en caras planas, no un blanco lechoso de carga ultrafina.\n\nLos números de esta ficha (pureza ≥95 % CaCO₃, rango 0.3–1.2 mm, blancura 90–95 %, absorción 0.3–1.0 %) son valores típicos de marmolina comercial de grado fino, no un análisis de este saco. El lote fotografiado no tiene aún ensayo de mallas, ni colorimetría, ni absorción medida. Donde el archivo no tiene dato, se lee NOT YET MEASURED.\n\nMateriaLab publica lo que se sabe de la materia prima. No publica la dosificación con la que S-35 la convierte en un recubrimiento. Esa frontera —caracterización versus formulación— es deliberada.',
+    en: 'Fine marble dust is not sand. It is crushed, classified marble or recrystallised limestone: calcium carbonate that keeps its fracture faces and has not been calcined. That difference explains its behaviour in stucco, terrazzo and architectural concrete.\n\nThe visual reference is a white fine-grade granular powder with angular grains. Origin is declared as a region — Comarca Lagunera, Torreón, Coahuila — not as a quarry or supplier.\n\nFigures in this file (CaCO₃ purity, 0.3–1.2 mm grade, whiteness, absorption) are typical commercial values for fine marble flour, not an assay of this lot. Unmeasured properties are marked NOT YET MEASURED.',
   },
   origin: dp('Torreón, Coahuila · Comarca Lagunera, MX', 'observation', {
     note: 'Región de procedencia declarada. No se publica cantera ni proveedor.',
@@ -46,7 +46,7 @@ module.exports = {
     color: dp('Blanco a gris muy claro', 'observation', {
       sampleId: 'ML-SMP-00002',
       date: '2026-08-11',
-      method: 'Visual, luz difusa sobre fondo blanco',
+      method: 'Referencia visual',
     }),
     structure: dp('Granular triturado, caras de fractura angulosas', 'observation', {
       sampleId: 'ML-SMP-00002',
@@ -104,7 +104,7 @@ module.exports = {
     surface: dp('Caras de fractura planas; brillo vítreo a perlado', 'observation', {
       sampleId: 'ML-SMP-00002',
       date: '2026-08-11',
-      method: 'Macrofotografía y lupa de campo sobre muestra real',
+      method: 'Referencia visual de presentación habitual',
     }),
     geometry: dp('Anguloso (trituración, no arrastre fluvial)', 'observation', {
       sampleId: 'ML-SMP-00002',
@@ -120,7 +120,7 @@ module.exports = {
     macro: [
       {
         id: 'marmolina-fina',
-        alt: 'Muestra real de marmolina fina fotografiada por S-35: montículo blanco sobre fondo blanco y detalle de granos angulosos a lupa',
+        alt: 'Referencia visual de marmolina fina: montículo blanco sobre fondo blanco y detalle de granos angulosos',
         width: 1536,
         height: 1024,
       },
@@ -137,8 +137,8 @@ module.exports = {
     {
       date: '2026-08-11',
       text: {
-        es: 'Se fotografió una muestra real de grado fino sobre fondo blanco. Los granos visibles son angulosos, predominantemente blancos, con partículas aisladas pardas. No se realizó ataque con HCl, ni colorimetría, ni ensayo de mallas sobre este lote.',
-        en: 'A real fine-grade sample was photographed on a white field. Visible grains are angular, mostly white, with isolated brown particles. No HCl test, colorimetry or sieve analysis was run on this lot.',
+        es: 'La FIG. A es una referencia visual de presentación habitual, no la fotografía de un lote ensayado. En esa referencia los granos son angulosos, predominantemente blancos, con partículas aisladas pardas. No hay ataque con HCl, ni colorimetría, ni ensayo de mallas publicado.',
+        en: 'FIG. A is a visual reference of typical appearance, not a photograph of a tested lot. In that reference the grains are angular, mostly white, with isolated brown particles. No HCl test, colorimetry or sieve analysis is published.',
       },
     },
   ],

@@ -3,8 +3,8 @@ module.exports = {
   slug: 'caracterizacion-marmolina-fina',
   materialSlug: 'marmolina-fina',
   title: {
-    es: 'Caracterización fotográfica de marmolina fina, Comarca Lagunera',
-    en: 'Photographic characterisation of fine marble dust, Comarca Lagunera',
+    es: 'Caracterización de marmolina fina, Comarca Lagunera',
+    en: 'Characterisation of fine marble dust, Comarca Lagunera',
   },
   category: 'FIL',
   date: '2026-08-11',
@@ -12,7 +12,7 @@ module.exports = {
   status: 'published',
   featured: false,
   summary: {
-    es: 'Registro de una muestra real de marmolina de grado fino fotografiada por S-35, con observación de fractura angulosa y perfil típico de harina de mármol calcítica.',
-    en: 'Record of a real fine-grade marble-dust sample photographed by S-35, with angular-fracture observation and a typical calcitic marble-flour profile.',
+    es: 'Referencia visual de marmolina de grado fino, con fractura angulosa y perfil típico de harina de mármol calcítica.',
+    en: 'Visual reference of fine-grade marble dust, with angular fracture and a typical calcitic marble-flour profile.',
   },
 };

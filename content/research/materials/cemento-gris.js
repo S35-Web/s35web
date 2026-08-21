@@ -16,11 +16,11 @@ module.exports = {
   publishedAt: '2026-08-19',
   updatedAt: '2026-08-19',
   revisionHistory: [
-    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: caracterización fotográfica y perfil típico de cemento gris CPC 30R. Sin ensayo de lote.' },
+    { rev: 1, date: '2026-08-19', change: 'Primera ficha pública: referencia visual y perfil típico de cemento gris CPC 30R. Sin ensayo de lote.' },
   ],
   summary: {
-    es: 'El cemento gris no seca: cristaliza. Es un polvo mineral cocido a unos 1 450 °C —clínker de caliza y arcilla, molido con yeso— que, al mezclarse con agua, forma un gel de silicato de calcio hidratado (C-S-H). Esa red de fibras trabas los granos y no se deshace: la reacción es irreversible. El cemento fraguado no vuelve a polvo.\n\nLa muestra fotografiada por S-35 es un polvo gris, fino, de tono que en comercio va de verdoso a oscuro según el hierro. No se publica planta ni marca. La clase se declara como Portland compuesto CPC 30R, familia NMX-C-414 / ASTM C150. El 30R es una clase de resistencia, no el resultado de un cubo colado con este saco.\n\nLas fases del clínker explican el comportamiento mejor que el color. Alita (C₃S) da resistencia temprana; belita (C₂S), la tardía; aluminato (C₃A), fraguado y calor; ferrita (C₄AF), el gris. El yeso molido regula el fraguado. El hierro define el tono: a mayor Fe₂O₃, más oscuro y verdoso. El cemento blanco es el mismo oficio con el hierro casi eliminado, no un material distinto de familia.\n\nLos números de cabecera —horno 1 450 °C, ≥30 MPa a 28 días como clase, relación a/c de trabajo 0.45–0.60, pH de pasta ~12.5— y los rangos de óxidos (CaO 60–67 %, SiO₂ 17–25 %, Fe₂O₃ 0.5–6 %) son perfiles de clase y de literatura. Este lote no tiene Blaine, ni C191, ni resistencia medida. NOT YET MEASURED donde corresponde.\n\nMateriaLab caracteriza el cementante. No publica la dosificación de ningún concreto ni recubrimiento S-35.',
-    en: 'Grey Portland cement crystallises; it does not dry. The photographed sample is a fine grey powder, class CPC 30R. Header figures and oxide ranges are class/literature profiles, not a lot assay. Plant and brand are not published.',
+    es: 'El cemento gris no seca: cristaliza. Es un polvo mineral cocido a unos 1 450 °C —clínker de caliza y arcilla, molido con yeso— que, al mezclarse con agua, forma un gel de silicato de calcio hidratado (C-S-H). Esa red de fibras trabas los granos y no se deshace: la reacción es irreversible. El cemento fraguado no vuelve a polvo.\n\nLa referencia visual muestra un polvo gris, fino, de tono que en comercio va de verdoso a oscuro según el hierro. No se publica planta ni marca. La clase se declara como Portland compuesto CPC 30R, familia NMX-C-414 / ASTM C150. El 30R es una clase de resistencia, no el resultado de un cubo colado con este saco.\n\nLas fases del clínker explican el comportamiento mejor que el color. Alita (C₃S) da resistencia temprana; belita (C₂S), la tardía; aluminato (C₃A), fraguado y calor; ferrita (C₄AF), el gris. El yeso molido regula el fraguado. El hierro define el tono: a mayor Fe₂O₃, más oscuro y verdoso. El cemento blanco es el mismo oficio con el hierro casi eliminado, no un material distinto de familia.\n\nLos números de cabecera —horno 1 450 °C, ≥30 MPa a 28 días como clase, relación a/c de trabajo 0.45–0.60, pH de pasta ~12.5— y los rangos de óxidos (CaO 60–67 %, SiO₂ 17–25 %, Fe₂O₃ 0.5–6 %) son perfiles de clase y de literatura. Este lote no tiene Blaine, ni C191, ni resistencia medida. NOT YET MEASURED donde corresponde.\n\nMateriaLab caracteriza el cementante. No publica la dosificación de ningún concreto ni recubrimiento S-35.',
+    en: 'Grey Portland cement crystallises; it does not dry. The visual reference is a fine grey powder, class CPC 30R. Header figures and oxide ranges are class/literature profiles, not a lot assay. Plant and brand are not published.',
   },
   origin: dp('México', 'observation', {
     note: 'Clase comercial CPC 30R. No se publica planta ni marca.',
@@ -39,7 +39,7 @@ module.exports = {
     color: dp('Gris medio a gris verdoso', 'observation', {
       sampleId: 'ML-SMP-00005',
       date: '2026-08-11',
-      method: 'Visual, luz difusa sobre fondo blanco',
+      method: 'Referencia visual',
     }),
     structure: dp('Polvo hidráulico fino', 'observation', {
       sampleId: 'ML-SMP-00005',
@@ -74,7 +74,7 @@ module.exports = {
     surface: dp('Polvo fino; grano individual no resuelto a lupa de campo', 'observation', {
       sampleId: 'ML-SMP-00005',
       date: '2026-08-11',
-      method: 'Macrofotografía y lupa de campo sobre muestra real',
+      method: 'Referencia visual de presentación habitual',
     }),
     geometry: dp('Partículas de molienda, sin forma de agregado', 'observation', {
       sampleId: 'ML-SMP-00005',
@@ -83,7 +83,7 @@ module.exports = {
     voidStructure: dp(null, 'in-progress', { note: 'MICROGRAPHY PENDING — SEM imaging not yet performed' }),
   },
   images: {
-    macro: [{ id: 'cemento-gris', alt: 'Muestra real de cemento gris fotografiada por S-35: montículo gris sobre fondo blanco y detalle a lupa', width: 1536, height: 1024 }],
+    macro: [{ id: 'cemento-gris', alt: 'Referencia visual de cemento gris: montículo gris sobre fondo blanco y detalle de polvo', width: 1536, height: 1024 }],
   },
   whyItMatters: [
     { property: 'Hidratación irreversible', effect: 'El cemento fraguado no vuelve a polvo; no es un ciclo como el del yeso', direction: '→' },
@@ -95,8 +95,8 @@ module.exports = {
     {
       date: '2026-08-11',
       text: {
-        es: 'Se fotografió una muestra real de polvo gris. No se realizó Blaine, ni tiempo de fraguado, ni resistencia a compresión sobre este lote. La clase CPC 30R se declara como categoría comercial, no como resultado de cubos de este saco.',
-        en: 'A real grey powder sample was photographed. No Blaine, setting time or compressive-strength test was run on this lot.',
+        es: 'La FIG. A es una referencia visual de presentación habitual, no la fotografía de un lote ensayado. No hay Blaine, ni tiempo de fraguado, ni resistencia a compresión publicados. La clase CPC 30R se declara como categoría comercial, no como resultado de cubos de un saco concreto.',
+        en: 'FIG. A is a visual reference of typical appearance, not a photograph of a tested lot. No Blaine, setting time or compressive-strength test is published.',
       },
     },
   ],

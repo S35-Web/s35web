@@ -519,8 +519,8 @@ function pageAbout() {
     '<p data-i18n="ml.aboutHowP">Cada valor publicable lleva una etiqueta de procedencia. Si un número no tiene procedencia, el archivo no lo publica — el build falla.</p>' +
     '</div>' + legend() +
     '<div class="ml-prose" style="margin-top:2rem">' +
-    '<p><span class="ml-prov">MEAS</span> — ' + i18n('ml.aboutMeas', 'medido por S-35 sobre una muestra identificada, con fecha.') + ' <span class="ml-prov">REF</span> — ' + i18n('ml.aboutRef', 'tomado de bibliografía, norma o ficha de proveedor, siempre con fuente.') + ' <span class="ml-prov">OBS</span> — ' + i18n('ml.aboutObs', 'observación interna no instrumentada (vista, lupa, fotografía).') + ' <span class="ml-prov">HYP</span> — ' + i18n('ml.aboutHyp', 'hipótesis de trabajo.') + ' <span class="ml-prov">WIP</span> — ' + i18n('ml.aboutWip', 'ensayo iniciado, sin conclusión; en la tabla se lee AÚN NO MEDIDO.') + '</p>' +
-    '<p data-i18n="ml.aboutFirst">Las primeras fichas combinan macrofotografía real de S-35 con observaciones visuales y perfiles típicos de norma o de comercio, etiquetados REF. Donde el lote no se ensayó, el campo está vacío a propósito.</p>' +
+    '<p><span class="ml-prov">MEAS</span> — ' + i18n('ml.aboutMeas', 'medido por S-35 sobre una muestra identificada, con fecha.') + ' <span class="ml-prov">REF</span> — ' + i18n('ml.aboutRef', 'tomado de bibliografía, norma o ficha de proveedor, siempre con fuente.') + ' <span class="ml-prov">OBS</span> — ' + i18n('ml.aboutObs', 'observación interna no instrumentada (vista o referencia visual).') + ' <span class="ml-prov">HYP</span> — ' + i18n('ml.aboutHyp', 'hipótesis de trabajo.') + ' <span class="ml-prov">WIP</span> — ' + i18n('ml.aboutWip', 'ensayo iniciado, sin conclusión; en la tabla se lee AÚN NO MEDIDO.') + '</p>' +
+    '<p data-i18n="ml.aboutFirst">Las primeras fichas combinan una referencia visual de presentación habitual con perfiles típicos de norma o de comercio, etiquetados REF. Donde el lote no se ensayó, el campo está vacío a propósito.</p>' +
     '<p data-i18n="ml.aboutPublishes" data-i18n-html>MateriaLab publica <em>qué se sabe sobre la materia prima</em>. No publica qué hace S-35 con ella: ni dosificaciones, ni curvas objetivo de producción, ni proveedores.</p>' +
     '</div></div></article>';
   return layout({
@@ -537,7 +537,7 @@ function pageMethodology() {
   var stepEs = ['ORIGEN', 'MUESTRA', 'CLASIFICAR', 'MEDIR', 'ENSAYAR', 'FORMULAR', 'VALIDAR', 'DOCUMENTAR'];
   var stepP = [
     'Se declara la región de origen. No se publica cantera ni proveedor.',
-    'Se recibe un lote físico, se identifica (ML-SMP) y se fotografía.',
+    'Se documenta el material con un código (ML-SMP) y una referencia visual de presentación habitual.',
     'Se asigna categoría (AGG, BND, FIL…) y código correlativo. El código no se reutiliza.',
     'Ensayos instrumentados, con norma o método y fecha. Si no hay ensayo, el campo queda vacío.',
     'Ensayos sobre una o más muestras (ML-EXP). Solo se listan experimentos que existen.',
@@ -555,7 +555,7 @@ function pageMethodology() {
     '<div class="ml-prose" style="margin-top:2.5rem">' + stepKeys.map(function (k, i) {
       return '<p><strong>' + pad2(i + 1) + ' ' + i18n('ml.' + k, stepEs[i]) + '.</strong> ' + i18n('ml.' + k + 'p', stepP[i]) + '</p>';
     }).join('') +
-    '<p data-i18n="ml.methodClose">Si un ensayo se hizo en laboratorio externo, se nombra el laboratorio o se dice “laboratorio externo”. Nunca se omite para insinuar capacidad propia. En esta primera publicación no hay ensayos instrumentados de lote: hay fotografía real, observación y referencia normativa.</p>' +
+    '<p data-i18n="ml.methodClose">Si un ensayo se hizo en laboratorio externo, se nombra el laboratorio o se dice “laboratorio externo”. Nunca se omite para insinuar capacidad propia. En esta primera publicación no hay ensayos instrumentados de lote: hay referencia visual, observación y referencia normativa.</p>' +
     '</div></div></article>';
   return layout({
     title: 'Metodología — MateriaLab | S-35',
@@ -615,8 +615,7 @@ function pageMaterial(m) {
     '<p class="ml-ft-kicker">' + locText(m.classLabel || catLabel) + '</p>' +
     '<div class="ml-ft-lead">' + locParasSlice(m.summary, 0, 2) + '</div></div>' +
     '<figure class="ml-ft-fig">' + picture(img.id, { alt: img.alt, width: img.width, height: img.height, priority: true, sizes: '(min-width: 900px) 42vw, 100vw' }) +
-    '<figcaption><span data-i18n="ml.ftFigA">FIG. A · MUESTRA REAL</span>' +
-    '<span class="ml-ft-scale" data-i18n="ml.scale">ESCALA 0—1—2—3—4—5 mm · CALIBRACIÓN PENDIENTE SOBRE ESTE CUADRO · LA MACROFOTOGRAFÍA ES REAL; LA ESCALA AÚN NO ESTÁ LEVANTADA</span></figcaption></figure></div>' +
+    '<figcaption><span data-i18n="ml.ftFigA">FIG. A · REFERENCIA VISUAL</span></figcaption></figure></div>' +
     '<dl class="ml-ft-id">' +
     '<div><dt data-i18n="ml.ftChemName">NOMBRE QUÍMICO</dt><dd>' + esc(m.scientificName || m.name.es) + '</dd></div>' +
     '<div><dt data-i18n="ml.ftFamily">FAMILIA</dt><dd>' + esc(m.category) + ' · ' + locText(cat ? cat.singular : '') + '</dd></div>' +
