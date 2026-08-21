@@ -10,7 +10,7 @@ module.exports = {
   name: { es: 'Cal', en: 'Hydrated lime' },
   scientificName: 'Ca(OH)₂',
   category: 'BND',
-  classLabel: 'CAL HIDRATADA · CEMENTANTE AÉREO',
+  classLabel: { es: 'CAL HIDRATADA · CEMENTANTE AÉREO', en: 'HYDRATED LIME · AERIAL BINDER' },
   status: 'documented',
   revision: 1,
   publishedAt: '2026-08-19',

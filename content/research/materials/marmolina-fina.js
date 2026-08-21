@@ -10,7 +10,7 @@ module.exports = {
   name: { es: 'Marmolina fina', en: 'Fine marble dust' },
   scientificName: 'CaCO₃ · calcite',
   category: 'FIL',
-  classLabel: 'AGREGADO FINO TRITURADO · CARGA CALCÁREA',
+  classLabel: { es: 'AGREGADO FINO TRITURADO · CARGA CALCÁREA', en: 'CRUSHED FINE AGGREGATE · CALCAREOUS FILLER' },
   status: 'documented',
   revision: 1,
   publishedAt: '2026-08-19',

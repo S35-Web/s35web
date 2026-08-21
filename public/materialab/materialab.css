@@ -1,4 +1,8 @@
 /* MateriaLab — division styles. Does not replace S-35 globals. */
+.ml-page [data-ml-lang][hidden] {
+  display: none !important;
+}
+
 .ml-page {
   --ml-black: #000000;
   --ml-white: #ffffff;

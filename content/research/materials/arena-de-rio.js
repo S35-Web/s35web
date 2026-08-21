@@ -21,7 +21,7 @@ module.exports = {
   name: { es: 'Arena de río', en: 'River sand' },
   scientificName: 'Natural siliceous fine aggregate',
   category: 'AGG',
-  classLabel: 'AGREGADO FINO NATURAL',
+  classLabel: { es: 'AGREGADO FINO NATURAL', en: 'NATURAL FINE AGGREGATE' },
   status: 'documented',
   revision: 1,
   publishedAt: '2026-08-19',

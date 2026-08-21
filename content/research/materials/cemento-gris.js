@@ -10,7 +10,7 @@ module.exports = {
   name: { es: 'Cemento gris', en: 'Grey Portland cement' },
   scientificName: 'Portland cement (clinker + calcium sulfate)',
   category: 'BND',
-  classLabel: 'CEMENTO HIDRÁULICO · CPC 30R',
+  classLabel: { es: 'CEMENTO HIDRÁULICO · CPC 30R', en: 'HYDRAULIC CEMENT · CPC 30R' },
   status: 'documented',
   revision: 1,
   publishedAt: '2026-08-19',

@@ -10,7 +10,7 @@ module.exports = {
   name: { es: 'Yeso', en: 'Gypsum' },
   scientificName: 'CaSO₄·2H₂O',
   category: 'BND',
-  classLabel: 'SULFATO MINERAL · CEMENTANTE',
+  classLabel: { es: 'SULFATO MINERAL · CEMENTANTE', en: 'MINERAL SULFATE · BINDER' },
   status: 'documented',
   revision: 1,
   publishedAt: '2026-08-19',

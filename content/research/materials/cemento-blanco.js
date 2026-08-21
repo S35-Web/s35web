@@ -10,7 +10,7 @@ module.exports = {
   name: { es: 'Cemento blanco', en: 'White Portland cement' },
   scientificName: 'White Portland cement (low-iron clinker + calcium sulfate)',
   category: 'BND',
-  classLabel: 'CEMENTO HIDRÁULICO BLANCO · CPB 30',
+  classLabel: { es: 'CEMENTO HIDRÁULICO BLANCO · CPB 30', en: 'WHITE HYDRAULIC CEMENT · CPB 30' },
   status: 'documented',
   revision: 1,
   publishedAt: '2026-08-19',
