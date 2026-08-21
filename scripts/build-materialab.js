@@ -188,15 +188,15 @@ function materialRows(withAccordion) {
   }).join('\n');
 }
 
-function photoPanel() {
-  var slots = archive.materials.map(function (m) {
+function photoBackdrop() {
+  var slots = archive.materials.map(function (m, i) {
     var img = m.images && m.images.macro && m.images.macro[0];
     if (!img) return '';
     return '<div class="ml-photo-slot" data-photo="' + img.id + '">' +
-      picture(img.id, { alt: img.alt, width: img.width, height: img.height, sizes: '(max-width: 1024px) 100vw, 40vw' }) +
+      picture(img.id, { alt: '', width: img.width, height: img.height, sizes: '100vw', priority: i === 0 }) +
       '</div>';
   }).join('');
-  return '<aside class="ml-photo-panel" aria-live="polite"><div class="ml-photo-empty ml-label">HOVER OR FOCUS A ROW · MACRO VIEW</div>' + slots + '</aside>';
+  return '<div class="ml-index-bg" aria-hidden="true">' + slots + '</div>';
 }
 
 function psdChart(material) {
@@ -338,9 +338,10 @@ function pageHome() {
     '<div class="ml-prose"><p>Cada material empieza mucho antes de convertirse en un producto. Empieza en una partícula. Su composición química, mineralogía, granulometría, densidad, absorción, morfología y procedencia determinan gran parte de su comportamiento.</p>' +
     '<p>MateriaLab es el archivo de investigación de S-35 dedicado a estudiar estas variables, documentarlas y convertir ese conocimiento en mejores materiales.</p></div>' +
     '<p class="ml-close">Research informs formulation.<br>Formulation informs performance.</p></div></section>' +
-    '<section class="ml-block" id="index"><div class="ml-grid"><h2 class="ml-h2">MATERIAL INDEX</h2>' +
-    '<div class="ml-index-layout"><div class="ml-index-table-wrap"><p class="ml-scroll-hint">SCROLL FOR MORE →</p><table class="ml-table"><thead><tr><th scope="col">CODE</th><th scope="col">NAME</th><th scope="col">EN</th><th scope="col">CLASS</th><th scope="col">ORIGIN</th><th scope="col">STATUS</th></tr></thead><tbody>' +
-    materialRows(true) + '</tbody></table></div>' + photoPanel() + '</div></div></section>';
+    '<section class="ml-block ml-index-section" id="index">' + photoBackdrop() +
+    '<div class="ml-grid"><h2 class="ml-h2">MATERIAL INDEX</h2>' +
+    '<div class="ml-index-table-wrap"><p class="ml-scroll-hint">SCROLL FOR MORE →</p><table class="ml-table"><thead><tr><th scope="col">CODE</th><th scope="col">NAME</th><th scope="col">EN</th><th scope="col">CLASS</th><th scope="col">ORIGIN</th><th scope="col">STATUS</th></tr></thead><tbody>' +
+    materialRows() + '</tbody></table></div></div></section>';
   if (featured && featMat) {
     body += '<section class="ml-block"><div class="ml-grid"><h2 class="ml-h2">FEATURED RESEARCH</h2>' +
       '<article class="ml-featured"><div class="ml-featured-visual">' +
@@ -385,11 +386,12 @@ function researchTable() {
 }
 
 function pageMaterialsIndex() {
-  var body = '<section class="ml-block" style="border-top:0;padding-top:3rem"><div class="ml-grid">' +
+  var body = '<section class="ml-block ml-index-section" style="border-top:0;padding-top:3rem">' + photoBackdrop() +
+    '<div class="ml-grid">' +
     '<p class="ml-label">MATERIAL INDEX</p><h1 class="ml-file-title" style="grid-column:1/-1;font-size:clamp(40px,8vw,96px)">Materials</h1>' +
     '<p class="ml-lede">' + pad2(stats.materialsDocumented) + ' MATERIALS DOCUMENTED. El archivo empieza pequeño y crece a la vista.</p>' +
-    '<div class="ml-index-layout"><div class="ml-index-table-wrap"><p class="ml-scroll-hint">SCROLL FOR MORE →</p><table class="ml-table"><thead><tr><th scope="col">CODE</th><th scope="col">NAME</th><th scope="col">EN</th><th scope="col">CLASS</th><th scope="col">ORIGIN</th><th scope="col">STATUS</th></tr></thead><tbody>' +
-    materialRows(true) + '</tbody></table></div>' + photoPanel() + '</div></div></section>';
+    '<div class="ml-index-table-wrap"><p class="ml-scroll-hint">SCROLL FOR MORE →</p><table class="ml-table"><thead><tr><th scope="col">CODE</th><th scope="col">NAME</th><th scope="col">EN</th><th scope="col">CLASS</th><th scope="col">ORIGIN</th><th scope="col">STATUS</th></tr></thead><tbody>' +
+    materialRows() + '</tbody></table></div></div></section>';
   return layout({
     title: 'Material Index — MateriaLab | S-35',
     description: 'Índice de materias primas documentadas e en estudio en MateriaLab, la división de investigación de materiales de S-35.',

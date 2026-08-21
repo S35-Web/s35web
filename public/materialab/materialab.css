@@ -223,20 +223,47 @@
 }
 
 /* Material index */
-.ml-index-layout {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 0 2rem;
-  align-items: start;
+.ml-index-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.ml-index-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ml-index-bg .ml-photo-slot {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 400ms var(--ml-ease);
+}
+
+.ml-index-bg .ml-photo-slot.is-on {
+  opacity: 0.3;
+}
+
+.ml-index-bg picture,
+.ml-index-bg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.ml-index-section > .ml-grid {
+  position: relative;
+  z-index: 1;
 }
 
 .ml-index-table-wrap {
   overflow-x: auto;
 }
 
-/* Direct child of the 12-col grid (Research index, home research block).
-   Nested wraps inside .ml-index-layout must NOT span, or they eat the photo panel. */
 .ml-grid > .ml-index-table-wrap {
   grid-column: 1 / -1;
   min-width: 0;
@@ -319,38 +346,6 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ml-signal);
-}
-
-.ml-photo-panel {
-  position: sticky;
-  top: 120px;
-  min-height: 280px;
-  background: var(--ml-white);
-  border: 1px solid var(--ml-gray-line);
-}
-
-.ml-photo-panel img,
-.ml-photo-panel picture {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.ml-photo-panel .ml-photo-slot {
-  display: none;
-}
-
-.ml-photo-panel .ml-photo-slot.is-on {
-  display: block;
-}
-
-.ml-photo-panel:has(.ml-photo-slot.is-on) .ml-photo-empty {
-  display: none;
-}
-
-.ml-photo-empty {
-  padding: 2rem;
-  color: var(--ml-gray);
 }
 
 .ml-filters {
@@ -785,10 +780,8 @@ h2.ml-h2 {
   .ml-hero-side { grid-column: 1 / -1; padding-bottom: 0; margin-top: 1.5rem; }
   .ml-hero-plate span { grid-column: auto; }
   .ml-hero-plate { grid-template-columns: 1fr 1fr; }
-  .ml-index-layout { display: flex; flex-direction: column; }
   .ml-featured { grid-template-columns: 1fr; }
   .ml-featured-meta { border-left: 0; border-top: 1px solid var(--ml-gray-line); }
-  .ml-photo-panel { position: static; margin-bottom: 1.5rem; order: -1; }
   .ml-steps { grid-template-columns: repeat(4, 1fr); }
   .ml-step:nth-child(4) { border-right: 0; }
   .ml-meta-row { grid-template-columns: 1fr 1fr; }
@@ -847,6 +840,7 @@ h2.ml-h2 {
   .ml-subnav,
   .ml-actions,
   .ml-banner,
+  .ml-index-bg,
   .lang-switcher { display: none !important; }
   .ml-page { background: #fff; color: #000; }
   .ml-file-title { font-size: 36pt; }
