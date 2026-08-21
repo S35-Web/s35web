@@ -223,43 +223,6 @@
 }
 
 /* Material index */
-.ml-index-section {
-  position: relative;
-  overflow: hidden;
-}
-
-.ml-index-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.ml-index-bg .ml-photo-slot {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 400ms var(--ml-ease);
-}
-
-.ml-index-bg .ml-photo-slot.is-on {
-  opacity: 0.3;
-}
-
-.ml-index-bg picture,
-.ml-index-bg img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-.ml-index-section > .ml-grid {
-  position: relative;
-  z-index: 1;
-}
-
 .ml-index-table-wrap {
   overflow-x: auto;
 }
@@ -840,7 +803,6 @@ h2.ml-h2 {
   .ml-subnav,
   .ml-actions,
   .ml-banner,
-  .ml-index-bg,
   .lang-switcher { display: none !important; }
   .ml-page { background: #fff; color: #000; }
   .ml-file-title { font-size: 36pt; }

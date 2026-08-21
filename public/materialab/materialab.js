@@ -4,34 +4,6 @@
   function qs(sel, root) { return (root || document).querySelector(sel); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
-  function activatePhoto(id) {
-    qsa('.ml-photo-slot').forEach(function (el) {
-      el.classList.toggle('is-on', el.getAttribute('data-photo') === id);
-    });
-    qsa('.ml-row[data-photo]').forEach(function (row) {
-      row.classList.toggle('is-active', row.getAttribute('data-photo') === id);
-    });
-  }
-
-  qsa('.ml-row[data-photo]').forEach(function (row) {
-    var id = row.getAttribute('data-photo');
-    row.addEventListener('mouseenter', function () { activatePhoto(id); });
-    row.addEventListener('focusin', function () { activatePhoto(id); });
-    row.addEventListener('click', function (e) {
-      if (window.matchMedia('(max-width: 768px)').matches && row.getAttribute('data-status') === 'in-study') {
-        e.preventDefault();
-        row.classList.toggle('is-open');
-        var body = row.nextElementSibling;
-        if (body && body.classList.contains('ml-accordion-body')) {
-          body.classList.toggle('is-open');
-        }
-      }
-    });
-  });
-
-  var first = qs('.ml-row[data-photo]');
-  if (first) activatePhoto(first.getAttribute('data-photo'));
-
   qsa('[data-filter-group]').forEach(function (group) {
     var table = qs(group.getAttribute('data-filter-group'));
     if (!table) return;
