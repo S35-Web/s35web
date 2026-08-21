@@ -147,4 +147,5 @@ module.exports = {
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'marmolina-fina.html',
+  techMotion: true,
 };

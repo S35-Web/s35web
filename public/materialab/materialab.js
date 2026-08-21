@@ -58,6 +58,9 @@
     qsa('.ml-m-grain', sheet).forEach(function (el, i) {
       el.style.transitionDelay = (i * 0.12) + 's';
     });
+    qsa('.ml-m-barfill', sheet).forEach(function (el, i) {
+      el.style.transitionDelay = (i * 0.1) + 's';
+    });
 
     requestAnimationFrame(function () {
       sheet.classList.add('is-armed');

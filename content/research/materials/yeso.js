@@ -101,4 +101,5 @@ module.exports = {
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'yeso.html',
+  techMotion: true,
 };

@@ -650,6 +650,11 @@
   transform: translateY(10px);
   transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.ml-sheet--motion.is-armed .ml-m-barfill {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
 .ml-sheet--motion.is-armed .ml-m-band {
   opacity: 0;
   transition: opacity 0.8s ease 0.15s;
@@ -683,6 +688,9 @@
 .ml-sheet--motion .is-in tbody tr {
   opacity: 1;
   transform: none;
+}
+.ml-sheet--motion .is-in .ml-m-barfill {
+  transform: scaleX(1);
 }
 .ml-sheet--motion .is-in .ml-m-curve {
   stroke-dashoffset: 0;
@@ -1294,6 +1302,7 @@ h2.ml-h2 {
   .ml-sheet--motion.is-armed .ml-m-grain,
   .ml-sheet--motion.is-armed .ml-m-chart-wrap,
   .ml-sheet--motion.is-armed .ml-m-band,
+  .ml-sheet--motion.is-armed .ml-m-barfill,
   .ml-sheet--motion.is-armed .ml-m-curve,
   .ml-sheet--motion.is-armed tbody tr {
     opacity: 1 !important;
@@ -1328,6 +1337,7 @@ h2.ml-h2 {
   .ml-sheet--motion.is-armed .ml-m-grain,
   .ml-sheet--motion.is-armed .ml-m-chart-wrap,
   .ml-sheet--motion.is-armed .ml-m-band,
+  .ml-sheet--motion.is-armed .ml-m-barfill,
   .ml-sheet--motion.is-armed .ml-m-curve,
   .ml-sheet--motion.is-armed tbody tr {
     opacity: 1 !important;
