@@ -293,21 +293,11 @@ const productData = {
     'waxtard-perla': {
         name: 'Waxtard Perla',
         category: 'Acabados',
-        description: 'Estuco decorativo fino de acabado satinado en tono perla. Formulado para proporcionar elegancia y protección duradera. Disponible en presentación de 20 kg.',
+        description: 'Waxtard Perla — acabado en tono perla. Presentación en saco de 20 kg. Disponible en Construrama (código EWPB20).',
         features: [
-            'Acabado satinado perla elegante',
-            'Textura suave al tacto',
-            'Resistencia a la intemperie',
-            'Fácil aplicación',
-            'Presentación en saco de 20 kg'
+            'Solicitar ficha técnica'
         ],
-        applications: [
-            'Acabados decorativos interiores',
-            'Espacios residenciales premium',
-            'Proyectos arquitectónicos de alta gama',
-            'Renovación de interiores',
-            'Aplicaciones donde la estética es prioritaria'
-        ],
+        applications: [],
         images: [
             'Assets/productos_background/WAXTARD-blanco-perla.png',
             'Assets/productos_background/WAXTARD-blanco-perla.png',
@@ -317,21 +307,11 @@ const productData = {
     'waxtard-gris': {
         name: 'Waxtard Gris',
         category: 'Acabados',
-        description: 'Estuco decorativo fino de acabado satinado en tono gris. Ideal para proyectos contemporáneos que requieren acabados modernos y sofisticados con durabilidad excepcional.',
+        description: 'Waxtard Gris — acabado en tono gris.',
         features: [
-            'Acabado satinado en tono gris',
-            'Aspecto contemporáneo',
-            'Resistencia a la intemperie',
-            'Textura uniforme',
-            'Fácil mantenimiento'
+            'Solicitar ficha técnica'
         ],
-        applications: [
-            'Interiores modernos',
-            'Arquitectura contemporánea',
-            'Espacios comerciales de diseño',
-            'Proyectos minimalistas',
-            'Acabados arquitectónicos de vanguardia'
-        ],
+        applications: [],
         images: [
             'Assets/productos_background/WAXTARD-gris.png',
             'Assets/productos_imagenes/waxtrard-gris.jpg',
@@ -341,21 +321,11 @@ const productData = {
     'basecoat-gris': {
         name: 'Basecoat Gris',
         category: 'Basecoat',
-        description: 'Base de aplicación de alta calidad en color gris, formulada para proporcionar una superficie uniforme y preparada para la aplicación de acabados finales. Excelente adherencia y resistencia.',
+        description: 'Basecoat Gris — base de aplicación en color gris.',
         features: [
-            'Color gris estable',
-            'Excelente poder cubriente',
-            'Compatible con múltiples acabados',
-            'Resistencia a la alcalinidad',
-            'Base ideal para tonos oscuros'
+            'Solicitar ficha técnica'
         ],
-        applications: [
-            'Sistemas de revestimiento arquitectónico',
-            'Base para acabados grises y oscuros',
-            'Proyectos comerciales e industriales',
-            'Renovación de fachadas',
-            'Aplicaciones exteriores exigentes'
-        ],
+        applications: [],
         images: [
             'Assets/productos_background/basecoat.png',
             'Assets/productos_imagenes/BASECOAT-GRIS-Recuperado.jpg',
@@ -439,21 +409,21 @@ const productDataEn = {
     },
     'waxtard-perla': {
         category: 'Finishes',
-        description: 'Fine decorative stucco with pearl satin finish. Formulated to provide elegance and lasting protection. Available in 20 kg presentation.',
-        features: ['Elegant pearl satin finish', 'Smooth texture', 'Weather resistance', 'Easy application', '20 kg bag presentation'],
-        applications: ['Interior decorative finishes', 'Premium residential spaces', 'High-end architectural projects', 'Interior renovation', 'Applications where aesthetics are a priority']
+        description: 'Waxtard Perla — pearl tone finish. Available in 20 kg bag. Sold at Construrama (code EWPB20).',
+        features: ['Request technical sheet'],
+        applications: []
     },
     'waxtard-gris': {
         category: 'Finishes',
-        description: 'Fine decorative stucco with gray satin finish. Ideal for contemporary projects requiring modern, sophisticated finishes with exceptional durability.',
-        features: ['Gray satin finish', 'Contemporary appearance', 'Weather resistance', 'Uniform texture', 'Easy maintenance'],
-        applications: ['Modern interiors', 'Contemporary architecture', 'Designer commercial spaces', 'Minimalist projects', 'Cutting-edge architectural finishes']
+        description: 'Waxtard Gris — gray tone finish.',
+        features: ['Request technical sheet'],
+        applications: []
     },
     'basecoat-gris': {
         category: 'Basecoat',
-        description: 'High-quality gray application base formulated for a uniform surface ready for final finishes. Excellent adhesion and resistance.',
-        features: ['Stable gray color', 'Excellent coverage', 'Compatible with multiple finishes', 'Alkali resistance', 'Ideal base for dark tones'],
-        applications: ['Architectural coating systems', 'Base for gray and dark finishes', 'Commercial and industrial projects', 'Facade renovation', 'Demanding exterior applications']
+        description: 'Basecoat Gris — gray application base.',
+        features: ['Request technical sheet'],
+        applications: []
     }
 };
 
