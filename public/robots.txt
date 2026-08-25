@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://s35web.vercel.app/sitemap.xml
+Sitemap: https://www.s-35.com.mx/sitemap.xml
 
 # Disallow admin pages
 Disallow: /admin.html
