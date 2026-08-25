@@ -289,6 +289,48 @@ const productData = {
             'Assets/productos_imagenes/ceramico.jpg',
             'Assets/productos_background/ceramico.png'
         ]
+    },
+    'waxtard-perla': {
+        name: 'Waxtard Perla',
+        category: 'Acabados',
+        description: 'Waxtard Perla — acabado en tono perla. Presentación en saco de 20 kg. Disponible en Construrama (código EWPB20).',
+        features: [
+            'Solicitar ficha técnica'
+        ],
+        applications: [],
+        images: [
+            'Assets/productos_background/WAXTARD-blanco-perla.png',
+            'Assets/productos_background/WAXTARD-blanco-perla.png',
+            'Assets/productos_background/WAXTARD-blanco-perla.png'
+        ]
+    },
+    'waxtard-gris': {
+        name: 'Waxtard Gris',
+        category: 'Acabados',
+        description: 'Waxtard Gris — acabado en tono gris.',
+        features: [
+            'Solicitar ficha técnica'
+        ],
+        applications: [],
+        images: [
+            'Assets/productos_background/WAXTARD-gris.png',
+            'Assets/productos_imagenes/waxtrard-gris.jpg',
+            'Assets/productos_background/WAXTARD-gris.png'
+        ]
+    },
+    'basecoat-gris': {
+        name: 'Basecoat Gris',
+        category: 'Basecoat',
+        description: 'Basecoat Gris — base de aplicación en color gris.',
+        features: [
+            'Solicitar ficha técnica'
+        ],
+        applications: [],
+        images: [
+            'Assets/productos_background/basecoat.png',
+            'Assets/productos_imagenes/BASECOAT-GRIS-Recuperado.jpg',
+            'Assets/productos_background/basecoat.png'
+        ]
     }
 };
 
@@ -364,6 +406,24 @@ const productDataEn = {
         description: 'High-quality ceramic finish for exceptional durability and superior aesthetics. Ideal where chemical and mechanical resistance is required.',
         features: ['Superior chemical resistance', 'Exceptional durability', 'Authentic ceramic finish', 'Easy cleaning and maintenance', 'Abrasion resistance'],
         applications: ['Industrial applications', 'High-demand spaces', 'Commercial projects', 'Chemical exposure applications', 'Applications where durability is critical']
+    },
+    'waxtard-perla': {
+        category: 'Finishes',
+        description: 'Waxtard Perla — pearl tone finish. Available in 20 kg bag. Sold at Construrama (code EWPB20).',
+        features: ['Request technical sheet'],
+        applications: []
+    },
+    'waxtard-gris': {
+        category: 'Finishes',
+        description: 'Waxtard Gris — gray tone finish.',
+        features: ['Request technical sheet'],
+        applications: []
+    },
+    'basecoat-gris': {
+        category: 'Basecoat',
+        description: 'Basecoat Gris — gray application base.',
+        features: ['Request technical sheet'],
+        applications: []
     }
 };
 
@@ -686,14 +746,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     contactButtons.forEach(button => {
         button.addEventListener('click', function() {
-            // Scroll to contact section or open contact modal
-            const contactSection = document.getElementById('contacto');
-            if (contactSection) {
-                contactSection.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                // Fallback: show alert or redirect
-                alert('Para más información, contáctanos al +52 (667) 123-4567');
-            }
+            window.location.href = 'index.html#contacto';
         });
     });
 });
@@ -704,8 +757,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     downloadButtons.forEach(button => {
         button.addEventListener('click', function() {
-            // In a real implementation, this would download a PDF
-            alert('Descarga de ficha técnica no disponible en esta versión de demostración');
+            const contactSection = document.getElementById('contacto');
+            if (!contactSection) {
+                window.location.href = 'index.html#contacto';
+            } else {
+                contactSection.scrollIntoView({ behavior: 'smooth' });
+                const messageField = document.getElementById('mensaje') || document.getElementById('mensaje-mobile');
+                if (messageField) {
+                    messageField.focus();
+                    if (getCatalogLang() === 'es') {
+                        messageField.placeholder = 'Me gustaría solicitar la ficha técnica del producto...';
+                    } else {
+                        messageField.placeholder = 'I would like to request the technical sheet for this product...';
+                    }
+                }
+            }
         });
     });
 });
