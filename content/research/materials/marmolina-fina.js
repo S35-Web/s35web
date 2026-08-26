@@ -142,7 +142,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['arena-de-rio', 'cal', 'cemento-blanco'],
+  relatedMaterials: ['arena-de-rio', 'cal', 'cemento-blanco', 'arena-silicea-graduada'],
   relatedResearch: ['caracterizacion-marmolina-fina'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

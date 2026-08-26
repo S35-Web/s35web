@@ -49,4 +49,11 @@ module.exports = [
     originRegion: 'Grado construcción',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00008',
+    materialSlug: 'arena-silicea-graduada',
+    receivedAt: '2026-08-26',
+    originRegion: 'Grado comercial · clasificada por malla',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];

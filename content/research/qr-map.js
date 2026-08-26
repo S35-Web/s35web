@@ -5,6 +5,7 @@
 module.exports = {
   agg001: { slug: 'arena-de-rio', materialCode: 'ML-AGG-001' },
   agg002: { slug: 'perlita-expandida', materialCode: 'ML-AGG-002' },
+  agg003: { slug: 'arena-silicea-graduada', materialCode: 'ML-AGG-003' },
   fil001: { slug: 'marmolina-fina', materialCode: 'ML-FIL-001' },
   bnd001: { slug: 'cal', materialCode: 'ML-BND-001' },
   bnd002: { slug: 'yeso', materialCode: 'ML-BND-002' },
