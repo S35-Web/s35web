@@ -526,44 +526,65 @@ function validate() {
   });
 }
 
+function catalogImgSrc(src) {
+  if (!src) return '';
+  const base = path.basename(src).replace(/\.[^.]+$/, '');
+  const thumb = '/Assets/productos_thumbs/' + base + '.jpg';
+  if (fs.existsSync(path.join(ROOT, 'public', thumb.replace(/^\//, '')))) return thumb;
+  return src;
+}
+
+function catalogInitials(p) {
+  const raw = (p.name || '') + ' ' + (p.variant || '');
+  const parts = raw.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'S35';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
 function catalogCard(p) {
-  const title = fullName(p);
   const family = catalog.taxonomy.FAMILY_BY_ID[p.family];
   const href = '/productos/' + p.slug;
   const pack = p.figures && p.figures.pack;
-  const img = pack && pack.src
-    ? '<img src="' + esc(pack.src) + '" alt="' + esc(pack.alt || title) + '" loading="lazy">'
-    : '<div class="product-image-empty">Ficha técnica</div>';
-  const wa = 'https://wa.me/' + WHATSAPP + '?text=' +
-    encodeURIComponent('Hola, me interesa ' + title + '. Quiero ficha y cotización.');
-  return '<article class="product-card" data-category="' + esc(p.family) + '">' +
+  const src = pack && pack.src ? catalogImgSrc(pack.src) : '';
+  const thumb = src
+    ? '<img src="' + esc(src) + '" alt="' + esc(pack.alt || fullName(p)) + '" loading="lazy" decoding="async">'
+    : '<span>' + esc(catalogInitials(p)) + '</span>';
+  const thumbClass = src ? 'product-thumb' : 'product-thumb product-thumb--empty';
+  const packLabel = /cubeta/i.test(p.packaging || '') ? p.packaging : (p.packaging ? 'Saco ' + p.packaging : '');
+  return '<article class="product-card" data-category="' + esc(p.family) + '" style="--card-accent:' + esc(p.accent || '#2f7d32') + '">' +
     '<a class="product-card-link" href="' + esc(href) + '">' +
-    '<div class="product-image">' + img +
-    '<div class="product-overlay"><span class="view-product-btn">Ver ficha técnica</span></div>' +
-    '</div>' +
-    '<div class="product-info">' +
-    '<h3 class="product-name">' + esc(title) + '</h3>' +
-    '<p class="product-category">' + esc(family ? family.name : '') + '</p>' +
-    '</div></a>' +
-    '<a class="whatsapp-btn" href="' + wa + '" target="_blank" rel="noopener noreferrer">' +
-    '<i class="fab fa-whatsapp"></i> Consultar</a>' +
-    '</article>';
+    '<div class="' + thumbClass + '">' + thumb + '</div>' +
+    '<div class="product-copy">' +
+    '<p class="product-kicker">' + esc(family ? family.name : '') + '</p>' +
+    '<h3>' + esc(p.name) + '</h3>' +
+    (p.variant ? '<p class="product-variant">' + esc(p.variant) + '</p>' : '') +
+    (p.line ? '<p class="product-line">' + esc(p.line) + '</p>' : '') +
+    '<p class="product-meta"><span>' + esc(packLabel) + '</span><span class="product-go">Ver ficha</span></p>' +
+    '</div></a></article>';
 }
 
 function catalogGridHtml() {
-  const filters = ['<button class="filter-btn active" data-filter="all">Todos</button>'].concat(
+  const stats = catalog.stats();
+  const filters = ['<button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">Todos</button>'].concat(
     catalog.taxonomy.FAMILIES.map(function (f) {
-      return '<button class="filter-btn" data-filter="' + f.id + '">' + esc(f.name) + '</button>';
+      return '<button type="button" class="filter-btn" data-filter="' + f.id + '" aria-pressed="false">' + esc(f.name) + '</button>';
     })
   ).join('\n                    ');
-  const cards = catalog.byFamily().map(function (g) {
-    return g.items.map(catalogCard).join('\n                ');
-  }).join('\n                ');
-  return '<div class="product-filters">\n' +
-    '                <div class="filter-group">\n                    ' + filters + '\n' +
-    '                </div>\n            </div>\n' +
-    '            <p class="catalog-grid-note">Cada producto abre su ficha técnica.</p>\n' +
-    '            <div class="product-grid" id="productGrid">\n                ' + cards + '\n            </div>';
+  const families = catalog.byFamily().map(function (g) {
+    const n = g.items.length;
+    const cards = g.items.map(catalogCard).join('\n                ');
+    return '<section class="catalog-family" id="' + esc(g.family.id) + '" data-family="' + esc(g.family.id) + '">' +
+      '<header class="catalog-family-head">' +
+      '<h2>' + esc(g.family.name) + '</h2>' +
+      '<span>' + n + ' ' + (n === 1 ? 'producto' : 'productos') + '</span>' +
+      (g.family.note ? '<p>' + esc(g.family.note) + '</p>' : '') +
+      '</header>' +
+      '<div class="product-grid">' + cards + '</div></section>';
+  }).join('\n            ');
+  return '<div class="catalog-toolbar" role="navigation" aria-label="Filtrar por familia">' +
+    '\n            <div class="filter-group">\n                    ' + filters + '\n            </div>\n            </div>\n' +
+    '            <div class="catalog-body" data-published="' + stats.published + '">\n            ' + families + '\n            </div>';
 }
 
 function patchCatalogPage() {
