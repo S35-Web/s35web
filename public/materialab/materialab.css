@@ -1097,6 +1097,9 @@
   opacity: 0;
   transform: translateY(12px);
 }
+.ml-sheet--motion.is-armed .ml-method-hero h1 {
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
 .ml-sheet--motion.is-armed .ml-method-kicker {
   transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1123,32 +1126,38 @@
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.18s;
 }
 
-.ml-sheet--motion .is-in .ml-method-rule,
-.ml-sheet--motion .is-in .ml-method-kpis::after,
-.ml-sheet--motion .is-in .ml-method-grid::after,
-.ml-sheet--motion .is-in .ml-method-box::after,
-.ml-sheet--motion .is-in .ml-method-split::after,
-.ml-sheet--motion .is-in .ml-method-notice::after,
-.ml-sheet--motion .ml-method-end.is-in::before {
+.ml-sheet--motion.is-armed .is-in .ml-method-rule,
+.ml-sheet--motion.is-armed .ml-method-kpis.is-in::after,
+.ml-sheet--motion.is-armed .is-in .ml-method-kpis::after,
+.ml-sheet--motion.is-armed .is-in .ml-method-grid::after,
+.ml-sheet--motion.is-armed .is-in .ml-method-box::after,
+.ml-sheet--motion.is-armed .is-in .ml-method-split::after,
+.ml-sheet--motion.is-armed .is-in .ml-method-notice::after,
+.ml-sheet--motion.is-armed .ml-method-notice.is-in::after,
+.ml-sheet--motion.is-armed .ml-method-end.is-in::before {
   transform: scaleX(1);
 }
-.ml-sheet--motion .is-in .ml-method-hero h1,
-.ml-sheet--motion .is-in .ml-method-kicker,
-.ml-sheet--motion .is-in .ml-method-lede,
-.ml-sheet--motion .is-in .ml-method-copy,
-.ml-sheet--motion .is-in .ml-method-head h2,
-.ml-sheet--motion .is-in .ml-method-n,
-.ml-sheet--motion .is-in .ml-method-kpi,
-.ml-sheet--motion .is-in .ml-method-cell,
-.ml-sheet--motion .is-in .ml-method-box,
-.ml-sheet--motion .is-in .ml-method-split-col,
-.ml-sheet--motion .is-in .ml-method-notice,
-.ml-sheet--motion .ml-method-end.is-in,
-.ml-sheet--motion .is-in .ml-method-pair--prose p {
+.ml-sheet--motion.is-armed .ml-method-hero.is-in h1,
+.ml-sheet--motion.is-armed .is-in .ml-method-hero h1,
+.ml-sheet--motion.is-armed .ml-method-hero.is-in .ml-method-kicker,
+.ml-sheet--motion.is-armed .ml-method-hero.is-in .ml-method-lede,
+.ml-sheet--motion.is-armed .is-in .ml-method-kicker,
+.ml-sheet--motion.is-armed .is-in .ml-method-lede,
+.ml-sheet--motion.is-armed .is-in .ml-method-copy,
+.ml-sheet--motion.is-armed .is-in .ml-method-head h2,
+.ml-sheet--motion.is-armed .is-in .ml-method-n,
+.ml-sheet--motion.is-armed .is-in .ml-method-kpi,
+.ml-sheet--motion.is-armed .is-in .ml-method-cell,
+.ml-sheet--motion.is-armed .is-in .ml-method-box,
+.ml-sheet--motion.is-armed .is-in .ml-method-split-col,
+.ml-sheet--motion.is-armed .is-in .ml-method-notice,
+.ml-sheet--motion.is-armed .ml-method-notice.is-in,
+.ml-sheet--motion.is-armed .ml-method-end.is-in,
+.ml-sheet--motion.is-armed .is-in .ml-method-pair--prose p {
   opacity: 1;
   transform: none;
 }
-.ml-sheet--motion .is-in .ml-method-dot {
+.ml-sheet--motion.is-armed .is-in .ml-method-dot {
   transform: scale(1);
 }
 

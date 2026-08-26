@@ -75,23 +75,37 @@
       el.style.setProperty('--i', String(i % 2));
     });
 
+    var motionTargets = qsa('.ml-sheet-mast, .ml-m-hair, .ml-sheet-row, .ml-sheet-end, .ml-method-hero, .ml-method-kpis, .ml-method-sec, .ml-method-end', sheet);
+
+    function revealMotion(el) {
+      el.classList.add('is-in');
+      qsa('.ml-m-curve', el).forEach(function (curve) {
+        curve.style.strokeDashoffset = '0';
+      });
+    }
+
+    function inInitialView(el) {
+      var rect = el.getBoundingClientRect();
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      return rect.bottom > 0 && rect.top < vh * 0.92;
+    }
+
+    motionTargets.forEach(function (el) {
+      if (inInitialView(el)) revealMotion(el);
+    });
+
     requestAnimationFrame(function () {
       sheet.classList.add('is-armed');
-      requestAnimationFrame(function () {
-        var io = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (!entry.isIntersecting) return;
-            entry.target.classList.add('is-in');
-            qsa('.ml-m-curve', entry.target).forEach(function (el) {
-              el.style.strokeDashoffset = '0';
-            });
-            io.unobserve(entry.target);
-          });
-        }, { threshold: 0.14, rootMargin: '0px 0px -6% 0px' });
-
-        qsa('.ml-sheet-mast, .ml-m-hair, .ml-sheet-row, .ml-sheet-end, .ml-method-hero, .ml-method-kpis, .ml-method-sec, .ml-method-end', sheet).forEach(function (el) {
-          io.observe(el);
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          revealMotion(entry.target);
+          io.unobserve(entry.target);
         });
+      }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+
+      motionTargets.forEach(function (el) {
+        if (!el.classList.contains('is-in')) io.observe(el);
       });
     });
   })();
