@@ -3,8 +3,7 @@
 const { draft, storagePairs, NOTICE_VERIFIED } = require('../sheet');
 
 // Contenido tomado de la ficha publicada de Waxtard Extra Anclaje (EIFS Extra
-// Anclaje). No hay fotografía de saco en el repositorio: no se usa la de
-// Estuco Base, que es otro producto.
+// Anclaje). El saco es el de EIFS / Extra Anclaje; no se usa el de Estuco Base.
 
 module.exports = draft({
   slug: 'waxtard-extra-anclaje',
@@ -22,7 +21,8 @@ module.exports = draft({
     'Para sustratos lisos · saco de 25 kg',
   ],
   lead: 'Estuco para sustrato de baja o nula absorción. Ancla químicamente sin necesidad de picar el sustrato ni aplicar un puente adhesivo aparte. Acabado blanco perla, fino. No es el Perla de block y zarpeo: este es específico para superficies lisas o poco porosas — concreto cimbrado, prefabricado, sistemas EIFS/panel, pintura firme y azulejo o vitrificado sin picar.',
-  pack: null,
+  pack: '/Assets/productos_background/WAXTARD-extra-anclaje.jpg',
+  packAlt: 'Saco de 25 kg de Waxtard Extra Anclaje (EIFS Extra Anclaje)',
   identification: [
     { label: 'Tipo de producto', value: 'Estuco hidrófugo fino con anclaje químico' },
     { label: 'Función', value: 'Acabado sobre sustratos lisos o de baja absorción' },
@@ -79,7 +79,7 @@ module.exports = draft({
       notes: [
         'Extra Anclaje y Blanco Perla no son intercambiables: uno ancla en liso, el otro trabaja sobre absorbente.',
         'No es pegazulejo ni adhesivo de pieza: es estuco de acabado.',
-        'La fotografía de saco de este producto no está aún en el repositorio; la de Estuco Base Pro+ es otro producto y no se usa aquí.',
+        'En el saco aparece como EIFS / Extra Anclaje; es el mismo producto que esta ficha.',
       ],
     },
   ],
