@@ -4,7 +4,8 @@
   "description": "S-35 Technology website - Tecnología en construcción",
   "main": "index.html",
   "scripts": {
-    "build": "node scripts/validate-research.js && node scripts/build-materialab.js",
+    "build": "node scripts/validate-research.js && node scripts/build-materialab.js && node scripts/build-products.js",
+    "build:products": "node scripts/build-products.js",
     "validate:research": "node scripts/validate-research.js",
     "start": "echo 'Static site'",
     "dev": "echo 'Static site'"
