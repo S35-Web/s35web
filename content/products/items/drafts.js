@@ -233,37 +233,6 @@ module.exports = [
     kpi3v: 'Porcelánico', kpi3l: 'piezas de baja absorción',
   }),
 
-  mortar({
-    slug: 'ceramico',
-    code: 'FT-AD-002',
-    family: 'adhesivos-pro',
-    name: 'PEGAXPRESS',
-    variant: 'Cerámico',
-    line: 'Adhesivo para cerámica',
-    accent: '#0277bd',
-    pack: '/Assets/productos_background/ceramico.png',
-    description: 'Pegaxpress Cerámico: adhesivo en seco para piezas cerámicas. Saco de 25 kg.',
-    strip: ['Adhesivo para cerámica', 'Línea Pegaxpress · saco de 25 kg'],
-    lead: 'Adhesivo de la línea Pegaxpress para piezas cerámicas de absorción habitual. Mortero seco, listo para amasar con agua. Para porcelánico de baja absorción usar Porcelánico Universal. Borrador interno.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Adhesivo cementoso para recubrimiento' },
-      { label: 'Función', value: 'Pegado de cerámica de absorción habitual' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'Adhesivo de uso cerámico general. No cubrir porcelánico de baja absorción ni formatos que la ficha reserve a Ultraforce.',
-      'El soporte tiene que estar a plomo y nivel: el adhesivo pega, no nivela un piso.',
-    ],
-    uses: [
-      { title: 'Loseta cerámica.', text: 'Piso y muro de absorción habitual.' },
-      { title: 'No usar en.', text: 'Porcelánico de baja absorción (usar Porcelánico Universal) ni piso sobre piso (usar PSP).' },
-      { title: 'No usar como.', text: 'Nivelador, estuco ni adhesivo de block.' },
-      { title: 'Soporte.', text: 'Firme, limpio y capaz, dentro de las tolerancias del recubrimiento.' },
-    ],
-    apply: 'Llana dentada al soporte; asentar la pieza y respetar el tiempo abierto.',
-    kpi3v: 'Cerámica', kpi3l: 'absorción habitual',
-  }),
-
   liquid({
     slug: 'nanotech-hidrofobico',
     code: 'FT-LQ-001',
@@ -346,7 +315,7 @@ module.exports = [
     ],
     uses: [
       { title: 'Según ficha impresa.', text: 'Pegado y ligante en los sistemas que especifiquen Darawell.' },
-      { title: 'No usar como.', text: 'Pegazulejo cementoso, estuco ni impermeabilizante de azotea.' },
+      { title: 'No usar como.', text: 'Adhesivo cementoso de loseta, estuco ni impermeabilizante de azotea.' },
       { title: 'Soporte.', text: 'Limpio y capaz; el vinílico no pega sobre polvo ni sobre grasa.' },
       { title: 'Almacenamiento.', text: 'Proteger de heladas. Agitar antes de usar.' },
     ],
