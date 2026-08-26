@@ -535,21 +535,60 @@ function pageResearch() {
 }
 
 function pageAbout() {
-  var body = archiveOpen('Laboratorio · Archivo abierto') +
+  var chain = [
+    ['ml.aboutChain1', 'Conocimiento del material'],
+    ['ml.aboutChain2', 'Criterio técnico propio'],
+    ['ml.aboutChain3', 'Formulación y desarrollo'],
+    ['ml.aboutChain4', 'Producto comercial'],
+  ];
+  var provRows = [
+    ['MEAS', 'ml.aboutMeasT', 'Medido por S-35', 'ml.aboutMeas', 'Ensayo propio sobre una muestra identificada, con método y fecha.'],
+    ['REF', 'ml.aboutRefT', 'Referencia documental', 'ml.aboutRef', 'Tomado de norma, bibliografía o ficha de proveedor, siempre con fuente.'],
+    ['OBS', 'ml.aboutObsT', 'Observación interna', 'ml.aboutObs', 'Constatación directa no instrumentada: color, textura, comportamiento visible.'],
+    ['HYP', 'ml.aboutHypT', 'Hipótesis de trabajo', 'ml.aboutHyp', 'Supuesto que orienta un ensayo en preparación, marcado hasta confirmarse.'],
+    ['WIP', 'ml.aboutWipT', 'Ensayo en curso', 'ml.aboutWip', 'Trabajo iniciado sin conclusión. En tabla se lee “aún no medido”.'],
+  ];
+  var read = [
+    ['ml.aboutRead1t', 'Perfil típico primero', 'ml.aboutRead1p', 'La ficha nace con los perfiles típicos de norma o de comercio, etiquetados REF, y una referencia visual del material.'],
+    ['ml.aboutRead2t', 'Medición después', 'ml.aboutRead2p', 'A medida que se corren ensayos propios, esos valores pasan a MEAS con su método y fecha. La ficha gana precisión con el tiempo.'],
+    ['ml.aboutRead3t', 'Campo vacío es intencional', 'ml.aboutRead3p', 'Donde un lote no se ha ensayado, el dato no aparece. No se rellena por estimación ni por analogía con otro material.'],
+    ['ml.aboutRead4t', 'Revisión visible', 'ml.aboutRead4p', 'Cada ficha indica su número de revisión. El archivo se corrige y se amplía a la vista, sin reescribir el historial.'],
+  ];
+  var body = archiveOpen('Laboratorio · Archivo abierto', 'ml-about') +
     '<div class="ml-sheet-row"><div class="ml-rail"><strong>Acerca de<br>Laboratorio</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
     '<div><h1 class="ml-file-title" data-i18n="ml.aboutTitle">Qué es Laboratorio — y qué no es</h1></div></div>' +
-    '<div class="ml-sheet-row"><div class="ml-rail"><div>1.0</div><div style="font-size:16px;font-weight:700;line-height:1.25;color:#000;margin-top:6px;text-transform:none;letter-spacing:-0.01em" data-i18n="ml.aboutWhat">Qué es</div></div>' +
-    '<div><div class="ml-m-rule"></div><div class="ml-prose"><p data-i18n="ml.aboutWhatP" data-i18n-html>Laboratorio es un archivo abierto de caracterización de materias primas desarrollado por S-35. Publica lo que se observa y se mide sobre minerales, agregados, cementantes y cargas <em>antes</em> de convertirlos en un producto. El orden es deliberado: primero conocimiento, después autoridad, después marca, después producto.</p></div></div></div>' +
-    '<div class="ml-sheet-row"><div class="ml-rail"><div>2.0</div><div style="font-size:16px;font-weight:700;line-height:1.25;color:#000;margin-top:6px;text-transform:none;letter-spacing:-0.01em" data-i18n="ml.aboutNot">Qué no es</div></div>' +
-    '<div><div class="ml-m-rule"></div><div class="ml-prose"><p data-i18n="ml.aboutNotP" data-i18n-html>Esta división no es un laboratorio acreditado. No es un organismo de certificación. No es una fuente de especificación de producto. Los datos de caracterización <strong>no constituyen especificación técnica ni garantía de desempeño</strong> de ningún producto S-35.</p></div></div></div>' +
-    '<div class="ml-sheet-row"><div class="ml-rail"><div>3.0</div><div style="font-size:16px;font-weight:700;line-height:1.25;color:#000;margin-top:6px;text-transform:none;letter-spacing:-0.01em" data-i18n="ml.aboutHow">Cómo se obtienen los datos</div></div>' +
-    '<div><div class="ml-m-rule"></div><div class="ml-prose"><p data-i18n="ml.aboutHowP">Cada valor publicable lleva una etiqueta de procedencia. Si un número no tiene procedencia, el archivo no lo publica — el build falla.</p></div>' +
-    legend() +
-    '<div class="ml-prose" style="margin-top:1.25rem">' +
-    '<p><span class="ml-prov">MEAS</span> — ' + i18n('ml.aboutMeas', 'medido por S-35 sobre una muestra identificada, con fecha.') + ' <span class="ml-prov">REF</span> — ' + i18n('ml.aboutRef', 'tomado de bibliografía, norma o ficha de proveedor, siempre con fuente.') + ' <span class="ml-prov">OBS</span> — ' + i18n('ml.aboutObs', 'observación interna no instrumentada (vista o referencia visual).') + ' <span class="ml-prov">HYP</span> — ' + i18n('ml.aboutHyp', 'hipótesis de trabajo.') + ' <span class="ml-prov">WIP</span> — ' + i18n('ml.aboutWip', 'ensayo iniciado, sin conclusión; en la tabla se lee AÚN NO MEDIDO.') + '</p>' +
-    '<p data-i18n="ml.aboutFirst">Las primeras fichas combinan una referencia visual de presentación habitual con perfiles típicos de norma o de comercio, etiquetados REF. Donde el lote no se ensayó, el campo está vacío a propósito.</p>' +
-    '<p data-i18n="ml.aboutPublishes" data-i18n-html>Laboratorio publica <em>qué se sabe sobre la materia prima</em>. No publica qué hace S-35 con ella: ni dosificaciones, ni curvas objetivo de producción, ni proveedores.</p>' +
-    '</div></div></div>' + archiveClose();
+    '<div class="ml-sheet-row"><div class="ml-rail"><div class="ml-about-sec-n">1.0</div><div class="ml-about-sec-h" data-i18n="ml.aboutWhat">Qué es</div></div>' +
+    '<div class="ml-about-body"><div class="ml-prose">' +
+    '<p data-i18n="ml.aboutWhatP" data-i18n-html>Laboratorio es un archivo abierto de caracterización de materias primas desarrollado por S-35. Publica lo que se observa y se mide sobre minerales, agregados, cementantes y cargas <em>antes</em> de convertirlos en un producto.</p>' +
+    '<p data-i18n="ml.aboutWhatP2">El estudio es del material en sí, no de un proveedor: lo que se documenta es la especificación que la materia prima debe cumplir para entrar a una formulación. Por eso la referencia sigue siendo válida cuando cambia el suministro.</p>' +
+    '</div><div class="ml-about-chain">' +
+    chain.map(function (c, i) {
+      return '<div class="ml-about-step"><div class="ml-about-step-n">' + pad2(i + 1) + '</div>' +
+        '<div class="ml-about-step-l" data-i18n="' + c[0] + '">' + c[1] + '</div></div>';
+    }).join('') +
+    '</div><p class="ml-about-note" data-i18n="ml.aboutOrder">El orden es deliberado. Nunca al revés: un producto no define lo que el material puede hacer.</p></div></div>' +
+    '<div class="ml-sheet-row"><div class="ml-rail"><div class="ml-about-sec-n">2.0</div><div class="ml-about-sec-h" data-i18n="ml.aboutNot">Qué no es</div></div>' +
+    '<div class="ml-about-body"><div class="ml-prose"><p data-i18n="ml.aboutNotP" data-i18n-html>Esta división no es un laboratorio acreditado. No es un organismo de certificación. No es una fuente de especificación de producto. Los datos de caracterización <strong>no constituyen especificación técnica ni garantía de desempeño</strong> de ningún producto S-35: cada producto comercial tiene su propia ficha técnica.</p></div>' +
+    '<div class="ml-about-split">' +
+    '<div class="ml-about-split-col"><div class="ml-about-split-h" data-i18n="ml.aboutPubH">Qué publica</div><p data-i18n="ml.aboutPubP">Lo que se sabe de la materia prima: propiedades, rangos normativos, comportamiento observado y notas de manejo.</p></div>' +
+    '<div class="ml-about-split-col"><div class="ml-about-split-h" data-i18n="ml.aboutHideH">Qué no publica</div><p data-i18n="ml.aboutHideP">Lo que S-35 hace con ella: dosificaciones, curvas objetivo de producción ni proveedores.</p></div>' +
+    '</div></div></div>' +
+    '<div class="ml-sheet-row"><div class="ml-rail"><div class="ml-about-sec-n">3.0</div><div class="ml-about-sec-h" data-i18n="ml.aboutHow">Cómo se obtienen los datos</div></div>' +
+    '<div class="ml-about-body"><div class="ml-prose"><p data-i18n="ml.aboutHowP">Cada valor publicable lleva una etiqueta de procedencia. Si un número no tiene procedencia, el archivo no lo publica. Quien lee una ficha sabe siempre si está viendo una medición propia, una referencia normativa o una observación.</p></div>' +
+    '<table class="ml-about-prov"><tbody>' +
+    provRows.map(function (r) {
+      return '<tr><th scope="row">' + r[0] + '</th><td class="ml-about-prov-name" data-i18n="' + r[1] + '">' + r[2] + '</td>' +
+        '<td data-i18n="' + r[3] + '">' + r[4] + '</td></tr>';
+    }).join('') +
+    '</tbody></table>' +
+    '<div class="ml-prose" style="margin-top:24px"><p data-i18n="ml.aboutFirst">Las primeras fichas combinan una referencia visual de presentación habitual con perfiles típicos de norma o de comercio, etiquetados REF. Donde el lote no se ensayó, el campo está vacío a propósito.</p></div></div></div>' +
+    '<div class="ml-sheet-row"><div class="ml-rail"><div class="ml-about-sec-n">4.0</div><div class="ml-about-sec-h" data-i18n="ml.aboutRead">Cómo leer una ficha</div></div>' +
+    '<div class="ml-about-body"><div class="ml-about-read">' +
+    read.map(function (r) {
+      return '<div class="ml-about-read-item"><h3 data-i18n="' + r[0] + '">' + r[1] + '</h3><p data-i18n="' + r[2] + '">' + r[3] + '</p></div>';
+    }).join('') +
+    '</div></div></div>' +
+    archiveClose();
   return layout({
     title: 'Qué es Laboratorio — y qué no es | S-35',
     description: 'Laboratorio es el archivo abierto de caracterización de materias primas de S-35. No está acreditado como laboratorio de ensayo ni es una especificación de producto S-35.',
