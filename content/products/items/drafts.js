@@ -110,37 +110,6 @@ module.exports = [
   }),
 
   mortar({
-    slug: 'styrobond-pro',
-    code: 'FT-PP-001',
-    family: 'pro-systems',
-    name: 'STYROBOND',
-    variant: 'Pro+',
-    line: 'Adhesivo para sistemas de poliestireno',
-    accent: '#e65100',
-    pack: '/Assets/productos_background/styrobond.png',
-    description: 'Styrobond Pro+: adhesivo profesional para sistemas de poliestireno y aislamiento. Saco de 25 kg.',
-    strip: ['Adhesivo para poliestireno', 'Línea Pro+ · saco de 25 kg'],
-    lead: 'Adhesivo de la línea Pro+ para pegar placas de poliestireno y sistemas de aislamiento. Mortero seco, listo para amasar con agua. No es un estuco de acabado. Borrador interno.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Adhesivo cementoso para poliestireno' },
-      { label: 'Función', value: 'Pegado de placas EPS / sistemas de aislamiento' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'Pega el aislante al muro. El recubrimiento del sistema (Basecoat, acabado) es otro producto.',
-      'No sustituye a Cellbond (block celular) ni a los adhesivos Pegaxpress de pieza cerámica.',
-    ],
-    uses: [
-      { title: 'Placas de poliestireno.', text: 'Pegado de EPS en sistemas de fachada y aislamiento.' },
-      { title: 'Sistemas EIFS / panel.', text: 'Capa de pegado del aislante al sustrato firme.' },
-      { title: 'No usar como.', text: 'Estuco de acabado, nivelador de pisos ni pegazulejo de recubrimiento.' },
-      { title: 'Sustrato.', text: 'Muro firme, limpio y capaz; la placa no corrige un soporte suelto.' },
-    ],
-    apply: 'Aplicar al dorso de la placa o al muro según el método del sistema (cordones / full coverage).',
-    kpi3v: 'Placas EPS', kpi3l: 'pegado de aislante',
-  }),
-
-  mortar({
     slug: 'cellbond-pro',
     code: 'FT-PP-002',
     family: 'pro-systems',
