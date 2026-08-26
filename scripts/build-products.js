@@ -33,14 +33,14 @@ function fullName(p) {
 
 /* ── Piezas compartidas ──────────────────────────────────────────── */
 
-function s35Nav(backLabel, backHref) {
+function s35Nav() {
   return '<nav class="nav">\n' +
     '  <div class="nav-container">\n' +
     '    <div class="nav-logo"><a href="/"><img src="/Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image"></a></div>\n' +
     '    <div class="nav-menu">\n' +
-    '      <a href="' + esc(backHref) + '" class="nav-link">' + esc(backLabel) + '</a>\n' +
-    '      <a href="/materialab" class="nav-link">MateriaLab</a>\n' +
-    '      <a href="/#contacto" class="nav-link contact-btn">Contacto</a>\n' +
+    '      <a href="/catalogo.html" class="nav-link" data-i18n="nav.catalog">Catálogo</a>\n' +
+    '      <a href="/materialab" class="nav-link" data-i18n="nav.materialab">MateriaLab</a>\n' +
+    '      <a href="/#contacto" class="nav-link contact-btn" data-i18n="nav.contact">Contacto</a>\n' +
     '    </div>\n' +
     '    <div class="nav-toggle"><span></span><span></span><span></span></div>\n' +
     '  </div>\n' +
@@ -104,7 +104,7 @@ function layout(opts, body) {
     '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">\n' +
     (opts.jsonLd ? '<script type="application/ld+json">' + JSON.stringify(opts.jsonLd) + '</script>\n' : '') +
     '</head>\n<body class="pr-page" style="--pr-accent:' + esc(accent) + '">\n' +
-    s35Nav(opts.backLabel || '← Catálogo', opts.backHref || '/catalogo.html') + '\n' +
+    s35Nav() + '\n' +
     subnav(opts.backHref || '/catalogo.html') + '\n' +
     body + '\n' +
     footer() + '\n' +

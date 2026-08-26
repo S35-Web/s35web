@@ -25,7 +25,7 @@
                 mlAboutTitle: 'What MateriaLab is — and what it is not | S-35',
                 mlAboutDescription: 'MateriaLab is an open raw-material characterisation archive. It is not an accredited laboratory and not an S-35 product specification.'
             },
-            nav: { login: 'Login', news: 'News', materialab: 'MateriaLab', contact: 'Contact', back: 'Back' },
+            nav: { login: 'Login', news: 'News', catalog: 'Catalog', materialab: 'MateriaLab', contact: 'Contact', back: 'Back' },
             hero: {
                 title1: 'Technology',
                 title2: 'in materials.',
@@ -400,7 +400,7 @@
                 mlAboutTitle: 'Qué es MateriaLab — y qué no es | S-35',
                 mlAboutDescription: 'MateriaLab es un archivo abierto de caracterización de materias primas. No es un laboratorio acreditado ni una especificación de producto S-35.'
             },
-            nav: { login: 'Iniciar sesión', news: 'Noticias', materialab: 'MateriaLab', contact: 'Contacto', back: 'Volver' },
+            nav: { login: 'Iniciar sesión', news: 'Noticias', catalog: 'Catálogo', materialab: 'MateriaLab', contact: 'Contacto', back: 'Volver' },
             hero: {
                 title1: 'Tecnología',
                 title2: 'en materiales.',
