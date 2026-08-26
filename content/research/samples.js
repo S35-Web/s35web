@@ -42,4 +42,11 @@ module.exports = [
     originRegion: 'México',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00007',
+    materialSlug: 'perlita-expandida',
+    receivedAt: '2026-08-26',
+    originRegion: 'Grado construcción',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];

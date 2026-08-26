@@ -96,7 +96,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['cemento-gris'],
+  relatedMaterials: ['cemento-gris', 'perlita-expandida'],
   relatedResearch: ['caracterizacion-yeso'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
