@@ -1,0 +1,87 @@
+'use strict';
+
+const { draft, storagePairs, NOTICE_VERIFIED } = require('../sheet');
+
+// Contenido tomado de la ficha publicada de Waxtard Extra Anclaje (EIFS Extra
+// Anclaje). No hay fotografía de saco en el repositorio: no se usa la de
+// Estuco Base, que es otro producto.
+
+module.exports = draft({
+  slug: 'waxtard-extra-anclaje',
+  code: 'FT-PR-004',
+  family: 'estucos-premium',
+  status: 'verified',
+  name: 'WAXTARD',
+  variant: 'Extra Anclaje',
+  line: 'Estuco hidrófugo fino con anclaje químico',
+  accent: '#2f7d32',
+  packaging: '25 kg',
+  description: 'Waxtard Extra Anclaje: estuco hidrófugo fino con anclaje químico para sustratos lisos, concreto cimbrado, EIFS y pintura firme. Saco de 25 kg.',
+  strip: [
+    'Estuco hidrófugo fino · anclaje químico',
+    'Para sustratos lisos · saco de 25 kg',
+  ],
+  lead: 'Estuco para sustrato de baja o nula absorción. Ancla químicamente sin necesidad de picar el sustrato ni aplicar un puente adhesivo aparte. Acabado blanco perla, fino. No es el Perla de block y zarpeo: este es específico para superficies lisas o poco porosas — concreto cimbrado, prefabricado, sistemas EIFS/panel, pintura firme y azulejo o vitrificado sin picar.',
+  pack: null,
+  identification: [
+    { label: 'Tipo de producto', value: 'Estuco hidrófugo fino con anclaje químico' },
+    { label: 'Función', value: 'Acabado sobre sustratos lisos o de baja absorción' },
+    { label: 'También conocido como', value: 'EIFS Extra Anclaje' },
+  ],
+  kpis: [
+    { value: '25 kg', label: 'saco · producto seco' },
+    { value: 'Solo agua', label: 'amasado, sin aditivos ajenos' },
+    { value: 'Fino', label: 'acabado blanco perla' },
+    { value: 'Sin picar', label: 'anclaje químico al sustrato liso' },
+  ],
+  sections: [
+    {
+      kind: 'prose',
+      n: '1.0',
+      title: 'Cómo funciona',
+      prose: [
+        'El mortero lleva un sistema de anclaje químico pensado para superficies donde un estuco convencional no agarra: concreto liso de cimbra, paneles, pintura bien adherida o vitrificados. No hace falta picar ni poner un puente aparte.',
+        'Es un estuco de acabado, no un adhesivo de pieza. Para block, zarpeo y sustratos absorbentes el producto correcto es Waxtard Blanco Perla.',
+      ],
+    },
+    {
+      kind: 'items',
+      n: '2.0',
+      title: 'Usos y sustratos',
+      items: [
+        { title: 'Concreto liso o cimbrado.', text: 'Muros y plafones de concreto aparente o descimbrado, sin picar.' },
+        { title: 'Concreto prefabricado y paneles.', text: 'Piezas de baja absorción y sistemas EIFS / panel.' },
+        { title: 'Pintura firme y vitrificados.', text: 'Pintura bien adherida, azulejo o vitrificado limpio, sin picar.' },
+        { title: 'No aplicar sobre.', text: 'Pintura suelta o descascarada, esmaltes brillantes sin lijar, yeso, madera, plástico, humedad activa. No es pegazulejo.' },
+      ],
+    },
+    {
+      kind: 'steps',
+      n: '3.0',
+      title: 'Modo de empleo',
+      steps: [
+        { title: '1. Preparar el sustrato.', text: 'Limpio, firme, sin polvo ni pintura suelta. Si la pintura está suelta, no pega: hay que retirarla. Los esmaltes brillantes se lijan.' },
+        { title: '2. Amasar.', text: 'Solo agua, a consistencia de trabajo, en cubeta limpia. No añadir arena, cal ni cemento.' },
+        { title: '3. Aplicar.', text: 'Directo sobre el sustrato limpio, en capas delgadas de acabado.' },
+        { title: '4. No sustituye.', text: 'Si el sustrato es block o zarpeo absorbente, usar Waxtard Blanco Perla.' },
+      ],
+    },
+    {
+      kind: 'pairs',
+      n: '4.0',
+      title: 'Manejo y almacenamiento',
+      pairs: storagePairs('bag'),
+    },
+    {
+      kind: 'notes',
+      n: 'Anexo',
+      title: 'Datos de interés',
+      notes: [
+        'Extra Anclaje y Blanco Perla no son intercambiables: uno ancla en liso, el otro trabaja sobre absorbente.',
+        'No es pegazulejo ni adhesivo de pieza: es estuco de acabado.',
+        'La fotografía de saco de este producto no está aún en el repositorio; la de Estuco Base Pro+ es otro producto y no se usa aquí.',
+      ],
+    },
+  ],
+  notice: NOTICE_VERIFIED,
+});

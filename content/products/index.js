@@ -9,7 +9,10 @@ const ITEMS_DIR = path.join(__dirname, 'items');
 const products = fs
   .readdirSync(ITEMS_DIR)
   .filter(function (f) { return f.endsWith('.js'); })
-  .map(function (f) { return require(path.join(ITEMS_DIR, f)); });
+  .reduce(function (acc, f) {
+    const mod = require(path.join(ITEMS_DIR, f));
+    return acc.concat(Array.isArray(mod) ? mod : [mod]);
+  }, []);
 
 function bySlug(slug) {
   return products.filter(function (p) { return p.slug === slug; })[0] || null;
@@ -30,7 +33,9 @@ function byFamily() {
   return taxonomy.FAMILIES.map(function (family) {
     return {
       family: family,
-      items: published().filter(function (p) { return p.family === family.id; }),
+      items: published()
+        .filter(function (p) { return p.family === family.id; })
+        .sort(function (a, b) { return String(a.code).localeCompare(String(b.code)); }),
     };
   }).filter(function (group) { return group.items.length > 0; });
 }

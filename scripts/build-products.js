@@ -526,6 +526,81 @@ function validate() {
   });
 }
 
+function catalogCard(p) {
+  const title = fullName(p);
+  const family = catalog.taxonomy.FAMILY_BY_ID[p.family];
+  const href = '/productos/' + p.slug;
+  const pack = p.figures && p.figures.pack;
+  const img = pack && pack.src
+    ? '<img src="' + esc(pack.src) + '" alt="' + esc(pack.alt || title) + '" loading="lazy">'
+    : '<div class="product-image-empty">Ficha técnica</div>';
+  const wa = 'https://wa.me/' + WHATSAPP + '?text=' +
+    encodeURIComponent('Hola, me interesa ' + title + '. Quiero ficha y cotización.');
+  return '<article class="product-card" data-category="' + esc(p.family) + '">' +
+    '<a class="product-card-link" href="' + esc(href) + '">' +
+    '<div class="product-image">' + img +
+    '<div class="product-overlay"><span class="view-product-btn">Ver ficha técnica</span></div>' +
+    '</div>' +
+    '<div class="product-info">' +
+    '<h3 class="product-name">' + esc(title) + '</h3>' +
+    '<p class="product-category">' + esc(family ? family.name : '') + '</p>' +
+    '</div></a>' +
+    '<a class="whatsapp-btn" href="' + wa + '" target="_blank" rel="noopener noreferrer">' +
+    '<i class="fab fa-whatsapp"></i> Consultar</a>' +
+    '</article>';
+}
+
+function catalogGridHtml() {
+  const filters = ['<button class="filter-btn active" data-filter="all">Todos</button>'].concat(
+    catalog.taxonomy.FAMILIES.map(function (f) {
+      return '<button class="filter-btn" data-filter="' + f.id + '">' + esc(f.name) + '</button>';
+    })
+  ).join('\n                    ');
+  const cards = catalog.byFamily().map(function (g) {
+    return g.items.map(catalogCard).join('\n                ');
+  }).join('\n                ');
+  return '<div class="product-filters">\n' +
+    '                <div class="filter-group">\n                    ' + filters + '\n' +
+    '                </div>\n            </div>\n' +
+    '            <p class="catalog-grid-note">Cada producto abre su ficha técnica.</p>\n' +
+    '            <div class="product-grid" id="productGrid">\n                ' + cards + '\n            </div>';
+}
+
+function patchCatalogPage() {
+  const file = path.join(ROOT, 'public', 'catalogo.html');
+  if (!fs.existsSync(file)) return;
+  const html = fs.readFileSync(file, 'utf8');
+  const start = '<!-- PR-CATALOG-GRID:START -->';
+  const end = '<!-- PR-CATALOG-GRID:END -->';
+  const i = html.indexOf(start);
+  const j = html.indexOf(end);
+  if (i === -1 || j === -1 || j < i) {
+    throw new Error('catalogo.html: faltan los marcadores PR-CATALOG-GRID');
+  }
+  const next = html.slice(0, i + start.length) + '\n            ' + catalogGridHtml() + '\n            ' + html.slice(j);
+  fs.writeFileSync(file, next);
+  console.log('  public/catalogo.html (tarjetas → /productos/<slug>)');
+}
+
+const OLD_PRODUCT_PAGES = [
+  ['producto-waxtard-perla.html', '/productos/waxtard-blanco-perla'],
+  ['producto-waxtard-extra-anclaje.html', '/productos/waxtard-extra-anclaje'],
+  ['producto-cemento-plastico-concreto.html', '/productos/cemento-plastico-concreto'],
+];
+
+function writeRedirect(file, dest) {
+  const html = '<!DOCTYPE html>\n<html lang="es">\n<head>\n' +
+    '<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Redirigiendo a la ficha técnica</title>\n' +
+    '<link rel="canonical" href="' + ORIGIN + dest + '">\n' +
+    '<meta http-equiv="refresh" content="0;url=' + dest + '">\n' +
+    '<script>location.replace(' + JSON.stringify(dest) + ');</script>\n' +
+    '</head>\n<body>\n<p><a href="' + dest + '">Continuar a la ficha técnica</a></p>\n' +
+    '</body>\n</html>\n';
+  fs.writeFileSync(path.join(ROOT, 'public', file), html);
+  console.log('  public/' + file + ' → ' + dest);
+}
+
 validate();
 
 console.log('Fichas de producto:');
@@ -536,6 +611,8 @@ catalog.published().forEach(function (p) {
 catalog.legacy().forEach(function (p) {
   write('descontinuados/' + p.slug + '.html', productPage(p));
 });
+patchCatalogPage();
+OLD_PRODUCT_PAGES.forEach(function (pair) { writeRedirect(pair[0], pair[1]); });
 
 /* ── Sitemap ─────────────────────────────────────────────────────── */
 
@@ -546,6 +623,11 @@ if (fs.existsSync(sitemapPath)) {
   const urls = [[ORIGIN + '/productos', '0.9']].concat(
     catalog.published().map(function (p) { return [ORIGIN + '/productos/' + p.slug, '0.8']; })
   );
+  OLD_PRODUCT_PAGES.forEach(function (pair) {
+    const oldLoc = ORIGIN + '/' + pair[0];
+    sm = sm.replace(new RegExp('\\s*<url>\\s*<loc>' + oldLoc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<\\/loc>[\\s\\S]*?<\\/url>', 'g'), '');
+  });
+  const original = fs.readFileSync(sitemapPath, 'utf8');
   let extra = '';
   urls.forEach(function (u) {
     if (sm.indexOf('<loc>' + u[0] + '</loc>') === -1) {
@@ -553,8 +635,9 @@ if (fs.existsSync(sitemapPath)) {
         '</lastmod>\n        <changefreq>monthly</changefreq>\n        <priority>' + u[1] + '</priority>\n    </url>\n';
     }
   });
-  if (extra) {
-    fs.writeFileSync(sitemapPath, sm.replace('</urlset>', extra + '</urlset>'));
+  const next = sm.replace('</urlset>', extra + '</urlset>');
+  if (next !== original) {
+    fs.writeFileSync(sitemapPath, next);
     console.log('  sitemap.xml actualizado');
   }
 }
