@@ -598,96 +598,83 @@ function pageAbout() {
   }, body);
 }
 
-function methodHead(n, key, es) {
-  return '<div class="ml-method-head">' +
-    '<span class="ml-method-n">' + n + '</span>' +
-    '<h2 data-i18n="' + key + '">' + es + '</h2>' +
-    '<div class="ml-method-rule" aria-hidden="true"></div>' +
-    '</div>';
+function aboutListTable(rows, flush) {
+  return '<table class="ml-about-list' + (flush ? ' ml-about-list--flush' : '') + '"><tbody>' +
+    rows.map(function (r) {
+      return '<tr><th scope="row">' + r[0] + '</th>' +
+        '<td class="ml-about-list-name" data-i18n="' + r[1] + '">' + r[2] + '</td>' +
+        '<td data-i18n="' + r[3] + '">' + r[4] + '</td></tr>';
+    }).join('') +
+    '</tbody></table>';
 }
 
 function pageMethodology() {
-  var s = stats;
-  var stepKeys = ['step1', 'step2', 'step3', 'step4', 'step5', 'step6', 'step7', 'step8'];
-  var stepEs = ['Origen', 'Muestra', 'Clasificar', 'Medir', 'Ensayar', 'Formular', 'Validar', 'Documentar'];
-  var stepP = [
-    'Se identifica el material y la normativa que le aplica, no un proveedor en particular.',
-    'Se documenta con un código (ML-SMP) y una referencia visual de su presentación habitual.',
-    'Se asigna categoría (AGG, BND, FIL…) y código correlativo. El código nunca se reutiliza.',
-    'Ensayos instrumentados con norma, método y fecha. Cada valor queda trazable a su muestra.',
-    'Se prueban mezclas y variantes sobre una o más muestras (ML-EXP) hasta encontrar los límites del material.',
-    'Lo aprendido decide qué combinar, en qué proporción y con qué margen de tolerancia.',
-    'Revisión interna de resultados: el desempeño debe repetirse antes de darse por bueno.',
-    'Ficha pública con referencia normativa, revisión y notas de uso. El archivo se actualiza a la vista.',
+  var proc = [
+    ['01', 'ml.methodProc1', 'Origen', 'ml.step1p', 'Se identifica el material y la normativa que le aplica, no un proveedor en particular.'],
+    ['02', 'ml.methodProc2', 'Muestra', 'ml.step2p', 'Se documenta con un código (ML-SMP) y una referencia visual de su presentación habitual.'],
+    ['03', 'ml.methodProc3', 'Clasificar', 'ml.step3p', 'Se asigna categoría (AGG, BND, FIL…) y código correlativo. El código nunca se reutiliza.'],
+    ['04', 'ml.methodProc4', 'Medir', 'ml.step4p', 'Ensayos instrumentados con norma, método y fecha. Cada valor queda trazable a su muestra.'],
+    ['05', 'ml.methodProc5', 'Ensayar', 'ml.step5p', 'Se prueban mezclas y variantes sobre una o más muestras (ML-EXP) hasta encontrar los límites del material.'],
+    ['06', 'ml.methodProc6', 'Formular', 'ml.step6p', 'Lo aprendido decide qué combinar, en qué proporción y con qué margen de tolerancia.'],
+    ['07', 'ml.methodProc7', 'Validar', 'ml.step7p', 'Revisión interna de resultados: el desempeño debe repetirse antes de darse por bueno.'],
+    ['08', 'ml.methodProc8', 'Documentar', 'ml.step8p', 'Ficha pública con referencia normativa, revisión y notas de uso. El archivo se actualiza a la vista.'],
   ];
-  var body = archiveOpen('MET-LAB · Rev. 01 · 2026', 'ml-method') +
-    '<div class="ml-method-hero">' +
-    '<div class="ml-method-kicker" data-i18n="ml.methodKicker">Laboratorio · Archivo abierto</div>' +
-    '<h1 data-i18n="ml.methodTitle">Metodología</h1>' +
-    '<p class="ml-method-lede" data-i18n="ml.methodLede">Ningún material entra a una formulación sin antes pasar por un proceso fijo de caracterización. El estudio es sobre el material mismo y sobre lo que su normativa le exige, de modo que la referencia sigue siendo válida aunque cambie el proveedor. Ese trabajo previo —medir, ensayar, ajustar, volver a medir— es lo que sostiene el desempeño de cada producto que sale al mercado.</p>' +
-    '</div>' +
-    '<div class="ml-method-kpis">' +
-    '<div class="ml-method-kpi"><div class="ml-method-kpi-v">08</div><div class="ml-method-kpi-l" data-i18n="ml.methodKpiSteps">pasos del proceso</div></div>' +
-    '<div class="ml-method-kpi"><div class="ml-method-kpi-v">' + pad2(s.materialsDocumented) + '</div><div class="ml-method-kpi-l" data-i18n="ml.methodKpiMats">materiales documentados</div></div>' +
-    '<div class="ml-method-kpi"><div class="ml-method-kpi-v ml-method-kpi-v--sm">ASTM · API · NOM</div><div class="ml-method-kpi-l" data-i18n="ml.methodKpiNorms">normas de referencia</div></div>' +
-    '<div class="ml-method-kpi"><div class="ml-method-kpi-v ml-method-kpi-v--sm">' + esc(s.lastUpdated || '2026-08-19') + '</div><div class="ml-method-kpi-l" data-i18n="ml.methodKpiUpdated">última actualización</div></div>' +
-    '</div>' +
-    '<section class="ml-method-sec">' +
-    methodHead('01', 'ml.methodSecProcess', 'El proceso') +
-    '<div class="ml-method-grid ml-method-grid--4">' +
-    stepKeys.map(function (k, i) {
-      return '<div class="ml-method-cell"><div class="ml-method-cell-h"><span class="ml-method-n">' + pad2(i + 1) + '</span> ' +
-        i18n('ml.' + k, stepEs[i]) + '</div><p data-i18n="ml.' + k + 'p">' + stepP[i] + '</p></div>';
+  var site = [
+    ['01', 'ml.methodSite1t', 'Consistencia entre lotes', 'ml.methodSite1p', 'Las materias primas se verifican lote a lote. Un saco se comporta como el anterior, en color, rendimiento y tiempo de trabajo.'],
+    ['02', 'ml.methodSite2t', 'Comportamiento predecible', 'ml.methodSite2p', 'Dosificación de agua, fraguado y acabado están medidos, no aproximados. El aplicador sabe qué esperar antes de mezclar.'],
+    ['03', 'ml.methodSite3t', 'Respaldo técnico', 'ml.methodSite3p', 'Ante una duda de obra existe un registro al cual volver: qué material, qué ensayo, qué fecha. Las respuestas salen de datos.'],
+  ];
+  var meas = [
+    ['ml.methodMeas1t', 'Norma antes que criterio propio', 'ml.methodMeas1p', 'Cuando existe un método reconocido (ASTM, API, NOM) se sigue ese método y se cita. El criterio interno solo se usa donde no hay norma aplicable, y se marca como tal.'],
+    ['ml.methodMeas2t', 'Fecha y trazabilidad', 'ml.methodMeas2p', 'Cada medición queda ligada a una fecha y a un código de muestra o experimento. Un dato sin fecha no entra a la ficha.'],
+    ['ml.methodMeas3t', 'Laboratorio propio o externo', 'ml.methodMeas3p', 'Los ensayos de rutina se corren en planta; los que requieren equipo especializado se envían a laboratorio externo, siempre identificado en la ficha.'],
+    ['ml.methodMeas4t', 'Dato medido, no estimado', 'ml.methodMeas4p', 'Un valor se publica cuando existe la medición que lo respalda. Nada se completa por aproximación ni por analogía con otro material.'],
+  ];
+  var cycle = [
+    ['ml.methodCycle1t', 'Análisis', 'ml.methodCycle1p', 'Cada material se mide antes de usarse. Composición, comportamiento y límites quedan registrados, no supuestos.'],
+    ['ml.methodCycle2t', 'Experimentación', 'ml.methodCycle2p', 'Las formulaciones se prueban antes de salir a producción. Lo que no se ha ensayado no se afirma.'],
+    ['ml.methodCycle3t', 'Estudio constante', 'ml.methodCycle3p', 'El archivo se revisa y actualiza de forma continua: un material documentado sigue en observación.'],
+  ];
+  var body = archiveOpen('Laboratorio · Archivo abierto', 'ml-about') +
+    '<div class="ml-sheet-row"><div class="ml-rail"><strong data-i18n="ml.navMethodology">Metodología</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
+    '<div><h1 class="ml-file-title" data-i18n="ml.methodTitle">Cómo se estudian los materiales</h1></div></div>' +
+    '<div class="ml-sheet-row"><div class="ml-rail"><div class="ml-about-sec-n">1.0</div><div class="ml-about-sec-h" data-i18n="ml.methodSecProcess">El proceso</div></div>' +
+    '<div class="ml-about-body"><div class="ml-prose"><p data-i18n="ml.methodLede">Ningún material entra a una formulación sin antes pasar por un proceso fijo de caracterización. Ese trabajo previo —medir, ensayar, ajustar, volver a medir— es lo que sostiene el desempeño de cada producto que sale al mercado.</p></div>' +
+    aboutListTable(proc) + '</div></div>' +
+    '<div class="ml-sheet-row"><div class="ml-rail"><div class="ml-about-sec-n">2.0</div><div class="ml-about-sec-h" data-i18n="ml.methodSecStudy">Qué se estudia</div></div>' +
+    '<div class="ml-about-body"><div class="ml-prose"><p data-i18n="ml.methodStudyLede">El objeto de estudio es el material en sí, no quién lo suministra. La cal, el yeso o la arena tienen que cumplir con lo que su normativa les exige: el archivo documenta ese comportamiento esperado y verifica que la materia prima que entra a planta lo cumpla.</p></div>' +
+    '<div class="ml-about-split">' +
+    '<div class="ml-about-split-col"><div class="ml-about-split-h" data-i18n="ml.methodStudyMat">El material</div><p data-i18n="ml.methodStudyMatP">Cada ficha describe la familia del material y los rangos que su normativa establece: composición, granulometría, comportamiento con agua, límites de uso.</p></div>' +
+    '<div class="ml-about-split-col"><div class="ml-about-split-h" data-i18n="ml.methodStudySup">El suministro</div><p data-i18n="ml.methodStudySupP">Un proveedor puede cambiar por disponibilidad, logística o costo. Lo que no cambia es la especificación que el material debe cumplir antes de entrar a una formulación.</p></div>' +
+    '</div></div></div>' +
+    '<div class="ml-sheet-row"><div class="ml-rail"><div class="ml-about-sec-n">3.0</div><div class="ml-about-sec-h" data-i18n="ml.methodSecBefore">Investigación antes de producto</div></div>' +
+    '<div class="ml-about-body"><div class="ml-prose">' +
+    '<p data-i18n="ml.methodBeforeLede">Detrás de cada producto del catálogo hay meses de trabajo previo sobre sus materias primas. Ese estudio es la parte que no se ve, y es la que determina el resultado.</p>' +
+    '<p data-i18n="ml.methodBeforeClose">Conocer a fondo cada materia prima permite anticipar cómo se comportará una mezcla en obra: cuánta agua pide, cómo fragua, cómo envejece, qué tolera y qué no. Esa ventaja no se improvisa en producción; se construye en el laboratorio, mucho antes de que exista el producto.</p>' +
+    '</div><div class="ml-about-split">' +
+    '<div class="ml-about-split-col"><div class="ml-about-split-h" data-i18n="ml.methodBeforeStudy">Lo que se estudia</div><p data-i18n="ml.methodBeforeStudyP">Cada agregado y materia prima —arena, cal, yeso, cemento, bentonita, marmolina— se caracteriza a fondo antes de considerarse para una mezcla.</p></div>' +
+    '<div class="ml-about-split-col"><div class="ml-about-split-h" data-i18n="ml.methodBeforeCat">Lo que llega al catálogo</div><p data-i18n="ml.methodBeforeCatP">Solo formulaciones que ya pasaron por ensayo, ajuste y validación. Un producto sale al mercado cuando su desempeño es repetible.</p></div>' +
+    '</div></div></div>' +
+    '<div class="ml-sheet-row"><div class="ml-rail"><div class="ml-about-sec-n">4.0</div><div class="ml-about-sec-h" data-i18n="ml.methodSecMeasure">Cómo se mide</div></div>' +
+    '<div class="ml-about-body"><div class="ml-about-read">' +
+    meas.map(function (r) {
+      return '<div class="ml-about-read-item"><h3 data-i18n="' + r[0] + '">' + r[1] + '</h3><p data-i18n="' + r[2] + '">' + r[3] + '</p></div>';
     }).join('') +
-    '</div></section>' +
-    '<section class="ml-method-sec">' +
-    methodHead('02', 'ml.methodSecStudy', 'Qué se estudia') +
-    '<p class="ml-method-copy" data-i18n="ml.methodStudyLede">El objeto de estudio es el material en sí, no quién lo suministra. La cal, el yeso o la arena tienen que cumplir con lo que su normativa les exige: el archivo documenta ese comportamiento esperado y verifica que la materia prima que entra a planta lo cumpla.</p>' +
-    '<div class="ml-method-pair">' +
-    '<div class="ml-method-box"><div class="ml-method-box-h" data-i18n="ml.methodStudyMat">El material</div><p data-i18n="ml.methodStudyMatP">Cada ficha describe la familia del material y los rangos que su normativa establece: composición, granulometría, comportamiento con agua, límites de uso.</p></div>' +
-    '<div class="ml-method-box"><div class="ml-method-box-h" data-i18n="ml.methodStudySup">El suministro</div><p data-i18n="ml.methodStudySupP">Un proveedor puede cambiar por disponibilidad, logística o costo. Lo que no cambia es la especificación que el material debe cumplir antes de entrar a una formulación: se verifica siempre contra la misma referencia.</p></div>' +
-    '</div></section>' +
-    '<section class="ml-method-sec">' +
-    methodHead('03', 'ml.methodSecBefore', 'Investigación antes de producto') +
-    '<p class="ml-method-copy" data-i18n="ml.methodBeforeLede">Detrás de cada producto del catálogo hay meses de trabajo previo sobre sus materias primas. Ese estudio es la parte que no se ve, y es la que determina el resultado.</p>' +
-    '<div class="ml-method-split">' +
-    '<div class="ml-method-split-col"><div class="ml-method-split-h"><span class="ml-method-dot ml-method-dot--stone" aria-hidden="true"></span><span data-i18n="ml.methodBeforeStudy">Lo que se estudia</span></div><p data-i18n="ml.methodBeforeStudyP">Cada agregado y materia prima —arena, cal, yeso, cemento, bentonita, marmolina— se caracteriza a fondo: composición, comportamiento con agua, granulometría, compatibilidades y límites.</p></div>' +
-    '<div class="ml-method-split-col"><div class="ml-method-split-h"><span class="ml-method-dot ml-method-dot--copper" aria-hidden="true"></span><span data-i18n="ml.methodBeforeCat">Lo que llega al catálogo</span></div><p data-i18n="ml.methodBeforeCatP">Solo formulaciones que ya pasaron por ensayo, ajuste y validación. Un producto sale al mercado cuando su desempeño es repetible, no cuando la mezcla funciona una vez.</p></div>' +
-    '</div>' +
-    '<p class="ml-method-copy ml-method-copy--after" data-i18n="ml.methodBeforeClose">Conocer a fondo cada materia prima es lo que permite anticipar cómo se comportará una mezcla en obra: cuánta agua pide, cómo fragua, cómo envejece, qué tolera y qué no. Esa ventaja no se improvisa en producción; se construye en el laboratorio, mucho antes de que exista el producto.</p>' +
-    '</section>' +
-    '<section class="ml-method-sec">' +
-    methodHead('04', 'ml.methodSecMeasure', 'Cómo se mide') +
-    '<div class="ml-method-pair ml-method-pair--prose">' +
-    '<div><p><strong data-i18n="ml.methodMeas1t">Norma antes que criterio propio.</strong> <span data-i18n="ml.methodMeas1p">Cuando existe un método reconocido (ASTM, API, NOM), se sigue ese método y se cita. El criterio interno solo se usa donde no hay norma aplicable, y se marca como tal.</span></p>' +
-    '<p><strong data-i18n="ml.methodMeas2t">Fecha y trazabilidad.</strong> <span data-i18n="ml.methodMeas2p">Cada medición queda ligada a una fecha y a un código de muestra o experimento. Un dato sin fecha no entra a la ficha.</span></p></div>' +
-    '<div><p><strong data-i18n="ml.methodMeas3t">Laboratorio propio o externo.</strong> <span data-i18n="ml.methodMeas3p">Ensayos sencillos y de rutina se corren en planta; ensayos que requieren equipo especializado se envían a laboratorio externo, siempre identificado por nombre en la ficha.</span></p>' +
-    '<p><strong data-i18n="ml.methodMeas4t">Dato medido, no estimado.</strong> <span data-i18n="ml.methodMeas4p">Un valor se publica cuando existe la medición que lo respalda. Nada se completa por aproximación ni por analogía con otro material.</span></p></div>' +
-    '</div></section>' +
-    '<section class="ml-method-sec">' +
-    methodHead('05', 'ml.methodSecCycle', 'De dónde sale la mejora continua') +
-    '<div class="ml-method-grid ml-method-grid--3">' +
-    '<div class="ml-method-cell"><div class="ml-method-cell-h ml-method-cell-h--copper" data-i18n="ml.methodCycle1t">Análisis</div><p data-i18n="ml.methodCycle1p">Cada material se mide antes de usarse. Composición, comportamiento y límites quedan registrados, no supuestos.</p></div>' +
-    '<div class="ml-method-cell"><div class="ml-method-cell-h ml-method-cell-h--copper" data-i18n="ml.methodCycle2t">Experimentación</div><p data-i18n="ml.methodCycle2p">Las formulaciones se prueban antes de salir a producción. Lo que no se ha ensayado no se afirma.</p></div>' +
-    '<div class="ml-method-cell"><div class="ml-method-cell-h ml-method-cell-h--copper" data-i18n="ml.methodCycle3t">Estudio constante</div><p data-i18n="ml.methodCycle3p">El archivo se revisa y actualiza de forma continua: un material documentado sigue en observación.</p></div>' +
-    '</div>' +
-    '<p class="ml-method-copy ml-method-copy--after" data-i18n="ml.methodCycleClose">Este ciclo —analizar, experimentar, documentar, volver a revisar— es lo que respalda cada ficha técnica del catálogo. Un producto no llega a fórmula final por intuición: llega porque su materia prima fue caracterizada, sus mezclas fueron probadas y sus resultados quedaron registrados con la misma metodología en cada lote.</p>' +
-    '</section>' +
-    '<section class="ml-method-sec">' +
-    methodHead('06', 'ml.methodSecSite', 'Lo que esto significa en obra') +
-    '<div class="ml-method-grid ml-method-grid--3">' +
-    '<div class="ml-method-cell"><div class="ml-method-kpi-v">01</div><div class="ml-method-cell-h ml-method-cell-h--copper" data-i18n="ml.methodSite1t">Consistencia entre lotes</div><p data-i18n="ml.methodSite1p">Las materias primas se verifican lote a lote. Un saco se comporta como el anterior, en color, rendimiento y tiempo de trabajo.</p></div>' +
-    '<div class="ml-method-cell"><div class="ml-method-kpi-v">02</div><div class="ml-method-cell-h ml-method-cell-h--copper" data-i18n="ml.methodSite2t">Comportamiento predecible</div><p data-i18n="ml.methodSite2p">Dosificación de agua, fraguado y acabado están medidos, no aproximados. El aplicador sabe qué esperar antes de mezclar.</p></div>' +
-    '<div class="ml-method-cell"><div class="ml-method-kpi-v">03</div><div class="ml-method-cell-h ml-method-cell-h--copper" data-i18n="ml.methodSite3t">Respaldo técnico</div><p data-i18n="ml.methodSite3p">Ante una duda de obra existe un registro al cual volver: qué material, qué ensayo, qué fecha. Las respuestas salen de datos.</p></div>' +
-    '</div></section>' +
-    '<section class="ml-method-sec">' +
-    methodHead('07', 'ml.methodSecTrust', 'Compromiso de transparencia') +
-    '<div class="ml-method-notice"><p data-i18n="ml.methodTrustP">Cada ficha distingue con claridad entre un valor medido, una observación directa y una referencia normativa. Cuando un ensayo se realiza en laboratorio externo, se identifica como tal. Es la única manera de que los datos sirvan para decidir, y no solo para ilustrar.</p></div>' +
-    '</section>' +
-    '<p class="ml-method-end" data-i18n="ml.methodEnd">División de Investigación de Materiales · S-35® · Culiacán, Sinaloa, México. El archivo se expande de forma continua.</p>' +
+    '</div></div></div>' +
+    '<div class="ml-sheet-row"><div class="ml-rail"><div class="ml-about-sec-n">5.0</div><div class="ml-about-sec-h" data-i18n="ml.methodSecCycle">De dónde sale la mejora continua</div></div>' +
+    '<div class="ml-about-body"><div class="ml-about-trio">' +
+    cycle.map(function (c) {
+      return '<div class="ml-about-trio-col"><div class="ml-about-split-h" data-i18n="' + c[0] + '">' + c[1] + '</div>' +
+        '<p data-i18n="' + c[2] + '">' + c[3] + '</p></div>';
+    }).join('') +
+    '</div><div class="ml-prose"><p data-i18n="ml.methodCycleClose">Este ciclo —analizar, experimentar, documentar, volver a revisar— es lo que respalda cada ficha del catálogo. Un producto no llega a fórmula final por intuición: llega porque su materia prima fue caracterizada, sus mezclas fueron probadas y sus resultados quedaron registrados con la misma metodología en cada lote.</p></div></div></div>' +
+    '<div class="ml-sheet-row"><div class="ml-rail"><div class="ml-about-sec-n">6.0</div><div class="ml-about-sec-h" data-i18n="ml.methodSecSite">Lo que esto significa en obra</div></div>' +
+    '<div class="ml-about-body">' + aboutListTable(site, true) + '</div></div>' +
+    '<div class="ml-sheet-row"><div class="ml-rail"><div class="ml-about-sec-n">7.0</div><div class="ml-about-sec-h" data-i18n="ml.methodSecTrust">Compromiso de transparencia</div></div>' +
+    '<div class="ml-about-body"><div class="ml-prose"><p data-i18n="ml.methodTrustP">Cada ficha distingue con claridad entre un valor medido, una observación directa y una referencia normativa. Cuando un ensayo se realiza en laboratorio externo, se identifica como tal. Es la única manera de que los datos sirvan para decidir, y no solo para ilustrar.</p></div></div></div>' +
     archiveClose();
   return layout({
-    title: 'Metodología — Laboratorio | S-35',
+    title: 'Cómo se estudian los materiales | S-35',
     description: 'Cómo Laboratorio caracteriza materias primas: un proceso fijo de origen, muestra, clasificación, medición y documentación, antes de cualquier formulación.',
     path: '/laboratorio/methodology',
     page: 'methodology',

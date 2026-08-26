@@ -61,7 +61,7 @@
     qsa('.ml-m-barfill', sheet).forEach(function (el, i) {
       el.style.transitionDelay = (i * 0.1) + 's';
     });
-    qsa('.ml-method-kpi, .ml-method-cell, .ml-method-box, .ml-method-split-col, .ml-about-step, .ml-about-split-col, .ml-about-read-item', sheet).forEach(function (el) {
+    qsa('.ml-about-step, .ml-about-split-col, .ml-about-trio-col, .ml-about-read-item', sheet).forEach(function (el) {
       var n = 0;
       var node = el.parentNode && el.parentNode.firstElementChild;
       while (node) {
@@ -71,11 +71,11 @@
       }
       el.style.setProperty('--i', String(Math.min(n, 8)));
     });
-    qsa('.ml-method-pair--prose p, .ml-about-body .ml-prose p, .ml-about-note', sheet).forEach(function (el, i) {
+    qsa('.ml-about-body .ml-prose p, .ml-about-note', sheet).forEach(function (el, i) {
       el.style.setProperty('--i', String(i % 4));
     });
 
-    var motionTargets = qsa('.ml-sheet-mast, .ml-m-hair, .ml-sheet-row, .ml-sheet-end, .ml-method-hero, .ml-method-kpis, .ml-method-sec, .ml-method-end', sheet);
+    var motionTargets = qsa('.ml-sheet-mast, .ml-m-hair, .ml-sheet-row, .ml-sheet-end', sheet);
 
     function revealMotion(el) {
       el.classList.add('is-in');
