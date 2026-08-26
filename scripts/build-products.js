@@ -459,7 +459,9 @@ function indexPage() {
       '<ul class="pr-list">' +
       g.items.map(function (p) {
         return '<li><a href="/productos/' + esc(p.slug) + '">' +
-          '<span class="pr-list-name">' + esc(fullName(p)) +
+          listThumb(p) +
+          '<span class="pr-list-copy">' +
+          '<span class="pr-list-name">' + esc(fullName(p)) + '</span>' +
           '<span class="pr-list-line">' + esc(p.line) + '</span></span>' +
           '<span class="pr-list-meta">' + esc(p.packaging) +
           (p.status === 'verified' ? '' : ' · borrador') + '</span></a></li>';
@@ -540,6 +542,17 @@ function catalogInitials(p) {
   if (!parts.length) return 'S35';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
+function listThumb(p) {
+  const pack = p.figures && p.figures.pack;
+  const src = pack && pack.src ? catalogImgSrc(pack.src) : '';
+  if (src) {
+    return '<span class="pr-list-thumb"><img src="' + esc(src) + '" alt="' +
+      esc(pack.alt || fullName(p)) + '" width="56" height="70" loading="lazy" decoding="async"></span>';
+  }
+  return '<span class="pr-list-thumb pr-list-thumb--ph" style="--thumb-accent:' +
+    esc(p.accent) + '" aria-hidden="true">' + esc(catalogInitials(p)) + '</span>';
 }
 
 function catalogCard(p) {

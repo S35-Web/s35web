@@ -870,10 +870,10 @@
 
 .pr-list a {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 1rem;
-  align-items: baseline;
-  padding: 11px 0;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  gap: 0.2rem 0.95rem;
+  align-items: center;
+  padding: 10px 0;
   text-decoration: none;
   color: var(--pr-black);
   transition: color 200ms var(--pr-ease);
@@ -881,6 +881,38 @@
 
 .pr-list a:hover {
   color: var(--pr-accent);
+}
+
+.pr-list-thumb {
+  width: 56px;
+  height: 70px;
+  display: grid;
+  place-items: center;
+  background: #f4f3ef;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pr-list-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.pr-list-thumb--ph {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--thumb-accent, var(--pr-accent));
+  border-left: 3px solid var(--thumb-accent, var(--pr-accent));
+}
+
+.pr-list-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .pr-list-name {
@@ -895,7 +927,6 @@
   font-weight: 400;
   letter-spacing: normal;
   color: var(--pr-ink);
-  margin-top: 2px;
 }
 
 .pr-list-meta {
@@ -1200,7 +1231,15 @@
     max-width: 220px;
   }
   .pr-list a {
-    grid-template-columns: 1fr;
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+  .pr-list-thumb {
+    width: 48px;
+    height: 60px;
+    grid-row: 1 / span 2;
+  }
+  .pr-list-meta {
+    justify-self: start;
   }
 }
 
