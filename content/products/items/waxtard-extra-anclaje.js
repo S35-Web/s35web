@@ -13,7 +13,7 @@ module.exports = draft({
   name: 'WAXTARD',
   variant: 'Extra Anclaje',
   line: 'Estuco hidrófugo fino con anclaje químico',
-  accent: '#2f7d32',
+  accent: '#0060a8',
   packaging: '25 kg',
   description: 'Waxtard Extra Anclaje: estuco hidrófugo fino con anclaje químico para sustratos lisos, concreto cimbrado, EIFS y pintura firme. Saco de 25 kg.',
   strip: [
