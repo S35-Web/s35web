@@ -50,66 +50,6 @@ function liquid(p) {
 
 module.exports = [
   mortar({
-    slug: 'basecoat-plus-blanco',
-    code: 'FT-PS-001',
-    family: 'panel-system',
-    name: 'BASECOAT PLUS',
-    variant: 'Blanco Absoluto',
-    line: 'Recubrimiento de alta protección para panel',
-    accent: '#1a1a1a',
-    pack: '/Assets/productos_background/basecoat-blanco.png',
-    description: 'Basecoat Plus Blanco Absoluto: recubrimiento de alta protección para sistemas de panel y fachada. Saco de 25 kg.',
-    strip: ['Recubrimiento para sistemas de panel', 'Blanco absoluto · saco de 25 kg'],
-    lead: 'Basecoat de la línea Panel System en blanco absoluto. Recubrimiento de alta protección para paneles y fachadas, listo para amasar con agua. No es un estuco Waxtard de acabado fino: es la capa de protección del sistema de panel. Borrador interno.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Recubrimiento base para sistemas de panel' },
-      { label: 'Función', value: 'Alta protección de fachada / panel · blanco' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'Capa de recubrimiento sobre el sistema de panel. Da cuerpo, protección y una base blanca para el acabado posterior.',
-      'No sustituye al adhesivo de pegado del panel ni al estuco de acabado fino de la línea Waxtard.',
-    ],
-    uses: [
-      { title: 'Sistemas de panel.', text: 'Capa de recubrimiento sobre el tablero ya colocado.' },
-      { title: 'Fachadas.', text: 'Protección de la cara expuesta antes del acabado.' },
-      { title: 'Base blanca.', text: 'Cuando el acabado posterior pide fondo blanco.' },
-      { title: 'No aplicar como.', text: 'Estuco de acabado aparente ni como adhesivo de pieza cerámica.' },
-    ],
-    apply: 'Aplicar como recubrimiento del sistema de panel, embebendo la malla si el sistema lo requiere.',
-  }),
-
-  mortar({
-    slug: 'basecoat-plus-gris',
-    code: 'FT-PS-002',
-    family: 'panel-system',
-    name: 'BASECOAT PLUS',
-    variant: 'Gris',
-    line: 'Recubrimiento de alta protección para panel',
-    accent: '#4a4a4a',
-    pack: '/Assets/productos_background/basecoat.png',
-    description: 'Basecoat Plus Gris: recubrimiento de alta protección para sistemas de panel y fachada. Saco de 25 kg.',
-    strip: ['Recubrimiento para sistemas de panel', 'Gris · saco de 25 kg'],
-    lead: 'Basecoat de la línea Panel System en gris. Misma función de recubrimiento de alta protección que el Blanco Absoluto, en tono gris. Borrador interno.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Recubrimiento base para sistemas de panel' },
-      { label: 'Función', value: 'Alta protección de fachada / panel · gris' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'Capa de recubrimiento del sistema de panel en tono gris.',
-      'Elegir blanco o gris según el acabado que va encima y el criterio de color del proyecto.',
-    ],
-    uses: [
-      { title: 'Sistemas de panel.', text: 'Capa de recubrimiento sobre el tablero ya colocado.' },
-      { title: 'Fachadas.', text: 'Protección de la cara expuesta antes del acabado.' },
-      { title: 'Base gris.', text: 'Cuando el sistema posterior no requiere fondo blanco.' },
-      { title: 'No aplicar como.', text: 'Estuco de acabado aparente ni como adhesivo de pieza cerámica.' },
-    ],
-    apply: 'Aplicar como recubrimiento del sistema de panel, embebendo la malla si el sistema lo requiere.',
-  }),
-
-  mortar({
     slug: 'cellbond-pro',
     code: 'FT-PP-002',
     family: 'pro-systems',

@@ -131,8 +131,8 @@ module.exports = draft({
           text: 'Tablas de yeso sin sellar, OSB (viruta de madera), plástico, madera, metal, ni inmersión prolongada de agua. Esos sustratos piden otro sistema o consulta a Especificaciones S-35.',
         },
         {
-          title: 'No sustituye a.',
-          text: 'Basecoat Plus (recubrimiento de panel), Pegaxpress (loseta) ni Waxtard Extra Anclaje (estuco de acabado sobre EIFS).',
+          title:         'No sustituye a.',
+        text: 'Basecoat Plus (adhesivo y recubrimiento del sistema de panel), Pegaxpress (loseta) ni Waxtard Extra Anclaje (estuco de acabado sobre EIFS).',
         },
       ],
     },
@@ -238,7 +238,7 @@ module.exports = draft({
       title: 'Datos de interés',
       notes: [
         'No sustituye a Leveltec ni a Pegaxpress: pega y reviste poliestireno, no nivela pisos ni pega loseta.',
-        'No es Basecoat Plus: aquel recubre el sistema de panel. Styrobond es el pegamento y recubrimiento del EPS.',
+        'No es Basecoat Plus: aquel es el adhesivo y recubrimiento del sistema de panel (cemento, yeso y poliestireno). Styrobond es el pegamento y recubrimiento dedicado del EPS en Pro+.',
         'No es Pegaxpress Block ni un adhesivo de loseta.',
         'El acabado fino hidrófugo sobre el sistema, si el proyecto lo pide, es Waxtard Extra Anclaje.',
         'Esta ficha no asigna ensayos ANSI ni rendimientos en m²: el PDF de referencia no los trae. El consumo lo define el espesor y la rugosidad en obra.',

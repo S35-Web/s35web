@@ -16,7 +16,7 @@ const FAMILIES = [
   {
     id: 'panel-system',
     name: 'Panel System',
-    note: 'Recubrimientos de alta protección para sistemas de panel y fachada.',
+    note: 'Adhesivos y recubrimientos para sistemas de panel, fachada y placas de poliestireno.',
   },
   {
     id: 'pro-systems',
