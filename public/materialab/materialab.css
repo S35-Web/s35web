@@ -309,6 +309,16 @@
   text-transform: none;
 }
 
+@media (min-width: 801px) {
+  .ml-archive .ml-table:not(#ml-research-table) td:nth-child(2),
+  .ml-archive .ml-table:not(#ml-research-table) th:nth-child(2),
+  .ml-archive .ml-table:not(#ml-research-table) td:nth-child(5),
+  .ml-archive .ml-table:not(#ml-research-table) th:nth-child(5) {
+    white-space: nowrap;
+    width: 1%;
+  }
+}
+
 .ml-name-en {
   color: var(--ml-gray);
   font-weight: 400;
