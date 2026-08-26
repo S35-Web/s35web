@@ -50,66 +50,6 @@ function liquid(p) {
 
 module.exports = [
   mortar({
-    slug: 'waxtard-blanco-absoluto',
-    code: 'FT-PR-002',
-    family: 'estucos-premium',
-    name: 'WAXTARD',
-    variant: 'Blanco Absoluto',
-    line: 'Estuco premium de acabado blanco',
-    accent: '#c62828',
-    pack: '/Assets/productos_background/WAXTARD-BLANCO-ABSOLUTO.png',
-    description: 'Waxtard Blanco Absoluto: estuco premium de acabado blanco para interiores y exteriores. Saco de 25 kg.',
-    strip: ['Estuco premium de acabado blanco', 'Interiores y exteriores · saco de 25 kg'],
-    lead: 'Estuco de la línea Waxtard en tono blanco absoluto. Mortero seco de acabado, listo para amasar con agua, para paños tersos donde se busca un blanco más limpio que el Blanco Perla. Borrador interno: confirmar hidrofobicidad, granulometría y rendimientos con la ficha impresa.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Mortero seco de acabado, línea Waxtard' },
-      { label: 'Función', value: 'Estuco de acabado blanco · interior y exterior' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'Comparte la familia Waxtard con Blanco Perla y Gris: mortero de acabado para aplicar a llana o proyectado en espesores delgados.',
-      'El Blanco Absoluto se elige cuando el proyecto pide un blanco más frío y uniforme. No sustituye a Extra Anclaje sobre sustratos lisos ni al Cemento Plástico de concreto aparente.',
-    ],
-    uses: [
-      { title: 'Muros y fachadas.', text: 'Acabado final sobre repello, block y concreto absorbente.' },
-      { title: 'Base de pintura.', text: 'Paño blanco estable cuando se va a pintar.' },
-      { title: 'Interiores.', text: 'Plafones y muros donde el blanco limpio es el criterio de proyecto.' },
-      { title: 'No aplicar sobre.', text: 'Yeso, madera, plástico, pintura suelta ni humedad activa sin resolver.' },
-    ],
-    kpi3v: '2–5 mm', kpi3l: 'espesor de referencia por capa',
-    kpi4v: 'Consultar', kpi4l: 'rendimiento por saco',
-  }),
-
-  mortar({
-    slug: 'waxtard-gris',
-    code: 'FT-PR-003',
-    family: 'estucos-premium',
-    name: 'WAXTARD',
-    variant: 'Gris',
-    line: 'Estuco premium de acabado gris',
-    accent: '#3d3d3d',
-    pack: '/Assets/productos_background/WAXTARD-gris.png',
-    description: 'Waxtard Gris: estuco premium de acabado gris para interiores y exteriores. Saco de 25 kg.',
-    strip: ['Estuco premium de acabado gris', 'Interiores y exteriores · saco de 25 kg'],
-    lead: 'Estuco de la línea Waxtard en tono gris. Mortero seco de acabado para paños minerales donde el gris es el color de proyecto, no una base a pintar de blanco. Borrador interno: confirmar propiedades y rendimientos con la ficha impresa.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Mortero seco de acabado, línea Waxtard' },
-      { label: 'Función', value: 'Estuco de acabado gris · interior y exterior' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'Misma familia de trabajo que Blanco Perla, en tono gris mineral.',
-      'El gris varía con el lote, el agua y el curado: un paño de prueba fija el criterio de obra.',
-    ],
-    uses: [
-      { title: 'Acabado aparente gris.', text: 'Fachadas e interiores que se dejan vistos.' },
-      { title: 'Base de recubrimiento.', text: 'Cuando el sistema posterior admite un fondo gris.' },
-      { title: 'Remodelación.', text: 'Renivelación de paños existentes firmes.' },
-      { title: 'No aplicar sobre.', text: 'Yeso, madera, plástico ni humedad activa sin resolver.' },
-    ],
-  }),
-
-  mortar({
     slug: 'basecoat-plus-blanco',
     code: 'FT-PS-001',
     family: 'panel-system',
