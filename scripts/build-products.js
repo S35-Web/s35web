@@ -53,8 +53,8 @@ function subnav(current) {
     return '<a href="/productos#' + f.id + '">' + esc(f.name) + '</a>';
   }).join('');
   return '<div class="pr-subnav"><div class="pr-subnav-inner">' +
-    '<nav class="pr-subnav-links" style="display:flex;flex-wrap:wrap;gap:0.25rem 1.25rem">' + items + '</nav>' +
-    '<a href="' + esc(current) + '">← Catálogo</a>' +
+    '<nav class="pr-subnav-links" aria-label="Familias de producto">' + items + '</nav>' +
+    '<a class="pr-subnav-back" href="' + esc(current) + '">← Catálogo</a>' +
     '</div></div>';
 }
 
@@ -87,7 +87,7 @@ function layout(opts, body) {
   const canonical = ORIGIN + opts.path;
   const accent = opts.accent || '#2f7d32';
   return '<!DOCTYPE html>\n<html lang="es">\n<head>\n' +
-    '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+    '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">\n' +
     '<title>' + esc(opts.title) + '</title>\n' +
     '<meta name="description" content="' + esc(opts.description) + '">\n' +
     '<meta name="robots" content="index, follow">\n' +
@@ -223,7 +223,7 @@ function miniTable(t) {
     }).join('') + '</tr>';
   }).join('');
   return (t.label ? '<div class="pr-label" style="margin-bottom:8px">' + esc(t.label) + '</div>' : '') +
-    '<table>' + head + '<tbody>' + rows + '</tbody></table>' +
+    '<div class="pr-table-wrap"><table class="pr-table--mini">' + head + '<tbody>' + rows + '</tbody></table></div>' +
     (t.note ? '<p class="pr-table-note">' + t.note + '</p>' : '');
 }
 

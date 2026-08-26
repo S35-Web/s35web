@@ -49,12 +49,26 @@
 .pr-subnav-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   max-width: 980px;
   margin: 0 auto;
   padding: 0.55rem var(--pr-pad);
   min-height: 40px;
+}
+
+.pr-subnav-links {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 0.25rem 1.1rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-wrap: nowrap;
+}
+
+.pr-subnav-links::-webkit-scrollbar {
+  display: none;
 }
 
 .pr-subnav a {
@@ -67,6 +81,11 @@
   transition: color 200ms var(--pr-ease);
 }
 
+.pr-subnav-back {
+  flex: none;
+  color: var(--pr-black);
+}
+
 .pr-subnav a:hover {
   color: var(--pr-black);
 }
@@ -76,7 +95,7 @@
 .pr-sheet {
   max-width: 980px;
   margin: 1.5rem auto 4rem;
-  padding: 0 var(--pr-pad) 3rem;
+  padding: 0 var(--pr-pad) calc(3rem + env(safe-area-inset-bottom, 0px));
 }
 
 .pr-mast {
@@ -576,6 +595,8 @@
 
 .pr-table-wrap {
   overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Cards, items, steps ──────────────────────────────── */
@@ -1060,6 +1081,10 @@
 }
 
 @media (max-width: 800px) {
+  .pr-page {
+    --pr-pad: 1.15rem;
+  }
+
   .pr-row {
     grid-template-columns: 1fr;
     gap: 10px 0;
@@ -1071,11 +1096,93 @@
   .pr-items {
     grid-template-columns: 1fr;
   }
-  .pr-table--props {
-    min-width: 620px;
-  }
+
   .pr-subnav {
     top: 56px;
+  }
+
+  .pr-subnav-inner {
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+  }
+
+  .pr-sheet table {
+    font-size: 14px;
+  }
+
+  .pr-table--props {
+    min-width: 0;
+    display: block;
+    width: 100%;
+  }
+
+  .pr-table--mini {
+    min-width: 0;
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .pr-table--mini th,
+  .pr-table--mini td {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .pr-table--props thead {
+    display: none;
+  }
+
+  .pr-table--props tbody,
+  .pr-table--props tr {
+    display: block;
+  }
+
+  .pr-table--props tr {
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--pr-line);
+  }
+
+  .pr-table--props tr:first-child {
+    padding-top: 0.15rem;
+  }
+
+  .pr-table--props td {
+    display: block;
+    width: auto;
+    max-width: none;
+    padding: 0.12rem 0;
+    border: none;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .pr-table--props td:first-child {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--pr-black);
+    padding-bottom: 0.28rem;
+  }
+
+  .pr-table--props td:nth-child(n + 2)::before {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pr-gray);
+    margin: 0.45rem 0 0.12rem;
+  }
+
+  .pr-table--props td:nth-child(2)::before { content: 'Valor típico'; }
+  .pr-table--props td:nth-child(3)::before { content: 'En términos prácticos'; }
+  .pr-table--props td:nth-child(4)::before { content: 'Método'; }
+
+  .pr-cell-method {
+    font-size: 13px;
+  }
+
+  .pr-bars svg {
+    width: 100% !important;
+    min-width: 0 !important;
   }
 }
 
