@@ -295,37 +295,6 @@ module.exports = [
     kpi3v: 'Alto desempeño', kpi3l: 'formato y soporte exigentes',
   }),
 
-  mortar({
-    slug: 'pegaxpress-psp',
-    code: 'FT-AD-004',
-    family: 'adhesivos-pro',
-    name: 'PEGAXPRESS PSP',
-    variant: 'Pro+',
-    line: 'Adhesivo piso sobre piso',
-    accent: '#6a1b9a',
-    pack: '/Assets/productos_background/piso-sobre-piso.png',
-    description: 'Pegaxpress PSP Pro+: adhesivo para colocar loseta sobre loseta existente. Saco de 25 kg.',
-    strip: ['Piso sobre piso', 'Línea Pegaxpress · saco de 25 kg'],
-    lead: 'Adhesivo de la línea Pegaxpress para colocar recubrimiento nuevo sobre un piso cerámico existente, firme y bien adherido. No es un nivelador y no pega sobre pieza suelta. Borrador interno.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Adhesivo cementoso para recubrimiento sobre recubrimiento' },
-      { label: 'Función', value: 'Piso sobre piso · loseta sobre loseta firme' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'El soporte es la loseta vieja, no el firme. Tiene que estar sana, limpia y capaz. Si suena hueca, se levanta; no se tapa con adhesivo.',
-      'Los desniveles se corrigen con Leveltec, no con PSP.',
-    ],
-    uses: [
-      { title: 'Loseta sobre loseta.', text: 'Piso cerámico existente firme, limpio y bien adherido.' },
-      { title: 'No aplicar sobre.', text: 'Pieza suelta, brillo graso sin preparar, madera, vinil o humedad activa.' },
-      { title: 'No usar como.', text: 'Nivelador de firmes ni adhesivo de block.' },
-      { title: 'Altura.', text: 'Verificar puertas, juntas y desniveles: se suma el espesor de adhesivo y pieza nueva.' },
-    ],
-    apply: 'Preparar la loseta existente (limpieza / perfilado según ficha). Llana dentada y asiento de la pieza nueva.',
-    kpi3v: 'Piso sobre piso', kpi3l: 'loseta existente firme',
-  }),
-
   liquid({
     slug: 'nanotech-hidrofobico',
     code: 'FT-LQ-001',
