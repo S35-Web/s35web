@@ -186,6 +186,11 @@ const server = http.createServer((req, res) => {
             serveStaticFile(req, res, filePath);
         }
     } catch (error) {
+        const htmlFallback = filePath + '.html';
+        if (!path.extname(filePath) && fs.existsSync(htmlFallback)) {
+            serveStaticFile(req, res, htmlFallback);
+            return;
+        }
         res.writeHead(404, { 'Content-Type': 'text/html' });
         res.end('<h1>404 - Archivo no encontrado</h1>');
     }
