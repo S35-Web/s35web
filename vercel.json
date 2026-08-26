@@ -10,6 +10,8 @@
     { "source": "/producto-waxtard-extra-anclaje", "destination": "/productos/waxtard-extra-anclaje", "permanent": true },
     { "source": "/producto-waxtard-extra-anclaje.html", "destination": "/productos/waxtard-extra-anclaje", "permanent": true },
     { "source": "/producto-cemento-plastico-concreto", "destination": "/productos/cemento-plastico-concreto", "permanent": true },
-    { "source": "/producto-cemento-plastico-concreto.html", "destination": "/productos/cemento-plastico-concreto", "permanent": true }
+    { "source": "/producto-cemento-plastico-concreto.html", "destination": "/productos/cemento-plastico-concreto", "permanent": true },
+    { "source": "/productos/cellbond-pro", "destination": "/productos", "permanent": true },
+    { "source": "/productos/cellbond-pro.html", "destination": "/productos", "permanent": true }
   ]
 }

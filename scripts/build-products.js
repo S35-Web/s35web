@@ -644,6 +644,11 @@ catalog.published().forEach(function (p) {
 });
 catalog.legacy().forEach(function (p) {
   write('descontinuados/' + p.slug + '.html', productPage(p));
+  const stale = path.join(OUT, p.slug + '.html');
+  if (fs.existsSync(stale)) {
+    fs.unlinkSync(stale);
+    console.log('  (quitado) public/productos/' + p.slug + '.html');
+  }
 });
 patchCatalogPage();
 OLD_PRODUCT_PAGES.forEach(function (pair) { writeRedirect(pair[0], pair[1]); });
@@ -660,6 +665,10 @@ if (fs.existsSync(sitemapPath)) {
   OLD_PRODUCT_PAGES.forEach(function (pair) {
     const oldLoc = ORIGIN + '/' + pair[0];
     sm = sm.replace(new RegExp('\\s*<url>\\s*<loc>' + oldLoc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<\\/loc>[\\s\\S]*?<\\/url>', 'g'), '');
+  });
+  catalog.legacy().forEach(function (p) {
+    const loc = ORIGIN + '/productos/' + p.slug;
+    sm = sm.replace(new RegExp('\\s*<url>\\s*<loc>' + loc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<\\/loc>[\\s\\S]*?<\\/url>', 'g'), '');
   });
   const original = fs.readFileSync(sitemapPath, 'utf8');
   let extra = '';

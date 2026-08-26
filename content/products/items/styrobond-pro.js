@@ -132,7 +132,7 @@ module.exports = draft({
         },
         {
           title: 'No sustituye a.',
-          text: 'Basecoat Plus (recubrimiento de panel), Cellbond (block celular), Pegaxpress (loseta) ni Waxtard Extra Anclaje (estuco de acabado sobre EIFS).',
+          text: 'Basecoat Plus (recubrimiento de panel), Pegaxpress (loseta) ni Waxtard Extra Anclaje (estuco de acabado sobre EIFS).',
         },
       ],
     },
@@ -156,7 +156,7 @@ module.exports = draft({
           rows: [
             ['Yeso sin sellar, OSB, plástico, madera, metal', 'No aplicar.'],
             ['Inmersión prolongada', 'No aplicar.'],
-            ['Loseta, block celular, nivelación de piso', 'Usar Pegaxpress, Cellbond o Leveltec.'],
+            ['Loseta o nivelación de piso', 'Usar Pegaxpress o Leveltec.'],
             ['Acabado fino hidrófugo sobre el sistema', 'Waxtard Extra Anclaje.'],
           ],
         },
@@ -239,7 +239,7 @@ module.exports = draft({
       notes: [
         'No sustituye a Leveltec ni a Pegaxpress: pega y reviste poliestireno, no nivela pisos ni pega loseta.',
         'No es Basecoat Plus: aquel recubre el sistema de panel. Styrobond es el pegamento y recubrimiento del EPS.',
-        'No es Cellbond ni Pegaxpress Block.',
+        'No es Pegaxpress Block ni un adhesivo de loseta.',
         'El acabado fino hidrófugo sobre el sistema, si el proyecto lo pide, es Waxtard Extra Anclaje.',
         'Esta ficha no asigna ensayos ANSI ni rendimientos en m²: el PDF de referencia no los trae. El consumo lo define el espesor y la rugosidad en obra.',
       ],
