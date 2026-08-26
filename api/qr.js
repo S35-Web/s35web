@@ -17,7 +17,7 @@ module.exports = function handler(req, res) {
       '?utm_source=packaging&utm_medium=qr&utm_campaign=' +
       encodeURIComponent(raw);
   } else {
-    loc = '/laboratorio?notice=not-found';
+    loc = '/laboratorio/materials?notice=not-found';
   }
   res.statusCode = 302;
   res.setHeader('Location', loc);

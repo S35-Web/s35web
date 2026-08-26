@@ -39,7 +39,7 @@ function s35Nav() {
     '    <div class="nav-logo"><a href="/"><img src="/Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image"></a></div>\n' +
     '    <div class="nav-menu">\n' +
     '      <a href="/catalogo.html" class="nav-link" data-i18n="nav.catalog">Catálogo</a>\n' +
-    '      <a href="/laboratorio" class="nav-link" data-i18n="nav.materialab">Laboratorio</a>\n' +
+    '      <a href="/laboratorio/materials" class="nav-link" data-i18n="nav.materialab">Laboratorio</a>\n' +
     '      <a href="/#contacto" class="nav-link contact-btn" data-i18n="nav.contact">Contacto</a>\n' +
     '    </div>\n' +
     '    <div class="nav-toggle"><span></span><span></span><span></span></div>\n' +
@@ -71,7 +71,7 @@ function footer() {
     '<li><a href="/productos">Índice de fichas</a></li><li><a href="/catalogo.html">Catálogo completo</a></li>' + famLinks +
     '</ul></div>\n' +
     '<div class="footer-column"><h4 class="footer-title">Tecnología</h4><ul class="footer-list">' +
-    '<li><a href="/laboratorio">Laboratorio</a></li><li><a href="/laboratorio/materials">Índice de materiales</a></li>' +
+    '<li><a href="/laboratorio/materials">Laboratorio</a></li><li><a href="/laboratorio/materials">Índice de materiales</a></li>' +
     '<li><a href="/laboratorio/methodology">Metodología</a></li></ul></div>\n' +
     '<div class="footer-column"><h4 class="footer-title">Contacto</h4><ul class="footer-list">' +
     '<li><a href="/#contacto">Formulario de contacto</a></li><li><a href="https://wa.me/' + WHATSAPP + '" target="_blank" rel="noopener">WhatsApp</a></li>' +

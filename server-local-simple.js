@@ -164,8 +164,13 @@ const server = http.createServer((req, res) => {
     }
 
     // Laboratorio: URL pública /laboratorio; archivos en public/materialab
-    if (pathname === '/materialab' || (pathname.startsWith('/materialab/') && !/\.(css|js)$/.test(pathname))) {
-        const dest = pathname.replace(/^\/materialab/, '/laboratorio') || '/laboratorio';
+    if (pathname === '/laboratorio' || pathname === '/materialab') {
+        res.writeHead(301, { Location: '/laboratorio/materials' + (parsedUrl.search || '') });
+        res.end();
+        return;
+    }
+    if (pathname.startsWith('/materialab/') && !/\.(css|js)$/.test(pathname)) {
+        const dest = pathname.replace(/^\/materialab/, '/laboratorio') + (parsedUrl.search || '');
         res.writeHead(301, { Location: dest });
         res.end();
         return;
@@ -176,8 +181,8 @@ const server = http.createServer((req, res) => {
     
     if (pathname === '/') {
         filePath = path.join(__dirname, 'public', 'index.html');
-    } else if (pathname === '/laboratorio' || pathname.startsWith('/laboratorio/')) {
-        const rest = pathname === '/laboratorio' ? '' : pathname.slice('/laboratorio'.length);
+    } else if (pathname.startsWith('/laboratorio/')) {
+        const rest = pathname.slice('/laboratorio'.length);
         filePath = path.join(__dirname, 'public', 'materialab' + rest);
     } else if (pathname.startsWith('/Assets/')) {
         // Manejar archivos de Assets

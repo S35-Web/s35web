@@ -163,8 +163,7 @@ function navLinks(current) {
   ];
   return items.map(function (it) {
     var cur = '';
-    if (current && current.indexOf(it[0]) === 0 && it[0] !== '/laboratorio') cur = ' aria-current="page"';
-    if (current === '/laboratorio' && it[0] === '/laboratorio/materials') cur = '';
+    if (current && current.indexOf(it[0]) === 0) cur = ' aria-current="page"';
     return '<a href="' + it[0] + '"' + cur + ' data-i18n="' + it[1] + '">' + it[2] + '</a>';
   }).join('');
 }
@@ -177,7 +176,7 @@ function s35Nav() {
     '      <div class="nav-dropdown"><a href="http://s-35.com/clientes/#login" class="nav-link" target="_blank" rel="noopener"><span data-i18n="nav.login">Iniciar sesión</span> <i class="fas fa-chevron-right"></i></a></div>\n' +
     '      <a href="/#noticias" class="nav-link" data-i18n="nav.news">News</a>\n' +
     '      <a href="/catalogo.html" class="nav-link" data-i18n="nav.catalog">Catálogo</a>\n' +
-    '      <a href="/laboratorio" class="nav-link" data-i18n="nav.materialab">Laboratorio</a>\n' +
+    '      <a href="/laboratorio/materials" class="nav-link" data-i18n="nav.materialab">Laboratorio</a>\n' +
     '      <a href="/#contacto" class="nav-link contact-btn" data-i18n="nav.contact">Contact</a>\n' +
     '    </div>\n' +
     '    <div class="nav-toggle"><span></span><span></span><span></span></div>\n' +
@@ -502,7 +501,8 @@ function researchTable() {
 }
 
 function pageMaterialsIndex() {
-  var body = archiveOpen('Laboratorio · Archivo abierto') +
+  var body = '<div hidden class="ml-banner ml-banner--warn" data-not-found data-i18n="ml.notFound">CÓDIGO NO ENCONTRADO EN EL ARCHIVO — ESTA INVESTIGACIÓN PUEDE NO ESTAR PUBLICADA AÚN</div>' +
+    archiveOpen('Laboratorio · Archivo abierto') +
     '<div class="ml-sheet-row"><div class="ml-rail"><strong>Índice de<br>materiales</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
     '<div><h1 class="ml-file-title" data-i18n="ml.materialsH1">Materiales</h1>' +
     '<p class="ml-lede">' + pad2(stats.materialsDocumented) + ' ' + i18n('ml.materialsLede', 'MATERIALES DOCUMENTADOS. El archivo empieza pequeño y crece a la vista.') + '</p>' +
@@ -839,7 +839,12 @@ function write(rel, html) {
   console.log('wrote public/materialab/' + rel);
 }
 
-write('index.html', pageHome());
+write('index.html', '<!DOCTYPE html>\n<html lang="es"><head><meta charset="UTF-8">' +
+  '<meta http-equiv="refresh" content="0;url=/laboratorio/materials">' +
+  '<link rel="canonical" href="' + config.siteOrigin + '/laboratorio/materials">' +
+  '<title>Laboratorio | S-35</title>' +
+  '<script>location.replace("/laboratorio/materials"+location.search+location.hash);</script>' +
+  '</head><body><p><a href="/laboratorio/materials">Materiales — Laboratorio</a></p></body></html>\n');
 write('about.html', pageAbout());
 write('methodology.html', pageMethodology());
 write('research.html', pageResearch());
@@ -851,8 +856,7 @@ archive.documentedMaterials().forEach(function (m) {
 var sitemapPath = path.join(ROOT, 'public', 'sitemap.xml');
 var sitemapOrigin = 'https://www.s-35.com.mx';
 var urls = [
-  [sitemapOrigin + '/laboratorio', '1.0'],
-  [sitemapOrigin + '/laboratorio/materials', '0.9'],
+  [sitemapOrigin + '/laboratorio/materials', '1.0'],
   [sitemapOrigin + '/laboratorio/research', '0.8'],
   [sitemapOrigin + '/laboratorio/methodology', '0.7'],
   [sitemapOrigin + '/laboratorio/about', '0.8'],
