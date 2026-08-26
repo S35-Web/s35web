@@ -52,7 +52,7 @@
   gap: 0.75rem;
   max-width: 980px;
   margin: 0 auto;
-  padding: 0.5rem var(--pr-pad);
+  padding: 8px var(--pr-pad);
 }
 
 .pr-subnav-links {
@@ -1135,15 +1135,6 @@
   .pr-halves,
   .pr-items {
     grid-template-columns: 1fr;
-  }
-
-  .pr-subnav {
-    top: 56px;
-  }
-
-  .pr-subnav-inner {
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
   }
 
   .pr-sheet table {
