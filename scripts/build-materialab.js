@@ -505,7 +505,7 @@ function pageMaterialsIndex() {
     archiveOpen('Laboratorio · Archivo abierto') +
     '<div class="ml-sheet-row ml-sheet-row--index"><div class="ml-rail"><strong>Índice de<br>materiales</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
     '<div><h1 class="ml-file-title" data-i18n="ml.materialsH1">Materiales</h1>' +
-    '<p class="ml-lede">' + pad2(stats.materialsDocumented) + ' ' + i18n('ml.materialsLede', 'MATERIALES DOCUMENTADOS. Laboratorio es un archivo abierto de caracterización de materias primas desarrollado por S-35.') + '</p>' +
+    '<p class="ml-lede">' + pad2(stats.materialsDocumented) + ' ' + i18n('ml.materialsLede', 'MATERIALES DOCUMENTADOS. Laboratorio es una investigación abierta desarrollada por S-35®.') + '</p>' +
     '<div class="ml-m-rule"></div>' +
     materialTableWrap('<table class="ml-table"><thead><tr><th scope="col" data-i18n="ml.thCode">CÓDIGO</th><th scope="col" data-i18n="ml.thName">NOMBRE</th><th scope="col" data-i18n="ml.thClass">CLASE</th><th scope="col" data-i18n="ml.thOrigin">ORIGEN</th><th scope="col" data-i18n="ml.thStatus">ESTADO</th></tr></thead><tbody>' +
     materialRows() + '</tbody></table>') + '</div></div>' + archiveClose();
