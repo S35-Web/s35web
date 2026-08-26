@@ -264,37 +264,6 @@ module.exports = [
     kpi3v: 'Cerámica', kpi3l: 'absorción habitual',
   }),
 
-  mortar({
-    slug: 'ultraforce',
-    code: 'FT-AD-003',
-    family: 'adhesivos-pro',
-    name: 'PEGAXPRESS',
-    variant: 'Ultraforce',
-    line: 'Adhesivo de alto desempeño',
-    accent: '#1a237e',
-    pack: '/Assets/productos_background/ultraforce.png',
-    description: 'Pegaxpress Ultraforce: adhesivo de alto desempeño para piezas exigentes. Saco de 25 kg.',
-    strip: ['Adhesivo de alto desempeño', 'Línea Pegaxpress · saco de 25 kg'],
-    lead: 'Adhesivo de la línea Pegaxpress para condiciones y formatos que piden más que el cerámico o el porcelánico universal: pieza grande, soporte exigente o tránsito más severo. Borrador interno: confirmar el alcance exacto con la ficha impresa.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Adhesivo cementoso de alto desempeño' },
-      { label: 'Función', value: 'Pegado de pieza exigente · formato y soporte demandantes' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'Se reserva a los casos que el cerámico y el porcelánico universal no cubren. No es el adhesivo de uso general del almacén.',
-      'Tampoco es nivelador ni estuco.',
-    ],
-    uses: [
-      { title: 'Pieza exigente.', text: 'Formatos y soportes que la ficha impresa asigne a Ultraforce.' },
-      { title: 'No sustituye a.', text: 'Leveltec (nivelar), PSP (piso sobre piso) ni Block (mampostería).' },
-      { title: 'No usar como.', text: 'Estuco de acabado ni recubrimiento de panel.' },
-      { title: 'Soporte.', text: 'Capaz y limpio; el alto desempeño no pega sobre polvo ni sobre un firme suelto.' },
-    ],
-    apply: 'Llana dentada y, en formatos grandes, doble encolado si la ficha impresa lo pide.',
-    kpi3v: 'Alto desempeño', kpi3l: 'formato y soporte exigentes',
-  }),
-
   liquid({
     slug: 'nanotech-hidrofobico',
     code: 'FT-LQ-001',
