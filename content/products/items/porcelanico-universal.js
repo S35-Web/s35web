@@ -21,7 +21,7 @@ module.exports = draft({
     'Adhesivo para porcelánico · firmes interior y exterior',
     'Tipo C · saco de 25 kg',
   ],
-  lead: 'Mortero adhesivo de granulometría media, enriquecido con polímeros, para pegar porcelánico y porcelanato de baja absorción. El dorso denso no toma agua como la cerámica habitual: el adhesivo tiene que mojar pieza y soporte. Porcelánico hasta 90 × 90 cm; cerámico en cualquier formato. No es un nivelador y no sirve para inmersión.',
+  lead: 'Mortero adhesivo de granulometría media, enriquecido con polímeros, para pegar porcelánico y porcelanato de baja absorción. El dorso denso no toma agua como la cerámica habitual: el adhesivo tiene que mojar pieza y soporte. Porcelánico hasta 90 × 90 cm; cerámico en cualquier formato.',
   pack: '/Assets/productos_background/porcelanico.png',
   packAlt: 'Saco de 25 kg de Pegaxpress Porcelánico Universal',
   identification: [
@@ -53,7 +53,7 @@ module.exports = draft({
         {
           param: 'Clasificación',
           value: 'Adhesivo tipo C',
-          practical: 'Mortero cementoso modificado para porcelánico; no es tipo B de cerámica habitual ni semiflexible de inmersión.',
+          practical: 'Mortero cementoso modificado para porcelánico y pieza de baja absorción.',
           method: 'NMX-C-420',
         },
         {
@@ -83,7 +83,7 @@ module.exports = draft({
         {
           param: 'Resistencia a compresión a 28 días',
           value: '≈ 11.5 MPa · 115 kg/cm²',
-          practical: 'Cuerpo del mortero ya curado; no sustituye un concreto estructural.',
+          practical: 'Cuerpo del mortero ya curado, para asentar la pieza.',
           method: 'NMX-C-420',
         },
         {
@@ -262,10 +262,7 @@ module.exports = draft({
       n: 'Anexo',
       title: 'Datos de interés',
       notes: [
-        'No sustituye a Leveltec: este producto pega la pieza; no nivela el firme.',
-        'No es Pegaxpress Cerámico: aquella ficha es tipo B para media y alta absorción en interior. Aquí la pieza densa pide tipo C.',
-        'No es Ultraforce: esta ficha no cubre inmersión, tráfico industrial ni porcelánico mayor de 90 × 90 cm.',
-        'Piso sobre piso de uso más exigente: Pegaxpress Piso sobre piso o Ultraforce, según el caso.',
+        'Esta ficha es tipo C para pieza densa hasta 90 × 90 cm. Cerámica de media y alta absorción en interior: Pegaxpress Cerámico. Inmersión, tráfico industrial o formato mayor: Ultraforce. Piso sobre piso más exigente: Pegaxpress Piso sobre piso o Ultraforce. Nivelación del firme: Leveltec.',
         'Sobre paneles de yeso, sellar la cara con el imprimador que indique Especificaciones S-35; no se prescribe aquí un sellador de otra marca.',
         'Los valores de tensión, corte, desplazamiento y vida en charola son típicos de adhesivo tipo C según ANSI A118.4 y NMX-C-420, a 23 °C. No constituyen especificación de garantía.',
       ],

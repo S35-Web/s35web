@@ -21,7 +21,7 @@ module.exports = draft({
     'Pegamento y recubrimiento para EPS · interior y exterior',
     'Línea Pro+ · saco de 25 kg',
   ],
-  lead: 'Mortero para pegar y revestir placas y elementos decorativos de poliestireno expandido (EPS) y extruido, en interior y exterior. Reforzado con microfibras para reducir agrietamientos. Como acabado se flotea y se puede pintar. No es un estuco Waxtard, no pega loseta y no sustituye a Basecoat del sistema de panel.',
+  lead: 'Mortero para pegar y revestir placas y elementos decorativos de poliestireno expandido (EPS) y extruido, en interior y exterior. Reforzado con microfibras para reducir agrietamientos. Como acabado se flotea y se puede pintar.',
   pack: '/Assets/productos_background/styrobond.png',
   packAlt: 'Saco de 25 kg de Styrobond Pro+, pegamento y recubrimiento para EPS',
   identification: [
@@ -42,7 +42,7 @@ module.exports = draft({
       title: 'Cómo funciona',
       prose: [
         'Sirve en dos pasos del mismo sistema: primero pega la placa de poliestireno al muro (cordones horizontales en sustrato y en la placa); después la reviste con dos capas y malla de refuerzo, y se flotea.',
-        'Las microfibras ayudan a que el recubrimiento no se agriete. El acabado queda de apariencia sólida y se puede pintar. No nivela un piso. No pega cerámica. El acabado fino hidrófugo del sistema, si se pide, es Waxtard Extra Anclaje.',
+        'Las microfibras ayudan a que el recubrimiento no se agriete. El acabado queda de apariencia sólida y se puede pintar. El acabado fino hidrófugo del sistema, si se pide, es Waxtard Extra Anclaje.',
       ],
     },
     {
@@ -53,7 +53,7 @@ module.exports = draft({
         {
           param: 'Función',
           value: 'Pegamento y recubrimiento EPS/XPS',
-          practical: 'Un solo mortero para fijar la placa y para revestirla con malla. No es adhesivo de loseta ni estuco de acabado fino.',
+          practical: 'Un solo mortero para fijar la placa y para revestirla con malla.',
           method: 'Ficha',
         },
         {
@@ -130,10 +130,6 @@ module.exports = draft({
           title: 'No aplicar sobre.',
           text: 'Tablas de yeso sin sellar, OSB (viruta de madera), plástico, madera, metal, ni inmersión prolongada de agua. Esos sustratos piden otro sistema o consulta a Especificaciones S-35.',
         },
-        {
-          title:         'No sustituye a.',
-        text: 'Basecoat Plus (adhesivo y recubrimiento del sistema de panel), Pegaxpress (loseta) ni Waxtard Extra Anclaje (estuco de acabado sobre EIFS).',
-        },
       ],
     },
     {
@@ -151,7 +147,7 @@ module.exports = draft({
           note: 'El rendimiento cambia con la rugosidad, el desnivel y el espesor de las capas. No hay un m² único por saco en esta ficha.',
         },
         {
-          label: 'Lo que esta ficha no cubre',
+          label: 'Alcance de esta ficha',
           head: ['Sustrato / uso', 'Criterio'],
           rows: [
             ['Yeso sin sellar, OSB, plástico, madera, metal', 'No aplicar.'],
@@ -237,10 +233,7 @@ module.exports = draft({
       n: 'Anexo',
       title: 'Datos de interés',
       notes: [
-        'No sustituye a Leveltec ni a Pegaxpress: pega y reviste poliestireno, no nivela pisos ni pega loseta.',
-        'No es Basecoat Plus: aquel es el adhesivo y recubrimiento del sistema de panel (cemento, yeso y poliestireno). Styrobond es el pegamento y recubrimiento dedicado del EPS en Pro+.',
-        'No es Pegaxpress Block ni un adhesivo de loseta.',
-        'El acabado fino hidrófugo sobre el sistema, si el proyecto lo pide, es Waxtard Extra Anclaje.',
+        'Styrobond pega y reviste poliestireno. El acabado fino hidrófugo sobre el sistema, si el proyecto lo pide, es Waxtard Extra Anclaje.',
         'Esta ficha no asigna ensayos ANSI ni rendimientos en m²: el PDF de referencia no los trae. El consumo lo define el espesor y la rugosidad en obra.',
       ],
     },

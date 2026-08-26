@@ -21,7 +21,7 @@ module.exports = draft({
     'Adhesivo para cerámica · piso, muro y lambrín interiores',
     'Tipo B · saco de 25 kg',
   ],
-  lead: 'Mortero adhesivo de cemento Portland, cargas seleccionadas y aditivos, para pegar recubrimiento cerámico de media y alta absorción sobre sustrato firme base cemento, rugoso o liso. Uso interior: estancias, recámaras, cocinas y baños. No es para porcelánico de baja o nula absorción, ni para inmersión, ni para nivelar el firme.',
+  lead: 'Mortero adhesivo de cemento Portland, cargas seleccionadas y aditivos, para pegar recubrimiento cerámico de media y alta absorción sobre sustrato firme base cemento, rugoso o liso. Uso interior: estancias, recámaras, cocinas y baños.',
   pack: '/Assets/productos_background/ceramico.png',
   packAlt: 'Saco de 25 kg de Pegaxpress Cerámico',
   identification: [
@@ -41,7 +41,7 @@ module.exports = draft({
       n: '1.0',
       title: 'Cómo funciona',
       prose: [
-        'La pieza cerámica de media y alta absorción toma agua del mortero: eso da retención y agarre sobre firme de cemento. El adhesivo pega; no nivela. Los desniveles se corrigen con Leveltec.',
+        'La pieza cerámica de media y alta absorción toma agua del mortero: eso da retención y agarre sobre firme de cemento. El adhesivo pega la pieza sobre un firme ya nivelado. Los desniveles se corrigen con Leveltec.',
         'Para porcelánico de baja o nula absorción usar Porcelánico Universal. Para piso sobre piso, Ultraforce o Pegaxpress Piso sobre piso. Para alberca, Ultraforce. En formatos de 40 × 40 cm o más, doble encolado.',
       ],
     },
@@ -53,7 +53,7 @@ module.exports = draft({
         {
           param: 'Clasificación',
           value: 'Adhesivo tipo B',
-          practical: 'Mortero cementoso para cerámica de absorción habitual; no es tipo C ni semiflexible.',
+          practical: 'Mortero cementoso tipo B para cerámica de absorción habitual en interior.',
           method: 'NMX-C-420',
         },
         {
@@ -83,7 +83,7 @@ module.exports = draft({
         {
           param: 'Resistencia a compresión a 28 días',
           value: '≈ 7.0 MPa · 70 kg/cm²',
-          practical: 'Cuerpo del mortero ya curado; no sustituye un concreto estructural.',
+          practical: 'Cuerpo del mortero ya curado, para asentar la pieza.',
           method: 'NMX-C-420',
         },
         {
@@ -138,14 +138,14 @@ module.exports = draft({
       items: [
         {
           title: 'Piso, muro y lambrín interiores.',
-          text: 'Cerámica de media y alta absorción sobre sustrato firme base cemento, rugoso o liso. Resistente a la humedad de baño y cocina, no a inmersión.',
+          text: 'Cerámica de media y alta absorción sobre sustrato firme base cemento, rugoso o liso. Resistente a la humedad de baño y cocina.',
         },
         {
-          title: 'No usar en baja o nula absorción.',
+          title: 'Porcelánico y pieza densa.',
           text: 'Porcelánico y pieza densa: Porcelánico Universal. Formato exigente, mármol o tráfico industrial: Ultraforce.',
         },
         {
-          title: 'No usar en inmersión ni piso sobre piso.',
+          title: 'Alberca, piso sobre piso y exterior.',
           text: 'Alberca, fuente o cisterna: Ultraforce. Loseta sobre loseta: Pegaxpress Piso sobre piso. Exterior y fachada: consultar a Especificaciones S-35.',
         },
         {
@@ -256,9 +256,7 @@ module.exports = draft({
       n: 'Anexo',
       title: 'Datos de interés',
       notes: [
-        'No sustituye a Leveltec: este producto pega la pieza; no nivela el firme.',
-        'No es Pegaxpress Porcelánico Universal ni Ultraforce: aquí la pieza es cerámica de media y alta absorción, en interior.',
-        'No es Pegaxpress Piso sobre piso ni Pegaxpress Block.',
+        'Esta ficha es para cerámica de media y alta absorción en interior. Porcelánico: Porcelánico Universal. Inmersión e industrial: Ultraforce. Loseta sobre loseta: Pegaxpress Piso sobre piso. Nivelación del firme: Leveltec.',
         'Sobre paneles de yeso, sellar la cara con el imprimador que indique Especificaciones S-35; no se prescribe aquí un sellador de otra marca.',
         'Los valores de tensión, corte, desplazamiento y vida en charola son típicos de adhesivo tipo B según ANSI A118.1 y NMX-C-420, a 23 °C. No constituyen especificación de garantía.',
       ],

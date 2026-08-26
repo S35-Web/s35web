@@ -330,7 +330,7 @@ function waxtardPremium(tone) {
         title: 'Datos de interés',
         notes: [
           'El salitre no aparece sin agua: son sales minerales, como sulfatos y carbonatos, presentes en los materiales, que la humedad disuelve y que cristalizan en la superficie al evaporarse. Cortar el paso del agua es cortar la migración de sales.',
-          'Hidrófugo no es impermeable. Un acabado que sella por completo atrapa la humedad interior y termina desprendiéndose.',
+          'El acabado repele el agua líquida y deja pasar el vapor. Un sello total atraparía la humedad interior y terminaría desprendiéndose.',
           'El empaque de 25 kg se produce con menor huella de carbono y es reutilizable y reciclable.',
         ],
       },

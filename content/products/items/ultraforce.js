@@ -21,7 +21,7 @@ module.exports = draft({
     'Adhesivo semiflexible · interior, exterior e inmersión',
     'Tipo C · saco de 25 kg',
   ],
-  lead: 'Mortero adhesivo semiflexible de granulometría media, modificado con polímeros, para pegar piezas de alta gama. Soporta flexiones, vibraciones, cambios de temperatura, inmersión permanente y tráfico industrial. Sirve también para piso sobre piso. No es un nivelador: los desniveles se corrigen con Leveltec.',
+  lead: 'Mortero adhesivo semiflexible de granulometría media, modificado con polímeros, para pegar piezas de alta gama. Soporta flexiones, vibraciones, cambios de temperatura, inmersión permanente y tráfico industrial. Sirve también para piso sobre piso. Los desniveles se corrigen con Leveltec.',
   pack: '/Assets/productos_background/ultraforce.png',
   packAlt: 'Saco de 25 kg de Pegaxpress Ultraforce',
   identification: [
@@ -42,7 +42,7 @@ module.exports = draft({
       title: 'Cómo funciona',
       prose: [
         'Los polímeros dan adherencia química y una deformación acotada: la pieza sigue microflexiones y vibraciones del soporte (hasta L/360) sin despegarse como un adhesivo rígido convencional.',
-        'Cubre lo que el cerámico y el porcelánico universal no alcanzan: mármol, cantera, granito, gran formato, cochera, alberca y piso sobre piso en uso industrial. No nivela el firme. En formatos de 40 × 40 cm o más, doble encolado.',
+        'Para mármol, cantera, granito, gran formato, cochera, alberca y piso sobre piso en uso industrial. En formatos de 40 × 40 cm o más, doble encolado.',
       ],
     },
     {
@@ -53,7 +53,7 @@ module.exports = draft({
         {
           param: 'Clasificación',
           value: 'Adhesivo tipo C semiflexible',
-          practical: 'Mortero cementoso modificado para pieza exigente; no es autonivelante ni adhesivo de block.',
+          practical: 'Mortero cementoso modificado para pieza exigente, inmersión y tráfico industrial.',
           method: 'NMX-C-420',
         },
         {
@@ -83,7 +83,7 @@ module.exports = draft({
         {
           param: 'Resistencia a compresión a 28 días',
           value: '≈ 15 MPa · 150 kg/cm²',
-          practical: 'Cuerpo del mortero ya curado; no sustituye un concreto estructural.',
+          practical: 'Cuerpo del mortero ya curado, para asentar la pieza.',
           method: 'NMX-C-420',
         },
         {
@@ -268,9 +268,7 @@ module.exports = draft({
       n: 'Anexo',
       title: 'Datos de interés',
       notes: [
-        'No sustituye a Leveltec: este producto pega la pieza; no nivela el firme.',
-        'No es Pegaxpress Piso sobre piso: Ultraforce cubre piso sobre piso y, además, inmersión, vibración y tráfico industrial. Para solo loseta sobre loseta sin inmersión, usar PSP.',
-        'No es Pegaxpress Block ni el cerámico de absorción habitual: se reserva a pieza de alta gama, formato exigente y las condiciones de esta ficha.',
+        'Ultraforce pega pieza de alta gama, cubre inmersión, vibración y tráfico industrial, y también piso sobre piso. Para solo loseta sobre loseta sin inmersión, Pegaxpress Piso sobre piso. Nivelación del firme: Leveltec.',
         'Sobre paneles de yeso, sellar la cara con el imprimador que indique Especificaciones S-35; no se prescribe aquí un sellador de otra marca.',
         'Los valores de tensión, corte, desplazamiento y vida en charola son típicos de adhesivo tipo C semiflexible según ANSI A118.4 y NMX-C-420, a 23 °C. No constituyen especificación de garantía.',
       ],

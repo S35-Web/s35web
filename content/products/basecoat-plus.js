@@ -47,7 +47,7 @@ function basecoatPlus(tone) {
         title: 'Cómo funciona',
         prose: [
           'Mortero de la línea Panel System en ' + colorLower + '. Sirve en tres modos: como base sobre paneles de cemento, yeso y poliestireno que van a recibir texturizado o pintura; como adhesivo de placas y molduras de poliestireno sobre concreto, block, ladrillo o yeso ya sellado; y como recubrimiento decorativo de molduras de EPS.',
-          'Las resinas dan agarre y manejabilidad. Las microfibras reducen agrietamientos. El recubrimiento aporta un alto grado de impermeabilidad y se flotea; encima puede ir textura o pintura. No es un estuco Waxtard. No pega loseta. Styrobond es el mortero dedicado a pegar y revestir EPS en Pro+.',
+          'Las resinas dan agarre y manejabilidad. Las microfibras reducen agrietamientos. El recubrimiento aporta un alto grado de impermeabilidad y se flotea; encima puede ir textura o pintura.',
         ],
       },
       {
@@ -58,7 +58,7 @@ function basecoatPlus(tone) {
           {
             param: 'Función',
             value: 'Base, adhesivo y recubrimiento de panel',
-            practical: 'Un mortero para la capa de protección del sistema de panel y para pegar placas o molduras de EPS. No es adhesivo de loseta ni estuco de acabado fino.',
+            practical: 'Un mortero para la capa de protección del sistema de panel y para pegar placas o molduras de EPS.',
             method: 'Ficha',
           },
           {
@@ -94,7 +94,7 @@ function basecoatPlus(tone) {
           {
             param: 'Impermeabilidad',
             value: 'Alto grado · protege contra humedad',
-            practical: 'Capa de protección del panel y la fachada. No sustituye a una impermeabilización de azotea ni a un sistema de inmersión.',
+            practical: 'Capa de protección del panel y la fachada contra humedad.',
             method: 'Ficha',
           },
           {
@@ -151,10 +151,6 @@ function basecoatPlus(tone) {
             title: 'No aplicar sobre.',
             text: 'Tablas de yeso sin sellar, OSB (viruta de madera), plástico, madera, metal, ni inmersión prolongada de agua. El imprimador del yeso lo indica Especificaciones S-35.',
           },
-          {
-            title: 'No sustituye a.',
-            text: 'Styrobond Pro+ (pegamento y recubrimiento dedicado del EPS), Pegaxpress (loseta) ni Waxtard Extra Anclaje (estuco de acabado sobre EIFS).',
-          },
         ],
       },
       {
@@ -180,7 +176,7 @@ function basecoatPlus(tone) {
             ],
           },
           {
-            label: 'Lo que esta ficha no cubre',
+            label: 'Alcance de esta ficha',
             head: ['Sustrato / uso', 'Criterio'],
             rows: [
               ['Yeso sin sellar, OSB, plástico, madera, metal', 'No aplicar.'],
@@ -268,8 +264,6 @@ function basecoatPlus(tone) {
         title: 'Datos de interés',
         notes: [
           'Gris y Blanco Absoluto son el mismo producto en color distinto: misma dosificación, mismos usos, mismo saco de 25 kg.',
-          'No es Styrobond Pro+: aquel es el pegamento y recubrimiento dedicado del EPS en Pro+. Basecoat es el adhesivo y recubrimiento del sistema de panel.',
-          'No sustituye a Pegaxpress ni a Leveltec: no pega loseta ni nivela pisos.',
           'El acabado fino hidrófugo sobre el sistema, si el proyecto lo pide, es Waxtard Extra Anclaje.',
           'El yeso debe ir sellado. El imprimador no se indica en esta ficha: consultar a Especificaciones S-35.',
           'Esta ficha no asigna ensayos ANSI ni rendimientos en m²: el PDF de referencia no los trae. El consumo lo define el espesor y la rugosidad en obra.',

@@ -21,7 +21,7 @@ module.exports = draft({
     'Nivelante cementante de pisos · uso profesional',
     '2–10 mm por capa · saco de 35 kg',
   ],
-  lead: 'Mortero nivelante de base cementante para corregir irregularidades, nivelar y dejar una base lisa, uniforme y resistente antes de instalar el revestimiento. Residencial, comercial e industrial; interior y exterior. No es un recubrimiento de acabado aparente ni un adhesivo de loseta. No es autonivelante: se tiende con llana, rastra o regla.',
+  lead: 'Mortero nivelante de base cementante para corregir irregularidades, nivelar y dejar una base lisa, uniforme y resistente antes de instalar el revestimiento. Residencial, comercial e industrial; interior y exterior. Se tiende con llana, rastra o regla.',
   pack: '/Assets/productos_background/LEVELTEC-pro.jpg',
   packAlt: 'Saco de 35 kg de Leveltec Pro, nivelante cementante de pisos',
   identification: [
@@ -42,7 +42,7 @@ module.exports = draft({
       title: 'Cómo funciona',
       prose: [
         'Se amasa solo con agua y se tiende sobre el concreto para regular el plano: corrige desniveles y pequeñas irregularidades, y deja una base sólida para cerámico, porcelánico, vinílico, alfombra u otro revestimiento compatible.',
-        'Es un mortero de aplicación asistida. No sustituye a Cemento Plástico (acabado aparente) ni a Pegaxpress (adhesivo de pieza). Tampoco debe tomarse por autonivelante, salvo que S-35 lo especifique por escrito.',
+        'Es un mortero de aplicación asistida: se tiende con llana, rastra o regla. Autonivelante solo si S-35 lo especifica por escrito.',
       ],
     },
     {
@@ -53,7 +53,7 @@ module.exports = draft({
         {
           param: 'Aspecto y color',
           value: 'Polvo gris cemento',
-          practical: 'El tono del polvo es el del cemento; no es un acabado aparente de piso.',
+          practical: 'El tono del polvo es el del cemento; encima va el revestimiento.',
           method: 'Visual',
         },
         {
@@ -107,7 +107,7 @@ module.exports = draft({
         {
           param: 'Resistencia a compresión',
           value: '≈ 14 MPa a 1 día · ≈ 22 MPa a 7 días · ≈ 30 MPa a 28 días',
-          practical: 'Base sólida para tránsito y para recibir el recubrimiento; no es un concreto estructural.',
+          practical: 'Base sólida para tránsito y para recibir el recubrimiento.',
           method: 'Estimado',
         },
         {
@@ -174,7 +174,7 @@ module.exports = draft({
         },
         {
           title: 'No aplicar sobre.',
-          text: 'Superficies contaminadas, débiles o inestables, congeladas, metal, madera, pintura, impermeabilizantes u otros sustratos no contemplados sin consultar a Especificaciones S-35. No es adhesivo de loseta ni acabado aparente.',
+          text: 'Superficies contaminadas, débiles o inestables, congeladas, metal, madera, pintura, impermeabilizantes u otros sustratos no contemplados sin consultar a Especificaciones S-35.',
         },
       ],
     },
@@ -219,7 +219,7 @@ module.exports = draft({
         },
         {
           title: '3. Aplicar.',
-          text: 'Verter sobre el sustrato y distribuir con llana, rastra o regla hasta el espesor de 2 a 10 mm. No rebasar 10 mm por capa sin consultar. No mezclar sobre el piso de concreto: usar cubeta o equipo. No es autonivelante.',
+          text: 'Verter sobre el sustrato y distribuir con llana, rastra o regla hasta el espesor de 2 a 10 mm. No rebasar 10 mm por capa sin consultar. No mezclar sobre el piso de concreto: usar cubeta o equipo.',
         },
         {
           title: '4. Curar y proteger.',
@@ -279,8 +279,8 @@ module.exports = draft({
       n: 'Anexo',
       title: 'Datos de interés',
       notes: [
-        'Leveltec Pro no es autonivelante salvo especificación expresa de S-35.',
-        'No es Cemento Plástico ni Pegaxpress: nivela el firme; no es el acabado aparente ni el adhesivo de la pieza.',
+        'Se tiende con llana, rastra o regla. Autonivelante solo si S-35 lo especifica por escrito.',
+        'Leveltec nivela el firme antes del revestimiento. El acabado aparente es Cemento Plástico; el adhesivo de la pieza es Pegaxpress.',
         'Para metal, madera, pintura, impermeabilizantes u otros sustratos no contemplados, consultar al Departamento de Especificaciones S-35.',
         'Densidad, fraguado, resistencias, adherencia y contracción son valores estimados de referencia y deben confirmarse con ensayos de laboratorio sobre el producto.',
       ],

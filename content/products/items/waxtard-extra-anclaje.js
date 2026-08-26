@@ -20,7 +20,7 @@ module.exports = draft({
     'Estuco hidrófugo fino · anclaje químico',
     'Para sustratos lisos · saco de 25 kg',
   ],
-  lead: 'Estuco para sustrato de baja o nula absorción. Ancla químicamente sin necesidad de picar el sustrato ni aplicar un puente adhesivo aparte. Acabado blanco perla, fino. No es el Perla de block y zarpeo: este es específico para superficies lisas o poco porosas — concreto cimbrado, prefabricado, sistemas EIFS/panel, pintura firme y azulejo o vitrificado sin picar.',
+  lead: 'Estuco para sustrato de baja o nula absorción. Ancla químicamente sin necesidad de picar el sustrato ni aplicar un puente adhesivo aparte. Acabado blanco perla, fino. Pensado para superficies lisas o poco porosas: concreto cimbrado, prefabricado, sistemas EIFS/panel, pintura firme y azulejo o vitrificado sin picar.',
   pack: '/Assets/productos_background/WAXTARD-extra-anclaje.jpg',
   packAlt: 'Saco de 25 kg de Waxtard Extra Anclaje (EIFS Extra Anclaje)',
   identification: [
@@ -41,7 +41,7 @@ module.exports = draft({
       title: 'Cómo funciona',
       prose: [
         'El mortero lleva un sistema de anclaje químico pensado para superficies donde un estuco convencional no agarra: concreto liso de cimbra, paneles, pintura bien adherida o vitrificados. No hace falta picar ni poner un puente aparte.',
-        'Es un estuco de acabado, no un adhesivo de pieza. Para block, zarpeo y sustratos absorbentes el producto correcto es Waxtard Blanco Perla.',
+        'Es un estuco de acabado. Para block, zarpeo y sustratos absorbentes el producto correcto es Waxtard Blanco Perla.',
       ],
     },
     {
@@ -52,7 +52,7 @@ module.exports = draft({
         { title: 'Concreto liso o cimbrado.', text: 'Muros y plafones de concreto aparente o descimbrado, sin picar.' },
         { title: 'Concreto prefabricado y paneles.', text: 'Piezas de baja absorción y sistemas EIFS / panel.' },
         { title: 'Pintura firme y vitrificados.', text: 'Pintura bien adherida, azulejo o vitrificado limpio, sin picar.' },
-        { title: 'No aplicar sobre.', text: 'Pintura suelta o descascarada, esmaltes brillantes sin lijar, yeso, madera, plástico, humedad activa. No es pegazulejo.' },
+        { title: 'No aplicar sobre.', text: 'Pintura suelta o descascarada, esmaltes brillantes sin lijar, yeso, madera, plástico, humedad activa.' },
       ],
     },
     {
@@ -63,7 +63,7 @@ module.exports = draft({
         { title: '1. Preparar el sustrato.', text: 'Limpio, firme, sin polvo ni pintura suelta. Si la pintura está suelta, no pega: hay que retirarla. Los esmaltes brillantes se lijan.' },
         { title: '2. Amasar.', text: 'Solo agua, a consistencia de trabajo, en cubeta limpia. No añadir arena, cal ni cemento.' },
         { title: '3. Aplicar.', text: 'Directo sobre el sustrato limpio, en capas delgadas de acabado.' },
-        { title: '4. No sustituye.', text: 'Si el sustrato es block o zarpeo absorbente, usar Waxtard Blanco Perla.' },
+        { title: '4. Sobre block o zarpeo.', text: 'Si el sustrato es absorbente, usar Waxtard Blanco Perla.' },
       ],
     },
     {
@@ -77,9 +77,8 @@ module.exports = draft({
       n: 'Anexo',
       title: 'Datos de interés',
       notes: [
-        'Extra Anclaje y Blanco Perla no son intercambiables: uno ancla en liso, el otro trabaja sobre absorbente.',
-        'No es pegazulejo ni adhesivo de pieza: es estuco de acabado.',
-        'En el saco aparece como EIFS / Extra Anclaje; es el mismo producto que esta ficha.',
+        'Extra Anclaje ancla en liso; Blanco Perla trabaja sobre absorbente. Cada uno a su sustrato.',
+        'Es estuco de acabado. En el saco aparece como EIFS / Extra Anclaje; es el mismo producto que esta ficha.',
       ],
     },
   ],

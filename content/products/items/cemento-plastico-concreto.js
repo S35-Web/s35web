@@ -19,7 +19,7 @@ module.exports = draft({
     'Microconcreto de acabado · Dolphin Fin',
     'Capas delgadas a llana · saco de 25 kg',
   ],
-  lead: 'Microconcreto de acabado aparente aplicado en capas delgadas a llana. Se pule para obtener un acabado continuo tono Dolphin Fin (gris pulido). No es aplanado grueso ni un adhesivo flexible. La variación de tono es propia del concreto aparente, no un defecto.',
+  lead: 'Microconcreto de acabado aparente aplicado en capas delgadas a llana. Se pule para obtener un acabado continuo tono Dolphin Fin (gris pulido). La variación de tono es propia del concreto aparente, no un defecto.',
   pack: '/Assets/productos_background/cemento-plastico.png',
   packAlt: 'Saco de 25 kg de Cemento Plástico Concreto Aparente',
   identification: [
@@ -40,7 +40,7 @@ module.exports = draft({
       title: 'Cómo funciona',
       prose: [
         'Se aplica en capas delgadas y se pule. El resultado es un paño continuo con el aspecto de concreto aparente, sin los espesores de un aplanado convencional.',
-        'La variación de tono entre paños y lotes es característica del acabado mineral. No es un recubrimiento elástico ni un adhesivo de pieza.',
+        'La variación de tono entre paños y lotes es característica del acabado mineral.',
       ],
     },
     {
@@ -76,8 +76,7 @@ module.exports = draft({
       n: 'Anexo',
       title: 'Datos de interés',
       notes: [
-        'No es aplanado grueso: el espesor de trabajo es el de un microconcreto de acabado.',
-        'No sustituye un sistema impermeable ni un recubrimiento para inmersión.',
+        'El espesor de trabajo es el de un microconcreto de acabado, en capas delgadas.',
         'Dolphin Fin es el tono de referencia; el mineral y el pulido mueven el gris de un paño a otro.',
       ],
     },

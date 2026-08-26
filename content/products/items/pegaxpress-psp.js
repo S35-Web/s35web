@@ -21,7 +21,7 @@ module.exports = draft({
     'Adhesivo piso sobre piso · interior y exterior',
     'Tipo C · saco de 25 kg',
   ],
-  lead: 'Mortero adhesivo de granulometría media, con polímeros, para pegar pieza nueva sobre cerámica existente, concreto pulido, block, tabique o paneles preparados, sin demoler el recubrimiento viejo. No es un nivelador: los desniveles se corrigen con Leveltec. No pega sobre pieza suelta ni sobre brillo graso sin preparar.',
+  lead: 'Mortero adhesivo de granulometría media, con polímeros, para pegar pieza nueva sobre cerámica existente, concreto pulido, block, tabique o paneles preparados, sin demoler el recubrimiento viejo. La pieza existente debe estar firme y el brillo graso se prepara antes de pegar. Los desniveles se corrigen con Leveltec.',
   pack: '/Assets/productos_background/piso-sobre-piso.png',
   packAlt: 'Saco de 25 kg de Pegaxpress Piso sobre piso',
   identification: [
@@ -53,7 +53,7 @@ module.exports = draft({
         {
           param: 'Clasificación',
           value: 'Adhesivo tipo C',
-          practical: 'Mortero cementoso para recubrimiento; no es un autonivelante ni un adhesivo de block.',
+          practical: 'Mortero cementoso tipo C para pegar recubrimiento sobre recubrimiento o firme existente.',
           method: 'NMX-C-420',
         },
         {
@@ -83,7 +83,7 @@ module.exports = draft({
         {
           param: 'Resistencia a compresión a 28 días',
           value: '≈ 13 MPa · 130 kg/cm²',
-          practical: 'Cuerpo del mortero ya curado; no sustituye un concreto estructural.',
+          practical: 'Cuerpo del mortero ya curado, para asentar la pieza.',
           method: 'NMX-C-420',
         },
         {
@@ -256,8 +256,7 @@ module.exports = draft({
       n: 'Anexo',
       title: 'Datos de interés',
       notes: [
-        'No sustituye a Leveltec: este producto pega la pieza; no nivela el firme.',
-        'No es Pegaxpress Block ni Pegaxpress Cerámico de absorción habitual: el uso de esta ficha es piso sobre piso y sustratos ya revestidos o lisos descritos arriba.',
+        'Esta ficha es para piso sobre piso y sustratos ya revestidos o lisos. Nivelación del firme: Leveltec.',
         'Sobre paneles de yeso, sellar la cara con el imprimador que indique Especificaciones S-35; no se prescribe aquí un sellador de otra marca.',
         'Los valores de tensión, corte, desplazamiento y vida en charola son típicos de adhesivo tipo C según ANSI A118.4 y NMX-C-420, a 23 °C. No constituyen especificación de garantía.',
       ],

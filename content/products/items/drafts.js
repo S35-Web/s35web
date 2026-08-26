@@ -42,7 +42,7 @@ function liquid(p) {
       { title: '4. Proteger.', text: 'Cubrir de lluvia y polvo hasta que el recubrimiento haya formado película.' },
     ],
     notes: p.notes || [
-      'Producto líquido: no confundir con los morteros en saco de 25 kg.',
+      'Producto líquido, en cubeta.',
       'Confirmar rendimiento y número de manos con la ficha impresa vigente.',
     ],
   }, p));
@@ -95,20 +95,19 @@ module.exports = [
     pack: '/Assets/productos_background/pastablock.png',
     description: 'Pegaxpress Block Pro+: adhesivo profesional para pegado de block de concreto. Saco de 25 kg.',
     strip: ['Adhesivo para block de concreto', 'Línea Pro+ · saco de 25 kg'],
-    lead: 'Adhesivo de la línea Pro+ para asentar block de concreto. Mortero seco, listo para amasar con agua. Distinto de Pegaxpress Piso sobre piso. Borrador interno.',
+    lead: 'Adhesivo de la línea Pro+ para asentar block de concreto. Mortero seco, listo para amasar con agua. Borrador interno.',
     identification: [
       { label: 'Tipo de producto', value: 'Adhesivo cementoso para mampostería de concreto' },
       { label: 'Función', value: 'Pegado de block de concreto' },
       { label: 'Presentación', value: 'Saco de 25 kg' },
     ],
     prose: [
-      'Mortero de asiento para block de concreto. No es un estuco de acabado ni un adhesivo de recubrimiento cerámico.',
+      'Mortero de asiento para block de concreto.',
       'Para loseta sobre loseta, Pegaxpress Piso sobre piso. Cellbond (block celular) está fuera de catálogo.',
     ],
     uses: [
       { title: 'Block de concreto.', text: 'Asiento y junta en muros de block.' },
-      { title: 'No usar como.', text: 'Estuco, recubrimiento de fachada ni pegazulejo de piso o muro.' },
-      { title: 'Geometría.', text: 'Seguir el espesor de junta del proyecto; no es un nivelador de pisos.' },
+      { title: 'Geometría.', text: 'Seguir el espesor de junta del proyecto.' },
       { title: 'Sustrato.', text: 'Cimentación y arranque según el proyecto estructural.' },
     ],
     apply: 'Aplicar en la junta, asentar el block y retirar el excedente antes de que filme.',
@@ -126,7 +125,7 @@ module.exports = [
     pack: null,
     description: 'Nanotech Sellador Hidrofóbico: sellador líquido que repele el agua sobre superficies minerales. Cubeta.',
     strip: ['Sellador hidrofóbico', 'Líquido · cubeta'],
-    lead: 'Sellador líquido de la línea Nanotech para reducir la absorción de agua en superficies minerales ya acabadas. No es un estuco, no tapa fisuras y no sustituye una impermeabilización de azotea. Borrador interno. Sin fotografía de cubeta en el repositorio.',
+    lead: 'Sellador líquido de la línea Nanotech para reducir la absorción de agua en superficies minerales ya acabadas. Borrador interno. Sin fotografía de cubeta en el repositorio.',
     identification: [
       { label: 'Tipo de producto', value: 'Sellador líquido hidrofóbico' },
       { label: 'Función', value: 'Repelencia al agua en superficies minerales' },
@@ -134,11 +133,9 @@ module.exports = [
     ],
     prose: [
       'Se aplica sobre el acabado ya curado. El agua escurre; el poro no se cierra del todo como un sellador filmógeno grueso.',
-      'No corrige humedad activa ni sustituye a Waxtard como sistema de acabado hidrófugo.',
     ],
     uses: [
       { title: 'Acabados minerales.', text: 'Estucos, concretos aparentes y paños porosos ya curados.' },
-      { title: 'No usar como.', text: 'Impermeabilizante de azotea, puente adhesivo ni estuco.' },
       { title: 'No aplicar sobre.', text: 'Superficies sucias, con humedad activa o con película que impida la penetración.' },
       { title: 'Prueba.', text: 'Un paño de prueba confirma tono y repelencia antes de atacar el paño completo.' },
     ],
@@ -156,7 +153,7 @@ module.exports = [
     pack: null,
     description: 'Sellador Premium para pintura: sellador líquido de preparación de muros antes de pintar. Cubeta.',
     strip: ['Sellador para pintura', 'Líquido · cubeta'],
-    lead: 'Sellador líquido para preparar muros antes de pintar: iguala absorción y mejora el anclaje de la pintura. No es hidrófugo de fachada ni un adhesivo de construcción. Borrador interno. Sin fotografía de cubeta en el repositorio.',
+    lead: 'Sellador líquido para preparar muros antes de pintar: iguala absorción y mejora el anclaje de la pintura. Borrador interno. Sin fotografía de cubeta en el repositorio.',
     identification: [
       { label: 'Tipo de producto', value: 'Sellador líquido de preparación' },
       { label: 'Función', value: 'Preparar el paño antes de pintura' },
@@ -168,7 +165,6 @@ module.exports = [
     ],
     uses: [
       { title: 'Antes de pintar.', text: 'Muros interiores y exteriores según ficha impresa.' },
-      { title: 'No usar como.', text: 'Acabado final, impermeabilizante ni adhesivo de pieza.' },
       { title: 'No aplicar sobre.', text: 'Polvo, grasa, pintura suelta ni humedad activa.' },
       { title: 'Sistema.', text: 'Respetar el tiempo de secado antes de la pintura.' },
     ],
@@ -185,19 +181,17 @@ module.exports = [
     pack: null,
     description: 'Adhesivo Darawell: adhesivo líquido vinílico S-35. Cubeta.',
     strip: ['Adhesivo líquido vinílico', 'Cubeta'],
-    lead: 'Adhesivo líquido vinílico de la línea S-35 (Darawell). No es un mortero Pegaxpress ni un estuco. Se usa como adhesivo / ligante líquido según la ficha impresa. Borrador interno. Sin fotografía de cubeta en el repositorio.',
+    lead: 'Adhesivo líquido vinílico de la línea S-35 (Darawell). Se usa como adhesivo / ligante líquido según la ficha impresa. Borrador interno. Sin fotografía de cubeta en el repositorio.',
     identification: [
       { label: 'Tipo de producto', value: 'Adhesivo líquido vinílico' },
       { label: 'Función', value: 'Pegado / ligante en sistemas que pidan Darawell' },
       { label: 'Presentación', value: 'Cubeta' },
     ],
     prose: [
-      'Producto líquido. No sustituye a los adhesivos en seco de Pegaxpress para loseta o block.',
-      'Homogeneizar el envase. No congelar.',
+      'Producto líquido. Homogeneizar el envase. No congelar.',
     ],
     uses: [
       { title: 'Según ficha impresa.', text: 'Pegado y ligante en los sistemas que especifiquen Darawell.' },
-      { title: 'No usar como.', text: 'Adhesivo cementoso de loseta, estuco ni impermeabilizante de azotea.' },
       { title: 'Soporte.', text: 'Limpio y capaz; el vinílico no pega sobre polvo ni sobre grasa.' },
       { title: 'Almacenamiento.', text: 'Proteger de heladas. Agitar antes de usar.' },
     ],
@@ -214,20 +208,17 @@ module.exports = [
     pack: null,
     description: 'Adhesivo Heavy Duty: adhesivo líquido de alto desempeño S-35. Cubeta.',
     strip: ['Adhesivo líquido de alto desempeño', 'Cubeta'],
-    lead: 'Adhesivo líquido de alto desempeño. No es Pegaxpress Ultraforce (ese va en saco) ni un estuco. Borrador interno: confirmar sustratos y alcances con la ficha impresa. Sin fotografía de cubeta en el repositorio.',
+    lead: 'Adhesivo líquido de alto desempeño. Borrador interno: confirmar sustratos y alcances con la ficha impresa. Sin fotografía de cubeta en el repositorio.',
     identification: [
       { label: 'Tipo de producto', value: 'Adhesivo líquido de alto desempeño' },
       { label: 'Función', value: 'Pegado exigente en sistemas que pidan Heavy Duty' },
       { label: 'Presentación', value: 'Cubeta' },
     ],
     prose: [
-      'Versión líquida de alto desempeño. No confundir con Ultraforce en saco, que es adhesivo cementoso para pieza.',
-      'El soporte y el tipo de pieza los define la ficha impresa, no el nombre comercial.',
+      'Versión líquida de alto desempeño. El soporte y el tipo de pieza los define la ficha impresa, no el nombre comercial.',
     ],
     uses: [
       { title: 'Según ficha impresa.', text: 'Casos que el adhesivo vinílico estándar no cubre.' },
-      { title: 'No usar como.', text: 'Estuco, nivelador de pisos ni impermeabilizante.' },
-      { title: 'No sustituye a.', text: 'Pegaxpress en saco para loseta, block o piso sobre piso.' },
       { title: 'Soporte.', text: 'Limpio, firme y capaz.' },
     ],
   }),
