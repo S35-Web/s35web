@@ -60,7 +60,7 @@
   display: flex;
   flex: 1;
   min-width: 0;
-  gap: 0.25rem 1.1rem;
+  gap: 0.4rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -78,7 +78,10 @@
   color: var(--pr-gray);
   text-decoration: none;
   white-space: nowrap;
-  transition: color 200ms var(--pr-ease);
+  padding: 0.32rem 0.7rem;
+  border: 1px solid var(--pr-line);
+  border-radius: 6px;
+  transition: color 200ms var(--pr-ease), border-color 200ms var(--pr-ease);
 }
 
 .pr-subnav-back {
@@ -88,6 +91,7 @@
 
 .pr-subnav a:hover {
   color: var(--pr-black);
+  border-color: #b0b0b0;
 }
 
 /* ── Sheet shell ──────────────────────────────────────── */
