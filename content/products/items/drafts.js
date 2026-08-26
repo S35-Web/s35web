@@ -202,37 +202,6 @@ module.exports = [
     kpi3v: 'Block', kpi3l: 'asiento de mampostería',
   }),
 
-  mortar({
-    slug: 'porcelanico-universal',
-    code: 'FT-AD-001',
-    family: 'adhesivos-pro',
-    name: 'PEGAXPRESS',
-    variant: 'Porcelánico Universal',
-    line: 'Adhesivo para porcelánico',
-    accent: '#37474f',
-    pack: '/Assets/productos_background/porcelanico.png',
-    description: 'Pegaxpress Porcelánico Universal: adhesivo en seco para piezas de porcelánico. Saco de 25 kg.',
-    strip: ['Adhesivo para porcelánico', 'Línea Pegaxpress · saco de 25 kg'],
-    lead: 'Adhesivo de la línea Pegaxpress para piezas de porcelánico de baja absorción. Mortero seco, listo para amasar con agua. No es un estuco ni un nivelador. Borrador interno.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Adhesivo cementoso para recubrimiento' },
-      { label: 'Función', value: 'Pegado de porcelánico de baja absorción' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'El porcelánico absorbe poco: el adhesivo tiene que mojar el dorso y el soporte. El método (simple o doble encolado) lo define el formato y la ficha impresa.',
-      'Para cerámica de mayor absorción está Pegaxpress Cerámico. Para formato exigente, Ultraforce.',
-    ],
-    uses: [
-      { title: 'Porcelánico.', text: 'Piso y muro según formato y ficha impresa.' },
-      { title: 'Baja absorción.', text: 'Piezas densas donde un adhesivo de cerámica común se queda corto.' },
-      { title: 'No usar como.', text: 'Nivelador de piso, estuco de acabado ni pegado de block.' },
-      { title: 'Soporte.', text: 'Firme, limpio y capaz; el adhesivo no corrige un desnivel de Leveltec.' },
-    ],
-    apply: 'Llana dentada al soporte; doble encolado en formatos grandes si la ficha impresa lo pide.',
-    kpi3v: 'Porcelánico', kpi3l: 'piezas de baja absorción',
-  }),
-
   liquid({
     slug: 'nanotech-hidrofobico',
     code: 'FT-LQ-001',
