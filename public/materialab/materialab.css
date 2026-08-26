@@ -317,6 +317,9 @@
     white-space: nowrap;
     width: 1%;
   }
+  .ml-sheet-row--index > :not(.ml-rail) {
+    padding-top: 5rem;
+  }
 }
 
 .ml-name-en {

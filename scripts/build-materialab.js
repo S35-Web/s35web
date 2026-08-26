@@ -503,7 +503,7 @@ function researchTable() {
 function pageMaterialsIndex() {
   var body = '<div hidden class="ml-banner ml-banner--warn" data-not-found data-i18n="ml.notFound">CÓDIGO NO ENCONTRADO EN EL ARCHIVO — ESTA INVESTIGACIÓN PUEDE NO ESTAR PUBLICADA AÚN</div>' +
     archiveOpen('Laboratorio · Archivo abierto') +
-    '<div class="ml-sheet-row"><div class="ml-rail"><strong>Índice de<br>materiales</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
+    '<div class="ml-sheet-row ml-sheet-row--index"><div class="ml-rail"><strong>Índice de<br>materiales</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
     '<div><h1 class="ml-file-title" data-i18n="ml.materialsH1">Materiales</h1>' +
     '<p class="ml-lede">' + pad2(stats.materialsDocumented) + ' ' + i18n('ml.materialsLede', 'MATERIALES DOCUMENTADOS. El archivo empieza pequeño y crece a la vista.') + '</p>' +
     '<div class="ml-m-rule"></div>' +
@@ -520,7 +520,7 @@ function pageMaterialsIndex() {
 
 function pageResearch() {
   var body = archiveOpen('Laboratorio · Archivo abierto') +
-    '<div class="ml-sheet-row"><div class="ml-rail"><strong>Índice de<br>investigación</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
+    '<div class="ml-sheet-row ml-sheet-row--index"><div class="ml-rail"><strong>Índice de<br>investigación</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
     '<div><h1 class="ml-file-title" data-i18n="ml.researchH1">Investigación</h1>' +
     '<p class="ml-lede" data-i18n="ml.researchLede">Investigaciones publicadas. Los filtros solo muestran categorías con al menos un documento.</p>' +
     '<div class="ml-m-rule"></div>' +
