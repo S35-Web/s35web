@@ -172,37 +172,6 @@ module.exports = [
   }),
 
   mortar({
-    slug: 'leveltec-pro',
-    code: 'FT-PP-003',
-    family: 'pro-systems',
-    name: 'LEVELTEC',
-    variant: 'Pro+',
-    line: 'Nivelador profesional de pisos',
-    accent: '#6d4c41',
-    pack: null,
-    description: 'Leveltec Pro+: nivelador profesional de pisos, listo para amasar con agua. Saco de 25 kg.',
-    strip: ['Nivelador de pisos', 'Línea Pro+ · saco de 25 kg'],
-    lead: 'Nivelador de la línea Pro+ para regular pisos antes del recubrimiento. Mortero seco, listo para amasar con agua. No es un microconcreto de acabado aparente ni un adhesivo de loseta. Borrador interno. La fotografía de saco de este producto no está aún identificada en el repositorio.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Mortero nivelador de pisos' },
-      { label: 'Función', value: 'Regularización de firmes antes del recubrimiento' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'Corrige desniveles del firme para recibir loseta, microconcreto u otro recubrimiento de piso.',
-      'No sustituye a Cemento Plástico (acabado aparente) ni a Pegaxpress (adhesivo de pieza).',
-    ],
-    uses: [
-      { title: 'Firmes y losas.', text: 'Nivelación previa al recubrimiento de piso.' },
-      { title: 'Remodelación.', text: 'Regularizar pisos existentes firmes y limpios.' },
-      { title: 'No usar como.', text: 'Acabado aparente de concreto ni como adhesivo de loseta.' },
-      { title: 'No aplicar sobre.', text: 'Soportes flexibles, humedad activa ni recubrimientos sueltos.' },
-    ],
-    apply: 'Verter y tender al espesor de trabajo. Respetar juntas y tiempos de tránsito de la ficha impresa.',
-    kpi3v: 'Pisos', kpi3l: 'espesor según ficha impresa',
-  }),
-
-  mortar({
     slug: 'pegaxpress-block',
     code: 'FT-PP-004',
     family: 'pro-systems',
