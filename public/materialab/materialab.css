@@ -470,6 +470,253 @@
 
 .ml-chain span { color: var(--ml-gray); padding: 0 0.4rem; }
 
+/* Metodología — documento de proceso */
+.ml-method {
+  --ml-ink: #1b1a17;
+  --ml-copper: #b06a2c;
+  --ml-paper: #f4f1ea;
+  --ml-mute: #3a372f;
+  --ml-faint: #6b665c;
+  --ml-stone: #c8c2b4;
+  color: var(--ml-ink);
+}
+
+.ml-method-hero {
+  margin: 4px 0 8px;
+}
+
+.ml-method-kicker {
+  font-size: 8px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ml-copper);
+  margin: 0 0 12px;
+}
+
+.ml-method-hero h1 {
+  font-size: clamp(40px, 8vw, 68px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+  margin: 0 0 14px;
+}
+
+.ml-method-lede {
+  font-size: 13.5px;
+  line-height: 1.62;
+  margin: 0;
+  max-width: 44em;
+  color: var(--ml-mute);
+}
+
+.ml-method-kpis,
+.ml-method-grid {
+  display: grid;
+  gap: 1.5px;
+  background: var(--ml-ink);
+  border: 1.5px solid var(--ml-ink);
+  position: relative;
+}
+
+.ml-method-kpis {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 22px 0 8px;
+}
+
+.ml-method-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.ml-method-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.ml-method-kpi,
+.ml-method-cell {
+  background: #fff;
+  padding: 12px 14px;
+  min-width: 0;
+}
+
+.ml-method-kpi-v {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ml-ink);
+}
+
+.ml-method-kpi-v--sm {
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  padding-top: 6px;
+}
+
+.ml-method-kpi-l {
+  font-size: 7.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ml-faint);
+  margin-top: 5px;
+}
+
+.ml-method-sec {
+  margin: 0;
+}
+
+.ml-method-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 28px 0 12px;
+}
+
+.ml-method-n {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--ml-copper);
+  flex-shrink: 0;
+}
+
+.ml-method-head h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--ml-ink);
+}
+
+.ml-method-rule {
+  flex: 1;
+  height: 1.5px;
+  background: var(--ml-ink);
+  min-width: 24px;
+}
+
+.ml-method-cell-h {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ml-ink);
+  margin-bottom: 6px;
+}
+
+.ml-method-cell-h--copper {
+  color: var(--ml-copper);
+}
+
+.ml-method-cell p,
+.ml-method-box p,
+.ml-method-split-col p,
+.ml-method-notice p {
+  font-size: 11.5px;
+  line-height: 1.55;
+  margin: 0;
+  color: #4b4740;
+}
+
+.ml-method-copy {
+  font-size: 12px;
+  line-height: 1.62;
+  margin: 0 0 16px;
+  max-width: 52em;
+  color: var(--ml-mute);
+}
+
+.ml-method-copy--after {
+  margin: 16px 0 0;
+}
+
+.ml-method-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.ml-method-pair--prose p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0 0 10px;
+  color: var(--ml-mute);
+}
+
+.ml-method-pair--prose p:last-child {
+  margin-bottom: 0;
+}
+
+.ml-method-pair--prose strong {
+  font-weight: 600;
+  color: var(--ml-ink);
+}
+
+.ml-method-box {
+  border: 1.5px solid var(--ml-ink);
+  padding: 14px 16px;
+}
+
+.ml-method-box-h,
+.ml-method-split-h {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #4b4740;
+  margin-bottom: 8px;
+}
+
+.ml-method-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1.5px solid var(--ml-ink);
+}
+
+.ml-method-split-col {
+  padding: 15px 18px;
+}
+
+.ml-method-split-col + .ml-method-split-col {
+  border-left: 1.5px solid var(--ml-ink);
+}
+
+.ml-method-split-h {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.ml-method-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ml-method-dot--stone { background: var(--ml-stone); }
+.ml-method-dot--copper { background: var(--ml-copper); }
+
+.ml-method-notice {
+  background: var(--ml-paper);
+  padding: 16px 18px;
+}
+
+.ml-method-end {
+  position: relative;
+  margin: 24px 0 0;
+  padding-top: 12px;
+  font-size: 7.5px;
+  letter-spacing: 0.08em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  color: var(--ml-faint);
+}
+.ml-method-end::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1.5px;
+  background: var(--ml-ink);
+}
+
 /* Footer */
 .ml-footer {
   background: var(--ml-white);
@@ -792,6 +1039,119 @@
 .ml-sheet--motion .is-in .ml-m-card:nth-child(2)::after { transition-delay: 0.1s; }
 .ml-sheet--motion .is-in .ml-m-card:nth-child(3)::after { transition-delay: 0.2s; }
 
+/* Metodología — líneas y celdas al scroll */
+.ml-sheet--motion.is-armed .ml-method-rule,
+.ml-sheet--motion.is-armed .ml-method-end::before {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-method-kpis,
+.ml-sheet--motion.is-armed .ml-method-grid,
+.ml-sheet--motion.is-armed .ml-method-box,
+.ml-sheet--motion.is-armed .ml-method-split,
+.ml-sheet--motion.is-armed .ml-method-notice {
+  position: relative;
+}
+.ml-sheet--motion.is-armed .ml-method-kpis,
+.ml-sheet--motion.is-armed .ml-method-grid,
+.ml-sheet--motion.is-armed .ml-method-box,
+.ml-sheet--motion.is-armed .ml-method-split {
+  border-top-width: 0;
+}
+.ml-sheet--motion.is-armed .ml-method-kpis::after,
+.ml-sheet--motion.is-armed .ml-method-grid::after,
+.ml-sheet--motion.is-armed .ml-method-box::after,
+.ml-sheet--motion.is-armed .ml-method-split::after,
+.ml-sheet--motion.is-armed .ml-method-notice::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1.5px;
+  background: var(--ml-ink, #1b1a17);
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+  z-index: 2;
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-method-notice::after {
+  height: 2px;
+  background: var(--ml-copper, #b06a2c);
+}
+.ml-sheet--motion.is-armed .ml-method-hero h1,
+.ml-sheet--motion.is-armed .ml-method-kicker,
+.ml-sheet--motion.is-armed .ml-method-lede,
+.ml-sheet--motion.is-armed .ml-method-copy,
+.ml-sheet--motion.is-armed .ml-method-head h2,
+.ml-sheet--motion.is-armed .ml-method-n,
+.ml-sheet--motion.is-armed .ml-method-kpi,
+.ml-sheet--motion.is-armed .ml-method-cell,
+.ml-sheet--motion.is-armed .ml-method-box,
+.ml-sheet--motion.is-armed .ml-method-split-col,
+.ml-sheet--motion.is-armed .ml-method-notice,
+.ml-sheet--motion.is-armed .ml-method-end,
+.ml-sheet--motion.is-armed .ml-method-pair--prose p {
+  opacity: 0;
+  transform: translateY(12px);
+}
+.ml-sheet--motion.is-armed .ml-method-kicker {
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-method-lede,
+.ml-sheet--motion.is-armed .ml-method-copy {
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.1s, transform 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+}
+.ml-sheet--motion.is-armed .ml-method-head h2,
+.ml-sheet--motion.is-armed .ml-method-n {
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ml-sheet--motion.is-armed .ml-method-kpi,
+.ml-sheet--motion.is-armed .ml-method-cell,
+.ml-sheet--motion.is-armed .ml-method-box,
+.ml-sheet--motion.is-armed .ml-method-split-col,
+.ml-sheet--motion.is-armed .ml-method-notice,
+.ml-sheet--motion.is-armed .ml-method-end,
+.ml-sheet--motion.is-armed .ml-method-pair--prose p {
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--i, 0) * 70ms),
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--i, 0) * 70ms);
+}
+.ml-sheet--motion.is-armed .ml-method-dot {
+  transform: scale(0);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.18s;
+}
+
+.ml-sheet--motion .is-in .ml-method-rule,
+.ml-sheet--motion .is-in .ml-method-kpis::after,
+.ml-sheet--motion .is-in .ml-method-grid::after,
+.ml-sheet--motion .is-in .ml-method-box::after,
+.ml-sheet--motion .is-in .ml-method-split::after,
+.ml-sheet--motion .is-in .ml-method-notice::after,
+.ml-sheet--motion .ml-method-end.is-in::before {
+  transform: scaleX(1);
+}
+.ml-sheet--motion .is-in .ml-method-hero h1,
+.ml-sheet--motion .is-in .ml-method-kicker,
+.ml-sheet--motion .is-in .ml-method-lede,
+.ml-sheet--motion .is-in .ml-method-copy,
+.ml-sheet--motion .is-in .ml-method-head h2,
+.ml-sheet--motion .is-in .ml-method-n,
+.ml-sheet--motion .is-in .ml-method-kpi,
+.ml-sheet--motion .is-in .ml-method-cell,
+.ml-sheet--motion .is-in .ml-method-box,
+.ml-sheet--motion .is-in .ml-method-split-col,
+.ml-sheet--motion .is-in .ml-method-notice,
+.ml-sheet--motion .ml-method-end.is-in,
+.ml-sheet--motion .is-in .ml-method-pair--prose p {
+  opacity: 1;
+  transform: none;
+}
+.ml-sheet--motion .is-in .ml-method-dot {
+  transform: scale(1);
+}
+
 @media (max-width: 800px) {
   .ml-sheet-row {
     grid-template-columns: 1fr !important;
@@ -945,6 +1305,40 @@
   }
   #ml-research-table td:nth-child(5)::before {
     content: 'REV ';
+  }
+  .ml-method-kpis {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ml-method-grid--4 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .ml-method-grid--3,
+  .ml-method-pair,
+  .ml-method-split {
+    grid-template-columns: 1fr;
+  }
+  .ml-method-pair {
+    gap: 12px;
+  }
+  .ml-method-split-col + .ml-method-split-col {
+    border-left: 0;
+    border-top: 1.5px solid var(--ml-ink);
+  }
+  .ml-method-head {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+  .ml-method-rule {
+    flex: 1 1 100%;
+    order: 3;
+  }
+  .ml-method-hero h1 {
+    font-size: clamp(36px, 12vw, 52px);
+  }
+  .ml-method-kpi-v--sm {
+    font-size: 13px;
+    padding-top: 2px;
+    word-break: break-word;
   }
 }
 
@@ -1534,7 +1928,10 @@ h2.ml-h2 {
   .ml-sheet--motion.is-armed .ml-m-band,
   .ml-sheet--motion.is-armed .ml-m-barfill,
   .ml-sheet--motion.is-armed .ml-m-curve,
-  .ml-sheet--motion.is-armed tbody tr {
+  .ml-sheet--motion.is-armed tbody tr,
+  .ml-sheet--motion.is-armed [class*="ml-method"],
+  .ml-sheet--motion.is-armed [class*="ml-method"]::before,
+  .ml-sheet--motion.is-armed [class*="ml-method"]::after {
     opacity: 1 !important;
     transform: none !important;
     clip-path: none !important;
@@ -1569,12 +1966,20 @@ h2.ml-h2 {
   .ml-sheet--motion.is-armed .ml-m-band,
   .ml-sheet--motion.is-armed .ml-m-barfill,
   .ml-sheet--motion.is-armed .ml-m-curve,
-  .ml-sheet--motion.is-armed tbody tr {
+  .ml-sheet--motion.is-armed tbody tr,
+  .ml-sheet--motion.is-armed [class*="ml-method"],
+  .ml-sheet--motion.is-armed [class*="ml-method"]::before,
+  .ml-sheet--motion.is-armed [class*="ml-method"]::after {
     opacity: 1 !important;
     transform: none !important;
     clip-path: none !important;
     stroke-dashoffset: 0 !important;
   }
+  .ml-method-sec,
+  .ml-method-kpis,
+  .ml-method-grid,
+  .ml-method-split,
+  .ml-method-notice { break-inside: avoid; }
   .ml-footer::after {
     content: attr(data-print-url);
     display: block;
