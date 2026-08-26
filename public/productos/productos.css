@@ -52,14 +52,14 @@
   gap: 0.75rem;
   max-width: 980px;
   margin: 0 auto;
-  padding: 0.55rem var(--pr-pad);
-  min-height: 40px;
+  padding: 0.5rem var(--pr-pad);
 }
 
 .pr-subnav-links {
   display: flex;
   flex: 1;
   min-width: 0;
+  align-items: center;
   gap: 0.4rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -72,15 +72,20 @@
 }
 
 .pr-subnav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 10px;
+  line-height: 1;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--pr-gray);
   text-decoration: none;
   white-space: nowrap;
-  padding: 0.32rem 0.7rem;
+  padding: 0.45em 0.75em;
   border: 1px solid var(--pr-line);
   border-radius: 6px;
+  box-sizing: border-box;
   transition: color 200ms var(--pr-ease), border-color 200ms var(--pr-ease);
 }
 
@@ -1137,8 +1142,8 @@
   }
 
   .pr-subnav-inner {
-    padding-top: 0.45rem;
-    padding-bottom: 0.45rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
   }
 
   .pr-sheet table {
