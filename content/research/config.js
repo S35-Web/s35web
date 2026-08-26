@@ -1,7 +1,7 @@
-/** Site-level constants for MateriaLab. Counters are never stored here. */
+/** Site-level constants for Laboratorio. Counters are never stored here. */
 module.exports = {
   siteOrigin: 'https://s35web.vercel.app',
-  brand: 'MateriaLab',
+  brand: 'Laboratorio',
   division: 'MATERIAL RESEARCH DIVISION',
   parent: 'S-35',
   founded: 2020,

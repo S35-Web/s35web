@@ -1,5 +1,5 @@
 /**
- * JSDoc model for MateriaLab entities. Content files implement these shapes.
+ * JSDoc model for Laboratorio entities. Content files implement these shapes.
  * Validation lives in scripts/validate-research.js — the build fails without provenance.
  *
  * @typedef {import('./dp').DataPoint} DataPoint

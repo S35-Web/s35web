@@ -1,4 +1,4 @@
-/* MateriaLab — division styles. Does not replace S-35 globals. */
+/* Laboratorio — division styles. Does not replace S-35 globals. */
 .ml-page [data-ml-lang][hidden] {
   display: none !important;
 }

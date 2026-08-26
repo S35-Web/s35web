@@ -79,12 +79,12 @@ if (!archive.materials.length) {
 }
 
 if (errors.length) {
-  console.error('MateriaLab validation failed:\n' + errors.map(function (e) { return ' - ' + e; }).join('\n'));
+  console.error('Laboratorio validation failed:\n' + errors.map(function (e) { return ' - ' + e; }).join('\n'));
   process.exit(1);
 }
 
 console.log(
-  'MateriaLab OK — ' +
+  'Laboratorio OK — ' +
     archive.materials.length +
     ' materials, ' +
     archive.researchFiles.length +

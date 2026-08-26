@@ -2,9 +2,17 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/qr/:code", "destination": "/api/qr?code=:code" }
+    { "source": "/qr/:code", "destination": "/api/qr?code=:code" },
+    { "source": "/laboratorio", "destination": "/materialab" },
+    { "source": "/laboratorio/:path*", "destination": "/materialab/:path*" }
   ],
   "redirects": [
+    { "source": "/materialab", "destination": "/laboratorio", "permanent": true },
+    { "source": "/materialab/about", "destination": "/laboratorio/about", "permanent": true },
+    { "source": "/materialab/methodology", "destination": "/laboratorio/methodology", "permanent": true },
+    { "source": "/materialab/research", "destination": "/laboratorio/research", "permanent": true },
+    { "source": "/materialab/materials", "destination": "/laboratorio/materials", "permanent": true },
+    { "source": "/materialab/materials/:slug", "destination": "/laboratorio/materials/:slug", "permanent": true },
     { "source": "/producto-waxtard-perla", "destination": "/productos/waxtard-blanco-perla", "permanent": true },
     { "source": "/producto-waxtard-perla.html", "destination": "/productos/waxtard-blanco-perla", "permanent": true },
     { "source": "/producto-waxtard-extra-anclaje", "destination": "/productos/waxtard-extra-anclaje", "permanent": true },

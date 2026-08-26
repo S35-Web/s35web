@@ -156,15 +156,15 @@ function picture(id, opts) {
 
 function navLinks(current) {
   var items = [
-    ['/materialab/materials', 'ml.navMaterials', 'Materiales'],
-    ['/materialab/research', 'ml.navResearch', 'Investigación'],
-    ['/materialab/methodology', 'ml.navMethodology', 'Metodología'],
-    ['/materialab/about', 'ml.navAbout', 'Acerca de'],
+    ['/laboratorio/materials', 'ml.navMaterials', 'Materiales'],
+    ['/laboratorio/research', 'ml.navResearch', 'Investigación'],
+    ['/laboratorio/methodology', 'ml.navMethodology', 'Metodología'],
+    ['/laboratorio/about', 'ml.navAbout', 'Acerca de'],
   ];
   return items.map(function (it) {
     var cur = '';
-    if (current && current.indexOf(it[0]) === 0 && it[0] !== '/materialab') cur = ' aria-current="page"';
-    if (current === '/materialab' && it[0] === '/materialab/materials') cur = '';
+    if (current && current.indexOf(it[0]) === 0 && it[0] !== '/laboratorio') cur = ' aria-current="page"';
+    if (current === '/laboratorio' && it[0] === '/laboratorio/materials') cur = '';
     return '<a href="' + it[0] + '"' + cur + ' data-i18n="' + it[1] + '">' + it[2] + '</a>';
   }).join('');
 }
@@ -177,7 +177,7 @@ function s35Nav() {
     '      <div class="nav-dropdown"><a href="http://s-35.com/clientes/#login" class="nav-link" target="_blank" rel="noopener"><span data-i18n="nav.login">Iniciar sesión</span> <i class="fas fa-chevron-right"></i></a></div>\n' +
     '      <a href="/#noticias" class="nav-link" data-i18n="nav.news">News</a>\n' +
     '      <a href="/catalogo.html" class="nav-link" data-i18n="nav.catalog">Catálogo</a>\n' +
-    '      <a href="/materialab" class="nav-link" data-i18n="nav.materialab">MateriaLab</a>\n' +
+    '      <a href="/laboratorio" class="nav-link" data-i18n="nav.materialab">Laboratorio</a>\n' +
     '      <a href="/#contacto" class="nav-link contact-btn" data-i18n="nav.contact">Contact</a>\n' +
     '    </div>\n' +
     '    <div class="nav-toggle"><span></span><span></span><span></span></div>\n' +
@@ -188,14 +188,14 @@ function s35Nav() {
 
 function mlFooter() {
   var s = stats;
-  return '<footer class="ml-footer" data-print-url="' + esc(config.siteOrigin) + '/materialab">\n' +
+  return '<footer class="ml-footer" data-print-url="' + esc(config.siteOrigin) + '/laboratorio">\n' +
     '<div class="ml-grid">\n' +
-    '<div class="ml-footer-brand"><strong>MateriaLab</strong><div>' + i18n('ml.footerDivision', 'DIVISIÓN DE INVESTIGACIÓN DE MATERIALES · S-35®') + '</div><div>' + config.hq.city + ', ' + config.hq.state + ', ' + config.hq.countryLong + '</div></div>\n' +
+    '<div class="ml-footer-brand"><strong>Laboratorio</strong><div>' + i18n('ml.footerDivision', 'DIVISIÓN DE INVESTIGACIÓN DE MATERIALES · S-35®') + '</div><div>' + config.hq.city + ', ' + config.hq.state + ', ' + config.hq.countryLong + '</div></div>\n' +
     '<nav class="ml-footer-nav">\n' +
-    '<a href="/materialab/materials" data-i18n="ml.indexTitle">ÍNDICE DE MATERIALES</a>\n' +
-    '<a href="/materialab/research" data-i18n="ml.researchTitle">ÍNDICE DE INVESTIGACIÓN</a>\n' +
-    '<a href="/materialab/methodology" data-i18n="ml.methodology">METODOLOGÍA</a>\n' +
-    '<a href="/materialab/about" data-i18n="ml.navAbout">Acerca de</a>\n' +
+    '<a href="/laboratorio/materials" data-i18n="ml.indexTitle">ÍNDICE DE MATERIALES</a>\n' +
+    '<a href="/laboratorio/research" data-i18n="ml.researchTitle">ÍNDICE DE INVESTIGACIÓN</a>\n' +
+    '<a href="/laboratorio/methodology" data-i18n="ml.methodology">METODOLOGÍA</a>\n' +
+    '<a href="/laboratorio/about" data-i18n="ml.navAbout">Acerca de</a>\n' +
     '<a href="/" data-i18n="ml.back">← S-35</a>\n' +
     '</nav>\n' +
     '<div class="ml-footer-stats">\n' +
@@ -233,7 +233,7 @@ function layout(opts, body) {
     '<meta property="og:image" content="' + esc(og) + '">\n' +
     '<meta name="theme-color" content="#000000">\n' +
     '<link rel="stylesheet" href="/styles.css">\n' +
-    '<link rel="stylesheet" href="/materialab/materialab.css">\n' +
+    '<link rel="stylesheet" href="/laboratorio/materialab.css">\n' +
     '<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">\n' +
     '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">\n' +
     jsonLd + '\n</head>\n<body ' + bodyAttrs + '>\n' +
@@ -242,7 +242,7 @@ function layout(opts, body) {
     '<a class="ml-subnav-back" href="/" data-i18n="ml.back">← S-35</a></div></div>\n' +
     body + '\n' +
     mlFooter() + '\n' +
-    '<script src="/i18n.js"></script>\n<script src="/script.js"></script>\n<script src="/materialab/materialab.js"></script>\n' +
+    '<script src="/i18n.js"></script>\n<script src="/script.js"></script>\n<script src="/laboratorio/materialab.js"></script>\n' +
     '</body>\n</html>\n';
 }
 
@@ -259,7 +259,7 @@ function materialRows() {
   return archive.materials.map(function (m) {
     var cat = CATEGORIES[m.category];
     var clickable = m.status === 'documented';
-    var href = clickable ? '/materialab/materials/' + m.slug : '';
+    var href = clickable ? '/laboratorio/materials/' + m.slug : '';
     var origin = m.origin && m.origin.value ? m.origin.value : '—';
     var classCell = locText(m.classLabel || (cat ? cat.singular : m.category));
     var statusCell = locText(STATUS[m.status] || m.status);
@@ -434,10 +434,10 @@ function pageHome() {
     ['ml.chainArchitecture', 'ARQUITECTURA'],
   ];
   var body = '<div hidden class="ml-banner ml-banner--warn" data-not-found data-i18n="ml.notFound">CÓDIGO NO ENCONTRADO EN EL ARCHIVO — ESTA INVESTIGACIÓN PUEDE NO ESTAR PUBLICADA AÚN</div>' +
-    archiveOpen('MateriaLab · Archivo abierto') +
+    archiveOpen('Laboratorio · Archivo abierto') +
     '<div class="ml-sheet-row">' +
     '<div class="ml-rail"><strong>Archivo de<br>investigación</strong><div style="margin-top:10px">S-35®</div><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
-    '<div><h1 class="ml-archive-title">MateriaLab</h1>' +
+    '<div><h1 class="ml-archive-title">Laboratorio</h1>' +
     '<p class="ml-archive-lead"><span data-i18n="ml.heroSub">Investigación y desarrollo de materiales</span><br><br><br>' +
     '<span data-i18n="ml.heroLine">Estudiamos la materia antes de convertirla en material.</span> ' +
     '<span data-i18n="ml.heroDesc">Una colección abierta de investigaciones sobre minerales, agregados, cementantes y materias primas desarrollada por S-35.</span></p></div></div>' +
@@ -450,7 +450,7 @@ function pageHome() {
     '</div></div>' +
     '<div class="ml-sheet-row"><div class="ml-rail"><div>1.0</div><div style="font-size:16px;font-weight:700;line-height:1.25;letter-spacing:-0.01em;color:#000;margin-top:6px;text-transform:none;letter-spacing:-0.01em" data-i18n="ml.manifestoTitle">Manifiesto</div></div>' +
     '<div><div class="ml-m-rule"></div><div class="ml-prose"><p data-i18n="ml.manifestoP1">Cada material empieza mucho antes de convertirse en un producto. Empieza en una partícula. Su composición química, mineralogía, granulometría, densidad, absorción, morfología y procedencia determinan gran parte de su comportamiento.</p>' +
-    '<p data-i18n="ml.manifestoP2">MateriaLab es el archivo de investigación de S-35 dedicado a estudiar estas variables, documentarlas y convertir ese conocimiento en mejores materiales.</p></div>' +
+    '<p data-i18n="ml.manifestoP2">Laboratorio es el archivo de investigación de S-35 dedicado a estudiar estas variables, documentarlas y convertir ese conocimiento en mejores materiales.</p></div>' +
     '<p class="ml-close">' + i18nHtml('ml.manifestoClose', 'La investigación informa la formulación.<br>La formulación informa el desempeño.') + '</p></div></div>' +
     '<div class="ml-sheet-row" id="index"><div class="ml-rail"><div>2.0</div><div style="font-size:16px;font-weight:700;line-height:1.25;color:#000;margin-top:6px;text-transform:none;letter-spacing:-0.01em" data-i18n="ml.indexTitle">Índice de materiales</div></div>' +
     '<div><div class="ml-m-rule"></div>' +
@@ -461,17 +461,17 @@ function pageHome() {
       '<div><div class="ml-m-rule"></div><article class="ml-featured ml-m-plate"><div class="ml-featured-visual">' +
       picture(featImg.id, { alt: featImg.alt, width: featImg.width, height: featImg.height, sizes: '(max-width: 1024px) 100vw, 60vw' }) +
       '</div><div class="ml-featured-meta"><p class="ml-label">' + esc(featured.code) + ' · ' + featured.date + ' · REV ' + pad2(featured.revision) + '</p>' +
-      '<h3><a href="/materialab/materials/' + featMat.slug + '">' + locText(featured.title) + '</a></h3>' +
+      '<h3><a href="/laboratorio/materials/' + featMat.slug + '">' + locText(featured.title) + '</a></h3>' +
       locParas(featured.summary) +
-      '<p class="ml-label" style="margin-top:1.5rem"><a href="/materialab/materials/' + featMat.slug + '" data-i18n="ml.openFile">ABRIR FICHA →</a></p>' +
+      '<p class="ml-label" style="margin-top:1.5rem"><a href="/laboratorio/materials/' + featMat.slug + '" data-i18n="ml.openFile">ABRIR FICHA →</a></p>' +
       '</div></article></div></div>';
   }
   body += '<div class="ml-sheet-row"><div class="ml-rail"><div>4.0</div><div style="font-size:16px;font-weight:700;line-height:1.25;color:#000;margin-top:6px;text-transform:none;letter-spacing:-0.01em" data-i18n="ml.methodology">Metodología</div></div>' +
-    '<div><div class="ml-m-rule"></div><p class="ml-lede" data-i18n="ml.methodologyLede">MateriaLab utiliza una metodología progresiva para caracterizar materias primas antes de evaluar su incorporación a sistemas formulados.</p>' +
+    '<div><div class="ml-m-rule"></div><p class="ml-lede" data-i18n="ml.methodologyLede">Laboratorio utiliza una metodología progresiva para caracterizar materias primas antes de evaluar su incorporación a sistemas formulados.</p>' +
     '<div class="ml-steps">' + stepKeys.map(function (k, i) {
       return '<div class="ml-step"><span class="ml-step-n">' + pad2(i + 1) + '</span><span class="ml-step-l" data-i18n="ml.' + k + '">' + stepEs[i] + '</span></div>';
     }).join('') + '</div>' +
-    '<p class="ml-close" style="margin-top:1.5rem"><a href="/materialab/methodology" data-i18n="ml.fullMethodology">METODOLOGÍA COMPLETA →</a></p></div></div>' +
+    '<p class="ml-close" style="margin-top:1.5rem"><a href="/laboratorio/methodology" data-i18n="ml.fullMethodology">METODOLOGÍA COMPLETA →</a></p></div></div>' +
     '<div class="ml-sheet-row"><div class="ml-rail"><div>5.0</div><div style="font-size:16px;font-weight:700;line-height:1.25;color:#000;margin-top:6px;text-transform:none;letter-spacing:-0.01em" data-i18n="ml.chainTitle">De la materia al material</div></div>' +
     '<div><div class="ml-m-rule"></div><p class="ml-chain">' + chain.map(function (c, i) { return i18n(c[0], c[1]) + (i < chain.length - 1 ? '<span>→</span>' : ''); }).join('') + '</p>' +
     '<p class="ml-close" data-i18n="ml.chainClose">La investigación es donde empieza cada material S-35.</p></div></div>' +
@@ -479,9 +479,9 @@ function pageHome() {
     '<div><div class="ml-m-rule"></div>' + researchTable() + '</div></div>' +
     archiveClose();
   return layout({
-    title: 'MateriaLab — Investigación y desarrollo de materiales | S-35',
+    title: 'Laboratorio — Investigación y desarrollo de materiales | S-35',
     description: 'Archivo abierto de caracterización de materias primas de S-35. Agregados, cargas y cementantes documentados con procedencia.',
-    path: '/materialab',
+    path: '/laboratorio',
     page: 'home',
     i18nPage: 'mlHome',
     og: featImg ? config.siteOrigin + MEDIA + '/' + featImg.id + '-og.webp' : undefined,
@@ -495,14 +495,14 @@ function researchTable() {
       return '<button type="button" data-cat="' + c + '" aria-pressed="false" data-i18n="ml.cat' + c + '">' + esc(CATEGORIES[c].es.toUpperCase()) + '</button>';
     }).join('') + '</div>';
   var rows = archive.researchFiles.map(function (r) {
-    var href = '/materialab/materials/' + r.materialSlug;
+    var href = '/laboratorio/materials/' + r.materialSlug;
     return '<tr data-cat="' + r.category + '"><td><a href="' + href + '">' + esc(r.code) + '</a></td><td><a href="' + href + '">' + locText(r.title) + '</a></td><td>' + locText(CATEGORIES[r.category]) + '</td><td>' + esc(r.date) + '</td><td>' + pad2(r.revision) + '</td><td class="ml-status">' + locText(STATUS[r.status] || { es: r.status, en: r.status }) + '</td></tr>';
   }).join('');
   return filters + materialTableWrap('<table class="ml-table" id="ml-research-table"><thead><tr><th scope="col" data-i18n="ml.thCode">CÓDIGO</th><th scope="col" data-i18n="ml.thTitle">TÍTULO</th><th scope="col" data-i18n="ml.thCategory">CATEGORÍA</th><th scope="col" data-i18n="ml.thDate">FECHA</th><th scope="col" data-i18n="ml.thRev">REV</th><th scope="col" data-i18n="ml.thStatus">ESTADO</th></tr></thead><tbody>' + rows + '</tbody></table>');
 }
 
 function pageMaterialsIndex() {
-  var body = archiveOpen('MateriaLab · Archivo abierto') +
+  var body = archiveOpen('Laboratorio · Archivo abierto') +
     '<div class="ml-sheet-row"><div class="ml-rail"><strong>Índice de<br>materiales</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
     '<div><h1 class="ml-file-title" data-i18n="ml.materialsH1">Materiales</h1>' +
     '<p class="ml-lede">' + pad2(stats.materialsDocumented) + ' ' + i18n('ml.materialsLede', 'MATERIALES DOCUMENTADOS. El archivo empieza pequeño y crece a la vista.') + '</p>' +
@@ -510,50 +510,50 @@ function pageMaterialsIndex() {
     materialTableWrap('<table class="ml-table"><thead><tr><th scope="col" data-i18n="ml.thCode">CÓDIGO</th><th scope="col" data-i18n="ml.thName">NOMBRE</th><th scope="col" data-i18n="ml.thClass">CLASE</th><th scope="col" data-i18n="ml.thOrigin">ORIGEN</th><th scope="col" data-i18n="ml.thStatus">ESTADO</th></tr></thead><tbody>' +
     materialRows() + '</tbody></table>') + '</div></div>' + archiveClose();
   return layout({
-    title: 'Índice de materiales — MateriaLab | S-35',
-    description: 'Índice de materias primas documentadas e en estudio en MateriaLab, la división de investigación de materiales de S-35.',
-    path: '/materialab/materials',
+    title: 'Índice de materiales — Laboratorio | S-35',
+    description: 'Índice de materias primas documentadas e en estudio en Laboratorio, la división de investigación de materiales de S-35.',
+    path: '/laboratorio/materials',
     page: 'materials',
     i18nPage: 'mlMaterials',
   }, body);
 }
 
 function pageResearch() {
-  var body = archiveOpen('MateriaLab · Archivo abierto') +
+  var body = archiveOpen('Laboratorio · Archivo abierto') +
     '<div class="ml-sheet-row"><div class="ml-rail"><strong>Índice de<br>investigación</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
     '<div><h1 class="ml-file-title" data-i18n="ml.researchH1">Investigación</h1>' +
     '<p class="ml-lede" data-i18n="ml.researchLede">Investigaciones publicadas. Los filtros solo muestran categorías con al menos un documento.</p>' +
     '<div class="ml-m-rule"></div>' +
     researchTable() + '</div></div>' + archiveClose();
   return layout({
-    title: 'Índice de investigación — MateriaLab | S-35',
-    description: 'Índice de investigaciones de MateriaLab sobre agregados, cargas y cementantes.',
-    path: '/materialab/research',
+    title: 'Índice de investigación — Laboratorio | S-35',
+    description: 'Índice de investigaciones de Laboratorio sobre agregados, cargas y cementantes.',
+    path: '/laboratorio/research',
     page: 'research',
     i18nPage: 'mlResearch',
   }, body);
 }
 
 function pageAbout() {
-  var body = archiveOpen('MateriaLab · Archivo abierto') +
-    '<div class="ml-sheet-row"><div class="ml-rail"><strong>Acerca de<br>MateriaLab</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
-    '<div><h1 class="ml-file-title" data-i18n="ml.aboutTitle">Qué es MateriaLab — y qué no es</h1></div></div>' +
+  var body = archiveOpen('Laboratorio · Archivo abierto') +
+    '<div class="ml-sheet-row"><div class="ml-rail"><strong>Acerca de<br>Laboratorio</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
+    '<div><h1 class="ml-file-title" data-i18n="ml.aboutTitle">Qué es Laboratorio — y qué no es</h1></div></div>' +
     '<div class="ml-sheet-row"><div class="ml-rail"><div>1.0</div><div style="font-size:16px;font-weight:700;line-height:1.25;color:#000;margin-top:6px;text-transform:none;letter-spacing:-0.01em" data-i18n="ml.aboutWhat">Qué es</div></div>' +
-    '<div><div class="ml-m-rule"></div><div class="ml-prose"><p data-i18n="ml.aboutWhatP" data-i18n-html>MateriaLab es un archivo abierto de caracterización de materias primas desarrollado por S-35. Publica lo que se observa y se mide sobre minerales, agregados, cementantes y cargas <em>antes</em> de convertirlos en un producto. El orden es deliberado: primero conocimiento, después autoridad, después marca, después producto.</p></div></div></div>' +
+    '<div><div class="ml-m-rule"></div><div class="ml-prose"><p data-i18n="ml.aboutWhatP" data-i18n-html>Laboratorio es un archivo abierto de caracterización de materias primas desarrollado por S-35. Publica lo que se observa y se mide sobre minerales, agregados, cementantes y cargas <em>antes</em> de convertirlos en un producto. El orden es deliberado: primero conocimiento, después autoridad, después marca, después producto.</p></div></div></div>' +
     '<div class="ml-sheet-row"><div class="ml-rail"><div>2.0</div><div style="font-size:16px;font-weight:700;line-height:1.25;color:#000;margin-top:6px;text-transform:none;letter-spacing:-0.01em" data-i18n="ml.aboutNot">Qué no es</div></div>' +
-    '<div><div class="ml-m-rule"></div><div class="ml-prose"><p data-i18n="ml.aboutNotP" data-i18n-html>MateriaLab no es un laboratorio acreditado. No es un organismo de certificación. No es una fuente de especificación de producto. Los datos de caracterización <strong>no constituyen especificación técnica ni garantía de desempeño</strong> de ningún producto S-35.</p></div></div></div>' +
+    '<div><div class="ml-m-rule"></div><div class="ml-prose"><p data-i18n="ml.aboutNotP" data-i18n-html>Esta división no es un laboratorio acreditado. No es un organismo de certificación. No es una fuente de especificación de producto. Los datos de caracterización <strong>no constituyen especificación técnica ni garantía de desempeño</strong> de ningún producto S-35.</p></div></div></div>' +
     '<div class="ml-sheet-row"><div class="ml-rail"><div>3.0</div><div style="font-size:16px;font-weight:700;line-height:1.25;color:#000;margin-top:6px;text-transform:none;letter-spacing:-0.01em" data-i18n="ml.aboutHow">Cómo se obtienen los datos</div></div>' +
     '<div><div class="ml-m-rule"></div><div class="ml-prose"><p data-i18n="ml.aboutHowP">Cada valor publicable lleva una etiqueta de procedencia. Si un número no tiene procedencia, el archivo no lo publica — el build falla.</p></div>' +
     legend() +
     '<div class="ml-prose" style="margin-top:1.25rem">' +
     '<p><span class="ml-prov">MEAS</span> — ' + i18n('ml.aboutMeas', 'medido por S-35 sobre una muestra identificada, con fecha.') + ' <span class="ml-prov">REF</span> — ' + i18n('ml.aboutRef', 'tomado de bibliografía, norma o ficha de proveedor, siempre con fuente.') + ' <span class="ml-prov">OBS</span> — ' + i18n('ml.aboutObs', 'observación interna no instrumentada (vista o referencia visual).') + ' <span class="ml-prov">HYP</span> — ' + i18n('ml.aboutHyp', 'hipótesis de trabajo.') + ' <span class="ml-prov">WIP</span> — ' + i18n('ml.aboutWip', 'ensayo iniciado, sin conclusión; en la tabla se lee AÚN NO MEDIDO.') + '</p>' +
     '<p data-i18n="ml.aboutFirst">Las primeras fichas combinan una referencia visual de presentación habitual con perfiles típicos de norma o de comercio, etiquetados REF. Donde el lote no se ensayó, el campo está vacío a propósito.</p>' +
-    '<p data-i18n="ml.aboutPublishes" data-i18n-html>MateriaLab publica <em>qué se sabe sobre la materia prima</em>. No publica qué hace S-35 con ella: ni dosificaciones, ni curvas objetivo de producción, ni proveedores.</p>' +
+    '<p data-i18n="ml.aboutPublishes" data-i18n-html>Laboratorio publica <em>qué se sabe sobre la materia prima</em>. No publica qué hace S-35 con ella: ni dosificaciones, ni curvas objetivo de producción, ni proveedores.</p>' +
     '</div></div></div>' + archiveClose();
   return layout({
-    title: 'Qué es MateriaLab — y qué no es | S-35',
-    description: 'MateriaLab es un archivo abierto de caracterización de materias primas. No es un laboratorio acreditado ni una especificación de producto S-35.',
-    path: '/materialab/about',
+    title: 'Qué es Laboratorio — y qué no es | S-35',
+    description: 'Laboratorio es el archivo abierto de caracterización de materias primas de S-35. No está acreditado como laboratorio de ensayo ni es una especificación de producto S-35.',
+    path: '/laboratorio/about',
     page: 'about',
     i18nPage: 'mlAbout',
   }, body);
@@ -572,10 +572,10 @@ function pageMethodology() {
     'Revisión interna antes de pasar de EN ESTUDIO a DOCUMENTADO.',
     'Ficha pública con procedencia, revisión y disclaimer. El archivo se actualiza a la vista.',
   ];
-  var body = archiveOpen('MateriaLab · Archivo abierto') +
+  var body = archiveOpen('Laboratorio · Archivo abierto') +
     '<div class="ml-sheet-row"><div class="ml-rail"><strong>Metodología</strong><div style="margin-top:10px">Rev. 01 · 2026</div></div>' +
     '<div><h1 class="ml-file-title" data-i18n="ml.methodTitle">Cómo se estudian los materiales</h1>' +
-    '<p class="ml-lede" data-i18n="ml.methodLede">MateriaLab utiliza una metodología progresiva para caracterizar materias primas antes de evaluar su incorporación a sistemas formulados. No afirmamos acreditaciones, equipos ni normas que no hayamos ejecutado sobre la muestra publicada.</p></div></div>' +
+    '<p class="ml-lede" data-i18n="ml.methodLede">Laboratorio utiliza una metodología progresiva para caracterizar materias primas antes de evaluar su incorporación a sistemas formulados. No afirmamos acreditaciones, equipos ni normas que no hayamos ejecutado sobre la muestra publicada.</p></div></div>' +
     '<div class="ml-sheet-row"><div class="ml-rail"><div>1.0</div><div style="font-size:16px;font-weight:700;line-height:1.25;color:#000;margin-top:6px;text-transform:none;letter-spacing:-0.01em">Pasos</div></div>' +
     '<div><div class="ml-m-rule"></div><div class="ml-steps">' + stepKeys.map(function (k, i) {
       return '<div class="ml-step"><span class="ml-step-n">' + pad2(i + 1) + '</span><span class="ml-step-l" data-i18n="ml.' + k + '">' + stepEs[i] + '</span></div>';
@@ -586,9 +586,9 @@ function pageMethodology() {
     '<p data-i18n="ml.methodClose">Si un ensayo se hizo en laboratorio externo, se nombra el laboratorio o se dice “laboratorio externo”. Nunca se omite para insinuar capacidad propia. En esta primera publicación no hay ensayos instrumentados de lote: hay referencia visual, observación y referencia normativa.</p>' +
     '</div></div></div>' + archiveClose();
   return layout({
-    title: 'Metodología — MateriaLab | S-35',
-    description: 'Cómo MateriaLab caracteriza materias primas: origen, muestra, clasificación, medición, documentación. Sin acreditaciones no confirmadas.',
-    path: '/materialab/methodology',
+    title: 'Metodología — Laboratorio | S-35',
+    description: 'Cómo Laboratorio caracteriza materias primas: origen, muestra, clasificación, medición, documentación. Sin acreditaciones no confirmadas.',
+    path: '/laboratorio/methodology',
     page: 'methodology',
     i18nPage: 'mlMethodology',
   }, body);
@@ -624,20 +624,20 @@ function pageMaterial(m) {
   var descEs = (m.name.es + '. ' + String(m.summary.es || '').split(/\n\n/)[0]).slice(0, 158);
   var descEn = (m.name.en + '. ' + String(m.summary.en || m.summary.es || '').split(/\n\n/)[0]).slice(0, 158);
   var catLabel = cat ? cat.singular : { es: 'material', en: 'material' };
-  var titleEs = m.name.es + ' — Caracterización de ' + String(catLabel.es || 'material').toLowerCase() + ' | MateriaLab S-35';
-  var titleEn = m.name.en + ' — ' + (catLabel.en || 'material') + ' characterisation | MateriaLab S-35';
+  var titleEs = m.name.es + ' — Caracterización de ' + String(catLabel.es || 'material').toLowerCase() + ' | Laboratorio S-35';
+  var titleEn = m.name.en + ' — ' + (catLabel.en || 'material') + ' characterisation | Laboratorio S-35';
   var jsonLd = [
     {
       '@context': 'https://schema.org',
       '@type': 'TechArticle',
-      headline: m.name.es + ' (' + m.name.en + ') — Caracterización | MateriaLab S-35',
+      headline: m.name.es + ' (' + m.name.en + ') — Caracterización | Laboratorio S-35',
       datePublished: m.publishedAt,
       dateModified: m.updatedAt,
       inLanguage: 'es',
       creator: { '@type': 'Organization', name: 'S-35' },
       publisher: { '@type': 'Organization', name: 'S-35' },
       license: config.siteOrigin + '/terminos.html',
-      url: config.siteOrigin + '/materialab/materials/' + m.slug,
+      url: config.siteOrigin + '/laboratorio/materials/' + m.slug,
     },
   ];
   if (m.granulometry) {
@@ -660,7 +660,7 @@ function pageMaterial(m) {
     titleEn: titleEn,
     descEs: descEs,
     descEn: descEn,
-    path: '/materialab/materials/' + m.slug,
+    path: '/laboratorio/materials/' + m.slug,
     page: 'material',
     og: config.siteOrigin + MEDIA + '/' + img.id + '-og.webp',
     jsonLd: jsonLd,
@@ -672,7 +672,7 @@ function pageMaterial(m) {
     return layout(layoutOpts, body + '<article class="' + sheetClass + '">' + tech + '</article>');
   }
   body += '<article class="ml-ft-doc">' +
-    '<div class="ml-ft-mast"><span data-i18n="ml.ftBrand">MATERIALAB · S-35® · ARCHIVO DE CARACTERIZACIÓN</span>' +
+    '<div class="ml-ft-mast"><span data-i18n="ml.ftBrand">LABORATORIO · S-35® · ARCHIVO DE CARACTERIZACIÓN</span>' +
     '<span>' + esc(m.code) + ' · REV ' + pad2(m.revision) + ' · ' + esc(m.updatedAt) + '</span></div>' +
     '<div class="ml-ft-hero"><div>' +
     '<h1 class="ml-ft-title">' + locText(m.name) + '</h1>' +
@@ -752,18 +752,18 @@ function pageMaterial(m) {
   if (relatedR.length || relatedM.length) {
     var relatedInner = '';
     relatedR.forEach(function (r) {
-      relatedInner += '<p><a href="/materialab/materials/' + r.materialSlug + '">' + esc(r.code) + ' — ' + locText(r.title) + '</a></p>';
+      relatedInner += '<p><a href="/laboratorio/materials/' + r.materialSlug + '">' + esc(r.code) + ' — ' + locText(r.title) + '</a></p>';
     });
     relatedM.forEach(function (rm) {
       if (rm.status === 'documented') {
-        relatedInner += '<p><a href="/materialab/materials/' + rm.slug + '">' + esc(rm.code) + ' — ' + locText(rm.name) + '</a></p>';
+        relatedInner += '<p><a href="/laboratorio/materials/' + rm.slug + '">' + esc(rm.code) + ' — ' + locText(rm.name) + '</a></p>';
       }
     });
     body += ftSec(nextSec(), 'ml.hRelated', 'Investigación relacionada', '<div class="ml-prose">' + relatedInner + '</div>');
   }
   body += ftSec('AVISO', 'ml.ftAviso', 'Aviso',
     '<div class="ml-actions"><button type="button" data-print data-i18n="ml.download">DESCARGAR FICHA / PDF</button></div>' +
-    '<p class="ml-disclaimer" data-i18n="ml.disclaimer">Los datos de caracterización de materias primas publicados en MateriaLab tienen fines informativos y de divulgación técnica. No constituyen especificación de producto, ficha técnica ni garantía de desempeño de ningún producto S-35.</p>',
+    '<p class="ml-disclaimer" data-i18n="ml.disclaimer">Los datos de caracterización de materias primas publicados en Laboratorio tienen fines informativos y de divulgación técnica. No constituyen especificación de producto, ficha técnica ni garantía de desempeño de ningún producto S-35.</p>',
     'ml-ft-aviso') +
     '<div class="ml-ft-end"><span>' + i18n('ml.ftDoc', 'DOCUMENTO TÉCNICO') + ' · ' + loc(esc(m.name.es.toUpperCase()), esc(m.name.en.toUpperCase())) + '</span>' +
     '<span data-i18n="ml.ftOpen">ARCHIVO ABIERTO</span></div></article>';
@@ -787,14 +787,15 @@ archive.documentedMaterials().forEach(function (m) {
 });
 
 var sitemapPath = path.join(ROOT, 'public', 'sitemap.xml');
+var sitemapOrigin = 'https://www.s-35.com.mx';
 var urls = [
-  ['https://s35web.vercel.app/materialab', '1.0'],
-  ['https://s35web.vercel.app/materialab/materials', '0.9'],
-  ['https://s35web.vercel.app/materialab/research', '0.8'],
-  ['https://s35web.vercel.app/materialab/methodology', '0.7'],
-  ['https://s35web.vercel.app/materialab/about', '0.8'],
+  [sitemapOrigin + '/laboratorio', '1.0'],
+  [sitemapOrigin + '/laboratorio/materials', '0.9'],
+  [sitemapOrigin + '/laboratorio/research', '0.8'],
+  [sitemapOrigin + '/laboratorio/methodology', '0.7'],
+  [sitemapOrigin + '/laboratorio/about', '0.8'],
 ].concat(archive.documentedMaterials().map(function (m) {
-  return ['https://s35web.vercel.app/materialab/materials/' + m.slug, '0.9'];
+  return [sitemapOrigin + '/laboratorio/materials/' + m.slug, '0.9'];
 }));
 var sm = fs.readFileSync(sitemapPath, 'utf8');
 var extra = '';
@@ -809,4 +810,4 @@ if (extra) {
   console.log('updated sitemap.xml');
 }
 
-console.log('MateriaLab build complete.');
+console.log('Laboratorio build complete.');

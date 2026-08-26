@@ -12,12 +12,12 @@ module.exports = function handler(req, res) {
   var loc;
   if (entry && entry.slug) {
     loc =
-      '/materialab/materials/' +
+      '/laboratorio/materials/' +
       entry.slug +
       '?utm_source=packaging&utm_medium=qr&utm_campaign=' +
       encodeURIComponent(raw);
   } else {
-    loc = '/materialab?notice=not-found';
+    loc = '/laboratorio?notice=not-found';
   }
   res.statusCode = 302;
   res.setHeader('Location', loc);

@@ -12,8 +12,8 @@ Disallow: /admin-login.html
 Allow: /Assets/
 Allow: /catalogo.html
 Allow: /conoce-mas.html
-Allow: /materialab
-Allow: /materialab/
+Allow: /laboratorio
+Allow: /laboratorio/
 Allow: /terminos.html
 Allow: /privacidad.html
 Allow: /cookies.html

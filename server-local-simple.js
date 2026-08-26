@@ -163,11 +163,22 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Laboratorio: URL pública /laboratorio; archivos en public/materialab
+    if (pathname === '/materialab' || (pathname.startsWith('/materialab/') && !/\.(css|js)$/.test(pathname))) {
+        const dest = pathname.replace(/^\/materialab/, '/laboratorio') || '/laboratorio';
+        res.writeHead(301, { Location: dest });
+        res.end();
+        return;
+    }
+
     // Servir archivos estáticos
     let filePath;
     
     if (pathname === '/') {
         filePath = path.join(__dirname, 'public', 'index.html');
+    } else if (pathname === '/laboratorio' || pathname.startsWith('/laboratorio/')) {
+        const rest = pathname === '/laboratorio' ? '' : pathname.slice('/laboratorio'.length);
+        filePath = path.join(__dirname, 'public', 'materialab' + rest);
     } else if (pathname.startsWith('/Assets/')) {
         // Manejar archivos de Assets
         const assetPath = pathname.substring(1); // Remover la barra inicial
