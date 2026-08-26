@@ -899,7 +899,7 @@
   height: 70px;
   display: grid;
   place-items: center;
-  background: #f4f3ef;
+  background: #fff;
   overflow: hidden;
   flex-shrink: 0;
 }
