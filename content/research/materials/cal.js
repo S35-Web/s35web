@@ -90,7 +90,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['marmolina-fina', 'cemento-gris', 'perlita-expandida', 'jal-pumita'],
+  relatedMaterials: ['marmolina-fina', 'cemento-gris', 'perlita-expandida', 'jal-pumita', 'vermiculita-expandida'],
   relatedResearch: ['caracterizacion-cal'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

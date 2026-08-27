@@ -98,4 +98,11 @@ module.exports = [
     originRegion: 'Grado industrial · carbonato doble molido',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00015',
+    materialSlug: 'vermiculita-expandida',
+    receivedAt: '2026-08-27',
+    originRegion: 'Grado construcción',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];

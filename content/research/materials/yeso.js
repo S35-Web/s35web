@@ -96,7 +96,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['cemento-gris', 'perlita-expandida', 'bentonita-sodica'],
+  relatedMaterials: ['cemento-gris', 'perlita-expandida', 'bentonita-sodica', 'vermiculita-expandida'],
   relatedResearch: ['caracterizacion-yeso'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
