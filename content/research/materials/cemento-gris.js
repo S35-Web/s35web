@@ -100,7 +100,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['cemento-blanco', 'cemento-aluminato-de-calcio', 'yeso', 'metacaolin'],
+  relatedMaterials: ['cemento-blanco', 'cemento-aluminato-de-calcio', 'yeso', 'metacaolin', 'polimero-redispersable-vae'],
   relatedResearch: ['caracterizacion-cemento-gris'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

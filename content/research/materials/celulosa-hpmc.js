@@ -121,7 +121,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['perlita-expandida', 'arena-silicea-graduada', 'bentonita-sodica', 'yeso'],
+  relatedMaterials: ['polimero-redispersable-vae', 'perlita-expandida', 'arena-silicea-graduada', 'bentonita-sodica', 'yeso'],
   relatedResearch: ['caracterizacion-celulosa-hpmc'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

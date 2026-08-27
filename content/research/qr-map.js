@@ -22,4 +22,5 @@ module.exports = {
   min003: { slug: 'caolin', materialCode: 'ML-MIN-003' },
   min004: { slug: 'metacaolin', materialCode: 'ML-MIN-004' },
   adm001: { slug: 'celulosa-hpmc', materialCode: 'ML-ADM-001' },
+  adm002: { slug: 'polimero-redispersable-vae', materialCode: 'ML-ADM-002' },
 };
