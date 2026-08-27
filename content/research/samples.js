@@ -112,4 +112,11 @@ module.exports = [
     originRegion: 'Grado industrial',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00017',
+    materialSlug: 'metacaolin',
+    receivedAt: '2026-08-27',
+    originRegion: 'Grado alta reactividad',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];

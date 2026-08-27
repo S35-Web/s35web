@@ -155,7 +155,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['perlita-expandida', 'cal', 'cemento-gris', 'vermiculita-expandida'],
+  relatedMaterials: ['perlita-expandida', 'cal', 'cemento-gris', 'vermiculita-expandida', 'metacaolin'],
   relatedResearch: ['caracterizacion-jal-pumita'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

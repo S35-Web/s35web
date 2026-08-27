@@ -19,4 +19,5 @@ module.exports = {
   min001: { slug: 'bentonita-sodica', materialCode: 'ML-MIN-001' },
   min002: { slug: 'bentonita-granular', materialCode: 'ML-MIN-002' },
   min003: { slug: 'caolin', materialCode: 'ML-MIN-003' },
+  min004: { slug: 'metacaolin', materialCode: 'ML-MIN-004' },
 };

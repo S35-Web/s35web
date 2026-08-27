@@ -101,7 +101,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['cemento-gris', 'marmolina-fina', 'caolin'],
+  relatedMaterials: ['cemento-gris', 'marmolina-fina', 'caolin', 'metacaolin'],
   relatedResearch: ['caracterizacion-cemento-blanco'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
