@@ -115,7 +115,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['celulosa-hpmc', 'cemento-gris', 'cemento-blanco', 'yeso'],
+  relatedMaterials: ['celulosa-hpmc', 'eter-de-almidon', 'cemento-gris', 'cemento-blanco', 'yeso'],
   relatedResearch: ['caracterizacion-polimero-redispersable-vae'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

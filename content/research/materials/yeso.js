@@ -96,7 +96,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['cemento-gris', 'cemento-aluminato-de-calcio', 'perlita-expandida', 'bentonita-sodica', 'vermiculita-expandida', 'celulosa-hpmc', 'polimero-redispersable-vae'],
+  relatedMaterials: ['cemento-gris', 'cemento-aluminato-de-calcio', 'perlita-expandida', 'bentonita-sodica', 'vermiculita-expandida', 'celulosa-hpmc', 'polimero-redispersable-vae', 'eter-de-almidon'],
   relatedResearch: ['caracterizacion-yeso'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

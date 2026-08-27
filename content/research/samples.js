@@ -140,4 +140,11 @@ module.exports = [
     originRegion: 'Aditivo funcional · grado construcción',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00021',
+    materialSlug: 'eter-de-almidon',
+    receivedAt: '2026-08-27',
+    originRegion: 'Aditivo funcional · grado construcción',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];
