@@ -91,4 +91,11 @@ module.exports = [
     originRegion: 'Grado comercial · banco cribado, sin lavado industrial',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00014',
+    materialSlug: 'dolomita',
+    receivedAt: '2026-08-27',
+    originRegion: 'Grado industrial · carbonato doble molido',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];
