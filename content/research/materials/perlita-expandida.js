@@ -155,7 +155,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['yeso', 'cal', 'arena-de-rio', 'jal-pumita', 'vermiculita-expandida'],
+  relatedMaterials: ['yeso', 'cal', 'arena-de-rio', 'jal-pumita', 'vermiculita-expandida', 'celulosa-hpmc'],
   relatedResearch: ['caracterizacion-perlita-expandida'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

@@ -21,4 +21,5 @@ module.exports = {
   min002: { slug: 'bentonita-granular', materialCode: 'ML-MIN-002' },
   min003: { slug: 'caolin', materialCode: 'ML-MIN-003' },
   min004: { slug: 'metacaolin', materialCode: 'ML-MIN-004' },
+  adm001: { slug: 'celulosa-hpmc', materialCode: 'ML-ADM-001' },
 };

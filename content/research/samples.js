@@ -126,4 +126,11 @@ module.exports = [
     originRegion: 'Grado refractario e industrial',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00019',
+    materialSlug: 'celulosa-hpmc',
+    receivedAt: '2026-08-27',
+    originRegion: 'Aditivo funcional · grado construcción',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];
