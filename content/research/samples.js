@@ -70,4 +70,11 @@ module.exports = [
     originRegion: 'Grado industrial',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00011',
+    materialSlug: 'bentonita-granular',
+    receivedAt: '2026-08-27',
+    originRegion: 'Grado industrial · gránulo compactado',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];
