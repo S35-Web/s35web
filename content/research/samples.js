@@ -119,4 +119,11 @@ module.exports = [
     originRegion: 'Grado alta reactividad',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00018',
+    materialSlug: 'cemento-aluminato-de-calcio',
+    receivedAt: '2026-08-27',
+    originRegion: 'Grado refractario e industrial',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];
