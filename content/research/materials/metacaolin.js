@@ -127,7 +127,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['caolin', 'jal-pumita', 'cemento-gris', 'cemento-blanco'],
+  relatedMaterials: ['caolin', 'jal-pumita', 'ceniza-volante', 'cemento-gris', 'cemento-blanco'],
   relatedResearch: ['caracterizacion-metacaolin'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

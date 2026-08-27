@@ -147,4 +147,11 @@ module.exports = [
     originRegion: 'Aditivo funcional · grado construcción',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00022',
+    materialSlug: 'ceniza-volante',
+    receivedAt: '2026-08-27',
+    originRegion: 'Subproducto de combustión de carbón · clase F/C',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];
