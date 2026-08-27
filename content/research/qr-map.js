@@ -17,6 +17,7 @@ module.exports = {
   bnd003: { slug: 'cemento-gris', materialCode: 'ML-BND-003' },
   bnd004: { slug: 'cemento-blanco', materialCode: 'ML-BND-004' },
   bnd005: { slug: 'cemento-aluminato-de-calcio', materialCode: 'ML-BND-005' },
+  bnd006: { slug: 'escoria-granulada-de-alto-horno', materialCode: 'ML-BND-006' },
   min001: { slug: 'bentonita-sodica', materialCode: 'ML-MIN-001' },
   min002: { slug: 'bentonita-granular', materialCode: 'ML-MIN-002' },
   min003: { slug: 'caolin', materialCode: 'ML-MIN-003' },

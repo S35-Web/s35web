@@ -90,7 +90,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['marmolina-fina', 'cemento-gris', 'cemento-aluminato-de-calcio', 'perlita-expandida', 'jal-pumita', 'vermiculita-expandida', 'ceniza-volante'],
+  relatedMaterials: ['marmolina-fina', 'cemento-gris', 'cemento-aluminato-de-calcio', 'perlita-expandida', 'jal-pumita', 'vermiculita-expandida', 'ceniza-volante', 'escoria-granulada-de-alto-horno'],
   relatedResearch: ['caracterizacion-cal'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

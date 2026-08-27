@@ -154,4 +154,11 @@ module.exports = [
     originRegion: 'Subproducto de combustión de carbón · clase F/C',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00023',
+    materialSlug: 'escoria-granulada-de-alto-horno',
+    receivedAt: '2026-08-27',
+    originRegion: 'GGBFS · subproducto siderúrgico molido',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];
