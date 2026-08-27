@@ -8,6 +8,7 @@ module.exports = {
   agg003: { slug: 'arena-silicea-graduada', materialCode: 'ML-AGG-003' },
   agg004: { slug: 'jal-pumita', materialCode: 'ML-AGG-004' },
   fil001: { slug: 'marmolina-fina', materialCode: 'ML-FIL-001' },
+  fil002: { slug: 'carbonato-de-calcio', materialCode: 'ML-FIL-002' },
   bnd001: { slug: 'cal', materialCode: 'ML-BND-001' },
   bnd002: { slug: 'yeso', materialCode: 'ML-BND-002' },
   bnd003: { slug: 'cemento-gris', materialCode: 'ML-BND-003' },
