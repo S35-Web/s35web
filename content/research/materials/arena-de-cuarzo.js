@@ -148,7 +148,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['arena-de-rio', 'arena-silicea-graduada', 'cemento-gris', 'marmolina-fina', 'barita'],
+  relatedMaterials: ['arena-de-rio', 'arena-silicea-graduada', 'cemento-gris', 'marmolina-fina', 'barita', 'vidrio-molido'],
   relatedResearch: ['caracterizacion-arena-de-cuarzo'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

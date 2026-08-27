@@ -203,4 +203,18 @@ module.exports = [
     originRegion: 'Filosilicato de aluminio y potasio, grupo de la moscovita',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00030',
+    materialSlug: 'vidrio-expandido',
+    receivedAt: '2026-08-27',
+    originRegion: 'Granulado celular de vidrio reciclado, espumado térmicamente',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
+  {
+    id: 'ML-SMP-00031',
+    materialSlug: 'vidrio-molido',
+    receivedAt: '2026-08-27',
+    originRegion: 'Vidrio post-consumo triturado y clasificado, GGA',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];

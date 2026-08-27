@@ -163,7 +163,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['arena-de-rio', 'marmolina-fina', 'cemento-gris', 'bentonita-sodica', 'arena-de-cuarzo', 'celulosa-hpmc'],
+  relatedMaterials: ['arena-de-rio', 'marmolina-fina', 'cemento-gris', 'bentonita-sodica', 'arena-de-cuarzo', 'celulosa-hpmc', 'vidrio-molido'],
   relatedResearch: ['caracterizacion-arena-silicea-graduada'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
