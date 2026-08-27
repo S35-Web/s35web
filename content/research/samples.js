@@ -105,4 +105,11 @@ module.exports = [
     originRegion: 'Grado construcción',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00016',
+    materialSlug: 'caolin',
+    receivedAt: '2026-08-27',
+    originRegion: 'Grado industrial',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];

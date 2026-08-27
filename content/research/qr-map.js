@@ -18,4 +18,5 @@ module.exports = {
   bnd004: { slug: 'cemento-blanco', materialCode: 'ML-BND-004' },
   min001: { slug: 'bentonita-sodica', materialCode: 'ML-MIN-001' },
   min002: { slug: 'bentonita-granular', materialCode: 'ML-MIN-002' },
+  min003: { slug: 'caolin', materialCode: 'ML-MIN-003' },
 };

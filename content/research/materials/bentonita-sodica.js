@@ -169,7 +169,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['arena-silicea-graduada', 'yeso', 'cemento-gris', 'bentonita-granular'],
+  relatedMaterials: ['arena-silicea-graduada', 'yeso', 'cemento-gris', 'bentonita-granular', 'caolin'],
   relatedResearch: ['caracterizacion-bentonita-sodica'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
