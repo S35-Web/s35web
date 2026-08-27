@@ -160,7 +160,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['marmolina-fina', 'cal', 'cemento-blanco', 'yeso', 'dolomita', 'caolin'],
+  relatedMaterials: ['marmolina-fina', 'cal', 'cemento-blanco', 'yeso', 'dolomita', 'caolin', 'barita', 'talco-silicato', 'mica'],
   relatedResearch: ['caracterizacion-carbonato-de-calcio'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

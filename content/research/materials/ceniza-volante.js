@@ -130,7 +130,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['metacaolin', 'jal-pumita', 'escoria-granulada-de-alto-horno', 'cemento-gris', 'cal'],
+  relatedMaterials: ['metacaolin', 'jal-pumita', 'escoria-granulada-de-alto-horno', 'cemento-gris', 'cal', 'puzolana-volcanica', 'microsilice'],
   relatedResearch: ['caracterizacion-ceniza-volante'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

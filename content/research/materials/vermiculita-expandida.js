@@ -145,7 +145,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['perlita-expandida', 'jal-pumita', 'yeso', 'cal'],
+  relatedMaterials: ['perlita-expandida', 'jal-pumita', 'yeso', 'cal', 'diatomita'],
   relatedResearch: ['caracterizacion-vermiculita-expandida'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
