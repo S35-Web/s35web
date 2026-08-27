@@ -84,4 +84,11 @@ module.exports = [
     originRegion: 'Grado industrial · caliza molida',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00013',
+    materialSlug: 'arena-de-cuarzo',
+    receivedAt: '2026-08-27',
+    originRegion: 'Grado comercial · banco cribado, sin lavado industrial',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];

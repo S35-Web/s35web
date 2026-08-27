@@ -7,6 +7,7 @@ module.exports = {
   agg002: { slug: 'perlita-expandida', materialCode: 'ML-AGG-002' },
   agg003: { slug: 'arena-silicea-graduada', materialCode: 'ML-AGG-003' },
   agg004: { slug: 'jal-pumita', materialCode: 'ML-AGG-004' },
+  agg005: { slug: 'arena-de-cuarzo', materialCode: 'ML-AGG-005' },
   fil001: { slug: 'marmolina-fina', materialCode: 'ML-FIL-001' },
   fil002: { slug: 'carbonato-de-calcio', materialCode: 'ML-FIL-002' },
   bnd001: { slug: 'cal', materialCode: 'ML-BND-001' },
