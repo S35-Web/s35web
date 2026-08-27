@@ -101,7 +101,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['cemento-gris', 'cemento-aluminato-de-calcio', 'marmolina-fina', 'caolin', 'metacaolin', 'polimero-redispersable-vae'],
+  relatedMaterials: ['cemento-gris', 'cemento-aluminato-de-calcio', 'marmolina-fina', 'caolin', 'metacaolin', 'polimero-redispersable-vae', 'dioxido-de-titanio'],
   relatedResearch: ['caracterizacion-cemento-blanco'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

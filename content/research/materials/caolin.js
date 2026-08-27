@@ -157,7 +157,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['bentonita-sodica', 'carbonato-de-calcio', 'marmolina-fina', 'cemento-blanco', 'metacaolin', 'talco-silicato', 'mica'],
+  relatedMaterials: ['bentonita-sodica', 'carbonato-de-calcio', 'marmolina-fina', 'cemento-blanco', 'metacaolin', 'talco-silicato', 'mica', 'dioxido-de-titanio'],
   relatedResearch: ['caracterizacion-caolin'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

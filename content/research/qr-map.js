@@ -34,4 +34,5 @@ module.exports = {
   adm001: { slug: 'celulosa-hpmc', materialCode: 'ML-ADM-001' },
   adm002: { slug: 'polimero-redispersable-vae', materialCode: 'ML-ADM-002' },
   adm003: { slug: 'eter-de-almidon', materialCode: 'ML-ADM-003' },
+  pig001: { slug: 'dioxido-de-titanio', materialCode: 'ML-PIG-001' },
 };

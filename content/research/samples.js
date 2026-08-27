@@ -217,4 +217,11 @@ module.exports = [
     originRegion: 'Vidrio post-consumo triturado y clasificado, GGA',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00032',
+    materialSlug: 'dioxido-de-titanio',
+    receivedAt: '2026-08-27',
+    originRegion: 'TiO₂ rutilo/anatasa, grado recubrimientos',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];
