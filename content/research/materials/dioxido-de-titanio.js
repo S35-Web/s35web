@@ -103,7 +103,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['caolin', 'carbonato-de-calcio', 'cemento-blanco', 'cal'],
+  relatedMaterials: ['caolin', 'carbonato-de-calcio', 'cemento-blanco', 'cal', 'oxido-de-hierro-rojo'],
   relatedResearch: ['caracterizacion-dioxido-de-titanio'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

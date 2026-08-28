@@ -98,7 +98,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['perlita-expandida', 'jal-pumita', 'carbonato-de-calcio', 'arena-de-cuarzo'],
+  relatedMaterials: ['perlita-expandida', 'jal-pumita', 'carbonato-de-calcio', 'arena-de-cuarzo', 'basalto'],
   relatedResearch: ['caracterizacion-barita'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',

@@ -224,4 +224,18 @@ module.exports = [
     originRegion: 'TiO₂ rutilo/anatasa, grado recubrimientos',
     note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
   },
+  {
+    id: 'ML-SMP-00033',
+    materialSlug: 'basalto',
+    receivedAt: '2026-08-28',
+    originRegion: 'Roca ígnea máfica, triturado de banco volcánico',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
+  {
+    id: 'ML-SMP-00034',
+    materialSlug: 'oxido-de-hierro-rojo',
+    receivedAt: '2026-08-28',
+    originRegion: 'Hematita Fe₂O₃, PR101 / CI 77491',
+    note: 'Referencia visual de presentación habitual. Sin ensayo instrumental de lote.',
+  },
 ];

@@ -11,6 +11,7 @@ module.exports = {
   agg006: { slug: 'vermiculita-expandida', materialCode: 'ML-AGG-006' },
   agg007: { slug: 'vidrio-expandido', materialCode: 'ML-AGG-007' },
   agg008: { slug: 'vidrio-molido', materialCode: 'ML-AGG-008' },
+  agg009: { slug: 'basalto', materialCode: 'ML-AGG-009' },
   fil001: { slug: 'marmolina-fina', materialCode: 'ML-FIL-001' },
   fil002: { slug: 'carbonato-de-calcio', materialCode: 'ML-FIL-002' },
   fil003: { slug: 'dolomita', materialCode: 'ML-FIL-003' },
@@ -35,4 +36,5 @@ module.exports = {
   adm002: { slug: 'polimero-redispersable-vae', materialCode: 'ML-ADM-002' },
   adm003: { slug: 'eter-de-almidon', materialCode: 'ML-ADM-003' },
   pig001: { slug: 'dioxido-de-titanio', materialCode: 'ML-PIG-001' },
+  pig002: { slug: 'oxido-de-hierro-rojo', materialCode: 'ML-PIG-002' },
 };

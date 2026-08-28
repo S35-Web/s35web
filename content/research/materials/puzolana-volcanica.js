@@ -103,7 +103,7 @@ module.exports = {
       },
     },
   ],
-  relatedMaterials: ['ceniza-volante', 'metacaolin', 'jal-pumita', 'cemento-gris'],
+  relatedMaterials: ['ceniza-volante', 'metacaolin', 'jal-pumita', 'cemento-gris', 'basalto'],
   relatedResearch: ['caracterizacion-puzolana-volcanica'],
   applicationHref: '/catalogo.html',
   applicationLabel: 'Sistemas de recubrimiento S-35',
