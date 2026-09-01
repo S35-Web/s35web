@@ -1040,8 +1040,12 @@
         wrap.setAttribute('role', 'group');
         wrap.setAttribute('aria-label', 'Language');
         wrap.innerHTML = `
-            <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
-            <button type="button" class="lang-btn" data-lang="es" aria-pressed="false">ES</button>
+            <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">
+                <span class="lang-code">EN</span><span class="lang-flag" aria-hidden="true">🇺🇸</span>
+            </button>
+            <button type="button" class="lang-btn" data-lang="es" aria-pressed="false">
+                <span class="lang-code">ES</span><span class="lang-flag" aria-hidden="true">🇲🇽</span>
+            </button>
         `;
         menu.insertBefore(wrap, menu.firstChild);
         wrap.querySelectorAll('.lang-btn').forEach((btn) => {
