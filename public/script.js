@@ -3,9 +3,14 @@ const navToggle = document.querySelector('.nav-toggle');
 const navMenu = document.querySelector('.nav-menu');
 
 if (navToggle && navMenu) {
+    const syncMenuScrollLock = () => {
+        document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
+    };
+
     navToggle.addEventListener('click', () => {
         navMenu.classList.toggle('active');
         navToggle.classList.toggle('active');
+        syncMenuScrollLock();
     });
 
     // Close menu when clicking on a link
@@ -13,6 +18,7 @@ if (navToggle && navMenu) {
         link.addEventListener('click', () => {
             navMenu.classList.remove('active');
             navToggle.classList.remove('active');
+            syncMenuScrollLock();
         });
     });
 }
