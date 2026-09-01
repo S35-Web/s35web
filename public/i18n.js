@@ -25,7 +25,7 @@
                 mlAboutTitle: 'What Laboratorio is — and what it is not | S-35',
                 mlAboutDescription: 'Laboratorio is S-35’s open raw-material characterisation archive. It is not an accredited testing lab and not an S-35 product specification.'
             },
-            nav: { login: 'Login', news: 'News', catalog: 'Catalog', materialab: 'Laboratorio', contact: 'Contact', back: 'Back' },
+            nav: { login: 'Login', news: 'News', catalog: 'Catalog', materialab: 'Laboratorio', contact: 'Contact', back: 'Back', close: 'Close menu' },
             hero: {
                 title1: 'Technology',
                 title2: 'in materials.',
@@ -478,7 +478,7 @@
                 mlAboutTitle: 'Qué es Laboratorio — y qué no es | S-35',
                 mlAboutDescription: 'Laboratorio es el archivo abierto de caracterización de materias primas de S-35. No está acreditado como laboratorio de ensayo ni es una especificación de producto S-35.'
             },
-            nav: { login: 'Iniciar sesión', news: 'Noticias', catalog: 'Catálogo', materialab: 'Laboratorio', contact: 'Contacto', back: 'Volver' },
+            nav: { login: 'Iniciar sesión', news: 'Noticias', catalog: 'Catálogo', materialab: 'Laboratorio', contact: 'Contacto', back: 'Volver', close: 'Cerrar menú' },
             hero: {
                 title1: 'Tecnología',
                 title2: 'en materiales.',
@@ -998,6 +998,11 @@
             const key = el.getAttribute('data-i18n-placeholder');
             const value = t(key, lang);
             if (value) el.placeholder = value;
+        });
+        document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+            const key = el.getAttribute('data-i18n-aria');
+            const value = t(key, lang);
+            if (value) el.setAttribute('aria-label', value);
         });
         document.querySelectorAll('[data-i18n-category]').forEach((el) => {
             const cat = el.getAttribute('data-i18n-category');
