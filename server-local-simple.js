@@ -170,11 +170,11 @@ const server = http.createServer((req, res) => {
     }
 
     if (pathname === '/colaboradores' || pathname === '/colaboradores/') {
-        serveStaticFile(req, res, path.join(__dirname, 'public', 'admin-login.html'));
+        serveStaticFile(req, res, path.join(__dirname, 'public', 'colaboradores', 'index.html'));
         return;
     }
     if (pathname === '/colaboradores/panel' || pathname === '/colaboradores/panel/') {
-        serveStaticFile(req, res, path.join(__dirname, 'public', 'admin.html'));
+        serveStaticFile(req, res, path.join(__dirname, 'public', 'colaboradores', 'panel.html'));
         return;
     }
 
