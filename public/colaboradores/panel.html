@@ -89,11 +89,31 @@
         .field label { color: var(--muted); font-size: 12px; }
         .msg-box { white-space: pre-wrap; background: var(--elev); border: 1px solid var(--border); padding: 10px; border-radius: 12px; }
         .empty { padding: 24px 8px; color: var(--muted); text-align: center; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .tab { padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; font-size: 13px; }
+        .tab.active { background: var(--primary); border-color: transparent; color: #fff; }
+        .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+        .chip { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; font-size: 12px; }
+        .chip.active { background: var(--elev); border-color: var(--primary); color: var(--primary); }
+        .recipe-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 12px; }
+        .recipe-meta { display: grid; gap: 4px; }
+        .recipe-list { display: grid; gap: 8px; }
+        .recipe-item { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; }
+        .recipe-item:hover { background: var(--elev); }
+        .select { height: 36px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text); padding: 0 10px; min-width: 240px; }
+        .select option { color: #111; }
+        .split { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
+        .recipe-nav { display: grid; gap: 6px; max-height: 70vh; overflow: auto; }
+        .recipe-nav button { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid transparent; background: transparent; color: var(--text); cursor: pointer; }
+        .recipe-nav button.active, .recipe-nav button:hover { background: var(--elev); border-color: var(--border); }
+        .note-box { background: var(--elev); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--muted); margin-bottom: 12px; }
         @media (max-width: 980px) {
             .kpis { grid-template-columns: 1fr 1fr; }
             .grid { grid-template-columns: 1fr; }
             .span-8, .span-4 { grid-column: auto; }
             .field { grid-template-columns: 1fr; }
+            .split { grid-template-columns: 1fr; }
+            .recipe-nav { max-height: none; }
         }
         @media (max-width: 760px) {
             .menu-btn { display: grid; }
@@ -126,7 +146,8 @@
                     <a data-section="dashboard" class="active"><i class="fa-solid fa-chart-line"></i> Inicio</a>
                     <a data-section="messages"><i class="fa-solid fa-envelope"></i> Mensajes</a>
                     <a data-section="catalog"><i class="fa-solid fa-box"></i> Catálogo</a>
-                    <a data-section="lab"><i class="fa-solid fa-flask"></i> Laboratorio</a>
+                    <a data-section="materials"><i class="fa-solid fa-cubes"></i> Materias primas</a>
+                    <a data-section="formulas"><i class="fa-solid fa-flask-vial"></i> Formulaciones</a>
                     <a data-section="site"><i class="fa-solid fa-globe"></i> Sitio</a>
                 </nav>
             </aside>
@@ -138,8 +159,8 @@
                     <div class="kpis">
                         <div class="kpi"><div class="muted">Mensajes</div><div class="val" id="kpiMessages">—</div></div>
                         <div class="kpi"><div class="muted">Fichas de producto</div><div class="val" id="kpiProducts">0</div></div>
-                        <div class="kpi"><div class="muted">Materiales</div><div class="val" id="kpiMaterials">0</div></div>
-                        <div class="kpi"><div class="muted">Sesión</div><div class="val" style="font-size:16px">Activa</div></div>
+                        <div class="kpi"><div class="muted">Materias primas</div><div class="val" id="kpiMaterials">0</div></div>
+                        <div class="kpi"><div class="muted">Formulaciones</div><div class="val" id="kpiRecipes">0</div></div>
                     </div>
                     <div class="grid">
                         <div class="card" style="grid-column: span 8;">
@@ -155,9 +176,9 @@
                             <h3>Accesos rápidos</h3>
                             <div class="shortcuts">
                                 <a class="shortcut" href="/productos" target="_blank">Índice de fichas <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
+                                <a class="shortcut" href="#formulas" id="goFormulas">Formulaciones internas</a>
                                 <a class="shortcut" href="/laboratorio/materials" target="_blank">Laboratorio <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
                                 <a class="shortcut" href="/catalogo.html" target="_blank">Catálogo público <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
-                                <a class="shortcut" href="/" target="_blank">Sitio principal <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
                             </div>
                         </div>
                     </div>
@@ -206,18 +227,33 @@
                     </div>
                 </section>
 
-                <section id="lab" class="section">
-                    <h1 class="page-title">Laboratorio</h1>
-                    <p class="page-sub">Materias primas documentadas en MateriaLAB.</p>
+                <section id="materials" class="section">
+                    <h1 class="page-title">Materias primas</h1>
+                    <p class="page-sub">Archivo interno de lo que entra a planta. Cada ficha pública vive en Laboratorio; aquí se ve en qué productos se usa.</p>
                     <div class="card">
                         <div class="toolbar">
-                            <input id="labSearch" class="search" type="search" placeholder="Buscar material o código">
+                            <input id="matSearch" class="search" type="search" placeholder="Buscar materia prima o código">
                         </div>
+                        <div class="chips" id="matChips"></div>
                         <div class="table-card">
                             <table>
-                                <thead><tr><th>Código</th><th>Material</th><th>Clase</th><th>Estado</th><th></th></tr></thead>
-                                <tbody id="labBody"></tbody>
+                                <thead><tr><th>Código</th><th>Materia prima</th><th>Clase</th><th>Usada en</th><th></th></tr></thead>
+                                <tbody id="matBody"></tbody>
                             </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="formulas" class="section">
+                    <h1 class="page-title">Formulaciones</h1>
+                    <p class="page-sub">Mapa de materias primas por producto. Las proporciones de saco se cargan cuando exista la receta de planta.</p>
+                    <div class="split">
+                        <div class="card">
+                            <input id="formulaSearch" class="search" type="search" placeholder="Buscar producto" style="margin-bottom:10px;width:100%">
+                            <div class="recipe-nav" id="recipeNav"></div>
+                        </div>
+                        <div class="card" id="recipeDetail">
+                            <div class="empty">Elige un producto para ver su formulación.</div>
                         </div>
                     </div>
                 </section>
@@ -278,9 +314,10 @@
         if (u.username) document.getElementById('userChip').textContent = u.username;
     } catch (_) {}
 
-    const data = window.S35_PANEL_DATA || { products: [], materials: [] };
+    const data = window.S35_PANEL_DATA || { products: [], materials: [], recipes: [], usedIn: {} };
     document.getElementById('kpiProducts').textContent = data.products.length;
     document.getElementById('kpiMaterials').textContent = data.materials.length;
+    document.getElementById('kpiRecipes').textContent = (data.recipes || []).length;
 
     const sidebar = document.getElementById('sidebar');
     document.getElementById('menuBtn').addEventListener('click', function () {
@@ -295,6 +332,8 @@
     document.querySelectorAll('.nav a').forEach(function (a) {
         a.addEventListener('click', function () { showSection(a.getAttribute('data-section')); });
     });
+    const goFormulas = document.getElementById('goFormulas');
+    if (goFormulas) goFormulas.addEventListener('click', function (e) { e.preventDefault(); showSection('formulas'); });
 
     const themeBtn = document.getElementById('themeBtn');
     function applyTheme(theme) {
@@ -459,26 +498,122 @@
             return '<tr><td class="muted">' + esc(p.code) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.family) + '</td><td>' + statusBadge(p.status) + '</td><td><a class="link" href="/productos/' + esc(p.slug) + '" target="_blank">Abrir</a></td></tr>';
         }).join('') || '<tr><td colspan="5" class="empty">Sin resultados</td></tr>';
     }
-    function renderLab(list) {
-        const tbody = document.getElementById('labBody');
-        tbody.innerHTML = list.map(function (m) {
-            return '<tr><td class="muted">' + esc(m.code) + '</td><td>' + esc(m.name) + '</td><td>' + esc(m.category) + '</td><td>' + statusBadge(m.status) + '</td><td><a class="link" href="/laboratorio/materials/' + esc(m.slug) + '" target="_blank">Abrir</a></td></tr>';
-        }).join('') || '<tr><td colspan="5" class="empty">Sin resultados</td></tr>';
-    }
     renderCatalog(data.products);
-    renderLab(data.materials);
     document.getElementById('catalogSearch').addEventListener('input', function (e) {
         const q = (e.target.value || '').toLowerCase();
         renderCatalog(data.products.filter(function (p) {
             return [p.name, p.code, p.family].some(function (v) { return String(v).toLowerCase().includes(q); });
         }));
     });
-    document.getElementById('labSearch').addEventListener('input', function (e) {
-        const q = (e.target.value || '').toLowerCase();
-        renderLab(data.materials.filter(function (m) {
-            return [m.name, m.code, m.category].some(function (v) { return String(v).toLowerCase().includes(q); });
-        }));
+
+    const usedIn = data.usedIn || {};
+    let matFilter = 'all';
+    const categories = ['all'].concat(Array.from(new Set(data.materials.map(function (m) { return m.category; }))).filter(Boolean));
+    const chips = document.getElementById('matChips');
+    chips.innerHTML = categories.map(function (c) {
+        const label = c === 'all' ? 'Todas' : c;
+        return '<button type="button" class="chip' + (c === 'all' ? ' active' : '') + '" data-cat="' + esc(c) + '">' + esc(label) + '</button>';
+    }).join('');
+    function filteredMaterials() {
+        const q = (document.getElementById('matSearch').value || '').toLowerCase();
+        return data.materials.filter(function (m) {
+            const catOk = matFilter === 'all' || m.category === matFilter;
+            const qOk = !q || [m.name, m.code, m.category, m.classLabel].some(function (v) {
+                return String(v || '').toLowerCase().includes(q);
+            });
+            return catOk && qOk;
+        });
+    }
+    function renderMaterials() {
+        const tbody = document.getElementById('matBody');
+        const list = filteredMaterials();
+        tbody.innerHTML = list.map(function (m) {
+            const uses = usedIn[m.slug] || [];
+            const useLabel = uses.length ? uses.length + (uses.length === 1 ? ' producto' : ' productos') : 'Sin receta';
+            return '<tr data-mat="' + esc(m.slug) + '">' +
+                '<td class="muted">' + esc(m.code) + '</td>' +
+                '<td>' + esc(m.name) + (m.classLabel ? '<div class="muted">' + esc(m.classLabel) + '</div>' : '') + '</td>' +
+                '<td>' + esc(m.category) + '</td>' +
+                '<td>' + esc(useLabel) + '</td>' +
+                '<td><a class="link" href="/laboratorio/materials/' + esc(m.slug) + '" target="_blank">Ficha</a></td>' +
+                '</tr>';
+        }).join('') || '<tr><td colspan="5" class="empty">Sin resultados</td></tr>';
+    }
+    chips.addEventListener('click', function (e) {
+        const btn = e.target.closest('.chip');
+        if (!btn) return;
+        matFilter = btn.getAttribute('data-cat');
+        chips.querySelectorAll('.chip').forEach(function (el) { el.classList.toggle('active', el === btn); });
+        renderMaterials();
     });
+    document.getElementById('matSearch').addEventListener('input', renderMaterials);
+    document.getElementById('matBody').addEventListener('click', function (e) {
+        const row = e.target.closest('tr[data-mat]');
+        if (!row || e.target.closest('a')) return;
+        const slug = row.getAttribute('data-mat');
+        const uses = usedIn[slug] || [];
+        if (!uses.length) return;
+        showSection('formulas');
+        openRecipe(uses[0].slug);
+    });
+    renderMaterials();
+
+    const recipes = data.recipes || [];
+    let currentRecipe = recipes[0] ? recipes[0].product : '';
+    function filteredRecipes() {
+        const q = (document.getElementById('formulaSearch').value || '').toLowerCase();
+        return recipes.filter(function (r) {
+            return !q || [r.name, r.code, r.family].some(function (v) { return String(v || '').toLowerCase().includes(q); });
+        });
+    }
+    function recipeStatus(status) {
+        if (status === 'mapa-funcional') return '<span class="badge b-primary">Mapa funcional</span>';
+        if (status === 'pendiente') return '<span class="badge b-warning">Receta pendiente</span>';
+        return '<span class="badge b-success">' + esc(status) + '</span>';
+    }
+    function renderRecipeNav() {
+        const nav = document.getElementById('recipeNav');
+        const list = filteredRecipes();
+        nav.innerHTML = list.map(function (r) {
+            return '<button type="button" data-recipe="' + esc(r.product) + '" class="' + (r.product === currentRecipe ? 'active' : '') + '">' +
+                '<div>' + esc(r.name) + '</div><div class="muted">' + esc(r.code) + '</div></button>';
+        }).join('') || '<div class="empty">Sin resultados</div>';
+    }
+    function openRecipe(slug) {
+        const r = recipes.filter(function (x) { return x.product === slug; })[0];
+        if (!r) return;
+        currentRecipe = slug;
+        renderRecipeNav();
+        const detail = document.getElementById('recipeDetail');
+        const items = (r.items || []).map(function (it) {
+            if (!it.slug) {
+                return '<div class="recipe-item"><div><div>' + esc(it.note || it.role) + '</div><div class="muted">' + esc(it.role) + '</div></div></div>';
+            }
+            return '<div class="recipe-item">' +
+                '<div><div>' + esc(it.name) + '</div><div class="muted">' + esc(it.code) + ' · ' + esc(it.category) + '</div></div>' +
+                '<div>' + esc(it.role) + (it.note ? '<div class="muted">' + esc(it.note) + '</div>' : '') +
+                ' · <a class="link" href="/laboratorio/materials/' + esc(it.slug) + '" target="_blank">Ficha</a></div>' +
+                '</div>';
+        }).join('') || '<div class="empty">Todavía no hay materias primas cargadas en esta receta.</div>';
+        detail.innerHTML =
+            '<div class="recipe-head"><div class="recipe-meta">' +
+            '<h3 style="margin:0">' + esc(r.name) + '</h3>' +
+            '<div class="muted">' + esc(r.code) + ' · ' + esc(r.family) + '</div></div>' +
+            recipeStatus(r.status) + '</div>' +
+            (r.note ? '<div class="note-box">' + esc(r.note) + '</div>' : '') +
+            (r.water ? '<div class="muted" style="margin-bottom:10px">Agua de amasado: ' + esc(r.water) + '</div>' : '') +
+            '<div class="recipe-list">' + items + '</div>' +
+            '<div style="margin-top:14px"><a class="link" href="/productos/' + esc(r.product) + '" target="_blank">Abrir ficha pública</a></div>';
+    }
+    document.getElementById('recipeNav').addEventListener('click', function (e) {
+        const btn = e.target.closest('button[data-recipe]');
+        if (btn) openRecipe(btn.getAttribute('data-recipe'));
+    });
+    document.getElementById('formulaSearch').addEventListener('input', function () {
+        renderRecipeNav();
+    });
+    renderRecipeNav();
+    if (currentRecipe) openRecipe(currentRecipe);
 
     loadMessages();
     </script>
