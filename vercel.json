@@ -4,8 +4,8 @@
   "rewrites": [
     { "source": "/qr/:code", "destination": "/api/qr?code=:code" },
     { "source": "/laboratorio/:path*", "destination": "/materialab/:path*" },
-    { "source": "/colaboradores", "destination": "/admin-login.html" },
-    { "source": "/colaboradores/panel", "destination": "/admin.html" }
+    { "source": "/colaboradores", "destination": "/admin-login" },
+    { "source": "/colaboradores/panel", "destination": "/admin" }
   ],
   "redirects": [
     { "source": "/laboratorio", "destination": "/laboratorio/materials", "permanent": true },
