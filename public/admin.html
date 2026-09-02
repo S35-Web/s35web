@@ -1,151 +1,260 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | S-35 Colaboradores</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="robots" content="noindex, nofollow">
+    <title>S-35 | Colaboradores</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
-            --panel-bg: radial-gradient(1000px 700px at 0% -10%, rgba(0, 119, 255, 0.10), transparent 60%),
-                        radial-gradient(900px 700px at 120% 110%, rgba(0,0,0,0.10), transparent 60%);
+            --bg: #0b0c0f;
+            --panel: #111319;
+            --elev: rgba(255,255,255,0.06);
+            --text: #e6e7ea;
+            --muted: #a9aeb6;
+            --primary: #0a84ff;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --card: #0f1116;
+            --border: rgba(255,255,255,0.12);
         }
-        body { background: var(--panel-bg), #0b0d10; color: #e8eaed; font-size: 14px; }
-        .nav.visible.on-white-bg { background: transparent; box-shadow: none; }
-        .nav .logo-image { filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25)); }
-
-        .admin-wrap { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
-        .admin-header { display:flex; align-items:center; justify-content: space-between; padding: 16px var(--space-lg); }
-        .logout-btn { background: linear-gradient(180deg, #0a66ff, #0053cc); color: #fff; border: 1px solid rgba(0,119,255,0.6); padding: 6px 10px; border-radius: 10px; cursor: pointer; font-weight: 600; box-shadow: 0 8px 20px rgba(10,102,255,0.28); font-size: 13px; }
-
-        .panel-container { max-width: 1100px; margin: 24px auto 48px; padding: 0 var(--space-lg); }
-        .panel-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); border-radius: 16px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.25); overflow: hidden; }
-        .panel-head { display:flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .panel-title { font-size: 1rem; font-weight: 600; color: #e8eaed; }
-        .panel-sub { color: #a5a7ab; font-size: 11px; }
-        .tools { display:flex; gap: 8px; align-items:center; }
-        .search { position: relative; }
-        .search input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09); color: #e8eaed; padding: 8px 10px 8px 30px; border-radius: 10px; outline: none; width: 200px; font-size: 13px; }
-        .search i { position:absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #8b8e94; }
-        .refresh-btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09); color: #e8eaed; padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; }
-
-        .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .messages-table { min-width: 780px; width: 100%; border-collapse: separate; border-spacing: 0; }
-        .messages-table thead th { position: sticky; top: 0; background: rgba(255,255,255,0.04); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.08); text-align: left; font-weight: 600; color: #cfd1d4; font-size: 11px; padding: 10px 12px; }
-        .messages-table tbody td { border-bottom: 1px solid rgba(255,255,255,0.06); padding: 10px 12px; color: #dde0e4; vertical-align: top; font-size: 13px; }
-        /* Make message cell feel clickable */
-        .messages-table tbody tr td:nth-child(5) { cursor: pointer; color: #dfe3e7; }
-        .messages-table tbody tr:hover td:nth-child(5) { text-decoration: underline; color: #ffffff; }
-        .messages-table tbody tr:hover { background: rgba(255,255,255,0.03); }
-        .nowrap { white-space: nowrap; }
-        .muted { color: #a5a7ab; font-size: 12px; }
-        .danger-btn { background: #b91c1c; color: white; border: none; padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: 12px; }
-        .pill { display:inline-block; padding: 1px 6px; border-radius: 9999px; font-size: 11px; background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.35); }
-        .pill.no { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.35); }
-
-        /* Detail modal */
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 60; }
-        .modal-backdrop.show { display: flex; }
-        .modal-card { width: 100%; max-width: 720px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.35); color: #e8eaed; }
-        .modal-head { display:flex; align-items:center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.12); }
-        .modal-title { font-size: 0.95rem; font-weight: 600; color: #e8eaed; }
-        .close-btn { background: none; border: 1px solid rgba(255,255,255,0.18); color: #cfd1d4; padding: 5px 8px; border-radius: 8px; cursor: pointer; font-size: 12px; }
-        .modal-body { padding: 14px; display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .field { display: grid; grid-template-columns: 110px 1fr; gap: 8px; align-items: start; }
-        .field label { color: #a5a7ab; font-size: 11px; }
-        .msg-box { white-space: pre-wrap; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); padding: 10px; border-radius: 12px; color: #dde0e4; font-size: 13px; }
-        .link { color: #9cc2ff; text-decoration: none; }
+        [data-theme="light"] {
+            --bg: #f6f7f9;
+            --panel: #ffffff;
+            --elev: rgba(0,0,0,0.04);
+            --text: #0e1013;
+            --muted: #4b5563;
+            --primary: #0a84ff;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --card: #ffffff;
+            --border: rgba(0,0,0,0.08);
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 300; color: var(--text); background: var(--bg); }
+        .app { display: grid; grid-template-rows: 64px 1fr; min-height: 100vh; }
+        .topbar { display: flex; align-items: center; gap: 16px; padding: 0 20px; background: var(--panel); border-bottom: 1px solid var(--border); }
+        .menu-btn { display: none; height: 36px; width: 36px; place-items: center; border: 1px solid var(--border); background: transparent; color: var(--text); border-radius: 10px; cursor: pointer; }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand img { height: 26px; }
+        .brand span { letter-spacing: .4px; font-size: 15px; color: var(--muted); }
+        .actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+        .user-chip { font-size: 13px; color: var(--muted); }
+        .iconbtn { height: 36px; width: 36px; display: grid; place-items: center; border: 1px solid var(--border); background: transparent; color: var(--text); border-radius: 10px; cursor: pointer; }
+        .container { display: grid; grid-template-columns: 260px 1fr; min-height: 0; }
+        .sidebar { border-right: 1px solid var(--border); background: var(--panel); padding: 16px; }
+        .nav { display: grid; gap: 6px; }
+        .nav a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: var(--text); text-decoration: none; border: 1px solid transparent; cursor: pointer; }
+        .nav a.active, .nav a:hover { background: var(--elev); border-color: var(--border); }
+        .content { padding: 22px; min-width: 0; }
+        .page-title { margin: 0 0 4px; font-weight: 400; font-size: 22px; letter-spacing: .3px; }
+        .page-sub { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+        .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+        .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: grid; gap: 6px; }
+        .kpi .val { font-size: 22px; font-weight: 400; }
+        .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+        .card h3 { margin: 0 0 12px; font-weight: 400; letter-spacing: .3px; }
+        .muted { color: var(--muted); font-size: 13px; }
+        .badge { display: inline-grid; place-items: center; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+        .b-success { background: rgba(34,197,94,.12); color: #34d399; }
+        .b-warning { background: rgba(245,158,11,.12); color: #fbbf24; }
+        .b-danger { background: rgba(239,68,68,.12); color: #fca5a5; }
+        .b-primary { background: rgba(10,132,255,.12); color: #60a5fa; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: top; }
+        th { color: var(--muted); font-weight: 500; font-size: 12px; letter-spacing: .3px; }
+        .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+        .search { flex: 1; min-width: 160px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text); padding: 0 12px; }
+        .table-card { overflow: auto; }
+        .btn { padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; font-size: 13px; }
+        .btn.primary { background: var(--primary); border-color: transparent; color: #fff; }
+        .btn.danger { background: var(--danger); border-color: transparent; color: #fff; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .link { color: #60a5fa; text-decoration: none; }
         .link:hover { text-decoration: underline; }
-
-        @media (max-width: 640px) {
-            .panel-head { align-items: flex-start; gap: 10px; }
-            .tools { width: 100%; justify-content: space-between; }
-            .search input { width: 100%; }
+        .shortcuts { display: grid; gap: 10px; }
+        .shortcut { display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 12px; color: var(--text); text-decoration: none; }
+        .shortcut:hover { background: var(--elev); }
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 80; }
+        .modal-backdrop.show { display: flex; }
+        .modal-card { width: 100%; max-width: 720px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; }
+        .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+        .modal-body { padding: 14px; display: grid; gap: 10px; }
+        .field { display: grid; grid-template-columns: 110px 1fr; gap: 8px; }
+        .field label { color: var(--muted); font-size: 12px; }
+        .msg-box { white-space: pre-wrap; background: var(--elev); border: 1px solid var(--border); padding: 10px; border-radius: 12px; }
+        .empty { padding: 24px 8px; color: var(--muted); text-align: center; }
+        @media (max-width: 980px) {
+            .kpis { grid-template-columns: 1fr 1fr; }
+            .grid { grid-template-columns: 1fr; }
+            .span-8, .span-4 { grid-column: auto; }
             .field { grid-template-columns: 1fr; }
         }
-
-        /* Desktop/tablet optimizations */
-        @media (min-width: 641px) {
-            /* Allow natural wrapping but avoid character-per-line in long strings */
-            .messages-table tbody td { word-break: normal; overflow-wrap: anywhere; }
-            /* Email column a bit narrower and wrap nicely */
-            .messages-table tbody td:nth-child(3) { max-width: 180px; }
-            /* Clamp message to 3 lines for readability */
-            .messages-table tbody td:nth-child(5) {
-                max-width: 560px;
-                display: -webkit-box;
-                -webkit-line-clamp: 3;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-                white-space: normal;
-            }
-        }
-
-        /* Mobile optimizations to avoid horizontal scroll */
-        @media (max-width: 480px) {
-            .table-wrap { overflow-x: hidden; }
-            .messages-table { min-width: 100%; table-layout: fixed; display: block; }
-            .messages-table thead { display: none; }
-            .messages-table tbody { display: block; }
-            .messages-table tbody tr { display: block; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); border-radius: 12px; margin: 8px 0; }
-            .messages-table tbody td { display: block; padding: 6px 0; border: 0; }
-            .messages-table tbody td::before { content: attr(data-col); display: block; color: #a5a7ab; font-size: 11px; margin-bottom: 2px; }
-            .messages-table tbody td[data-col="Acciones"] { padding-top: 10px; }
-            .messages-table tbody td[data-col="Acciones"] .danger-btn { width: auto; }
-            .nowrap { white-space: normal; }
+        @media (max-width: 760px) {
+            .menu-btn { display: grid; }
+            .container { grid-template-columns: 1fr; }
+            .sidebar { display: none; position: absolute; top: 64px; left: 0; bottom: 0; width: min(86vw, 280px); z-index: 40; box-shadow: 16px 0 40px rgba(0,0,0,.35); }
+            .sidebar.open { display: block; }
+            .content { padding: 16px; }
+            .brand span { display: none; }
         }
     </style>
 </head>
 <body>
-    <div class="admin-wrap">
-        <header class="admin-header">
-            <a href="index.html" aria-label="Inicio"><img src="./Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image" style="height:28px"></a>
-            <button id="logoutBtn" class="logout-btn">Salir</button>
-        </header>
+    <div class="app">
+        <div class="topbar">
+            <button class="menu-btn" id="menuBtn" type="button" aria-label="Menú"><i class="fa-solid fa-bars"></i></button>
+            <div class="brand">
+                <a href="/" aria-label="Sitio S-35"><img src="/Assets/Logotipo Principal.png" alt="S-35"></a>
+                <span>Colaboradores</span>
+            </div>
+            <div class="actions">
+                <span class="user-chip" id="userChip">admin</span>
+                <button class="iconbtn" id="themeBtn" type="button" title="Tema"><i class="fa-solid fa-moon"></i></button>
+                <button class="iconbtn" id="logoutBtn" type="button" title="Salir"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </div>
 
-        <main class="panel-container">
-            <section class="panel-card">
-                <div class="panel-head">
-                    <div>
-                        <div class="panel-title">Mensajes de Contacto</div>
-                        <div class="panel-sub">Máx 200 más recientes</div>
+        <div class="container">
+            <aside class="sidebar" id="sidebar">
+                <nav class="nav">
+                    <a data-section="dashboard" class="active"><i class="fa-solid fa-chart-line"></i> Inicio</a>
+                    <a data-section="messages"><i class="fa-solid fa-envelope"></i> Mensajes</a>
+                    <a data-section="catalog"><i class="fa-solid fa-box"></i> Catálogo</a>
+                    <a data-section="lab"><i class="fa-solid fa-flask"></i> Laboratorio</a>
+                    <a data-section="site"><i class="fa-solid fa-globe"></i> Sitio</a>
+                </nav>
+            </aside>
+
+            <main class="content">
+                <section id="dashboard" class="section active">
+                    <h1 class="page-title">Panel de control</h1>
+                    <p class="page-sub">Vista interna de contenidos publicados y mensajes de contacto.</p>
+                    <div class="kpis">
+                        <div class="kpi"><div class="muted">Mensajes</div><div class="val" id="kpiMessages">—</div></div>
+                        <div class="kpi"><div class="muted">Fichas de producto</div><div class="val" id="kpiProducts">0</div></div>
+                        <div class="kpi"><div class="muted">Materiales</div><div class="val" id="kpiMaterials">0</div></div>
+                        <div class="kpi"><div class="muted">Sesión</div><div class="val" style="font-size:16px">Activa</div></div>
                     </div>
-                    <div class="tools">
-                        <div class="search">
-                            <i class="fas fa-search"></i>
-                            <input id="searchInput" type="text" placeholder="Buscar… (nombre, email, empresa)">
+                    <div class="grid">
+                        <div class="card" style="grid-column: span 8;">
+                            <h3>Mensajes recientes</h3>
+                            <div class="table-card">
+                                <table>
+                                    <thead><tr><th>Fecha</th><th>Nombre</th><th>Empresa</th><th>Mensaje</th></tr></thead>
+                                    <tbody id="recentMessages"></tbody>
+                                </table>
+                            </div>
                         </div>
-                        <button id="refreshBtn" class="refresh-btn" title="Actualizar"><i class="fas fa-rotate"></i></button>
+                        <div class="card" style="grid-column: span 4;">
+                            <h3>Accesos rápidos</h3>
+                            <div class="shortcuts">
+                                <a class="shortcut" href="/productos" target="_blank">Índice de fichas <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
+                                <a class="shortcut" href="/laboratorio/materials" target="_blank">Laboratorio <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
+                                <a class="shortcut" href="/catalogo.html" target="_blank">Catálogo público <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
+                                <a class="shortcut" href="/" target="_blank">Sitio principal <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="table-wrap">
-                    <table class="messages-table">
-                        <thead>
-                            <tr>
-                                <th class="nowrap">Fecha</th>
-                                <th>Nombre</th>
-                                <th>Email</th>
-                                <th>Empresa</th>
-                                <th>Mensaje</th>
-                                <th>Newsletter</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="messagesBody"></tbody>
-                    </table>
-                </div>
-            </section>
-        </main>
+                </section>
+
+                <section id="messages" class="section">
+                    <h1 class="page-title">Mensajes de contacto</h1>
+                    <p class="page-sub">Los 200 más recientes del formulario público.</p>
+                    <div class="card">
+                        <div class="toolbar">
+                            <input id="searchInput" class="search" type="search" placeholder="Buscar nombre, email o empresa">
+                            <button id="refreshBtn" class="btn" type="button"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Empresa</th>
+                                        <th>Mensaje</th>
+                                        <th>News</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="messagesBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="catalog" class="section">
+                    <h1 class="page-title">Catálogo</h1>
+                    <p class="page-sub">Fichas técnicas publicadas en el sitio.</p>
+                    <div class="card">
+                        <div class="toolbar">
+                            <input id="catalogSearch" class="search" type="search" placeholder="Buscar producto o código">
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead><tr><th>Código</th><th>Producto</th><th>Familia</th><th>Estado</th><th></th></tr></thead>
+                                <tbody id="catalogBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="lab" class="section">
+                    <h1 class="page-title">Laboratorio</h1>
+                    <p class="page-sub">Materias primas documentadas en MateriaLAB.</p>
+                    <div class="card">
+                        <div class="toolbar">
+                            <input id="labSearch" class="search" type="search" placeholder="Buscar material o código">
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead><tr><th>Código</th><th>Material</th><th>Clase</th><th>Estado</th><th></th></tr></thead>
+                                <tbody id="labBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="site" class="section">
+                    <h1 class="page-title">Sitio</h1>
+                    <p class="page-sub">Enlaces internos de operación.</p>
+                    <div class="grid">
+                        <div class="card" style="grid-column: span 6;">
+                            <h3>Público</h3>
+                            <div class="shortcuts">
+                                <a class="shortcut" href="/" target="_blank">Inicio</a>
+                                <a class="shortcut" href="/catalogo.html" target="_blank">Catálogo</a>
+                                <a class="shortcut" href="/productos" target="_blank">Índice de fichas</a>
+                                <a class="shortcut" href="/#contacto" target="_blank">Formulario de contacto</a>
+                            </div>
+                        </div>
+                        <div class="card" style="grid-column: span 6;">
+                            <h3>Laboratorio</h3>
+                            <div class="shortcuts">
+                                <a class="shortcut" href="/laboratorio/materials" target="_blank">Índice de materiales</a>
+                                <a class="shortcut" href="/laboratorio/methodology" target="_blank">Metodología</a>
+                                <a class="shortcut" href="/laboratorio/about" target="_blank">Acerca de</a>
+                                <a class="shortcut" href="/laboratorio/research" target="_blank">Investigación</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
     </div>
 
-    <!-- Detail Modal -->
     <div id="detailModal" class="modal-backdrop" aria-hidden="true">
-        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <div class="modal-card" role="dialog" aria-modal="true">
             <div class="modal-head">
-                <div class="modal-title" id="detailTitle">Detalle del Mensaje</div>
-                <button id="detailClose" class="close-btn" type="button">Cerrar</button>
+                <strong>Detalle del mensaje</strong>
+                <button id="detailClose" class="btn" type="button">Cerrar</button>
             </div>
             <div class="modal-body">
                 <div class="field"><label>Fecha</label><div id="dFecha"></div></div>
@@ -153,21 +262,64 @@
                 <div class="field"><label>Email</label><div id="dEmail"></div></div>
                 <div class="field"><label>Empresa</label><div id="dEmpresa"></div></div>
                 <div class="field"><label>Newsletter</label><div id="dNewsletter"></div></div>
-                <div class="field" style="grid-template-columns: 1fr;"><label>Mensaje</label><div id="dMensaje" class="msg-box"></div></div>
+                <div class="field" style="grid-template-columns:1fr;"><label>Mensaje</label><div id="dMensaje" class="msg-box"></div></div>
             </div>
         </div>
     </div>
 
+    <script src="/colaboradores-data.js"></script>
     <script>
+    const LOGIN_URL = '/colaboradores';
     function getToken() { return localStorage.getItem('s35_admin_token'); }
-    function requireAuth() { if (!getToken()) window.location.href = 'admin-login.html'; }
-    requireAuth();
+    if (!getToken()) window.location.replace(LOGIN_URL);
 
-    let allMessages = [];
-    const msgIndex = new Map();
+    try {
+        const u = JSON.parse(localStorage.getItem('s35_admin_user') || '{}');
+        if (u.username) document.getElementById('userChip').textContent = u.username;
+    } catch (_) {}
 
+    const data = window.S35_PANEL_DATA || { products: [], materials: [] };
+    document.getElementById('kpiProducts').textContent = data.products.length;
+    document.getElementById('kpiMaterials').textContent = data.materials.length;
+
+    const sidebar = document.getElementById('sidebar');
+    document.getElementById('menuBtn').addEventListener('click', function () {
+        sidebar.classList.toggle('open');
+    });
+
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(function (el) { el.classList.toggle('active', el.id === id); });
+        document.querySelectorAll('.nav a').forEach(function (el) { el.classList.toggle('active', el.getAttribute('data-section') === id); });
+        sidebar.classList.remove('open');
+    }
+    document.querySelectorAll('.nav a').forEach(function (a) {
+        a.addEventListener('click', function () { showSection(a.getAttribute('data-section')); });
+    });
+
+    const themeBtn = document.getElementById('themeBtn');
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        themeBtn.innerHTML = theme === 'light' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+        localStorage.setItem('s35_panel_theme', theme);
+    }
+    applyTheme(localStorage.getItem('s35_panel_theme') || 'dark');
+    themeBtn.addEventListener('click', function () {
+        applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', function () {
+        localStorage.removeItem('s35_admin_token');
+        localStorage.removeItem('s35_admin_user');
+        window.location.href = LOGIN_URL;
+    });
+
+    function esc(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
     function formatRelativeDate(isoOrDate) {
         const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
+        if (isNaN(d)) return '';
         const now = new Date();
         const ms = now - d;
         const oneMin = 60 * 1000;
@@ -178,104 +330,157 @@
         const dayDiff = Math.floor((startOfToday - startOfTarget) / oneDay);
         if (dayDiff === 0) {
             if (ms < oneMin) return 'hace segundos';
-            if (ms < oneHour) return `hace ${Math.floor(ms / oneMin)} min`;
-            return `hace ${Math.floor(ms / oneHour)} h`;
+            if (ms < oneHour) return 'hace ' + Math.floor(ms / oneMin) + ' min';
+            return 'hace ' + Math.floor(ms / oneHour) + ' h';
         }
         if (dayDiff === 1) return 'ayer';
-        if (dayDiff === 2) return 'antier';
-        if (dayDiff < 7) return `hace ${dayDiff} días`;
-        const weeks = Math.floor(dayDiff / 7);
-        if (weeks < 5) return `hace ${weeks} ${weeks === 1 ? 'semana' : 'semanas'}`;
-        const months = Math.floor(dayDiff / 30);
-        if (months < 12) return `hace ${months} ${months === 1 ? 'mes' : 'meses'}`;
-        const years = Math.floor(dayDiff / 365);
-        return `hace ${years} ${years === 1 ? 'año' : 'años'}`;
+        if (dayDiff < 7) return 'hace ' + dayDiff + ' días';
+        return d.toLocaleDateString();
     }
+    function statusBadge(status) {
+        if (status === 'verified' || status === 'documented') return '<span class="badge b-success">Publicado</span>';
+        if (status === 'draft' || status === 'in-study') return '<span class="badge b-warning">Borrador</span>';
+        return '<span class="badge b-primary">' + esc(status) + '</span>';
+    }
+
+    let allMessages = [];
+    const msgIndex = new Map();
+
+    function renderRecent(list) {
+        const tbody = document.getElementById('recentMessages');
+        const slice = list.slice(0, 6);
+        if (!slice.length) {
+            tbody.innerHTML = '<tr><td colspan="4" class="empty">Sin mensajes todavía</td></tr>';
+            return;
+        }
+        tbody.innerHTML = slice.map(function (m) {
+            const created = m.createdAt ? new Date(m.createdAt) : null;
+            const short = String(m.mensaje || '').slice(0, 90);
+            return '<tr><td class="muted">' + (created ? formatRelativeDate(created) : '') + '</td><td>' + esc(m.nombre) + '</td><td>' + esc(m.empresa) + '</td><td>' + esc(short) + (short.length === 90 ? '…' : '') + '</td></tr>';
+        }).join('');
+    }
+
     function renderMessages(list) {
         const tbody = document.getElementById('messagesBody');
+        if (!list.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty">Sin resultados</td></tr>';
+            return;
+        }
         tbody.innerHTML = '';
-        list.forEach(m => {
+        list.forEach(function (m) {
             const tr = document.createElement('tr');
             const created = m.createdAt ? new Date(m.createdAt) : null;
             tr.setAttribute('data-id', m._id || '');
             msgIndex.set(m._id, m);
-            const fecha = created ? created.toLocaleString() : '';
-            const fullMsg = (m.mensaje || '').replace(/</g,'&lt;');
-            const msgShort = fullMsg.length > 200 ? fullMsg.slice(0,200) + '…' : fullMsg;
-            tr.innerHTML = `
-                <td class="nowrap" data-col="Fecha" title="${fecha}">${created ? formatRelativeDate(created) : ''}</td>
-                <td data-col="Nombre">${m.nombre || ''}</td>
-                <td data-col="Email">${m.email || ''}</td>
-                <td data-col="Empresa">${m.empresa || ''}</td>
-                <td data-col="Mensaje">${msgShort}</td>
-                <td data-col="Newsletter">${m.newsletter ? '<span class="pill">Sí</span>' : '<span class="pill no">No</span>'}</td>
-                <td data-col="Acciones"><button class="danger-btn" data-id="${m._id}">Eliminar</button></td>
-            `;
+            const fullMsg = String(m.mensaje || '');
+            const msgShort = fullMsg.length > 120 ? fullMsg.slice(0, 120) + '…' : fullMsg;
+            tr.innerHTML =
+                '<td class="muted">' + (created ? formatRelativeDate(created) : '') + '</td>' +
+                '<td>' + esc(m.nombre) + '</td>' +
+                '<td>' + esc(m.email) + '</td>' +
+                '<td>' + esc(m.empresa) + '</td>' +
+                '<td>' + esc(msgShort) + '</td>' +
+                '<td>' + (m.newsletter ? '<span class="badge b-success">Sí</span>' : '<span class="badge b-danger">No</span>') + '</td>' +
+                '<td><button class="btn danger" data-id="' + esc(m._id) + '">Eliminar</button></td>';
             tbody.appendChild(tr);
         });
     }
 
     async function loadMessages() {
         const resp = await fetch('/api/messages', { headers: { Authorization: 'Bearer ' + getToken() } });
-        if (!resp.ok) { if (resp.status === 401) { localStorage.removeItem('s35_admin_token'); location.href = 'admin-login.html'; return; } alert('Error cargando mensajes'); return; }
-        const data = await resp.json();
-        allMessages = data.items || [];
+        if (resp.status === 401) {
+            localStorage.removeItem('s35_admin_token');
+            window.location.replace(LOGIN_URL);
+            return;
+        }
+        if (!resp.ok) {
+            document.getElementById('kpiMessages').textContent = '—';
+            document.getElementById('recentMessages').innerHTML = '<tr><td colspan="4" class="empty">No se pudieron cargar los mensajes</td></tr>';
+            document.getElementById('messagesBody').innerHTML = '<tr><td colspan="7" class="empty">No se pudieron cargar los mensajes</td></tr>';
+            return;
+        }
+        const payload = await resp.json();
+        allMessages = payload.items || [];
+        document.getElementById('kpiMessages').textContent = allMessages.length;
+        renderRecent(allMessages);
         renderMessages(allMessages);
     }
 
-    const tbodyEl = document.getElementById('messagesBody');
-    tbodyEl.addEventListener('click', async (e) => {
+    const modal = document.getElementById('detailModal');
+    function openDetail(m) {
+        const createdDate = m.createdAt ? new Date(m.createdAt) : null;
+        document.getElementById('dFecha').textContent = createdDate ? formatRelativeDate(createdDate) + ' (' + createdDate.toLocaleString() + ')' : '';
+        document.getElementById('dNombre').textContent = m.nombre || '';
+        document.getElementById('dEmail').innerHTML = m.email ? '<a class="link" href="mailto:' + esc(m.email) + '">' + esc(m.email) + '</a>' : '';
+        document.getElementById('dEmpresa').textContent = m.empresa || '';
+        document.getElementById('dNewsletter').innerHTML = m.newsletter ? '<span class="badge b-success">Sí</span>' : '<span class="badge b-danger">No</span>';
+        document.getElementById('dMensaje').textContent = m.mensaje || '';
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+    function closeDetail() { modal.classList.remove('show'); modal.setAttribute('aria-hidden', 'true'); }
+    document.getElementById('detailClose').addEventListener('click', closeDetail);
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeDetail(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDetail(); });
+
+    document.getElementById('messagesBody').addEventListener('click', async function (e) {
         const delBtn = e.target.closest('button[data-id]');
         if (delBtn) {
             const id = delBtn.getAttribute('data-id');
             if (!confirm('¿Eliminar mensaje?')) return;
-            const resp = await fetch('/api/messages?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { Authorization: 'Bearer ' + getToken() } });
+            const resp = await fetch('/api/messages?id=' + encodeURIComponent(id), {
+                method: 'DELETE',
+                headers: { Authorization: 'Bearer ' + getToken() }
+            });
             if (resp.ok) loadMessages(); else alert('No se pudo eliminar');
             return;
         }
         const row = e.target.closest('tr[data-id]');
         if (row) {
-            const id = row.getAttribute('data-id');
-            const m = msgIndex.get(id);
+            const m = msgIndex.get(row.getAttribute('data-id'));
             if (m) openDetail(m);
         }
     });
 
-    // Detail modal logic
-    const modal = document.getElementById('detailModal');
-    const closeBtn = document.getElementById('detailClose');
-    function openDetail(m) {
-        const createdDate = m.createdAt ? new Date(m.createdAt) : null;
-        const createdExact = createdDate ? createdDate.toLocaleString() : '';
-        document.getElementById('dFecha').textContent = createdDate ? `${formatRelativeDate(createdDate)} (${createdExact})` : '';
-        document.getElementById('dNombre').textContent = m.nombre || '';
-        document.getElementById('dEmail').innerHTML = m.email ? `<a class="link" href="mailto:${m.email}">${m.email}</a>` : '';
-        document.getElementById('dEmpresa').textContent = m.empresa || '';
-        document.getElementById('dNewsletter').innerHTML = m.newsletter ? '<span class="pill">Sí</span>' : '<span class="pill no">No</span>';
-        document.getElementById('dMensaje').textContent = m.mensaje || '';
-        modal.classList.add('show');
-        modal.setAttribute('aria-hidden', 'false');
-    }
-    function closeDetail(){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); }
-    closeBtn.addEventListener('click', closeDetail);
-    modal.addEventListener('click', (e)=>{ if (e.target === modal) closeDetail(); });
-    document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') closeDetail(); });
-
-    document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('s35_admin_token'); location.href = 'admin-login.html'; });
-
     document.getElementById('refreshBtn').addEventListener('click', loadMessages);
-    document.getElementById('searchInput').addEventListener('input', (e) => {
+    document.getElementById('searchInput').addEventListener('input', function (e) {
         const q = (e.target.value || '').toLowerCase();
         if (!q) { renderMessages(allMessages); return; }
-        const filtered = allMessages.filter(m => {
-            return [m.nombre, m.email, m.empresa, m.mensaje].some(v => (v||'').toLowerCase().includes(q));
-        });
-        renderMessages(filtered);
+        renderMessages(allMessages.filter(function (m) {
+            return [m.nombre, m.email, m.empresa, m.mensaje].some(function (v) {
+                return String(v || '').toLowerCase().includes(q);
+            });
+        }));
+    });
+
+    function renderCatalog(list) {
+        const tbody = document.getElementById('catalogBody');
+        tbody.innerHTML = list.map(function (p) {
+            return '<tr><td class="muted">' + esc(p.code) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.family) + '</td><td>' + statusBadge(p.status) + '</td><td><a class="link" href="/productos/' + esc(p.slug) + '" target="_blank">Abrir</a></td></tr>';
+        }).join('') || '<tr><td colspan="5" class="empty">Sin resultados</td></tr>';
+    }
+    function renderLab(list) {
+        const tbody = document.getElementById('labBody');
+        tbody.innerHTML = list.map(function (m) {
+            return '<tr><td class="muted">' + esc(m.code) + '</td><td>' + esc(m.name) + '</td><td>' + esc(m.category) + '</td><td>' + statusBadge(m.status) + '</td><td><a class="link" href="/laboratorio/materials/' + esc(m.slug) + '" target="_blank">Abrir</a></td></tr>';
+        }).join('') || '<tr><td colspan="5" class="empty">Sin resultados</td></tr>';
+    }
+    renderCatalog(data.products);
+    renderLab(data.materials);
+    document.getElementById('catalogSearch').addEventListener('input', function (e) {
+        const q = (e.target.value || '').toLowerCase();
+        renderCatalog(data.products.filter(function (p) {
+            return [p.name, p.code, p.family].some(function (v) { return String(v).toLowerCase().includes(q); });
+        }));
+    });
+    document.getElementById('labSearch').addEventListener('input', function (e) {
+        const q = (e.target.value || '').toLowerCase();
+        renderLab(data.materials.filter(function (m) {
+            return [m.name, m.code, m.category].some(function (v) { return String(v).toLowerCase().includes(q); });
+        }));
     });
 
     loadMessages();
     </script>
 </body>
 </html>
-
-

@@ -128,16 +128,22 @@ const server = http.createServer((req, res) => {
         req.on('data', chunk => { body += chunk.toString(); });
         req.on('end', () => {
             try {
-                const { password } = JSON.parse(body || '{}');
-                const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
-                if (password !== adminPass) {
+                const parsed = JSON.parse(body || '{}');
+                const username = String(parsed.username || '').trim().toLowerCase();
+                const password = String(parsed.password || '');
+                const adminUser = String(process.env.ADMIN_USERNAME || 'admin').trim().toLowerCase();
+                const adminPass = process.env.ADMIN_PASSWORD || 'villa2012';
+                if (!username || !password || username !== adminUser || password !== adminPass) {
                     res.writeHead(401, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({ ok: false, error: 'Credenciales inválidas' }));
                     return;
                 }
-                // Token simulado (no validar en local)
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ ok: true, token: 'local-dev-token' }));
+                res.end(JSON.stringify({
+                    ok: true,
+                    token: 'local-dev-token',
+                    user: { username: adminUser, role: 'admin' }
+                }));
             } catch (e) {
                 res.writeHead(400, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ ok: false, error: 'Solicitud inválida' }));
@@ -160,6 +166,15 @@ const server = http.createServer((req, res) => {
         }
         res.writeHead(405, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed' }));
+        return;
+    }
+
+    if (pathname === '/colaboradores' || pathname === '/colaboradores/') {
+        serveStaticFile(req, res, path.join(__dirname, 'public', 'admin-login.html'));
+        return;
+    }
+    if (pathname === '/colaboradores/panel' || pathname === '/colaboradores/panel/') {
+        serveStaticFile(req, res, path.join(__dirname, 'public', 'admin.html'));
         return;
     }
 
