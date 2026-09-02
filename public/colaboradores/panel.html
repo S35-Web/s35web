@@ -635,8 +635,6 @@
                 return String(v || '').toLowerCase().includes(q);
             });
             return catOk && qOk;
-        }).sort(function (a, b) {
-            return String(a.name).localeCompare(String(b.name), 'es', { sensitivity: 'base' });
         });
     }
     function renderMaterials() {
@@ -691,6 +689,7 @@
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-+|-+$/g, '') + '-' + Date.now().toString(36);
     }
+    document.getElementById('plantMin').addEventListener('focus', function () { this.select(); });
     document.getElementById('matAddBtn').addEventListener('click', function () { openPlantModal(null); });
     document.getElementById('plantModalClose').addEventListener('click', closePlantModal);
     document.getElementById('plantModalCancel').addEventListener('click', closePlantModal);
