@@ -320,9 +320,7 @@
                         <select id="plantUnit">
                             <option value="">Sin unidad</option>
                             <option value="Kg">Kg</option>
-                            <option value="kg">kg</option>
                             <option value="Pza">Pza</option>
-                            <option value="pza">pza</option>
                         </select>
                     </label>
                     <label>Mínimo aceptable
@@ -397,22 +395,30 @@
         packaging: 'Empaque'
     };
 
+    function normalizeUnit(unit) {
+        const key = String(unit || '').trim().toLowerCase();
+        if (!key) return '';
+        if (key === 'kg') return 'Kg';
+        if (key === 'pza' || key === 'pzas' || key === 'pieza' || key === 'piezas') return 'Pza';
+        return String(unit).trim();
+    }
+    function normalizeItem(m) {
+        return {
+            id: m.id,
+            name: m.name,
+            unit: normalizeUnit(m.unit),
+            minStock: Number(m.minStock) || 0,
+            category: m.category || 'mineral',
+            labSlug: m.labSlug || null
+        };
+    }
     function seedInventory() {
-        return (data.plantMaterials || []).map(function (m) {
-            return {
-                id: m.id,
-                name: m.name,
-                unit: m.unit || '',
-                minStock: Number(m.minStock) || 0,
-                category: m.category || 'mineral',
-                labSlug: m.labSlug || null
-            };
-        });
+        return (data.plantMaterials || []).map(normalizeItem);
     }
     function loadInventory() {
         try {
             const raw = JSON.parse(localStorage.getItem(PLANT_KEY) || 'null');
-            if (raw && Array.isArray(raw.items) && raw.items.length) return raw.items;
+            if (raw && Array.isArray(raw.items) && raw.items.length) return raw.items.map(normalizeItem);
         } catch (_) {}
         return seedInventory();
     }
@@ -701,7 +707,7 @@
         const next = {
             id: id || slugifyPlant(document.getElementById('plantName').value),
             name: document.getElementById('plantName').value.trim(),
-            unit: document.getElementById('plantUnit').value,
+            unit: normalizeUnit(document.getElementById('plantUnit').value),
             minStock: Math.max(0, Number(document.getElementById('plantMin').value) || 0),
             category: document.getElementById('plantCategory').value,
             labSlug: plantLab.value || null

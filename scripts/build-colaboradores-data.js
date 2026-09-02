@@ -84,11 +84,19 @@ recipes.forEach(function (r) {
   });
 });
 
+function normalizeUnit(unit) {
+  const key = String(unit || '').trim().toLowerCase();
+  if (!key) return '';
+  if (key === 'kg') return 'Kg';
+  if (key === 'pza' || key === 'pzas' || key === 'pieza' || key === 'piezas') return 'Pza';
+  return String(unit).trim();
+}
+
 const inventory = plantMaterials.map(function (m) {
   return {
     id: m.id,
     name: m.name,
-    unit: m.unit || '',
+    unit: normalizeUnit(m.unit),
     minStock: Number(m.minStock) || 0,
     category: m.category || '',
     labSlug: m.labSlug || null,

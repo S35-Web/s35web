@@ -30,9 +30,9 @@ module.exports = [
   { id: "resina-aprapole-p150", name: "RESINA APRAPOLE P150", unit: "", minStock: 0, category: "polymer", labSlug: "polimero-redispersable-vae" },
   { id: "resina-dlp-2001", name: "RESINA DLP-2001", unit: "", minStock: 0, category: "polymer", labSlug: "polimero-redispersable-vae" },
   { id: "resina-rdp740h", name: "Resina RDP740H", unit: "Kg", minStock: 125, category: "polymer", labSlug: "polimero-redispersable-vae" },
-  { id: "resina-semitski", name: "Resina Semitski", unit: "kg", minStock: 25, category: "polymer", labSlug: "polimero-redispersable-vae" },
+  { id: "resina-semitski", name: "Resina Semitski", unit: "Kg", minStock: 25, category: "polymer", labSlug: "polimero-redispersable-vae" },
   { id: "saco-rafia-waxtard", name: "Saco rafia Waxtard impreso", unit: "Pza", minStock: 5000, category: "packaging", labSlug: null },
-  { id: "saco-rafia-general", name: "Saco rafia general", unit: "pza", minStock: 5000, category: "packaging", labSlug: null },
+  { id: "saco-rafia-general", name: "Saco rafia general", unit: "Pza", minStock: 5000, category: "packaging", labSlug: null },
   { id: "yeso-maximo", name: "YESO MAXIMO", unit: "", minStock: 0, category: "gypsum", labSlug: "yeso" },
   { id: "yeso-sayro", name: "Yeso Sayro", unit: "Kg", minStock: 500, category: "gypsum", labSlug: "yeso" },
 ];

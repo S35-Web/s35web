@@ -631,7 +631,7 @@ window.S35_PANEL_DATA = {
     {
       "id": "resina-semitski",
       "name": "Resina Semitski",
-      "unit": "kg",
+      "unit": "Kg",
       "minStock": 25,
       "category": "polymer",
       "labSlug": "polimero-redispersable-vae"
@@ -647,7 +647,7 @@ window.S35_PANEL_DATA = {
     {
       "id": "saco-rafia-general",
       "name": "Saco rafia general",
-      "unit": "pza",
+      "unit": "Pza",
       "minStock": 5000,
       "category": "packaging",
       "labSlug": null
