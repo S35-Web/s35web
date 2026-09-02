@@ -320,6 +320,7 @@
                         <select id="plantUnit">
                             <option value="">Sin unidad</option>
                             <option value="Kg">Kg</option>
+                            <option value="L">L</option>
                             <option value="Pza">Pza</option>
                         </select>
                     </label>
@@ -399,13 +400,25 @@
         const key = String(unit || '').trim().toLowerCase();
         if (!key) return '';
         if (key === 'kg') return 'Kg';
+        if (key === 'l' || key === 'lt' || key === 'lts' || key === 'litro' || key === 'litros') return 'L';
         if (key === 'pza' || key === 'pzas' || key === 'pieza' || key === 'piezas') return 'Pza';
         return String(unit).trim();
+    }
+    function normalizeName(name) {
+        const s = String(name || '').trim().replace(/\s+/g, ' ');
+        if (!s) return s;
+        let out = s.toLocaleLowerCase('es');
+        out = out.charAt(0).toLocaleUpperCase('es') + out.slice(1);
+        out = out.replace(/\((.)/g, function (_, c) {
+            return '(' + String(c).toLocaleUpperCase('es');
+        });
+        out = out.replace(/(\d)\s*l\b/g, '$1L');
+        return out;
     }
     function normalizeItem(m) {
         return {
             id: m.id,
-            name: m.name,
+            name: normalizeName(m.name),
             unit: normalizeUnit(m.unit),
             minStock: Number(m.minStock) || 0,
             category: m.category || 'mineral',
@@ -415,10 +428,17 @@
     function seedInventory() {
         return (data.plantMaterials || []).map(normalizeItem);
     }
+    let persistNormalized = false;
     function loadInventory() {
         try {
             const raw = JSON.parse(localStorage.getItem(PLANT_KEY) || 'null');
-            if (raw && Array.isArray(raw.items) && raw.items.length) return raw.items.map(normalizeItem);
+            if (raw && Array.isArray(raw.items) && raw.items.length) {
+                persistNormalized = raw.items.some(function (m) {
+                    return normalizeName(m.name) !== String(m.name || '').trim().replace(/\s+/g, ' ')
+                        || normalizeUnit(m.unit) !== (m.unit || '');
+                });
+                return raw.items.map(normalizeItem);
+            }
         } catch (_) {}
         return seedInventory();
     }
@@ -426,6 +446,7 @@
         localStorage.setItem(PLANT_KEY, JSON.stringify({ items: list, updatedAt: new Date().toISOString() }));
     }
     let inventory = loadInventory();
+    if (persistNormalized) saveInventory(inventory);
 
     function updateMaterialKpi() {
         document.getElementById('kpiMaterials').textContent = inventory.length;
@@ -706,7 +727,7 @@
         const id = document.getElementById('plantId').value;
         const next = {
             id: id || slugifyPlant(document.getElementById('plantName').value),
-            name: document.getElementById('plantName').value.trim(),
+            name: normalizeName(document.getElementById('plantName').value),
             unit: normalizeUnit(document.getElementById('plantUnit').value),
             minStock: Math.max(0, Number(document.getElementById('plantMin').value) || 0),
             category: document.getElementById('plantCategory').value,

@@ -88,14 +88,27 @@ function normalizeUnit(unit) {
   const key = String(unit || '').trim().toLowerCase();
   if (!key) return '';
   if (key === 'kg') return 'Kg';
+  if (key === 'l' || key === 'lt' || key === 'lts' || key === 'litro' || key === 'litros') return 'L';
   if (key === 'pza' || key === 'pzas' || key === 'pieza' || key === 'piezas') return 'Pza';
   return String(unit).trim();
+}
+
+function normalizeName(name) {
+  const s = String(name || '').trim().replace(/\s+/g, ' ');
+  if (!s) return s;
+  let out = s.toLocaleLowerCase('es');
+  out = out.charAt(0).toLocaleUpperCase('es') + out.slice(1);
+  out = out.replace(/\((.)/g, function (_, c) {
+    return '(' + String(c).toLocaleUpperCase('es');
+  });
+  out = out.replace(/(\d)\s*l\b/g, '$1L');
+  return out;
 }
 
 const inventory = plantMaterials.map(function (m) {
   return {
     id: m.id,
-    name: m.name,
+    name: normalizeName(m.name),
     unit: normalizeUnit(m.unit),
     minStock: Number(m.minStock) || 0,
     category: m.category || '',

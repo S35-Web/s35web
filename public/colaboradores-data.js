@@ -438,7 +438,7 @@ window.S35_PANEL_DATA = {
   "plantMaterials": [
     {
       "id": "alcohol-polivinilico",
-      "name": "ALCOHOL POLIVINILICO",
+      "name": "Alcohol polivinilico",
       "unit": "",
       "minStock": 0,
       "category": "polymer",
@@ -446,7 +446,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "antiespumante",
-      "name": "ANTIESPUMANTE",
+      "name": "Antiespumante",
       "unit": "",
       "minStock": 0,
       "category": "chemical",
@@ -494,7 +494,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "cemento-portland-gris",
-      "name": "Cemento Portland Gris",
+      "name": "Cemento portland gris",
       "unit": "Kg",
       "minStock": 1000,
       "category": "cement",
@@ -502,7 +502,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "cemento-portland-blanco",
-      "name": "Cemento Portland blanco",
+      "name": "Cemento portland blanco",
       "unit": "Kg",
       "minStock": 250,
       "category": "cement",
@@ -526,7 +526,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "formol",
-      "name": "FORMOL",
+      "name": "Formol",
       "unit": "",
       "minStock": 0,
       "category": "chemical",
@@ -550,7 +550,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "marmolina-gruesa",
-      "name": "Marmolina Gruesa",
+      "name": "Marmolina gruesa",
       "unit": "Kg",
       "minStock": 1000,
       "category": "mineral",
@@ -598,7 +598,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "quimex-95",
-      "name": "QUIMEX 95",
+      "name": "Quimex 95",
       "unit": "",
       "minStock": 0,
       "category": "chemical",
@@ -606,7 +606,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "resina-aprapole-p150",
-      "name": "RESINA APRAPOLE P150",
+      "name": "Resina aprapole p150",
       "unit": "",
       "minStock": 0,
       "category": "polymer",
@@ -614,7 +614,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "resina-dlp-2001",
-      "name": "RESINA DLP-2001",
+      "name": "Resina dlp-2001",
       "unit": "",
       "minStock": 0,
       "category": "polymer",
@@ -622,7 +622,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "resina-rdp740h",
-      "name": "Resina RDP740H",
+      "name": "Resina rdp740h",
       "unit": "Kg",
       "minStock": 125,
       "category": "polymer",
@@ -630,7 +630,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "resina-semitski",
-      "name": "Resina Semitski",
+      "name": "Resina semitski",
       "unit": "Kg",
       "minStock": 25,
       "category": "polymer",
@@ -638,7 +638,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "saco-rafia-waxtard",
-      "name": "Saco rafia Waxtard impreso",
+      "name": "Saco rafia waxtard impreso",
       "unit": "Pza",
       "minStock": 5000,
       "category": "packaging",
@@ -654,7 +654,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "yeso-maximo",
-      "name": "YESO MAXIMO",
+      "name": "Yeso maximo",
       "unit": "",
       "minStock": 0,
       "category": "gypsum",
@@ -662,7 +662,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "yeso-sayro",
-      "name": "Yeso Sayro",
+      "name": "Yeso sayro",
       "unit": "Kg",
       "minStock": 500,
       "category": "gypsum",
