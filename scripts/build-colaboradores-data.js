@@ -20,10 +20,32 @@ const CAT = {
   FIB: 'Fibras',
 };
 
+function normalizeUnit(unit) {
+  const key = String(unit || '').trim().toLowerCase();
+  if (!key) return '';
+  if (key === 'kg') return 'Kg';
+  if (key === 'l' || key === 'lt' || key === 'lts' || key === 'litro' || key === 'litros') return 'L';
+  if (key === 'pza' || key === 'pzas' || key === 'pieza' || key === 'piezas') return 'Pza';
+  return String(unit).trim();
+}
+
+function normalizeName(name) {
+  const s = String(name || '').trim().replace(/\s+/g, ' ');
+  if (!s) return s;
+  let out = s.toLocaleLowerCase('es');
+  out = out.charAt(0).toLocaleUpperCase('es') + out.slice(1);
+  out = out.replace(/\((.)/g, function (_, c) {
+    return '(' + String(c).toLocaleUpperCase('es');
+  });
+  out = out.replace(/(\d)\s*l\b/g, '$1L');
+  return out;
+}
+
 const products = catalog.published().map(function (p) {
+  const raw = p.variant ? p.name + ' ' + p.variant : p.name;
   return {
     slug: p.slug,
-    name: p.variant ? p.name + ' ' + p.variant : p.name,
+    name: normalizeName(raw),
     code: p.code || '',
     family: FAM[p.family] || p.family || '',
     status: p.status || '',
@@ -64,7 +86,7 @@ const recipes = formulations.map(function (f) {
   });
   return {
     product: product.slug,
-    name: product.name,
+    name: normalizeName(product.name),
     code: product.code,
     family: product.family,
     kind: f.kind,
@@ -83,27 +105,6 @@ recipes.forEach(function (r) {
     usedIn[it.slug].push({ slug: r.product, name: r.name, code: r.code, role: it.role });
   });
 });
-
-function normalizeUnit(unit) {
-  const key = String(unit || '').trim().toLowerCase();
-  if (!key) return '';
-  if (key === 'kg') return 'Kg';
-  if (key === 'l' || key === 'lt' || key === 'lts' || key === 'litro' || key === 'litros') return 'L';
-  if (key === 'pza' || key === 'pzas' || key === 'pieza' || key === 'piezas') return 'Pza';
-  return String(unit).trim();
-}
-
-function normalizeName(name) {
-  const s = String(name || '').trim().replace(/\s+/g, ' ');
-  if (!s) return s;
-  let out = s.toLocaleLowerCase('es');
-  out = out.charAt(0).toLocaleUpperCase('es') + out.slice(1);
-  out = out.replace(/\((.)/g, function (_, c) {
-    return '(' + String(c).toLocaleUpperCase('es');
-  });
-  out = out.replace(/(\d)\s*l\b/g, '$1L');
-  return out;
-}
 
 const inventory = plantMaterials.map(function (m) {
   return {

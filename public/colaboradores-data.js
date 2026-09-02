@@ -2,126 +2,126 @@ window.S35_PANEL_DATA = {
   "products": [
     {
       "slug": "porcelanico-universal",
-      "name": "PEGAXPRESS Porcelánico Universal",
+      "name": "Pegaxpress porcelánico universal",
       "code": "FT-AD-001",
       "family": "Adhesivos PRO+",
       "status": "verified"
     },
     {
       "slug": "ceramico",
-      "name": "PEGAXPRESS Cerámico",
+      "name": "Pegaxpress cerámico",
       "code": "FT-AD-002",
       "family": "Adhesivos PRO+",
       "status": "verified"
     },
     {
       "slug": "ultraforce",
-      "name": "PEGAXPRESS Ultraforce",
+      "name": "Pegaxpress ultraforce",
       "code": "FT-AD-003",
       "family": "Adhesivos PRO+",
       "status": "verified"
     },
     {
       "slug": "pegaxpress-psp",
-      "name": "PEGAXPRESS Piso sobre piso",
+      "name": "Pegaxpress piso sobre piso",
       "code": "FT-AD-004",
       "family": "Adhesivos PRO+",
       "status": "verified"
     },
     {
       "slug": "nanotech-hidrofobico",
-      "name": "NANOTECH Sellador hidrofóbico",
+      "name": "Nanotech sellador hidrofóbico",
       "code": "FT-LQ-001",
       "family": "Líquidos",
       "status": "draft"
     },
     {
       "slug": "sellador-premium-pintura",
-      "name": "SELLADOR PREMIUM Para pintura",
+      "name": "Sellador premium para pintura",
       "code": "FT-LQ-002",
       "family": "Líquidos",
       "status": "draft"
     },
     {
       "slug": "adhesivo-darawell",
-      "name": "DARAWELL Adhesivo",
+      "name": "Darawell adhesivo",
       "code": "FT-LQ-003",
       "family": "Líquidos",
       "status": "draft"
     },
     {
       "slug": "adhesivo-heavy-duty",
-      "name": "HEAVY DUTY Adhesivo",
+      "name": "Heavy duty adhesivo",
       "code": "FT-LQ-004",
       "family": "Líquidos",
       "status": "draft"
     },
     {
       "slug": "cemento-plastico-concreto",
-      "name": "CEMENTO PLÁSTICO Concreto Aparente",
+      "name": "Cemento plástico concreto aparente",
       "code": "FT-MC-001",
       "family": "Microconcretos",
       "status": "verified"
     },
     {
       "slug": "styrobond-pro",
-      "name": "STYROBOND Pro+",
+      "name": "Styrobond pro+",
       "code": "FT-PP-001",
       "family": "Pro+ Systems",
       "status": "verified"
     },
     {
       "slug": "leveltec-pro",
-      "name": "LEVELTEC Pro",
+      "name": "Leveltec pro",
       "code": "FT-PP-003",
       "family": "Pro+ Systems",
       "status": "verified"
     },
     {
       "slug": "pegaxpress-block",
-      "name": "PEGAXPRESS BLOCK Pro+",
+      "name": "Pegaxpress block pro+",
       "code": "FT-PP-004",
       "family": "Pro+ Systems",
       "status": "draft"
     },
     {
       "slug": "waxtard-blanco-perla",
-      "name": "WAXTARD Blanco Perla",
+      "name": "Waxtard blanco perla",
       "code": "FT-PR-001",
       "family": "Estucos premium",
       "status": "verified"
     },
     {
       "slug": "waxtard-blanco-absoluto",
-      "name": "WAXTARD Blanco Absoluto",
+      "name": "Waxtard blanco absoluto",
       "code": "FT-PR-002",
       "family": "Estucos premium",
       "status": "verified"
     },
     {
       "slug": "waxtard-gris",
-      "name": "WAXTARD Gris",
+      "name": "Waxtard gris",
       "code": "FT-PR-003",
       "family": "Estucos premium",
       "status": "verified"
     },
     {
       "slug": "waxtard-extra-anclaje",
-      "name": "WAXTARD Extra Anclaje",
+      "name": "Waxtard extra anclaje",
       "code": "FT-PR-004",
       "family": "Estucos premium",
       "status": "verified"
     },
     {
       "slug": "basecoat-plus-blanco",
-      "name": "BASECOAT PLUS Blanco Absoluto",
+      "name": "Basecoat plus blanco absoluto",
       "code": "FT-PS-001",
       "family": "Panel System",
       "status": "verified"
     },
     {
       "slug": "basecoat-plus-gris",
-      "name": "BASECOAT PLUS Gris",
+      "name": "Basecoat plus gris",
       "code": "FT-PS-002",
       "family": "Panel System",
       "status": "verified"
@@ -672,7 +672,7 @@ window.S35_PANEL_DATA = {
   "recipes": [
     {
       "product": "waxtard-blanco-perla",
-      "name": "WAXTARD Blanco Perla",
+      "name": "Waxtard blanco perla",
       "code": "FT-PR-001",
       "family": "Estucos premium",
       "kind": "seco",
@@ -740,7 +740,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "waxtard-blanco-absoluto",
-      "name": "WAXTARD Blanco Absoluto",
+      "name": "Waxtard blanco absoluto",
       "code": "FT-PR-002",
       "family": "Estucos premium",
       "kind": "seco",
@@ -808,7 +808,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "waxtard-gris",
-      "name": "WAXTARD Gris",
+      "name": "Waxtard gris",
       "code": "FT-PR-003",
       "family": "Estucos premium",
       "kind": "seco",
@@ -876,7 +876,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "waxtard-extra-anclaje",
-      "name": "WAXTARD Extra Anclaje",
+      "name": "Waxtard extra anclaje",
       "code": "FT-PR-004",
       "family": "Estucos premium",
       "kind": "seco",
@@ -960,7 +960,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "cemento-plastico-concreto",
-      "name": "CEMENTO PLÁSTICO Concreto Aparente",
+      "name": "Cemento plástico concreto aparente",
       "code": "FT-MC-001",
       "family": "Microconcretos",
       "kind": "seco",
@@ -1044,7 +1044,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "basecoat-plus-gris",
-      "name": "BASECOAT PLUS Gris",
+      "name": "Basecoat plus gris",
       "code": "FT-PS-002",
       "family": "Panel System",
       "kind": "seco",
@@ -1112,7 +1112,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "basecoat-plus-blanco",
-      "name": "BASECOAT PLUS Blanco Absoluto",
+      "name": "Basecoat plus blanco absoluto",
       "code": "FT-PS-001",
       "family": "Panel System",
       "kind": "seco",
@@ -1188,7 +1188,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "styrobond-pro",
-      "name": "STYROBOND Pro+",
+      "name": "Styrobond pro+",
       "code": "FT-PP-001",
       "family": "Pro+ Systems",
       "kind": "seco",
@@ -1256,7 +1256,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "leveltec-pro",
-      "name": "LEVELTEC Pro",
+      "name": "Leveltec pro",
       "code": "FT-PP-003",
       "family": "Pro+ Systems",
       "kind": "seco",
@@ -1308,7 +1308,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "pegaxpress-block",
-      "name": "PEGAXPRESS BLOCK Pro+",
+      "name": "Pegaxpress block pro+",
       "code": "FT-PP-004",
       "family": "Pro+ Systems",
       "kind": "seco",
@@ -1368,7 +1368,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "ceramico",
-      "name": "PEGAXPRESS Cerámico",
+      "name": "Pegaxpress cerámico",
       "code": "FT-AD-002",
       "family": "Adhesivos PRO+",
       "kind": "seco",
@@ -1436,7 +1436,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "porcelanico-universal",
-      "name": "PEGAXPRESS Porcelánico Universal",
+      "name": "Pegaxpress porcelánico universal",
       "code": "FT-AD-001",
       "family": "Adhesivos PRO+",
       "kind": "seco",
@@ -1496,7 +1496,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "pegaxpress-psp",
-      "name": "PEGAXPRESS Piso sobre piso",
+      "name": "Pegaxpress piso sobre piso",
       "code": "FT-AD-004",
       "family": "Adhesivos PRO+",
       "kind": "seco",
@@ -1556,7 +1556,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "ultraforce",
-      "name": "PEGAXPRESS Ultraforce",
+      "name": "Pegaxpress ultraforce",
       "code": "FT-AD-003",
       "family": "Adhesivos PRO+",
       "kind": "seco",
@@ -1632,7 +1632,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "nanotech-hidrofobico",
-      "name": "NANOTECH Sellador hidrofóbico",
+      "name": "Nanotech sellador hidrofóbico",
       "code": "FT-LQ-001",
       "family": "Líquidos",
       "kind": "liquido",
@@ -1643,7 +1643,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "sellador-premium-pintura",
-      "name": "SELLADOR PREMIUM Para pintura",
+      "name": "Sellador premium para pintura",
       "code": "FT-LQ-002",
       "family": "Líquidos",
       "kind": "liquido",
@@ -1654,7 +1654,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "adhesivo-darawell",
-      "name": "DARAWELL Adhesivo",
+      "name": "Darawell adhesivo",
       "code": "FT-LQ-003",
       "family": "Líquidos",
       "kind": "liquido",
@@ -1665,7 +1665,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "adhesivo-heavy-duty",
-      "name": "HEAVY DUTY Adhesivo",
+      "name": "Heavy duty adhesivo",
       "code": "FT-LQ-004",
       "family": "Líquidos",
       "kind": "liquido",
@@ -1679,25 +1679,25 @@ window.S35_PANEL_DATA = {
     "cemento-blanco": [
       {
         "slug": "waxtard-blanco-perla",
-        "name": "WAXTARD Blanco Perla",
+        "name": "Waxtard blanco perla",
         "code": "FT-PR-001",
         "role": "Cementante"
       },
       {
         "slug": "waxtard-blanco-absoluto",
-        "name": "WAXTARD Blanco Absoluto",
+        "name": "Waxtard blanco absoluto",
         "code": "FT-PR-002",
         "role": "Cementante"
       },
       {
         "slug": "waxtard-extra-anclaje",
-        "name": "WAXTARD Extra Anclaje",
+        "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
         "role": "Cementante"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "BASECOAT PLUS Blanco Absoluto",
+        "name": "Basecoat plus blanco absoluto",
         "code": "FT-PS-001",
         "role": "Cementante"
       }
@@ -1705,31 +1705,31 @@ window.S35_PANEL_DATA = {
     "marmolina-fina": [
       {
         "slug": "waxtard-blanco-perla",
-        "name": "WAXTARD Blanco Perla",
+        "name": "Waxtard blanco perla",
         "code": "FT-PR-001",
         "role": "Agregado"
       },
       {
         "slug": "waxtard-blanco-absoluto",
-        "name": "WAXTARD Blanco Absoluto",
+        "name": "Waxtard blanco absoluto",
         "code": "FT-PR-002",
         "role": "Agregado"
       },
       {
         "slug": "waxtard-gris",
-        "name": "WAXTARD Gris",
+        "name": "Waxtard gris",
         "code": "FT-PR-003",
         "role": "Agregado"
       },
       {
         "slug": "waxtard-extra-anclaje",
-        "name": "WAXTARD Extra Anclaje",
+        "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
         "role": "Agregado"
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "CEMENTO PLÁSTICO Concreto Aparente",
+        "name": "Cemento plástico concreto aparente",
         "code": "FT-MC-001",
         "role": "Agregado"
       }
@@ -1737,85 +1737,85 @@ window.S35_PANEL_DATA = {
     "carbonato-de-calcio": [
       {
         "slug": "waxtard-blanco-perla",
-        "name": "WAXTARD Blanco Perla",
+        "name": "Waxtard blanco perla",
         "code": "FT-PR-001",
         "role": "Carga"
       },
       {
         "slug": "waxtard-blanco-absoluto",
-        "name": "WAXTARD Blanco Absoluto",
+        "name": "Waxtard blanco absoluto",
         "code": "FT-PR-002",
         "role": "Carga"
       },
       {
         "slug": "waxtard-gris",
-        "name": "WAXTARD Gris",
+        "name": "Waxtard gris",
         "code": "FT-PR-003",
         "role": "Carga"
       },
       {
         "slug": "waxtard-extra-anclaje",
-        "name": "WAXTARD Extra Anclaje",
+        "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
         "role": "Carga"
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "CEMENTO PLÁSTICO Concreto Aparente",
+        "name": "Cemento plástico concreto aparente",
         "code": "FT-MC-001",
         "role": "Carga"
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "BASECOAT PLUS Gris",
+        "name": "Basecoat plus gris",
         "code": "FT-PS-002",
         "role": "Carga"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "BASECOAT PLUS Blanco Absoluto",
+        "name": "Basecoat plus blanco absoluto",
         "code": "FT-PS-001",
         "role": "Carga"
       },
       {
         "slug": "styrobond-pro",
-        "name": "STYROBOND Pro+",
+        "name": "Styrobond pro+",
         "code": "FT-PP-001",
         "role": "Carga"
       },
       {
         "slug": "leveltec-pro",
-        "name": "LEVELTEC Pro",
+        "name": "Leveltec pro",
         "code": "FT-PP-003",
         "role": "Carga"
       },
       {
         "slug": "pegaxpress-block",
-        "name": "PEGAXPRESS BLOCK Pro+",
+        "name": "Pegaxpress block pro+",
         "code": "FT-PP-004",
         "role": "Carga"
       },
       {
         "slug": "ceramico",
-        "name": "PEGAXPRESS Cerámico",
+        "name": "Pegaxpress cerámico",
         "code": "FT-AD-002",
         "role": "Carga"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "PEGAXPRESS Porcelánico Universal",
+        "name": "Pegaxpress porcelánico universal",
         "code": "FT-AD-001",
         "role": "Carga"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "PEGAXPRESS Piso sobre piso",
+        "name": "Pegaxpress piso sobre piso",
         "code": "FT-AD-004",
         "role": "Carga"
       },
       {
         "slug": "ultraforce",
-        "name": "PEGAXPRESS Ultraforce",
+        "name": "Pegaxpress ultraforce",
         "code": "FT-AD-003",
         "role": "Carga"
       }
@@ -1823,85 +1823,85 @@ window.S35_PANEL_DATA = {
     "polimero-redispersable-vae": [
       {
         "slug": "waxtard-blanco-perla",
-        "name": "WAXTARD Blanco Perla",
+        "name": "Waxtard blanco perla",
         "code": "FT-PR-001",
         "role": "Polímero redispersable"
       },
       {
         "slug": "waxtard-blanco-absoluto",
-        "name": "WAXTARD Blanco Absoluto",
+        "name": "Waxtard blanco absoluto",
         "code": "FT-PR-002",
         "role": "Polímero redispersable"
       },
       {
         "slug": "waxtard-gris",
-        "name": "WAXTARD Gris",
+        "name": "Waxtard gris",
         "code": "FT-PR-003",
         "role": "Polímero redispersable"
       },
       {
         "slug": "waxtard-extra-anclaje",
-        "name": "WAXTARD Extra Anclaje",
+        "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
         "role": "Polímero redispersable"
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "CEMENTO PLÁSTICO Concreto Aparente",
+        "name": "Cemento plástico concreto aparente",
         "code": "FT-MC-001",
         "role": "Polímero redispersable"
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "BASECOAT PLUS Gris",
+        "name": "Basecoat plus gris",
         "code": "FT-PS-002",
         "role": "Polímero redispersable"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "BASECOAT PLUS Blanco Absoluto",
+        "name": "Basecoat plus blanco absoluto",
         "code": "FT-PS-001",
         "role": "Polímero redispersable"
       },
       {
         "slug": "styrobond-pro",
-        "name": "STYROBOND Pro+",
+        "name": "Styrobond pro+",
         "code": "FT-PP-001",
         "role": "Polímero redispersable"
       },
       {
         "slug": "leveltec-pro",
-        "name": "LEVELTEC Pro",
+        "name": "Leveltec pro",
         "code": "FT-PP-003",
         "role": "Polímero redispersable"
       },
       {
         "slug": "pegaxpress-block",
-        "name": "PEGAXPRESS BLOCK Pro+",
+        "name": "Pegaxpress block pro+",
         "code": "FT-PP-004",
         "role": "Polímero redispersable"
       },
       {
         "slug": "ceramico",
-        "name": "PEGAXPRESS Cerámico",
+        "name": "Pegaxpress cerámico",
         "code": "FT-AD-002",
         "role": "Polímero redispersable"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "PEGAXPRESS Porcelánico Universal",
+        "name": "Pegaxpress porcelánico universal",
         "code": "FT-AD-001",
         "role": "Polímero redispersable"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "PEGAXPRESS Piso sobre piso",
+        "name": "Pegaxpress piso sobre piso",
         "code": "FT-AD-004",
         "role": "Polímero redispersable"
       },
       {
         "slug": "ultraforce",
-        "name": "PEGAXPRESS Ultraforce",
+        "name": "Pegaxpress ultraforce",
         "code": "FT-AD-003",
         "role": "Polímero redispersable"
       }
@@ -1909,85 +1909,85 @@ window.S35_PANEL_DATA = {
     "celulosa-hpmc": [
       {
         "slug": "waxtard-blanco-perla",
-        "name": "WAXTARD Blanco Perla",
+        "name": "Waxtard blanco perla",
         "code": "FT-PR-001",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "waxtard-blanco-absoluto",
-        "name": "WAXTARD Blanco Absoluto",
+        "name": "Waxtard blanco absoluto",
         "code": "FT-PR-002",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "waxtard-gris",
-        "name": "WAXTARD Gris",
+        "name": "Waxtard gris",
         "code": "FT-PR-003",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "waxtard-extra-anclaje",
-        "name": "WAXTARD Extra Anclaje",
+        "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "CEMENTO PLÁSTICO Concreto Aparente",
+        "name": "Cemento plástico concreto aparente",
         "code": "FT-MC-001",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "BASECOAT PLUS Gris",
+        "name": "Basecoat plus gris",
         "code": "FT-PS-002",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "BASECOAT PLUS Blanco Absoluto",
+        "name": "Basecoat plus blanco absoluto",
         "code": "FT-PS-001",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "styrobond-pro",
-        "name": "STYROBOND Pro+",
+        "name": "Styrobond pro+",
         "code": "FT-PP-001",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "leveltec-pro",
-        "name": "LEVELTEC Pro",
+        "name": "Leveltec pro",
         "code": "FT-PP-003",
         "role": "Reología de autonivelado (grado baja viscosidad)"
       },
       {
         "slug": "pegaxpress-block",
-        "name": "PEGAXPRESS BLOCK Pro+",
+        "name": "Pegaxpress block pro+",
         "code": "FT-PP-004",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "ceramico",
-        "name": "PEGAXPRESS Cerámico",
+        "name": "Pegaxpress cerámico",
         "code": "FT-AD-002",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "PEGAXPRESS Porcelánico Universal",
+        "name": "Pegaxpress porcelánico universal",
         "code": "FT-AD-001",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "PEGAXPRESS Piso sobre piso",
+        "name": "Pegaxpress piso sobre piso",
         "code": "FT-AD-004",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "ultraforce",
-        "name": "PEGAXPRESS Ultraforce",
+        "name": "Pegaxpress ultraforce",
         "code": "FT-AD-003",
         "role": "Retención de agua / reología"
       }
@@ -1995,73 +1995,73 @@ window.S35_PANEL_DATA = {
     "eter-de-almidon": [
       {
         "slug": "waxtard-blanco-perla",
-        "name": "WAXTARD Blanco Perla",
+        "name": "Waxtard blanco perla",
         "code": "FT-PR-001",
         "role": "Antideslizamiento"
       },
       {
         "slug": "waxtard-blanco-absoluto",
-        "name": "WAXTARD Blanco Absoluto",
+        "name": "Waxtard blanco absoluto",
         "code": "FT-PR-002",
         "role": "Antideslizamiento"
       },
       {
         "slug": "waxtard-gris",
-        "name": "WAXTARD Gris",
+        "name": "Waxtard gris",
         "code": "FT-PR-003",
         "role": "Antideslizamiento"
       },
       {
         "slug": "waxtard-extra-anclaje",
-        "name": "WAXTARD Extra Anclaje",
+        "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
         "role": "Antideslizamiento"
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "BASECOAT PLUS Gris",
+        "name": "Basecoat plus gris",
         "code": "FT-PS-002",
         "role": "Antideslizamiento"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "BASECOAT PLUS Blanco Absoluto",
+        "name": "Basecoat plus blanco absoluto",
         "code": "FT-PS-001",
         "role": "Antideslizamiento"
       },
       {
         "slug": "styrobond-pro",
-        "name": "STYROBOND Pro+",
+        "name": "Styrobond pro+",
         "code": "FT-PP-001",
         "role": "Antideslizamiento"
       },
       {
         "slug": "pegaxpress-block",
-        "name": "PEGAXPRESS BLOCK Pro+",
+        "name": "Pegaxpress block pro+",
         "code": "FT-PP-004",
         "role": "Antideslizamiento"
       },
       {
         "slug": "ceramico",
-        "name": "PEGAXPRESS Cerámico",
+        "name": "Pegaxpress cerámico",
         "code": "FT-AD-002",
         "role": "Antideslizamiento"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "PEGAXPRESS Porcelánico Universal",
+        "name": "Pegaxpress porcelánico universal",
         "code": "FT-AD-001",
         "role": "Antideslizamiento"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "PEGAXPRESS Piso sobre piso",
+        "name": "Pegaxpress piso sobre piso",
         "code": "FT-AD-004",
         "role": "Antideslizamiento"
       },
       {
         "slug": "ultraforce",
-        "name": "PEGAXPRESS Ultraforce",
+        "name": "Pegaxpress ultraforce",
         "code": "FT-AD-003",
         "role": "Antideslizamiento"
       }
@@ -2069,25 +2069,25 @@ window.S35_PANEL_DATA = {
     "dioxido-de-titanio": [
       {
         "slug": "waxtard-blanco-perla",
-        "name": "WAXTARD Blanco Perla",
+        "name": "Waxtard blanco perla",
         "code": "FT-PR-001",
         "role": "Pigmento"
       },
       {
         "slug": "waxtard-blanco-absoluto",
-        "name": "WAXTARD Blanco Absoluto",
+        "name": "Waxtard blanco absoluto",
         "code": "FT-PR-002",
         "role": "Pigmento"
       },
       {
         "slug": "waxtard-extra-anclaje",
-        "name": "WAXTARD Extra Anclaje",
+        "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
         "role": "Pigmento"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "BASECOAT PLUS Blanco Absoluto",
+        "name": "Basecoat plus blanco absoluto",
         "code": "FT-PS-001",
         "role": "Pigmento"
       }
@@ -2095,61 +2095,61 @@ window.S35_PANEL_DATA = {
     "cemento-gris": [
       {
         "slug": "waxtard-gris",
-        "name": "WAXTARD Gris",
+        "name": "Waxtard gris",
         "code": "FT-PR-003",
         "role": "Cementante"
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "CEMENTO PLÁSTICO Concreto Aparente",
+        "name": "Cemento plástico concreto aparente",
         "code": "FT-MC-001",
         "role": "Cementante"
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "BASECOAT PLUS Gris",
+        "name": "Basecoat plus gris",
         "code": "FT-PS-002",
         "role": "Cementante"
       },
       {
         "slug": "styrobond-pro",
-        "name": "STYROBOND Pro+",
+        "name": "Styrobond pro+",
         "code": "FT-PP-001",
         "role": "Cementante"
       },
       {
         "slug": "leveltec-pro",
-        "name": "LEVELTEC Pro",
+        "name": "Leveltec pro",
         "code": "FT-PP-003",
         "role": "Cementante"
       },
       {
         "slug": "pegaxpress-block",
-        "name": "PEGAXPRESS BLOCK Pro+",
+        "name": "Pegaxpress block pro+",
         "code": "FT-PP-004",
         "role": "Cementante"
       },
       {
         "slug": "ceramico",
-        "name": "PEGAXPRESS Cerámico",
+        "name": "Pegaxpress cerámico",
         "code": "FT-AD-002",
         "role": "Cementante"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "PEGAXPRESS Porcelánico Universal",
+        "name": "Pegaxpress porcelánico universal",
         "code": "FT-AD-001",
         "role": "Cementante"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "PEGAXPRESS Piso sobre piso",
+        "name": "Pegaxpress piso sobre piso",
         "code": "FT-AD-004",
         "role": "Cementante"
       },
       {
         "slug": "ultraforce",
-        "name": "PEGAXPRESS Ultraforce",
+        "name": "Pegaxpress ultraforce",
         "code": "FT-AD-003",
         "role": "Cementante"
       }
@@ -2157,7 +2157,7 @@ window.S35_PANEL_DATA = {
     "dolomita": [
       {
         "slug": "waxtard-gris",
-        "name": "WAXTARD Gris",
+        "name": "Waxtard gris",
         "code": "FT-PR-003",
         "role": "Carga"
       }
@@ -2165,61 +2165,61 @@ window.S35_PANEL_DATA = {
     "arena-silicea-graduada": [
       {
         "slug": "waxtard-extra-anclaje",
-        "name": "WAXTARD Extra Anclaje",
+        "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
         "role": "Agregado"
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "BASECOAT PLUS Gris",
+        "name": "Basecoat plus gris",
         "code": "FT-PS-002",
         "role": "Agregado"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "BASECOAT PLUS Blanco Absoluto",
+        "name": "Basecoat plus blanco absoluto",
         "code": "FT-PS-001",
         "role": "Agregado"
       },
       {
         "slug": "styrobond-pro",
-        "name": "STYROBOND Pro+",
+        "name": "Styrobond pro+",
         "code": "FT-PP-001",
         "role": "Agregado"
       },
       {
         "slug": "leveltec-pro",
-        "name": "LEVELTEC Pro",
+        "name": "Leveltec pro",
         "code": "FT-PP-003",
         "role": "Agregado"
       },
       {
         "slug": "pegaxpress-block",
-        "name": "PEGAXPRESS BLOCK Pro+",
+        "name": "Pegaxpress block pro+",
         "code": "FT-PP-004",
         "role": "Agregado"
       },
       {
         "slug": "ceramico",
-        "name": "PEGAXPRESS Cerámico",
+        "name": "Pegaxpress cerámico",
         "code": "FT-AD-002",
         "role": "Agregado"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "PEGAXPRESS Porcelánico Universal",
+        "name": "Pegaxpress porcelánico universal",
         "code": "FT-AD-001",
         "role": "Agregado"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "PEGAXPRESS Piso sobre piso",
+        "name": "Pegaxpress piso sobre piso",
         "code": "FT-AD-004",
         "role": "Agregado"
       },
       {
         "slug": "ultraforce",
-        "name": "PEGAXPRESS Ultraforce",
+        "name": "Pegaxpress ultraforce",
         "code": "FT-AD-003",
         "role": "Agregado"
       }
@@ -2227,13 +2227,13 @@ window.S35_PANEL_DATA = {
     "metacaolin": [
       {
         "slug": "waxtard-extra-anclaje",
-        "name": "WAXTARD Extra Anclaje",
+        "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
         "role": "Mineral funcional"
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "CEMENTO PLÁSTICO Concreto Aparente",
+        "name": "Cemento plástico concreto aparente",
         "code": "FT-MC-001",
         "role": "Mineral funcional"
       }
@@ -2241,7 +2241,7 @@ window.S35_PANEL_DATA = {
     "arena-de-cuarzo": [
       {
         "slug": "cemento-plastico-concreto",
-        "name": "CEMENTO PLÁSTICO Concreto Aparente",
+        "name": "Cemento plástico concreto aparente",
         "code": "FT-MC-001",
         "role": "Agregado"
       }
@@ -2249,7 +2249,7 @@ window.S35_PANEL_DATA = {
     "oxido-de-hierro-rojo": [
       {
         "slug": "cemento-plastico-concreto",
-        "name": "CEMENTO PLÁSTICO Concreto Aparente",
+        "name": "Cemento plástico concreto aparente",
         "code": "FT-MC-001",
         "role": "Pigmento"
       }
@@ -2257,7 +2257,7 @@ window.S35_PANEL_DATA = {
     "caolin": [
       {
         "slug": "ceramico",
-        "name": "PEGAXPRESS Cerámico",
+        "name": "Pegaxpress cerámico",
         "code": "FT-AD-002",
         "role": "Carga"
       }
@@ -2265,7 +2265,7 @@ window.S35_PANEL_DATA = {
     "cemento-aluminato-de-calcio": [
       {
         "slug": "ultraforce",
-        "name": "PEGAXPRESS Ultraforce",
+        "name": "Pegaxpress ultraforce",
         "code": "FT-AD-003",
         "role": "Cementante"
       }
@@ -2273,7 +2273,7 @@ window.S35_PANEL_DATA = {
     "microsilice": [
       {
         "slug": "ultraforce",
-        "name": "PEGAXPRESS Ultraforce",
+        "name": "Pegaxpress ultraforce",
         "code": "FT-AD-003",
         "role": "Mineral funcional"
       }
