@@ -6,6 +6,7 @@ const path = require('path');
 const catalog = require('../content/products');
 const research = require('../content/research');
 const formulations = require('../content/panel/formulations');
+const plantMaterials = require('../content/panel/plant-materials');
 
 const FAM = {};
 catalog.taxonomy.FAMILIES.forEach(function (f) { FAM[f.id] = f.name; });
@@ -83,13 +84,25 @@ recipes.forEach(function (r) {
   });
 });
 
+const inventory = plantMaterials.map(function (m) {
+  return {
+    id: m.id,
+    name: m.name,
+    unit: m.unit || '',
+    minStock: Number(m.minStock) || 0,
+    category: m.category || '',
+    labSlug: m.labSlug || null,
+  };
+});
+
 const out = 'window.S35_PANEL_DATA = ' + JSON.stringify({
   products: products,
   materials: materials,
+  plantMaterials: inventory,
   recipes: recipes,
   usedIn: usedIn,
 }, null, 2) + ';\n';
 
 const dest = path.join(__dirname, '..', 'public', 'colaboradores-data.js');
 fs.writeFileSync(dest, out);
-console.log('colaboradores-data.js:', products.length, 'productos,', materials.length, 'materias primas,', recipes.length, 'recetas');
+console.log('colaboradores-data.js:', products.length, 'productos,', inventory.length, 'inventario planta,', materials.length, 'fichas lab,', recipes.length, 'recetas');

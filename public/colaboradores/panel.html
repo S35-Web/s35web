@@ -107,6 +107,22 @@
         .recipe-nav button { text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid transparent; background: transparent; color: var(--text); cursor: pointer; }
         .recipe-nav button.active, .recipe-nav button:hover { background: var(--elev); border-color: var(--border); }
         .note-box { background: var(--elev); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+        .inventory thead th { background: rgba(255,255,255,.08); color: var(--text); font-weight: 600; font-size: 12px; letter-spacing: .4px; text-transform: none; }
+        [data-theme="light"] .inventory thead th { background: #3a3f46; color: #fff; }
+        .inventory tbody tr:nth-child(even) { background: var(--elev); }
+        .inventory tbody tr:hover { background: rgba(10,132,255,.08); }
+        .inventory td, .inventory th { vertical-align: middle; }
+        .inventory .num { font-variant-numeric: tabular-nums; }
+        .inventory .unit { color: var(--muted); font-weight: 400; }
+        .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+        .icon-action { height: 32px; width: 32px; display: grid; place-items: center; border: 1px solid var(--border); background: transparent; color: var(--muted); border-radius: 8px; cursor: pointer; }
+        .icon-action:hover { color: var(--text); background: var(--elev); }
+        .icon-action.danger:hover { color: var(--danger); border-color: var(--danger); }
+        .form-grid { display: grid; gap: 12px; }
+        .form-grid label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
+        .form-grid input, .form-grid select { height: 38px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text); padding: 0 12px; }
+        .form-grid select option { color: #111; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
         @media (max-width: 980px) {
             .kpis { grid-template-columns: 1fr 1fr; }
             .grid { grid-template-columns: 1fr; }
@@ -177,6 +193,7 @@
                             <div class="shortcuts">
                                 <a class="shortcut" href="/productos" target="_blank">Índice de fichas <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
                                 <a class="shortcut" href="#formulas" id="goFormulas">Formulaciones internas</a>
+                                <a class="shortcut" href="#materials" id="goMaterials">Inventario de planta</a>
                                 <a class="shortcut" href="/laboratorio/materials" target="_blank">Laboratorio <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
                                 <a class="shortcut" href="/catalogo.html" target="_blank">Catálogo público <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
                             </div>
@@ -229,15 +246,16 @@
 
                 <section id="materials" class="section">
                     <h1 class="page-title">Materias primas</h1>
-                    <p class="page-sub">Archivo interno de lo que entra a planta. Cada ficha pública vive en Laboratorio; aquí se ve en qué productos se usa.</p>
+                    <p class="page-sub">Inventario de planta: nombre y mínimo aceptable. Los cambios se guardan en este navegador.</p>
                     <div class="card">
                         <div class="toolbar">
-                            <input id="matSearch" class="search" type="search" placeholder="Buscar materia prima o código">
+                            <input id="matSearch" class="search" type="search" placeholder="Buscar materia prima">
+                            <button id="matAddBtn" class="btn primary" type="button"><i class="fa-solid fa-plus"></i> Alta</button>
                         </div>
                         <div class="chips" id="matChips"></div>
                         <div class="table-card">
-                            <table>
-                                <thead><tr><th>Código</th><th>Materia prima</th><th>Clase</th><th>Usada en</th><th></th></tr></thead>
+                            <table class="inventory">
+                                <thead><tr><th>Nombre</th><th>Mínimo aceptable</th><th></th></tr></thead>
                                 <tbody id="matBody"></tbody>
                             </table>
                         </div>
@@ -286,6 +304,57 @@
         </div>
     </div>
 
+    <div id="plantModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="plantModalTitle" style="max-width:480px">
+            <div class="modal-head">
+                <strong id="plantModalTitle">Materia prima</strong>
+                <button id="plantModalClose" class="btn" type="button">Cerrar</button>
+            </div>
+            <form id="plantForm" class="modal-body">
+                <input type="hidden" id="plantId" value="">
+                <div class="form-grid">
+                    <label>Nombre
+                        <input id="plantName" type="text" required autocomplete="off">
+                    </label>
+                    <label>Unidad
+                        <select id="plantUnit">
+                            <option value="">Sin unidad</option>
+                            <option value="Kg">Kg</option>
+                            <option value="kg">kg</option>
+                            <option value="Pza">Pza</option>
+                            <option value="pza">pza</option>
+                        </select>
+                    </label>
+                    <label>Mínimo aceptable
+                        <input id="plantMin" type="number" min="0" step="1" required value="0">
+                    </label>
+                    <label>Categoría
+                        <select id="plantCategory">
+                            <option value="mineral">Minerales</option>
+                            <option value="cement">Cementantes</option>
+                            <option value="lime">Cal</option>
+                            <option value="gypsum">Yeso</option>
+                            <option value="polymer">Polímeros</option>
+                            <option value="cellulose">Celulosa</option>
+                            <option value="fiber">Fibras</option>
+                            <option value="chemical">Químicos</option>
+                            <option value="packaging">Empaque</option>
+                        </select>
+                    </label>
+                    <label>Ficha de laboratorio (opcional)
+                        <select id="plantLab">
+                            <option value="">Ninguna</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="plantModalCancel">Cancelar</button>
+                    <button type="submit" class="btn primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="detailModal" class="modal-backdrop" aria-hidden="true">
         <div class="modal-card" role="dialog" aria-modal="true">
             <div class="modal-head">
@@ -314,9 +383,49 @@
         if (u.username) document.getElementById('userChip').textContent = u.username;
     } catch (_) {}
 
-    const data = window.S35_PANEL_DATA || { products: [], materials: [], recipes: [], usedIn: {} };
+    const data = window.S35_PANEL_DATA || { products: [], materials: [], plantMaterials: [], recipes: [], usedIn: {} };
+    const PLANT_KEY = 's35_plant_inventory';
+    const CAT_LABEL = {
+        mineral: 'Minerales',
+        cement: 'Cementantes',
+        lime: 'Cal',
+        gypsum: 'Yeso',
+        polymer: 'Polímeros',
+        cellulose: 'Celulosa',
+        fiber: 'Fibras',
+        chemical: 'Químicos',
+        packaging: 'Empaque'
+    };
+
+    function seedInventory() {
+        return (data.plantMaterials || []).map(function (m) {
+            return {
+                id: m.id,
+                name: m.name,
+                unit: m.unit || '',
+                minStock: Number(m.minStock) || 0,
+                category: m.category || 'mineral',
+                labSlug: m.labSlug || null
+            };
+        });
+    }
+    function loadInventory() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(PLANT_KEY) || 'null');
+            if (raw && Array.isArray(raw.items) && raw.items.length) return raw.items;
+        } catch (_) {}
+        return seedInventory();
+    }
+    function saveInventory(list) {
+        localStorage.setItem(PLANT_KEY, JSON.stringify({ items: list, updatedAt: new Date().toISOString() }));
+    }
+    let inventory = loadInventory();
+
+    function updateMaterialKpi() {
+        document.getElementById('kpiMaterials').textContent = inventory.length;
+    }
     document.getElementById('kpiProducts').textContent = data.products.length;
-    document.getElementById('kpiMaterials').textContent = data.materials.length;
+    updateMaterialKpi();
     document.getElementById('kpiRecipes').textContent = (data.recipes || []).length;
 
     const sidebar = document.getElementById('sidebar');
@@ -334,6 +443,8 @@
     });
     const goFormulas = document.getElementById('goFormulas');
     if (goFormulas) goFormulas.addEventListener('click', function (e) { e.preventDefault(); showSection('formulas'); });
+    const goMaterials = document.getElementById('goMaterials');
+    if (goMaterials) goMaterials.addEventListener('click', function (e) { e.preventDefault(); showSection('materials'); });
 
     const themeBtn = document.getElementById('themeBtn');
     function applyTheme(theme) {
@@ -506,38 +617,43 @@
         }));
     });
 
-    const usedIn = data.usedIn || {};
     let matFilter = 'all';
-    const categories = ['all'].concat(Array.from(new Set(data.materials.map(function (m) { return m.category; }))).filter(Boolean));
+    const plantCats = ['all', 'mineral', 'cement', 'lime', 'gypsum', 'polymer', 'cellulose', 'fiber', 'chemical', 'packaging'];
     const chips = document.getElementById('matChips');
-    chips.innerHTML = categories.map(function (c) {
-        const label = c === 'all' ? 'Todas' : c;
+    chips.innerHTML = plantCats.map(function (c) {
+        const label = c === 'all' ? 'Todas' : (CAT_LABEL[c] || c);
         return '<button type="button" class="chip' + (c === 'all' ? ' active' : '') + '" data-cat="' + esc(c) + '">' + esc(label) + '</button>';
     }).join('');
-    function filteredMaterials() {
+    function displayName(m) {
+        return m.unit ? m.name + ' (' + m.unit + ')' : m.name;
+    }
+    function filteredInventory() {
         const q = (document.getElementById('matSearch').value || '').toLowerCase();
-        return data.materials.filter(function (m) {
+        return inventory.filter(function (m) {
             const catOk = matFilter === 'all' || m.category === matFilter;
-            const qOk = !q || [m.name, m.code, m.category, m.classLabel].some(function (v) {
+            const qOk = !q || [m.name, m.unit, CAT_LABEL[m.category]].some(function (v) {
                 return String(v || '').toLowerCase().includes(q);
             });
             return catOk && qOk;
+        }).sort(function (a, b) {
+            return String(a.name).localeCompare(String(b.name), 'es', { sensitivity: 'base' });
         });
     }
     function renderMaterials() {
         const tbody = document.getElementById('matBody');
-        const list = filteredMaterials();
+        const list = filteredInventory();
         tbody.innerHTML = list.map(function (m) {
-            const uses = usedIn[m.slug] || [];
-            const useLabel = uses.length ? uses.length + (uses.length === 1 ? ' producto' : ' productos') : 'Sin receta';
-            return '<tr data-mat="' + esc(m.slug) + '">' +
-                '<td class="muted">' + esc(m.code) + '</td>' +
-                '<td>' + esc(m.name) + (m.classLabel ? '<div class="muted">' + esc(m.classLabel) + '</div>' : '') + '</td>' +
-                '<td>' + esc(m.category) + '</td>' +
-                '<td>' + esc(useLabel) + '</td>' +
-                '<td><a class="link" href="/laboratorio/materials/' + esc(m.slug) + '" target="_blank">Ficha</a></td>' +
-                '</tr>';
-        }).join('') || '<tr><td colspan="5" class="empty">Sin resultados</td></tr>';
+            const lab = m.labSlug
+                ? '<div class="muted"><a class="link" href="/laboratorio/materials/' + esc(m.labSlug) + '" target="_blank">Ficha</a></div>'
+                : '';
+            return '<tr data-plant="' + esc(m.id) + '">' +
+                '<td>' + esc(displayName(m)) + lab + '</td>' +
+                '<td class="num">' + esc(String(m.minStock)) + '</td>' +
+                '<td><div class="row-actions">' +
+                '<button type="button" class="icon-action" data-edit="' + esc(m.id) + '" title="Editar" aria-label="Editar"><i class="fa-solid fa-pen-to-square"></i></button>' +
+                '<button type="button" class="icon-action danger" data-del="' + esc(m.id) + '" title="Eliminar" aria-label="Eliminar"><i class="fa-solid fa-trash-can"></i></button>' +
+                '</div></td></tr>';
+        }).join('') || '<tr><td colspan="3" class="empty">Sin resultados</td></tr>';
     }
     chips.addEventListener('click', function (e) {
         const btn = e.target.closest('.chip');
@@ -547,14 +663,77 @@
         renderMaterials();
     });
     document.getElementById('matSearch').addEventListener('input', renderMaterials);
+
+    const plantModal = document.getElementById('plantModal');
+    const plantLab = document.getElementById('plantLab');
+    plantLab.innerHTML = '<option value="">Ninguna</option>' + (data.materials || []).map(function (m) {
+        return '<option value="' + esc(m.slug) + '">' + esc(m.name) + '</option>';
+    }).join('');
+    function closePlantModal() {
+        plantModal.classList.remove('show');
+        plantModal.setAttribute('aria-hidden', 'true');
+    }
+    function openPlantModal(item) {
+        document.getElementById('plantModalTitle').textContent = item ? 'Editar materia prima' : 'Alta de materia prima';
+        document.getElementById('plantId').value = item ? item.id : '';
+        document.getElementById('plantName').value = item ? item.name : '';
+        document.getElementById('plantUnit').value = item ? (item.unit || '') : 'Kg';
+        document.getElementById('plantMin').value = item ? item.minStock : 0;
+        document.getElementById('plantCategory').value = item ? (item.category || 'mineral') : 'mineral';
+        plantLab.value = item && item.labSlug ? item.labSlug : '';
+        plantModal.classList.add('show');
+        plantModal.setAttribute('aria-hidden', 'false');
+        document.getElementById('plantName').focus();
+    }
+    function slugifyPlant(name) {
+        return 'custom-' + String(name || 'item').toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '') + '-' + Date.now().toString(36);
+    }
+    document.getElementById('matAddBtn').addEventListener('click', function () { openPlantModal(null); });
+    document.getElementById('plantModalClose').addEventListener('click', closePlantModal);
+    document.getElementById('plantModalCancel').addEventListener('click', closePlantModal);
+    plantModal.addEventListener('click', function (e) { if (e.target === plantModal) closePlantModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePlantModal(); });
+    document.getElementById('plantForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const id = document.getElementById('plantId').value;
+        const next = {
+            id: id || slugifyPlant(document.getElementById('plantName').value),
+            name: document.getElementById('plantName').value.trim(),
+            unit: document.getElementById('plantUnit').value,
+            minStock: Math.max(0, Number(document.getElementById('plantMin').value) || 0),
+            category: document.getElementById('plantCategory').value,
+            labSlug: plantLab.value || null
+        };
+        if (!next.name) return;
+        const idx = inventory.findIndex(function (m) { return m.id === next.id; });
+        if (idx >= 0) inventory[idx] = next;
+        else inventory.push(next);
+        saveInventory(inventory);
+        updateMaterialKpi();
+        renderMaterials();
+        closePlantModal();
+    });
     document.getElementById('matBody').addEventListener('click', function (e) {
-        const row = e.target.closest('tr[data-mat]');
-        if (!row || e.target.closest('a')) return;
-        const slug = row.getAttribute('data-mat');
-        const uses = usedIn[slug] || [];
-        if (!uses.length) return;
-        showSection('formulas');
-        openRecipe(uses[0].slug);
+        const editBtn = e.target.closest('[data-edit]');
+        if (editBtn) {
+            const item = inventory.filter(function (m) { return m.id === editBtn.getAttribute('data-edit'); })[0];
+            if (item) openPlantModal(item);
+            return;
+        }
+        const delBtn = e.target.closest('[data-del]');
+        if (delBtn) {
+            const id = delBtn.getAttribute('data-del');
+            const item = inventory.filter(function (m) { return m.id === id; })[0];
+            if (!item) return;
+            if (!confirm('¿Eliminar «' + displayName(item) + '» del inventario?')) return;
+            inventory = inventory.filter(function (m) { return m.id !== id; });
+            saveInventory(inventory);
+            updateMaterialKpi();
+            renderMaterials();
+        }
     });
     renderMaterials();
 
