@@ -542,10 +542,33 @@
         sidebar.classList.toggle('open');
     });
 
-    function showSection(id) {
+    const SECTION_IDS = ['dashboard', 'messages', 'catalog', 'materials', 'formulas', 'production', 'site'];
+
+    function parseHash() {
+        const raw = (location.hash || '').replace(/^#/, '').trim();
+        if (!raw) return { section: 'dashboard', recipe: null };
+        const slash = raw.indexOf('/');
+        const id = slash >= 0 ? raw.slice(0, slash) : raw;
+        const recipe = slash >= 0 ? decodeURIComponent(raw.slice(slash + 1)) : null;
+        if (SECTION_IDS.indexOf(id) < 0) return { section: 'dashboard', recipe: null };
+        return { section: id, recipe: recipe };
+    }
+
+    function syncPanelHash() {
+        const active = document.querySelector('.section.active');
+        if (!active) return;
+        let hash = '#' + active.id;
+        if (active.id === 'formulas' && currentRecipe) hash += '/' + encodeURIComponent(currentRecipe);
+        if (location.hash !== hash) history.replaceState(null, '', hash);
+    }
+
+    function showSection(id, opts) {
+        opts = opts || {};
+        if (SECTION_IDS.indexOf(id) < 0) id = 'dashboard';
         document.querySelectorAll('.section').forEach(function (el) { el.classList.toggle('active', el.id === id); });
         document.querySelectorAll('.nav a').forEach(function (el) { el.classList.toggle('active', el.getAttribute('data-section') === id); });
         sidebar.classList.remove('open');
+        if (!opts.skipHash) syncPanelHash();
     }
     document.querySelectorAll('.nav a').forEach(function (a) {
         a.addEventListener('click', function () { showSection(a.getAttribute('data-section')); });
@@ -1036,6 +1059,7 @@
             '<button type="button" class="btn primary" id="formulaSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Guardar receta</button>' +
             '</div>' +
             '<div style="margin-top:14px"><a class="link" href="/productos/' + esc(r.product) + '" target="_blank">Abrir ficha pública</a></div>';
+        if (document.getElementById('formulas').classList.contains('active')) syncPanelHash();
     }
     document.getElementById('recipeNav').addEventListener('click', function (e) {
         const btn = e.target.closest('button[data-recipe]');
@@ -1084,8 +1108,25 @@
             openRecipe(currentRecipe, true);
         }
     });
+    window.addEventListener('hashchange', function () {
+        const parsed = parseHash();
+        showSection(parsed.section, { skipHash: true });
+        if (parsed.section === 'formulas') {
+            const slug = parsed.recipe && recipes.some(function (r) { return r.product === parsed.recipe; })
+                ? parsed.recipe
+                : currentRecipe;
+            if (slug) openRecipe(slug, true);
+        }
+    });
     renderRecipeNav();
-    if (currentRecipe) openRecipe(currentRecipe, true);
+    const panelHash = parseHash();
+    showSection(panelHash.section, { skipHash: true });
+    if (panelHash.section === 'formulas') {
+        const slug = panelHash.recipe && recipes.some(function (r) { return r.product === panelHash.recipe; })
+            ? panelHash.recipe
+            : currentRecipe;
+        if (slug) openRecipe(slug, true);
+    }
 
     function fillProdProducts() {
         const sel = document.getElementById('prodProduct');
