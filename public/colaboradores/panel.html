@@ -381,9 +381,7 @@
                     <label>Categoría
                         <select id="plantCategory">
                             <option value="mineral">Minerales</option>
-                            <option value="cement">Cementantes</option>
-                            <option value="lime">Cal</option>
-                            <option value="gypsum">Yeso</option>
+                            <option value="aglutinante">Aglutinantes</option>
                             <option value="polymer">Polímeros</option>
                             <option value="cellulose">Celulosa</option>
                             <option value="fiber">Fibras</option>
@@ -437,15 +435,19 @@
     const PLANT_KEY = 's35_plant_inventory';
     const CAT_LABEL = {
         mineral: 'Minerales',
-        cement: 'Cementantes',
-        lime: 'Cal',
-        gypsum: 'Yeso',
+        aglutinante: 'Aglutinantes',
         polymer: 'Polímeros',
         cellulose: 'Celulosa',
         fiber: 'Fibras',
         chemical: 'Químicos',
         packaging: 'Empaque'
     };
+    const LEGACY_BINDER_CATS = { cement: true, lime: true, gypsum: true };
+    function normalizeCategory(category) {
+        const key = String(category || '').trim();
+        if (LEGACY_BINDER_CATS[key]) return 'aglutinante';
+        return key || 'mineral';
+    }
 
     function normalizeUnit(unit) {
         const key = String(unit || '').trim().toLowerCase();
@@ -475,7 +477,7 @@
             unit: normalizeUnit(m.unit),
             stock: Number(m.stock) || 0,
             minStock: Number(m.minStock) || 0,
-            category: m.category || 'mineral',
+            category: normalizeCategory(m.category),
             labSlug: m.labSlug || null
         };
     }
@@ -489,7 +491,8 @@
             if (raw && Array.isArray(raw.items) && raw.items.length) {
                 persistNormalized = raw.items.some(function (m) {
                     return normalizeName(m.name) !== String(m.name || '').trim().replace(/\s+/g, ' ')
-                        || normalizeUnit(m.unit) !== (m.unit || '');
+                        || normalizeUnit(m.unit) !== (m.unit || '')
+                        || normalizeCategory(m.category) !== (m.category || 'mineral');
                 });
                 return raw.items.map(normalizeItem);
             }
@@ -727,7 +730,7 @@
     });
 
     let matFilter = 'all';
-    const plantCats = ['all', 'mineral', 'cement', 'lime', 'gypsum', 'polymer', 'cellulose', 'fiber', 'chemical', 'packaging'];
+    const plantCats = ['all', 'mineral', 'aglutinante', 'polymer', 'cellulose', 'fiber', 'chemical', 'packaging'];
     const chips = document.getElementById('matChips');
     chips.innerHTML = plantCats.map(function (c) {
         const label = c === 'all' ? 'Todas' : (CAT_LABEL[c] || c);
@@ -789,7 +792,7 @@
         document.getElementById('plantUnit').value = item ? (item.unit || '') : 'Kg';
         document.getElementById('plantStock').value = item ? item.stock : 0;
         document.getElementById('plantMin').value = item ? item.minStock : 0;
-        document.getElementById('plantCategory').value = item ? (item.category || 'mineral') : 'mineral';
+        document.getElementById('plantCategory').value = item ? normalizeCategory(item.category) : 'mineral';
         plantLab.value = item && item.labSlug ? item.labSlug : '';
         plantModal.classList.add('show');
         plantModal.setAttribute('aria-hidden', 'false');
@@ -816,7 +819,7 @@
             unit: normalizeUnit(document.getElementById('plantUnit').value),
             stock: Math.max(0, Number(document.getElementById('plantStock').value) || 0),
             minStock: Math.max(0, Number(document.getElementById('plantMin').value) || 0),
-            category: document.getElementById('plantCategory').value,
+            category: normalizeCategory(document.getElementById('plantCategory').value),
             labSlug: plantLab.value || null
         };
         if (!next.name) return;

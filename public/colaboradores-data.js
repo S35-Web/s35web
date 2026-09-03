@@ -489,7 +489,7 @@ window.S35_PANEL_DATA = {
       "name": "Calidra",
       "unit": "Kg",
       "minStock": 500,
-      "category": "lime",
+      "category": "aglutinante",
       "labSlug": "cal"
     },
     {
@@ -497,7 +497,7 @@ window.S35_PANEL_DATA = {
       "name": "Cemento portland gris",
       "unit": "Kg",
       "minStock": 1000,
-      "category": "cement",
+      "category": "aglutinante",
       "labSlug": "cemento-gris"
     },
     {
@@ -505,7 +505,7 @@ window.S35_PANEL_DATA = {
       "name": "Cemento portland blanco",
       "unit": "Kg",
       "minStock": 250,
-      "category": "cement",
+      "category": "aglutinante",
       "labSlug": "cemento-blanco"
     },
     {
@@ -593,7 +593,7 @@ window.S35_PANEL_DATA = {
       "name": "Mortero",
       "unit": "Kg",
       "minStock": 200,
-      "category": "cement",
+      "category": "aglutinante",
       "labSlug": null
     },
     {
@@ -657,7 +657,7 @@ window.S35_PANEL_DATA = {
       "name": "Yeso maximo",
       "unit": "",
       "minStock": 0,
-      "category": "gypsum",
+      "category": "aglutinante",
       "labSlug": "yeso"
     },
     {
@@ -665,7 +665,7 @@ window.S35_PANEL_DATA = {
       "name": "Yeso sayro",
       "unit": "Kg",
       "minStock": 500,
-      "category": "gypsum",
+      "category": "aglutinante",
       "labSlug": "yeso"
     }
   ],
