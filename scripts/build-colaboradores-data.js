@@ -117,6 +117,68 @@ const inventory = plantMaterials.map(function (m) {
   };
 });
 
+const PREFERRED_PLANT = {
+  'carbonato-de-calcio': 'marmolina-talco-200',
+  'arena-silicea-graduada': 'arena-deshidratada',
+  'arena-de-rio': 'arena-cribada-gruesa',
+  'polimero-redispersable-vae': 'resina-rdp740h',
+  'celulosa-hpmc': 'kimacell',
+  'cal': 'calidra',
+  'yeso': 'yeso-sayro',
+  'marmolina-fina': 'marmolina-fina',
+  'cemento-gris': 'cemento-portland-gris',
+  'cemento-blanco': 'cemento-portland-blanco',
+};
+const EXTRA_PLANT = {
+  'basecoat-plus-gris': [{ plantId: 'fibra-de-polipropileno', role: 'Fibra' }],
+  'basecoat-plus-blanco': [{ plantId: 'fibra-de-polipropileno', role: 'Fibra' }],
+  'styrobond-pro': [{ plantId: 'fibra-de-polipropileno', role: 'Fibra' }],
+};
+
+const plantById = {};
+inventory.forEach(function (m) { plantById[m.id] = m; });
+const plantByLab = {};
+inventory.forEach(function (m) {
+  if (!m.labSlug) return;
+  if (!plantByLab[m.labSlug]) plantByLab[m.labSlug] = [];
+  plantByLab[m.labSlug].push(m.id);
+});
+
+function pickPlant(labSlug) {
+  const ids = plantByLab[labSlug] || [];
+  if (PREFERRED_PLANT[labSlug] && ids.indexOf(PREFERRED_PLANT[labSlug]) !== -1) {
+    return PREFERRED_PLANT[labSlug];
+  }
+  return ids[0] || null;
+}
+
+recipes.forEach(function (r) {
+  const seen = {};
+  r.suggested = [];
+  (r.items || []).forEach(function (it) {
+    if (!it.slug) return;
+    const plantId = pickPlant(it.slug);
+    if (!plantId || seen[plantId]) return;
+    seen[plantId] = true;
+    const mat = plantById[plantId];
+    r.suggested.push({
+      plantId: plantId,
+      unit: (mat && mat.unit) || 'Kg',
+      role: it.role || '',
+    });
+  });
+  (EXTRA_PLANT[r.product] || []).forEach(function (extra) {
+    if (!extra.plantId || seen[extra.plantId] || !plantById[extra.plantId]) return;
+    seen[extra.plantId] = true;
+    const mat = plantById[extra.plantId];
+    r.suggested.push({
+      plantId: extra.plantId,
+      unit: (mat && mat.unit) || 'Kg',
+      role: extra.role || '',
+    });
+  });
+});
+
 const out = 'window.S35_PANEL_DATA = ' + JSON.stringify({
   products: products,
   materials: materials,

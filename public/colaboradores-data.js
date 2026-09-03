@@ -736,6 +736,33 @@ window.S35_PANEL_DATA = {
           "role": "Pigmento",
           "note": ""
         }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-blanco",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
       ]
     },
     {
@@ -804,6 +831,33 @@ window.S35_PANEL_DATA = {
           "role": "Pigmento",
           "note": ""
         }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-blanco",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
       ]
     },
     {
@@ -871,6 +925,33 @@ window.S35_PANEL_DATA = {
           "category": "Aditivos",
           "role": "Antideslizamiento",
           "note": ""
+        }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -956,6 +1037,38 @@ window.S35_PANEL_DATA = {
           "role": "Pigmento",
           "note": ""
         }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-blanco",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
       ]
     },
     {
@@ -1040,6 +1153,33 @@ window.S35_PANEL_DATA = {
           "role": "Nota de mezcla",
           "note": "Tono Dolphin Fin: el gris pulido sale del cemento y la carga, no de un colorante de recubrimiento."
         }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
       ]
     },
     {
@@ -1107,6 +1247,38 @@ window.S35_PANEL_DATA = {
           "category": "",
           "role": "Nota de mezcla",
           "note": "Microfibras de refuerzo: aún no hay ficha de fibra en Laboratorio."
+        }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        },
+        {
+          "plantId": "fibra-de-polipropileno",
+          "unit": "Kg",
+          "role": "Fibra"
         }
       ]
     },
@@ -1184,6 +1356,38 @@ window.S35_PANEL_DATA = {
           "role": "Nota de mezcla",
           "note": "Microfibras de refuerzo: aún no hay ficha de fibra en Laboratorio."
         }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-blanco",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        },
+        {
+          "plantId": "fibra-de-polipropileno",
+          "unit": "Kg",
+          "role": "Fibra"
+        }
       ]
     },
     {
@@ -1252,6 +1456,38 @@ window.S35_PANEL_DATA = {
           "role": "Nota de mezcla",
           "note": "Microfibras para recubrimiento de EPS: ficha de fibra pendiente."
         }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        },
+        {
+          "plantId": "fibra-de-polipropileno",
+          "unit": "Kg",
+          "role": "Fibra"
+        }
       ]
     },
     {
@@ -1303,6 +1539,33 @@ window.S35_PANEL_DATA = {
           "category": "Aditivos",
           "role": "Reología de autonivelado (grado baja viscosidad)",
           "note": ""
+        }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Reología de autonivelado (grado baja viscosidad)"
         }
       ]
     },
@@ -1363,6 +1626,33 @@ window.S35_PANEL_DATA = {
           "category": "Aditivos",
           "role": "Antideslizamiento",
           "note": ""
+        }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -1432,6 +1722,33 @@ window.S35_PANEL_DATA = {
           "role": "Antideslizamiento",
           "note": ""
         }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
       ]
     },
     {
@@ -1492,6 +1809,33 @@ window.S35_PANEL_DATA = {
           "role": "Antideslizamiento",
           "note": ""
         }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
       ]
     },
     {
@@ -1551,6 +1895,33 @@ window.S35_PANEL_DATA = {
           "category": "Aditivos",
           "role": "Antideslizamiento",
           "note": ""
+        }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -1628,6 +1999,33 @@ window.S35_PANEL_DATA = {
           "role": "Antideslizamiento",
           "note": ""
         }
+      ],
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
       ]
     },
     {
@@ -1639,7 +2037,8 @@ window.S35_PANEL_DATA = {
       "water": "",
       "status": "pendiente",
       "note": "Sellador hidrofóbico líquido. Receta de planta (activos, solvente o vehículo) pendiente de cargar.",
-      "items": []
+      "items": [],
+      "suggested": []
     },
     {
       "product": "sellador-premium-pintura",
@@ -1650,7 +2049,8 @@ window.S35_PANEL_DATA = {
       "water": "",
       "status": "pendiente",
       "note": "Sellador líquido para pintura. Receta de planta pendiente de cargar.",
-      "items": []
+      "items": [],
+      "suggested": []
     },
     {
       "product": "adhesivo-darawell",
@@ -1661,7 +2061,8 @@ window.S35_PANEL_DATA = {
       "water": "",
       "status": "pendiente",
       "note": "Adhesivo líquido. Receta de planta pendiente de cargar.",
-      "items": []
+      "items": [],
+      "suggested": []
     },
     {
       "product": "adhesivo-heavy-duty",
@@ -1672,7 +2073,8 @@ window.S35_PANEL_DATA = {
       "water": "",
       "status": "pendiente",
       "note": "Adhesivo líquido de alto desempeño. Receta de planta pendiente de cargar.",
-      "items": []
+      "items": [],
+      "suggested": []
     }
   ],
   "usedIn": {

@@ -2,8 +2,7 @@
 
 // Mapas internos de formulación para el panel Colaboradores.
 // Cada receta lista materias primas del archivo de Laboratorio por función.
-// Las proporciones de planta no se publican aquí: cuando existan dosificaciones
-// de saco, se cargan en `dose` sin tocar las fichas públicas.
+// Las dosis de saco se editan en el panel (localStorage) y no se publican aquí.
 
 function item(slug, role, extra) {
   return Object.assign({ slug: slug, role: role }, extra || {});

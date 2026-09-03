@@ -123,6 +123,21 @@
         .form-grid input, .form-grid select { height: 38px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text); padding: 0 12px; }
         .form-grid select option { color: #111; }
         .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+        .stock-low { color: var(--danger); }
+        .formula-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+        .formula-meta label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
+        .formula-meta input, .formula-meta select, .formula-line input, .formula-line select {
+            height: 36px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text); padding: 0 10px;
+        }
+        .formula-meta select option, .formula-line select option { color: #111; }
+        .formula-line { display: grid; grid-template-columns: 1fr 88px 72px 36px; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .formula-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .prod-preview { background: var(--elev); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; font-size: 13px; margin: 12px 0; }
+        .prod-preview li { margin: 4px 0; }
+        @media (max-width: 980px) {
+            .formula-meta { grid-template-columns: 1fr 1fr; }
+            .formula-line { grid-template-columns: 1fr 1fr 72px 36px; }
+        }
         @media (max-width: 980px) {
             .kpis { grid-template-columns: 1fr 1fr; }
             .grid { grid-template-columns: 1fr; }
@@ -164,6 +179,7 @@
                     <a data-section="catalog"><i class="fa-solid fa-box"></i> Catálogo</a>
                     <a data-section="materials"><i class="fa-solid fa-cubes"></i> Materias primas</a>
                     <a data-section="formulas"><i class="fa-solid fa-flask-vial"></i> Formulaciones</a>
+                    <a data-section="production"><i class="fa-solid fa-industry"></i> Producción</a>
                     <a data-section="site"><i class="fa-solid fa-globe"></i> Sitio</a>
                 </nav>
             </aside>
@@ -193,6 +209,7 @@
                             <div class="shortcuts">
                                 <a class="shortcut" href="/productos" target="_blank">Índice de fichas <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
                                 <a class="shortcut" href="#formulas" id="goFormulas">Formulaciones internas</a>
+                                <a class="shortcut" href="#production" id="goProduction">Registrar producción</a>
                                 <a class="shortcut" href="#materials" id="goMaterials">Inventario de planta</a>
                                 <a class="shortcut" href="/laboratorio/materials" target="_blank">Laboratorio <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
                                 <a class="shortcut" href="/catalogo.html" target="_blank">Catálogo público <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
@@ -237,7 +254,7 @@
                         </div>
                         <div class="table-card">
                             <table>
-                                <thead><tr><th>Código</th><th>Producto</th><th>Familia</th><th>Estado</th><th></th></tr></thead>
+                                <thead><tr><th>Código</th><th>Producto</th><th>Familia</th><th>Existencia</th><th>Estado</th><th></th></tr></thead>
                                 <tbody id="catalogBody"></tbody>
                             </table>
                         </div>
@@ -255,7 +272,7 @@
                         <div class="chips" id="matChips"></div>
                         <div class="table-card">
                             <table class="inventory">
-                                <thead><tr><th>Nombre</th><th>Mínimo aceptable</th><th></th></tr></thead>
+                                <thead><tr><th>Nombre</th><th>Existencia</th><th>Mínimo</th><th></th></tr></thead>
                                 <tbody id="matBody"></tbody>
                             </table>
                         </div>
@@ -264,7 +281,7 @@
 
                 <section id="formulas" class="section">
                     <h1 class="page-title">Formulaciones</h1>
-                    <p class="page-sub">Mapa de materias primas por producto. Las proporciones de saco se cargan cuando exista la receta de planta.</p>
+                    <p class="page-sub">Receta de planta por producto: materias primas y dosis por lote. Al registrar una producción se descuenta inventario.</p>
                     <div class="split">
                         <div class="card">
                             <input id="formulaSearch" class="search" type="search" placeholder="Buscar producto" style="margin-bottom:10px;width:100%">
@@ -272,6 +289,37 @@
                         </div>
                         <div class="card" id="recipeDetail">
                             <div class="empty">Elige un producto para ver su formulación.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="production" class="section">
+                    <h1 class="page-title">Producción</h1>
+                    <p class="page-sub">Registra un lote: se descuentan las materias primas de la receta y se suma producto terminado.</p>
+                    <div class="grid">
+                        <div class="card" style="grid-column: span 7;">
+                            <h3>Registrar lote</h3>
+                            <div class="form-grid" style="margin-bottom:12px">
+                                <label>Producto
+                                    <select id="prodProduct"></select>
+                                </label>
+                                <label>Cantidad de lotes
+                                    <input id="prodQty" type="number" min="1" step="1" value="1">
+                                </label>
+                            </div>
+                            <div id="prodPreview" class="prod-preview muted">Elige un producto con receta para ver el consumo.</div>
+                            <div class="formula-actions">
+                                <button type="button" class="btn primary" id="prodRegisterBtn"><i class="fa-solid fa-industry"></i> Registrar producción</button>
+                            </div>
+                        </div>
+                        <div class="card" style="grid-column: span 5;">
+                            <h3>Producto terminado</h3>
+                            <div class="table-card">
+                                <table class="inventory">
+                                    <thead><tr><th>Producto</th><th>Existencia</th><th>Mínimo</th></tr></thead>
+                                    <tbody id="finishedBody"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -323,6 +371,9 @@
                             <option value="L">L</option>
                             <option value="Pza">Pza</option>
                         </select>
+                    </label>
+                    <label>Existencia
+                        <input id="plantStock" type="number" min="0" step="any" required value="0">
                     </label>
                     <label>Mínimo aceptable
                         <input id="plantMin" type="number" min="0" step="1" required value="0">
@@ -422,6 +473,7 @@
             id: m.id,
             name: normalizeName(m.name),
             unit: normalizeUnit(m.unit),
+            stock: Number(m.stock) || 0,
             minStock: Number(m.minStock) || 0,
             category: m.category || 'mineral',
             labSlug: m.labSlug || null
@@ -450,6 +502,31 @@
     let inventory = loadInventory();
     if (persistNormalized) saveInventory(inventory);
 
+    const FINISHED_KEY = 's35_finished_stock';
+    function loadFinished() {
+        const seed = {};
+        (data.products || []).forEach(function (p) {
+            seed[p.slug] = { slug: p.slug, stock: 0, minStock: 0, unit: 'Pza' };
+        });
+        try {
+            const raw = JSON.parse(localStorage.getItem(FINISHED_KEY) || 'null');
+            const items = raw && raw.items ? raw.items : raw;
+            if (items && typeof items === 'object') {
+                Object.keys(items).forEach(function (slug) {
+                    if (!seed[slug]) return;
+                    seed[slug].stock = Number(items[slug].stock) || 0;
+                    seed[slug].minStock = Number(items[slug].minStock) || 0;
+                    if (items[slug].unit) seed[slug].unit = items[slug].unit;
+                });
+            }
+        } catch (_) {}
+        return seed;
+    }
+    function saveFinished() {
+        localStorage.setItem(FINISHED_KEY, JSON.stringify({ items: finishedStock, updatedAt: new Date().toISOString() }));
+    }
+    let finishedStock = loadFinished();
+
     function updateMaterialKpi() {
         document.getElementById('kpiMaterials').textContent = inventory.length;
     }
@@ -474,6 +551,8 @@
     if (goFormulas) goFormulas.addEventListener('click', function (e) { e.preventDefault(); showSection('formulas'); });
     const goMaterials = document.getElementById('goMaterials');
     if (goMaterials) goMaterials.addEventListener('click', function (e) { e.preventDefault(); showSection('materials'); });
+    const goProduction = document.getElementById('goProduction');
+    if (goProduction) goProduction.addEventListener('click', function (e) { e.preventDefault(); showSection('production'); });
 
     const themeBtn = document.getElementById('themeBtn');
     function applyTheme(theme) {
@@ -635,8 +714,9 @@
     function renderCatalog(list) {
         const tbody = document.getElementById('catalogBody');
         tbody.innerHTML = list.map(function (p) {
-            return '<tr><td class="muted">' + esc(p.code) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.family) + '</td><td>' + statusBadge(p.status) + '</td><td><a class="link" href="/productos/' + esc(p.slug) + '" target="_blank">Abrir</a></td></tr>';
-        }).join('') || '<tr><td colspan="5" class="empty">Sin resultados</td></tr>';
+            const fin = finishedStock[p.slug] || { stock: 0 };
+            return '<tr><td class="muted">' + esc(p.code) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.family) + '</td><td class="num">' + esc(String(fin.stock)) + '</td><td>' + statusBadge(p.status) + '</td><td><a class="link" href="/productos/' + esc(p.slug) + '" target="_blank">Abrir</a></td></tr>';
+        }).join('') || '<tr><td colspan="6" class="empty">Sin resultados</td></tr>';
     }
     renderCatalog(data.products);
     document.getElementById('catalogSearch').addEventListener('input', function (e) {
@@ -673,14 +753,16 @@
             const lab = m.labSlug
                 ? '<div class="muted"><a class="link" href="/laboratorio/materials/' + esc(m.labSlug) + '" target="_blank">Ficha</a></div>'
                 : '';
+            const low = m.minStock > 0 && m.stock < m.minStock;
             return '<tr data-plant="' + esc(m.id) + '">' +
                 '<td>' + esc(displayName(m)) + lab + '</td>' +
+                '<td class="num' + (low ? ' stock-low' : '') + '">' + esc(String(m.stock)) + '</td>' +
                 '<td class="num">' + esc(String(m.minStock)) + '</td>' +
                 '<td><div class="row-actions">' +
                 '<button type="button" class="icon-action" data-edit="' + esc(m.id) + '" title="Editar" aria-label="Editar"><i class="fa-solid fa-pen-to-square"></i></button>' +
                 '<button type="button" class="icon-action danger" data-del="' + esc(m.id) + '" title="Eliminar" aria-label="Eliminar"><i class="fa-solid fa-trash-can"></i></button>' +
                 '</div></td></tr>';
-        }).join('') || '<tr><td colspan="3" class="empty">Sin resultados</td></tr>';
+        }).join('') || '<tr><td colspan="4" class="empty">Sin resultados</td></tr>';
     }
     chips.addEventListener('click', function (e) {
         const btn = e.target.closest('.chip');
@@ -705,6 +787,7 @@
         document.getElementById('plantId').value = item ? item.id : '';
         document.getElementById('plantName').value = item ? item.name : '';
         document.getElementById('plantUnit').value = item ? (item.unit || '') : 'Kg';
+        document.getElementById('plantStock').value = item ? item.stock : 0;
         document.getElementById('plantMin').value = item ? item.minStock : 0;
         document.getElementById('plantCategory').value = item ? (item.category || 'mineral') : 'mineral';
         plantLab.value = item && item.labSlug ? item.labSlug : '';
@@ -731,6 +814,7 @@
             id: id || slugifyPlant(document.getElementById('plantName').value),
             name: normalizeName(document.getElementById('plantName').value),
             unit: normalizeUnit(document.getElementById('plantUnit').value),
+            stock: Math.max(0, Number(document.getElementById('plantStock').value) || 0),
             minStock: Math.max(0, Number(document.getElementById('plantMin').value) || 0),
             category: document.getElementById('plantCategory').value,
             labSlug: plantLab.value || null
@@ -766,61 +850,335 @@
     renderMaterials();
 
     const recipes = data.recipes || [];
+    const FORMULA_KEY = 's35_plant_formulas';
+    function parseFirstNumber(text) {
+        const m = String(text || '').match(/(\d+(?:[.,]\d+)?)/);
+        return m ? Number(m[1].replace(',', '.')) : 0;
+    }
+    function plantById(id) {
+        return inventory.filter(function (m) { return m.id === id; })[0] || null;
+    }
+    function packagingId(recipe) {
+        if (recipe.kind === 'liquido') return 'cubeta-19l';
+        if (String(recipe.product || '').indexOf('waxtard') === 0) return 'saco-rafia-waxtard';
+        return 'saco-rafia-general';
+    }
+    function seedFormula(recipe) {
+        const liquid = recipe.kind === 'liquido';
+        const sack = String(recipe.water || '').match(/saco\s+(\d+)/i);
+        const f = {
+            product: recipe.product,
+            batchSize: liquid ? 19 : (sack ? Number(sack[1]) : 25),
+            batchUnit: liquid ? 'L' : 'Kg',
+            batchLabel: liquid ? 'cubeta' : 'saco',
+            water: parseFirstNumber(recipe.water),
+            items: []
+        };
+        const seen = {};
+        (recipe.suggested || []).forEach(function (s) {
+            if (!s.plantId || seen[s.plantId] || !plantById(s.plantId)) return;
+            seen[s.plantId] = true;
+            const mat = plantById(s.plantId);
+            f.items.push({
+                plantId: s.plantId,
+                amount: 0,
+                unit: (mat && mat.unit) || s.unit || 'Kg',
+                role: s.role || ''
+            });
+        });
+        const pack = packagingId(recipe);
+        if (pack && !seen[pack] && plantById(pack)) {
+            const mat = plantById(pack);
+            f.items.push({ plantId: pack, amount: 1, unit: (mat && mat.unit) || 'Pza', role: 'Empaque' });
+        }
+        return f;
+    }
+    function loadFormulas() {
+        const map = {};
+        recipes.forEach(function (r) { map[r.product] = seedFormula(r); });
+        try {
+            const raw = JSON.parse(localStorage.getItem(FORMULA_KEY) || 'null');
+            const items = raw && raw.items ? raw.items : raw;
+            if (items && typeof items === 'object') {
+                Object.keys(items).forEach(function (slug) {
+                    if (!map[slug] || !items[slug]) return;
+                    const saved = items[slug];
+                    map[slug].batchSize = Number(saved.batchSize) || map[slug].batchSize;
+                    map[slug].batchUnit = normalizeUnit(saved.batchUnit || map[slug].batchUnit) || map[slug].batchUnit;
+                    map[slug].batchLabel = saved.batchLabel || map[slug].batchLabel;
+                    map[slug].water = Number(saved.water) || 0;
+                    if (Array.isArray(saved.items)) {
+                        map[slug].items = saved.items.map(function (it) {
+                            const mat = plantById(it.plantId);
+                            return {
+                                plantId: it.plantId,
+                                amount: Number(it.amount) || 0,
+                                unit: normalizeUnit(it.unit || (mat && mat.unit) || 'Kg'),
+                                role: it.role || ''
+                            };
+                        }).filter(function (it) { return it.plantId; });
+                    }
+                });
+            }
+        } catch (_) {}
+        return map;
+    }
+    function saveFormulas() {
+        localStorage.setItem(FORMULA_KEY, JSON.stringify({ items: formulas, updatedAt: new Date().toISOString() }));
+    }
+    let formulas = loadFormulas();
+    let formulaDirty = false;
     let currentRecipe = recipes[0] ? recipes[0].product : '';
+
+    function formulaComplete(f) {
+        return !!(f && f.items && f.items.length && f.items.every(function (it) { return Number(it.amount) > 0; }));
+    }
+    function updateRecipeKpi() {
+        const ready = recipes.filter(function (r) { return formulaComplete(formulas[r.product]); }).length;
+        document.getElementById('kpiRecipes').textContent = ready + '/' + recipes.length;
+    }
+    updateRecipeKpi();
+
     function filteredRecipes() {
         const q = (document.getElementById('formulaSearch').value || '').toLowerCase();
         return recipes.filter(function (r) {
             return !q || [r.name, r.code, r.family].some(function (v) { return String(v || '').toLowerCase().includes(q); });
         });
     }
-    function recipeStatus(status) {
-        if (status === 'mapa-funcional') return '<span class="badge b-primary">Mapa funcional</span>';
-        if (status === 'pendiente') return '<span class="badge b-warning">Receta pendiente</span>';
-        return '<span class="badge b-success">' + esc(status) + '</span>';
+    function recipeStatus(f) {
+        if (formulaComplete(f)) return '<span class="badge b-success">Receta lista</span>';
+        if (f && f.items && f.items.length) return '<span class="badge b-warning">Falta dosis</span>';
+        return '<span class="badge b-primary">Sin receta</span>';
     }
     function renderRecipeNav() {
         const nav = document.getElementById('recipeNav');
         const list = filteredRecipes();
         nav.innerHTML = list.map(function (r) {
+            const f = formulas[r.product];
+            const n = f && f.items ? f.items.length : 0;
             return '<button type="button" data-recipe="' + esc(r.product) + '" class="' + (r.product === currentRecipe ? 'active' : '') + '">' +
-                '<div>' + esc(r.name) + '</div><div class="muted">' + esc(r.code) + '</div></button>';
+                '<div>' + esc(r.name) + '</div><div class="muted">' + esc(r.code) + ' · ' + n + ' materias</div></button>';
         }).join('') || '<div class="empty">Sin resultados</div>';
     }
-    function openRecipe(slug) {
+    function unitOptions(selected) {
+        return ['Kg', 'L', 'Pza'].map(function (u) {
+            return '<option value="' + u + '"' + (u === selected ? ' selected' : '') + '>' + u + '</option>';
+        }).join('');
+    }
+    function plantOptions(selected) {
+        return inventory.map(function (m) {
+            return '<option value="' + esc(m.id) + '"' + (m.id === selected ? ' selected' : '') + '>' + esc(displayName(m)) + '</option>';
+        }).join('');
+    }
+    function readFormulaFromDom() {
+        const f = formulas[currentRecipe];
+        if (!f) return;
+        const detail = document.getElementById('recipeDetail');
+        const batchSize = detail.querySelector('[data-field="batchSize"]');
+        const batchUnit = detail.querySelector('[data-field="batchUnit"]');
+        const batchLabel = detail.querySelector('[data-field="batchLabel"]');
+        const water = detail.querySelector('[data-field="water"]');
+        if (batchSize) f.batchSize = Math.max(0, Number(batchSize.value) || 0);
+        if (batchUnit) f.batchUnit = normalizeUnit(batchUnit.value) || 'Kg';
+        if (batchLabel) f.batchLabel = String(batchLabel.value || '').trim() || 'saco';
+        if (water) f.water = Math.max(0, Number(water.value) || 0);
+        const rows = detail.querySelectorAll('[data-line]');
+        f.items = [];
+        rows.forEach(function (row) {
+            f.items.push({
+                plantId: row.querySelector('[data-field="plantId"]').value,
+                amount: Math.max(0, Number(row.querySelector('[data-field="amount"]').value) || 0),
+                unit: normalizeUnit(row.querySelector('[data-field="unit"]').value) || 'Kg',
+                role: ''
+            });
+        });
+        formulaDirty = true;
+    }
+    function openRecipe(slug, force) {
+        if (!force && formulaDirty && slug !== currentRecipe) {
+            if (!confirm('Hay cambios sin guardar. ¿Descartarlos?')) return;
+            formulas = loadFormulas();
+            formulaDirty = false;
+        }
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         if (!r) return;
         currentRecipe = slug;
+        if (!formulas[slug]) formulas[slug] = seedFormula(r);
+        const f = formulas[slug];
         renderRecipeNav();
-        const detail = document.getElementById('recipeDetail');
-        const items = (r.items || []).map(function (it) {
-            if (!it.slug) {
-                return '<div class="recipe-item"><div><div>' + esc(it.note || it.role) + '</div><div class="muted">' + esc(it.role) + '</div></div></div>';
-            }
-            return '<div class="recipe-item">' +
-                '<div><div>' + esc(it.name) + '</div><div class="muted">' + esc(it.code) + ' · ' + esc(it.category) + '</div></div>' +
-                '<div>' + esc(it.role) + (it.note ? '<div class="muted">' + esc(it.note) + '</div>' : '') +
-                ' · <a class="link" href="/laboratorio/materials/' + esc(it.slug) + '" target="_blank">Ficha</a></div>' +
+        const lines = (f.items || []).map(function (it, idx) {
+            return '<div class="formula-line" data-line="' + idx + '">' +
+                '<select data-field="plantId">' + plantOptions(it.plantId) + '</select>' +
+                '<input data-field="amount" type="number" min="0" step="any" value="' + esc(String(it.amount)) + '">' +
+                '<select data-field="unit">' + unitOptions(it.unit || 'Kg') + '</select>' +
+                '<button type="button" class="icon-action danger" data-remove-line="' + idx + '" title="Quitar" aria-label="Quitar"><i class="fa-solid fa-trash-can"></i></button>' +
                 '</div>';
-        }).join('') || '<div class="empty">Todavía no hay materias primas cargadas en esta receta.</div>';
-        detail.innerHTML =
+        }).join('') || '<div class="empty">Agrega materias primas a esta receta.</div>';
+        document.getElementById('recipeDetail').innerHTML =
             '<div class="recipe-head"><div class="recipe-meta">' +
             '<h3 style="margin:0">' + esc(r.name) + '</h3>' +
             '<div class="muted">' + esc(r.code) + ' · ' + esc(r.family) + '</div></div>' +
-            recipeStatus(r.status) + '</div>' +
+            recipeStatus(f) + '</div>' +
             (r.note ? '<div class="note-box">' + esc(r.note) + '</div>' : '') +
-            (r.water ? '<div class="muted" style="margin-bottom:10px">Agua de amasado: ' + esc(r.water) + '</div>' : '') +
-            '<div class="recipe-list">' + items + '</div>' +
+            '<div class="formula-meta">' +
+            '<label>Tamaño de lote<input data-field="batchSize" type="number" min="0" step="any" value="' + esc(String(f.batchSize)) + '"></label>' +
+            '<label>Unidad del lote<select data-field="batchUnit">' + unitOptions(f.batchUnit) + '</select></label>' +
+            '<label>Lote (saco, cubeta)<input data-field="batchLabel" type="text" value="' + esc(f.batchLabel) + '"></label>' +
+            '<label>Agua (L)<input data-field="water" type="number" min="0" step="any" value="' + esc(String(f.water)) + '"></label>' +
+            '</div>' +
+            '<div class="muted" style="margin-bottom:8px">Dosis por un ' + esc(f.batchLabel) + '</div>' +
+            '<div id="formulaLines">' + lines + '</div>' +
+            '<div class="formula-actions">' +
+            '<button type="button" class="btn" id="formulaAddBtn"><i class="fa-solid fa-plus"></i> Agregar materia</button>' +
+            '<button type="button" class="btn primary" id="formulaSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Guardar receta</button>' +
+            '</div>' +
             '<div style="margin-top:14px"><a class="link" href="/productos/' + esc(r.product) + '" target="_blank">Abrir ficha pública</a></div>';
     }
     document.getElementById('recipeNav').addEventListener('click', function (e) {
         const btn = e.target.closest('button[data-recipe]');
         if (btn) openRecipe(btn.getAttribute('data-recipe'));
     });
-    document.getElementById('formulaSearch').addEventListener('input', function () {
-        renderRecipeNav();
+    document.getElementById('formulaSearch').addEventListener('input', renderRecipeNav);
+    document.getElementById('recipeDetail').addEventListener('input', function (e) {
+        if (!e.target.closest('[data-field]')) return;
+        readFormulaFromDom();
+    });
+    document.getElementById('recipeDetail').addEventListener('change', function (e) {
+        if (e.target.getAttribute('data-field') !== 'plantId') return;
+        const row = e.target.closest('[data-line]');
+        const mat = plantById(e.target.value);
+        if (row && mat && mat.unit) row.querySelector('[data-field="unit"]').value = mat.unit;
+        readFormulaFromDom();
+    });
+    document.getElementById('recipeDetail').addEventListener('click', function (e) {
+        if (e.target.closest('#formulaAddBtn')) {
+            readFormulaFromDom();
+            const f = formulas[currentRecipe];
+            const used = {};
+            (f.items || []).forEach(function (it) { used[it.plantId] = true; });
+            const next = inventory.filter(function (m) { return !used[m.id]; })[0] || inventory[0];
+            if (!next) return;
+            f.items.push({ plantId: next.id, amount: 0, unit: next.unit || 'Kg', role: '' });
+            formulaDirty = true;
+            openRecipe(currentRecipe, true);
+            return;
+        }
+        if (e.target.closest('#formulaSaveBtn')) {
+            readFormulaFromDom();
+            saveFormulas();
+            formulaDirty = false;
+            updateRecipeKpi();
+            openRecipe(currentRecipe, true);
+            fillProdProducts();
+            return;
+        }
+        const rm = e.target.closest('[data-remove-line]');
+        if (rm) {
+            readFormulaFromDom();
+            const idx = Number(rm.getAttribute('data-remove-line'));
+            formulas[currentRecipe].items.splice(idx, 1);
+            formulaDirty = true;
+            openRecipe(currentRecipe, true);
+        }
     });
     renderRecipeNav();
-    if (currentRecipe) openRecipe(currentRecipe);
+    if (currentRecipe) openRecipe(currentRecipe, true);
+
+    function fillProdProducts() {
+        const sel = document.getElementById('prodProduct');
+        sel.innerHTML = recipes.map(function (r) {
+            const ready = formulaComplete(formulas[r.product]);
+            return '<option value="' + esc(r.product) + '">' + esc(r.name) + (ready ? '' : ' — falta dosis') + '</option>';
+        }).join('');
+        updateProdPreview();
+    }
+    function productionNeeds(slug, qty) {
+        const f = formulas[slug];
+        if (!f) return [];
+        return (f.items || []).map(function (it) {
+            const mat = plantById(it.plantId);
+            return {
+                plantId: it.plantId,
+                name: mat ? displayName(mat) : it.plantId,
+                unit: it.unit || (mat && mat.unit) || '',
+                need: (Number(it.amount) || 0) * qty,
+                have: mat ? Number(mat.stock) || 0 : 0,
+                missing: !mat
+            };
+        });
+    }
+    function updateProdPreview() {
+        const slug = document.getElementById('prodProduct').value;
+        const qty = Math.max(1, Number(document.getElementById('prodQty').value) || 1);
+        const box = document.getElementById('prodPreview');
+        const r = recipes.filter(function (x) { return x.product === slug; })[0];
+        const f = formulas[slug];
+        if (!r || !f) {
+            box.innerHTML = 'Elige un producto con receta para ver el consumo.';
+            return;
+        }
+        if (!formulaComplete(f)) {
+            box.innerHTML = 'Esta receta todavía no tiene todas las dosis. Complétala en Formulaciones.';
+            return;
+        }
+        const lines = productionNeeds(slug, qty);
+        const shortages = lines.filter(function (ln) { return ln.missing || ln.have < ln.need; });
+        box.innerHTML = '<strong>' + esc(qty + ' ' + (qty === 1 ? f.batchLabel : f.batchLabel + 's') + ' de ' + r.name) + '</strong>' +
+            '<ul>' + lines.map(function (ln) {
+                const ok = !ln.missing && ln.have >= ln.need;
+                return '<li class="' + (ok ? '' : 'stock-low') + '">' + esc(ln.name) + ': −' + esc(String(ln.need)) +
+                    (ln.unit ? ' ' + esc(ln.unit) : '') + ' <span class="muted">(hay ' + esc(String(ln.have)) + ')</span></li>';
+            }).join('') + '</ul>' +
+            (shortages.length ? '<div class="stock-low">Falta existencia en ' + shortages.length + ' materia(s). Carga inventario antes de registrar.</div>' : '<div>Se sumará ' + esc(String(qty)) + ' al producto terminado.</div>');
+    }
+    function renderFinished() {
+        const tbody = document.getElementById('finishedBody');
+        tbody.innerHTML = recipes.map(function (r) {
+            const fin = finishedStock[r.product] || { stock: 0, minStock: 0 };
+            const low = fin.minStock > 0 && fin.stock < fin.minStock;
+            return '<tr><td>' + esc(r.name) + '<div class="muted">' + esc(r.code) + '</div></td>' +
+                '<td class="num' + (low ? ' stock-low' : '') + '">' + esc(String(fin.stock)) + '</td>' +
+                '<td class="num">' + esc(String(fin.minStock)) + '</td></tr>';
+        }).join('') || '<tr><td colspan="3" class="empty">Sin productos</td></tr>';
+    }
+    function refreshStockViews() {
+        renderMaterials();
+        renderCatalog(data.products);
+        renderFinished();
+        updateProdPreview();
+    }
+    document.getElementById('prodProduct').addEventListener('change', updateProdPreview);
+    document.getElementById('prodQty').addEventListener('input', updateProdPreview);
+    document.getElementById('prodRegisterBtn').addEventListener('click', function () {
+        const slug = document.getElementById('prodProduct').value;
+        const qty = Math.max(1, Math.floor(Number(document.getElementById('prodQty').value) || 1));
+        const r = recipes.filter(function (x) { return x.product === slug; })[0];
+        const f = formulas[slug];
+        if (!r || !formulaComplete(f)) {
+            alert('Completa la receta en Formulaciones antes de producir.');
+            return;
+        }
+        const lines = productionNeeds(slug, qty);
+        const shortages = lines.filter(function (ln) { return ln.missing || ln.have < ln.need; });
+        if (shortages.length) {
+            alert('No hay existencia suficiente:\n' + shortages.map(function (ln) {
+                return '• ' + ln.name + ': necesita ' + ln.need + ', hay ' + ln.have;
+            }).join('\n'));
+            return;
+        }
+        if (!confirm('¿Registrar ' + qty + ' ' + (qty === 1 ? f.batchLabel : f.batchLabel + 's') + ' de ' + r.name + '?')) return;
+        lines.forEach(function (ln) {
+            const mat = plantById(ln.plantId);
+            if (mat) mat.stock = Math.max(0, (Number(mat.stock) || 0) - ln.need);
+        });
+        saveInventory(inventory);
+        if (!finishedStock[slug]) finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
+        finishedStock[slug].stock = (Number(finishedStock[slug].stock) || 0) + qty;
+        saveFinished();
+        refreshStockViews();
+    });
+    fillProdProducts();
+    renderFinished();
 
     loadMessages();
     </script>
