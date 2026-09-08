@@ -52,7 +52,7 @@ function familyAccentMap() {
   const map = {};
   catalog.byFamily().forEach(function (g) {
     const first = g.items[0];
-    if (first && first.accent) map[g.family.id] = first.accent;
+    map[g.family.id] = g.family.accent || (first && first.accent) || '#2f7d32';
   });
   return map;
 }
@@ -464,8 +464,9 @@ function indexPage() {
     'propiedades con su método de ensayo, usos, modo de empleo y condiciones de almacenamiento. ' +
     'Las fichas marcadas como borrador están redactadas internamente y siguen en revisión.</p></div></section>';
 
+  const accents = familyAccentMap();
   groups.forEach(function (g) {
-    const familyAccent = (g.items[0] && g.items[0].accent) || '#2f7d32';
+    const familyAccent = accents[g.family.id] || '#2f7d32';
     body += '<section class="pr-row" id="' + esc(g.family.id) + '" style="--family-accent:' + esc(familyAccent) + '">' +
       '<div class="pr-rail">' + esc(g.family.name) + '</div>' +
       '<div class="pr-body pr-family">' +

@@ -27,6 +27,7 @@ const FAMILIES = [
     id: 'adhesivos-pro',
     name: 'Adhesivos PRO+',
     note: 'Adhesivos en seco de la línea Pegaxpress para piezas de acabado.',
+    accent: '#7b1fa2',
   },
   {
     id: 'liquidos',
