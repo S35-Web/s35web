@@ -12,7 +12,7 @@ module.exports = liquidVerified({
   name: 'HEAVY DUTY',
   variant: 'Adhesivo S-35',
   line: 'Adhesivo acrílico multiuso',
-  accent: '#4e342e',
+  accent: '#e64a19',
   packaging: 'Cubeta 1 L',
   pack: '/Assets/productos_thumbs/adhesivo-heavy-duty.jpg',
   packAlt: 'Envase de 1 L de Adhesivo Heavy Duty S-35',

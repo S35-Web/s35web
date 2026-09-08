@@ -12,7 +12,7 @@ module.exports = liquidVerified({
   name: 'NANOTECH',
   variant: 'Sellador hidrofóbico S-35',
   line: 'Sellador hidrofóbico transparente',
-  accent: '#1565c0',
+  accent: '#8bb432',
   packaging: 'Cubeta 1 L',
   pack: '/Assets/productos_thumbs/nanotech-hidrofobico.jpg',
   packAlt: 'Envase de 1 L de Nanotech Sellador hidrofóbico S-35',

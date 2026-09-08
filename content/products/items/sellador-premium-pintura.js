@@ -12,7 +12,7 @@ module.exports = liquidVerified({
   name: 'SELLADOR PREMIUM',
   variant: 'Adhesivo S-35',
   line: 'Adhesivo sellador acrílico',
-  accent: '#f9a825',
+  accent: '#1e5ab2',
   packaging: 'Cubeta 1 L',
   pack: '/Assets/productos_thumbs/sellador-premium-pintura.jpg',
   packAlt: 'Envase de 1 L de Sellador Premium S-35',

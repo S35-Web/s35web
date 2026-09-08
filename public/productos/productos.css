@@ -278,6 +278,10 @@
   width: 242px;
 }
 
+.pr-hero-pack img {
+  filter: drop-shadow(0 12px 22px rgba(20, 20, 20, 0.1));
+}
+
 .pr-pack-end {
   display: flex;
   justify-content: space-between;

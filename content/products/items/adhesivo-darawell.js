@@ -12,7 +12,7 @@ module.exports = liquidVerified({
   name: 'DARAWELL',
   variant: 'Adhesivo S-35',
   line: 'Adhesivo acrílico multiuso',
-  accent: '#8d6e63',
+  accent: '#c41626',
   packaging: 'Cubeta 1 L',
   rev: '02',
   pack: '/Assets/productos_thumbs/adhesivo-darawell.jpg',
