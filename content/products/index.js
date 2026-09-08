@@ -12,7 +12,9 @@ const products = fs
   .reduce(function (acc, f) {
     const mod = require(path.join(ITEMS_DIR, f));
     return acc.concat(Array.isArray(mod) ? mod : [mod]);
-  }, []);
+  }, [])
+  // Borradores con otro esquema (sin slug) no entran al catálogo ni al build.
+  .filter(function (p) { return p && p.slug; });
 
 function bySlug(slug) {
   return products.filter(function (p) { return p.slug === slug; })[0] || null;
