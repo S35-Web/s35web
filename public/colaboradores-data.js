@@ -4,57 +4,29 @@ window.S35_PANEL_DATA = {
       "slug": "porcelanico-universal",
       "name": "Pegaxpress porcelánico universal",
       "code": "FT-AD-001",
-      "family": "Adhesivos PRO+",
+      "family": "Pegaxpress: Adhesivos",
       "status": "verified"
     },
     {
       "slug": "ceramico",
       "name": "Pegaxpress cerámico",
       "code": "FT-AD-002",
-      "family": "Adhesivos PRO+",
+      "family": "Pegaxpress: Adhesivos",
       "status": "verified"
     },
     {
       "slug": "ultraforce",
       "name": "Pegaxpress ultraforce",
       "code": "FT-AD-003",
-      "family": "Adhesivos PRO+",
+      "family": "Pegaxpress: Adhesivos",
       "status": "verified"
     },
     {
       "slug": "pegaxpress-psp",
       "name": "Pegaxpress piso sobre piso",
       "code": "FT-AD-004",
-      "family": "Adhesivos PRO+",
+      "family": "Pegaxpress: Adhesivos",
       "status": "verified"
-    },
-    {
-      "slug": "nanotech-hidrofobico",
-      "name": "Nanotech sellador hidrofóbico",
-      "code": "FT-LQ-001",
-      "family": "Líquidos",
-      "status": "draft"
-    },
-    {
-      "slug": "sellador-premium-pintura",
-      "name": "Sellador premium para pintura",
-      "code": "FT-LQ-002",
-      "family": "Líquidos",
-      "status": "draft"
-    },
-    {
-      "slug": "adhesivo-darawell",
-      "name": "Darawell adhesivo",
-      "code": "FT-LQ-003",
-      "family": "Líquidos",
-      "status": "draft"
-    },
-    {
-      "slug": "adhesivo-heavy-duty",
-      "name": "Heavy duty adhesivo",
-      "code": "FT-LQ-004",
-      "family": "Líquidos",
-      "status": "draft"
     },
     {
       "slug": "cemento-plastico-concreto",
@@ -79,9 +51,9 @@ window.S35_PANEL_DATA = {
     },
     {
       "slug": "pegaxpress-block",
-      "name": "Pegaxpress block pro+",
+      "name": "Pegaxpress block",
       "code": "FT-PP-004",
-      "family": "Pro+ Systems",
+      "family": "Pegaxpress: Adhesivos",
       "status": "draft"
     },
     {
@@ -92,10 +64,24 @@ window.S35_PANEL_DATA = {
       "status": "verified"
     },
     {
+      "slug": "adhesivo-darawell",
+      "name": "Darawell adhesivo s-35",
+      "code": "FT-PR-002",
+      "family": "Líquidos",
+      "status": "verified"
+    },
+    {
       "slug": "waxtard-blanco-absoluto",
       "name": "Waxtard blanco absoluto",
       "code": "FT-PR-002",
       "family": "Estucos premium",
+      "status": "verified"
+    },
+    {
+      "slug": "sellador-premium-pintura",
+      "name": "Sellador premium adhesivo s-35",
+      "code": "FT-PR-003",
+      "family": "Líquidos",
       "status": "verified"
     },
     {
@@ -106,10 +92,24 @@ window.S35_PANEL_DATA = {
       "status": "verified"
     },
     {
+      "slug": "adhesivo-heavy-duty",
+      "name": "Heavy duty adhesivo s-35",
+      "code": "FT-PR-004",
+      "family": "Líquidos",
+      "status": "verified"
+    },
+    {
       "slug": "waxtard-extra-anclaje",
       "name": "Waxtard extra anclaje",
       "code": "FT-PR-004",
       "family": "Estucos premium",
+      "status": "verified"
+    },
+    {
+      "slug": "nanotech-hidrofobico",
+      "name": "Nanotech sellador hidrofóbico s-35",
+      "code": "FT-PR-005",
+      "family": "Líquidos",
       "status": "verified"
     },
     {
@@ -1571,9 +1571,9 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "pegaxpress-block",
-      "name": "Pegaxpress block pro+",
+      "name": "Pegaxpress block",
       "code": "FT-PP-004",
-      "family": "Pro+ Systems",
+      "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
       "water": "Solo agua",
       "status": "mapa-funcional",
@@ -1660,7 +1660,7 @@ window.S35_PANEL_DATA = {
       "product": "ceramico",
       "name": "Pegaxpress cerámico",
       "code": "FT-AD-002",
-      "family": "Adhesivos PRO+",
+      "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
       "water": "Solo agua",
       "status": "mapa-funcional",
@@ -1755,7 +1755,7 @@ window.S35_PANEL_DATA = {
       "product": "porcelanico-universal",
       "name": "Pegaxpress porcelánico universal",
       "code": "FT-AD-001",
-      "family": "Adhesivos PRO+",
+      "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
       "water": "Solo agua",
       "status": "mapa-funcional",
@@ -1842,7 +1842,7 @@ window.S35_PANEL_DATA = {
       "product": "pegaxpress-psp",
       "name": "Pegaxpress piso sobre piso",
       "code": "FT-AD-004",
-      "family": "Adhesivos PRO+",
+      "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
       "water": "Solo agua",
       "status": "mapa-funcional",
@@ -1929,7 +1929,7 @@ window.S35_PANEL_DATA = {
       "product": "ultraforce",
       "name": "Pegaxpress ultraforce",
       "code": "FT-AD-003",
-      "family": "Adhesivos PRO+",
+      "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
       "water": "Solo agua",
       "status": "mapa-funcional",
@@ -2030,8 +2030,8 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "nanotech-hidrofobico",
-      "name": "Nanotech sellador hidrofóbico",
-      "code": "FT-LQ-001",
+      "name": "Nanotech sellador hidrofóbico s-35",
+      "code": "FT-PR-005",
       "family": "Líquidos",
       "kind": "liquido",
       "water": "",
@@ -2042,8 +2042,8 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "sellador-premium-pintura",
-      "name": "Sellador premium para pintura",
-      "code": "FT-LQ-002",
+      "name": "Sellador premium adhesivo s-35",
+      "code": "FT-PR-003",
       "family": "Líquidos",
       "kind": "liquido",
       "water": "",
@@ -2054,8 +2054,8 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "adhesivo-darawell",
-      "name": "Darawell adhesivo",
-      "code": "FT-LQ-003",
+      "name": "Darawell adhesivo s-35",
+      "code": "FT-PR-002",
       "family": "Líquidos",
       "kind": "liquido",
       "water": "",
@@ -2066,8 +2066,8 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "adhesivo-heavy-duty",
-      "name": "Heavy duty adhesivo",
-      "code": "FT-LQ-004",
+      "name": "Heavy duty adhesivo s-35",
+      "code": "FT-PR-004",
       "family": "Líquidos",
       "kind": "liquido",
       "water": "",
@@ -2193,7 +2193,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block pro+",
+        "name": "Pegaxpress block",
         "code": "FT-PP-004",
         "role": "Carga"
       },
@@ -2279,7 +2279,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block pro+",
+        "name": "Pegaxpress block",
         "code": "FT-PP-004",
         "role": "Polímero redispersable"
       },
@@ -2365,7 +2365,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block pro+",
+        "name": "Pegaxpress block",
         "code": "FT-PP-004",
         "role": "Retención de agua / reología"
       },
@@ -2439,7 +2439,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block pro+",
+        "name": "Pegaxpress block",
         "code": "FT-PP-004",
         "role": "Antideslizamiento"
       },
@@ -2527,7 +2527,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block pro+",
+        "name": "Pegaxpress block",
         "code": "FT-PP-004",
         "role": "Cementante"
       },
@@ -2597,7 +2597,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block pro+",
+        "name": "Pegaxpress block",
         "code": "FT-PP-004",
         "role": "Agregado"
       },

@@ -38,6 +38,9 @@ function displayCase(s) {
 }
 
 function fullName(p) {
+  if (p.family === 'adhesivos-pro' && p.variant) {
+    return displayCase(p.name) + ': ' + displayCase(p.variant);
+  }
   const raw = p.variant ? p.name + ' ' + p.variant : p.name;
   return displayCase(raw);
 }
@@ -368,7 +371,7 @@ function productPage(p) {
   const pack = p.figures && p.figures.pack;
 
   let heroMain = '<div class="pr-hero-main">' +
-    '<h1>' + esc(displayCase(p.name)) + '</h1>' +
+    '<h1>' + esc(displayCase(p.name)) + (p.family === 'adhesivos-pro' && p.variant ? ':' : '') + '</h1>' +
     (p.variant ? '<div class="pr-variant">' + esc(displayCase(p.variant)) + '</div>' : '') +
     '<div class="pr-strip">' + p.strip.join('<br>') + '</div>' +
     '<p class="pr-lead">' + p.lead + '</p>';
@@ -598,8 +601,8 @@ function catalogCard(p) {
     '<div class="' + thumbClass + '">' + thumb + '</div>' +
     '<div class="product-copy">' +
     '<p class="product-kicker">' + esc(family ? family.name : '') + '</p>' +
-    '<h3>' + esc(displayCase(p.name)) + '</h3>' +
-    (p.variant ? '<p class="product-variant">' + esc(displayCase(p.variant)) + '</p>' : '') +
+    '<h3>' + esc(fullName(p)) + '</h3>' +
+    (p.family === 'adhesivos-pro' ? '' : (p.variant ? '<p class="product-variant">' + esc(displayCase(p.variant)) + '</p>' : '')) +
     (p.line ? '<p class="product-line">' + esc(p.line) + '</p>' : '') +
     '<p class="product-meta"><span>' + esc(packLabel) + '</span><span class="product-go">Ver ficha</span></p>' +
     '</div></a></article>';

@@ -38,7 +38,7 @@ module.exports = [
     pack: '/Assets/productos_background/cellbond.png',
     description: 'Cellbond Pro+: producto descontinuado. Fuera de catálogo.',
     strip: ['Descontinuado · fuera de catálogo', 'Saco de 25 kg'],
-    lead: 'Cellbond Pro+ está descontinuado. Esta ficha se conserva para archivo. No forma parte del catálogo vigente ni del índice público. Para asiento de block de concreto usar Pegaxpress Block.',
+    lead: 'Cellbond Pro+ está descontinuado. Esta ficha se conserva para archivo. No forma parte del catálogo vigente ni del índice público. Para asiento de block de concreto usar Pegaxpress: Block.',
     identification: [
       { label: 'Tipo de producto', value: 'Adhesivo para block celular (línea anterior)' },
       { label: 'Estado', value: 'Descontinuado · fuera de catálogo' },
@@ -46,12 +46,12 @@ module.exports = [
     ],
     prose: [
       'Producto de la línea anterior, fuera de producción comercial.',
-      'No usar esta ficha para especificar obra nueva. Block de concreto: Pegaxpress Block. Otros casos: consultar a Especificaciones S-35.',
+      'No usar esta ficha para especificar obra nueva. Block de concreto: Pegaxpress: Block. Otros casos: consultar a Especificaciones S-35.',
     ],
     uses: [
       { title: 'Archivo.', text: 'Solo referencia de productos ya instalados.' },
       { title: 'Obra nueva.', text: 'No especificar Cellbond. Consultar la línea Pro+ vigente.' },
-      { title: 'No confundir con.', text: 'Pegaxpress Block: ese es el adhesivo de block de concreto en catálogo.' },
+      { title: 'No confundir con.', text: 'Pegaxpress: Block es el adhesivo de block de concreto en catálogo.' },
       { title: 'Soporte.', text: 'Consultar al equipo S-35 si hay que dar mantenimiento a un paño existente.' },
     ],
     apply: 'Producto descontinuado: no aplicar en obra nueva.',
@@ -64,15 +64,15 @@ module.exports = [
   mortar({
     slug: 'pegaxpress-block',
     code: 'FT-PP-004',
-    family: 'pro-systems',
-    name: 'PEGAXPRESS BLOCK',
-    variant: 'Pro+',
+    family: 'adhesivos-pro',
+    name: 'PEGAXPRESS',
+    variant: 'Block',
     line: 'Adhesivo para block de concreto',
     accent: '#2e7d32',
     pack: '/Assets/productos_background/pastablock.png',
-    description: 'Pegaxpress Block Pro+: adhesivo profesional para pegado de block de concreto. Saco de 25 kg.',
-    strip: ['Adhesivo para block de concreto', 'Línea Pro+ · saco de 25 kg'],
-    lead: 'Adhesivo de la línea Pro+ para asentar block de concreto. Mortero seco, listo para amasar con agua. Borrador interno.',
+    description: 'Pegaxpress: Block, adhesivo para pegado de block de concreto. Saco de 25 kg.',
+    strip: ['Adhesivo para block de concreto', 'Saco de 25 kg'],
+    lead: 'Adhesivo de la línea Pegaxpress para asentar block de concreto. Mortero seco, listo para amasar con agua. Borrador interno.',
     identification: [
       { label: 'Tipo de producto', value: 'Adhesivo cementoso para mampostería de concreto' },
       { label: 'Función', value: 'Pegado de block de concreto' },
@@ -80,7 +80,7 @@ module.exports = [
     ],
     prose: [
       'Mortero de asiento para block de concreto.',
-      'Para loseta sobre loseta, Pegaxpress Piso sobre piso. Cellbond (block celular) está fuera de catálogo.',
+      'Para loseta sobre loseta, Pegaxpress: Piso sobre piso. Cellbond (block celular) está fuera de catálogo.',
     ],
     uses: [
       { title: 'Block de concreto.', text: 'Asiento y junta en muros de block.' },
