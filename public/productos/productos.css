@@ -247,8 +247,8 @@
 .pr-variant {
   font-size: 15px;
   font-weight: 400;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-transform: none;
   color: var(--pr-accent);
   margin: 0 0 12px;
 }

@@ -27,8 +27,19 @@ function attr(name, value) {
   return value ? ' ' + name + '="' + esc(value) + '"' : '';
 }
 
+function displayCase(s) {
+  const t = String(s == null ? '' : s).trim();
+  if (!t) return '';
+  const lower = t.toLocaleLowerCase('es');
+  return (lower.charAt(0).toLocaleUpperCase('es') + lower.slice(1))
+    .replace(/\bs-35\b/gi, 'S-35')
+    .replace(/\bpro\+/gi, 'Pro+')
+    .replace(/\bpro\b/gi, 'Pro');
+}
+
 function fullName(p) {
-  return p.variant ? p.name + ' ' + p.variant : p.name;
+  const raw = p.variant ? p.name + ' ' + p.variant : p.name;
+  return displayCase(raw);
 }
 
 /* ── Piezas compartidas ──────────────────────────────────────────── */
@@ -357,8 +368,8 @@ function productPage(p) {
   const pack = p.figures && p.figures.pack;
 
   let heroMain = '<div class="pr-hero-main">' +
-    '<h1>' + esc(p.name) + '</h1>' +
-    (p.variant ? '<div class="pr-variant">' + esc(p.variant) + '</div>' : '') +
+    '<h1>' + esc(displayCase(p.name)) + '</h1>' +
+    (p.variant ? '<div class="pr-variant">' + esc(displayCase(p.variant)) + '</div>' : '') +
     '<div class="pr-strip">' + p.strip.join('<br>') + '</div>' +
     '<p class="pr-lead">' + p.lead + '</p>';
 
@@ -587,8 +598,8 @@ function catalogCard(p) {
     '<div class="' + thumbClass + '">' + thumb + '</div>' +
     '<div class="product-copy">' +
     '<p class="product-kicker">' + esc(family ? family.name : '') + '</p>' +
-    '<h3>' + esc(p.name) + '</h3>' +
-    (p.variant ? '<p class="product-variant">' + esc(p.variant) + '</p>' : '') +
+    '<h3>' + esc(displayCase(p.name)) + '</h3>' +
+    (p.variant ? '<p class="product-variant">' + esc(displayCase(p.variant)) + '</p>' : '') +
     (p.line ? '<p class="product-line">' + esc(p.line) + '</p>' : '') +
     '<p class="product-meta"><span>' + esc(packLabel) + '</span><span class="product-go">Ver ficha</span></p>' +
     '</div></a></article>';
