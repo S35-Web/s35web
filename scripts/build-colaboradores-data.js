@@ -34,6 +34,9 @@ function normalizeName(name) {
   if (!s) return s;
   let out = s.toLocaleLowerCase('es');
   out = out.charAt(0).toLocaleUpperCase('es') + out.slice(1);
+  out = out.replace(/:\s*(.)/g, function (_, c) {
+    return ': ' + String(c).toLocaleUpperCase('es');
+  });
   out = out.replace(/\((.)/g, function (_, c) {
     return '(' + String(c).toLocaleUpperCase('es');
   });
@@ -41,11 +44,18 @@ function normalizeName(name) {
   return out;
 }
 
-const products = catalog.published().map(function (p) {
+function productDisplayName(p) {
+  if (p.variant && (p.family === 'adhesivos-pro' || p.family === 'microconcretos')) {
+    return normalizeName(p.name) + ': ' + normalizeName(p.variant);
+  }
   const raw = p.variant ? p.name + ' ' + p.variant : p.name;
+  return normalizeName(raw);
+}
+
+const products = catalog.published().map(function (p) {
   return {
     slug: p.slug,
-    name: normalizeName(raw),
+    name: productDisplayName(p),
     code: p.code || '',
     family: FAM[p.family] || p.family || '',
     status: p.status || '',

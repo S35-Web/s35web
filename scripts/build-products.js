@@ -32,13 +32,23 @@ function displayCase(s) {
   if (!t) return '';
   const lower = t.toLocaleLowerCase('es');
   return (lower.charAt(0).toLocaleUpperCase('es') + lower.slice(1))
+    .replace(/:\s*(.)/g, function (_, c) {
+      return ': ' + String(c).toLocaleUpperCase('es');
+    })
+    .replace(/\((.)/g, function (_, c) {
+      return '(' + String(c).toLocaleUpperCase('es');
+    })
     .replace(/\bs-35\b/gi, 'S-35')
     .replace(/\bpro\+/gi, 'Pro+')
     .replace(/\bpro\b/gi, 'Pro');
 }
 
+function colonTitle(p) {
+  return !!(p.variant && (p.family === 'adhesivos-pro' || p.family === 'microconcretos'));
+}
+
 function fullName(p) {
-  if (p.family === 'adhesivos-pro' && p.variant) {
+  if (colonTitle(p)) {
     return displayCase(p.name) + ': ' + displayCase(p.variant);
   }
   const raw = p.variant ? p.name + ' ' + p.variant : p.name;
@@ -371,7 +381,7 @@ function productPage(p) {
   const pack = p.figures && p.figures.pack;
 
   let heroMain = '<div class="pr-hero-main">' +
-    '<h1>' + esc(displayCase(p.name)) + (p.family === 'adhesivos-pro' && p.variant ? ':' : '') + '</h1>' +
+    '<h1>' + esc(displayCase(p.name)) + (colonTitle(p) ? ':' : '') + '</h1>' +
     (p.variant ? '<div class="pr-variant">' + esc(displayCase(p.variant)) + '</div>' : '') +
     '<div class="pr-strip">' + p.strip.join('<br>') + '</div>' +
     '<p class="pr-lead">' + p.lead + '</p>';
@@ -602,7 +612,7 @@ function catalogCard(p) {
     '<div class="product-copy">' +
     '<p class="product-kicker">' + esc(family ? family.name : '') + '</p>' +
     '<h3>' + esc(fullName(p)) + '</h3>' +
-    (p.family === 'adhesivos-pro' ? '' : (p.variant ? '<p class="product-variant">' + esc(displayCase(p.variant)) + '</p>' : '')) +
+    (colonTitle(p) ? '' : (p.variant ? '<p class="product-variant">' + esc(displayCase(p.variant)) + '</p>' : '')) +
     (p.line ? '<p class="product-line">' + esc(p.line) + '</p>' : '') +
     '<p class="product-meta"><span>' + esc(packLabel) + '</span><span class="product-go">Ver ficha</span></p>' +
     '</div></a></article>';

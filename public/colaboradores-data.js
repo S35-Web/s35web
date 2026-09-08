@@ -2,35 +2,35 @@ window.S35_PANEL_DATA = {
   "products": [
     {
       "slug": "porcelanico-universal",
-      "name": "Pegaxpress porcelánico universal",
+      "name": "Pegaxpress: Porcelánico universal",
       "code": "FT-AD-001",
       "family": "Pegaxpress: Adhesivos",
       "status": "verified"
     },
     {
       "slug": "ceramico",
-      "name": "Pegaxpress cerámico",
+      "name": "Pegaxpress: Cerámico",
       "code": "FT-AD-002",
       "family": "Pegaxpress: Adhesivos",
       "status": "verified"
     },
     {
       "slug": "ultraforce",
-      "name": "Pegaxpress ultraforce",
+      "name": "Pegaxpress: Ultraforce",
       "code": "FT-AD-003",
       "family": "Pegaxpress: Adhesivos",
       "status": "verified"
     },
     {
       "slug": "pegaxpress-psp",
-      "name": "Pegaxpress piso sobre piso",
+      "name": "Pegaxpress: Piso sobre piso",
       "code": "FT-AD-004",
       "family": "Pegaxpress: Adhesivos",
       "status": "verified"
     },
     {
       "slug": "cemento-plastico-concreto",
-      "name": "Cemento plástico concreto aparente",
+      "name": "Microconcreto: Concreto aparente (Cemento plástico)",
       "code": "FT-MC-001",
       "family": "Microconcretos",
       "status": "verified"
@@ -51,7 +51,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "slug": "pegaxpress-block",
-      "name": "Pegaxpress block",
+      "name": "Pegaxpress: Block",
       "code": "FT-PP-004",
       "family": "Pegaxpress: Adhesivos",
       "status": "draft"
@@ -1073,7 +1073,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "cemento-plastico-concreto",
-      "name": "Cemento plástico concreto aparente",
+      "name": "Microconcreto: Concreto aparente (Cemento plástico)",
       "code": "FT-MC-001",
       "family": "Microconcretos",
       "kind": "seco",
@@ -1571,7 +1571,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "pegaxpress-block",
-      "name": "Pegaxpress block",
+      "name": "Pegaxpress: Block",
       "code": "FT-PP-004",
       "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
@@ -1658,7 +1658,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "ceramico",
-      "name": "Pegaxpress cerámico",
+      "name": "Pegaxpress: Cerámico",
       "code": "FT-AD-002",
       "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
@@ -1753,7 +1753,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "porcelanico-universal",
-      "name": "Pegaxpress porcelánico universal",
+      "name": "Pegaxpress: Porcelánico universal",
       "code": "FT-AD-001",
       "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
@@ -1840,7 +1840,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "pegaxpress-psp",
-      "name": "Pegaxpress piso sobre piso",
+      "name": "Pegaxpress: Piso sobre piso",
       "code": "FT-AD-004",
       "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
@@ -1927,7 +1927,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "ultraforce",
-      "name": "Pegaxpress ultraforce",
+      "name": "Pegaxpress: Ultraforce",
       "code": "FT-AD-003",
       "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
@@ -2131,7 +2131,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "Cemento plástico concreto aparente",
+        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
         "code": "FT-MC-001",
         "role": "Agregado"
       }
@@ -2163,7 +2163,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "Cemento plástico concreto aparente",
+        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
         "code": "FT-MC-001",
         "role": "Carga"
       },
@@ -2193,31 +2193,31 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block",
+        "name": "Pegaxpress: Block",
         "code": "FT-PP-004",
         "role": "Carga"
       },
       {
         "slug": "ceramico",
-        "name": "Pegaxpress cerámico",
+        "name": "Pegaxpress: Cerámico",
         "code": "FT-AD-002",
         "role": "Carga"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "Pegaxpress porcelánico universal",
+        "name": "Pegaxpress: Porcelánico universal",
         "code": "FT-AD-001",
         "role": "Carga"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "Pegaxpress piso sobre piso",
+        "name": "Pegaxpress: Piso sobre piso",
         "code": "FT-AD-004",
         "role": "Carga"
       },
       {
         "slug": "ultraforce",
-        "name": "Pegaxpress ultraforce",
+        "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Carga"
       }
@@ -2249,7 +2249,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "Cemento plástico concreto aparente",
+        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
         "code": "FT-MC-001",
         "role": "Polímero redispersable"
       },
@@ -2279,31 +2279,31 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block",
+        "name": "Pegaxpress: Block",
         "code": "FT-PP-004",
         "role": "Polímero redispersable"
       },
       {
         "slug": "ceramico",
-        "name": "Pegaxpress cerámico",
+        "name": "Pegaxpress: Cerámico",
         "code": "FT-AD-002",
         "role": "Polímero redispersable"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "Pegaxpress porcelánico universal",
+        "name": "Pegaxpress: Porcelánico universal",
         "code": "FT-AD-001",
         "role": "Polímero redispersable"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "Pegaxpress piso sobre piso",
+        "name": "Pegaxpress: Piso sobre piso",
         "code": "FT-AD-004",
         "role": "Polímero redispersable"
       },
       {
         "slug": "ultraforce",
-        "name": "Pegaxpress ultraforce",
+        "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Polímero redispersable"
       }
@@ -2335,7 +2335,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "Cemento plástico concreto aparente",
+        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
         "code": "FT-MC-001",
         "role": "Retención de agua / reología"
       },
@@ -2365,31 +2365,31 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block",
+        "name": "Pegaxpress: Block",
         "code": "FT-PP-004",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "ceramico",
-        "name": "Pegaxpress cerámico",
+        "name": "Pegaxpress: Cerámico",
         "code": "FT-AD-002",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "Pegaxpress porcelánico universal",
+        "name": "Pegaxpress: Porcelánico universal",
         "code": "FT-AD-001",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "Pegaxpress piso sobre piso",
+        "name": "Pegaxpress: Piso sobre piso",
         "code": "FT-AD-004",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "ultraforce",
-        "name": "Pegaxpress ultraforce",
+        "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Retención de agua / reología"
       }
@@ -2439,31 +2439,31 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block",
+        "name": "Pegaxpress: Block",
         "code": "FT-PP-004",
         "role": "Antideslizamiento"
       },
       {
         "slug": "ceramico",
-        "name": "Pegaxpress cerámico",
+        "name": "Pegaxpress: Cerámico",
         "code": "FT-AD-002",
         "role": "Antideslizamiento"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "Pegaxpress porcelánico universal",
+        "name": "Pegaxpress: Porcelánico universal",
         "code": "FT-AD-001",
         "role": "Antideslizamiento"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "Pegaxpress piso sobre piso",
+        "name": "Pegaxpress: Piso sobre piso",
         "code": "FT-AD-004",
         "role": "Antideslizamiento"
       },
       {
         "slug": "ultraforce",
-        "name": "Pegaxpress ultraforce",
+        "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Antideslizamiento"
       }
@@ -2503,7 +2503,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "Cemento plástico concreto aparente",
+        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
         "code": "FT-MC-001",
         "role": "Cementante"
       },
@@ -2527,31 +2527,31 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block",
+        "name": "Pegaxpress: Block",
         "code": "FT-PP-004",
         "role": "Cementante"
       },
       {
         "slug": "ceramico",
-        "name": "Pegaxpress cerámico",
+        "name": "Pegaxpress: Cerámico",
         "code": "FT-AD-002",
         "role": "Cementante"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "Pegaxpress porcelánico universal",
+        "name": "Pegaxpress: Porcelánico universal",
         "code": "FT-AD-001",
         "role": "Cementante"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "Pegaxpress piso sobre piso",
+        "name": "Pegaxpress: Piso sobre piso",
         "code": "FT-AD-004",
         "role": "Cementante"
       },
       {
         "slug": "ultraforce",
-        "name": "Pegaxpress ultraforce",
+        "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Cementante"
       }
@@ -2597,31 +2597,31 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "pegaxpress-block",
-        "name": "Pegaxpress block",
+        "name": "Pegaxpress: Block",
         "code": "FT-PP-004",
         "role": "Agregado"
       },
       {
         "slug": "ceramico",
-        "name": "Pegaxpress cerámico",
+        "name": "Pegaxpress: Cerámico",
         "code": "FT-AD-002",
         "role": "Agregado"
       },
       {
         "slug": "porcelanico-universal",
-        "name": "Pegaxpress porcelánico universal",
+        "name": "Pegaxpress: Porcelánico universal",
         "code": "FT-AD-001",
         "role": "Agregado"
       },
       {
         "slug": "pegaxpress-psp",
-        "name": "Pegaxpress piso sobre piso",
+        "name": "Pegaxpress: Piso sobre piso",
         "code": "FT-AD-004",
         "role": "Agregado"
       },
       {
         "slug": "ultraforce",
-        "name": "Pegaxpress ultraforce",
+        "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Agregado"
       }
@@ -2635,7 +2635,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "cemento-plastico-concreto",
-        "name": "Cemento plástico concreto aparente",
+        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
         "code": "FT-MC-001",
         "role": "Mineral funcional"
       }
@@ -2643,7 +2643,7 @@ window.S35_PANEL_DATA = {
     "arena-de-cuarzo": [
       {
         "slug": "cemento-plastico-concreto",
-        "name": "Cemento plástico concreto aparente",
+        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
         "code": "FT-MC-001",
         "role": "Agregado"
       }
@@ -2651,7 +2651,7 @@ window.S35_PANEL_DATA = {
     "oxido-de-hierro-rojo": [
       {
         "slug": "cemento-plastico-concreto",
-        "name": "Cemento plástico concreto aparente",
+        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
         "code": "FT-MC-001",
         "role": "Pigmento"
       }
@@ -2659,7 +2659,7 @@ window.S35_PANEL_DATA = {
     "caolin": [
       {
         "slug": "ceramico",
-        "name": "Pegaxpress cerámico",
+        "name": "Pegaxpress: Cerámico",
         "code": "FT-AD-002",
         "role": "Carga"
       }
@@ -2667,7 +2667,7 @@ window.S35_PANEL_DATA = {
     "cemento-aluminato-de-calcio": [
       {
         "slug": "ultraforce",
-        "name": "Pegaxpress ultraforce",
+        "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Cementante"
       }
@@ -2675,7 +2675,7 @@ window.S35_PANEL_DATA = {
     "microsilice": [
       {
         "slug": "ultraforce",
-        "name": "Pegaxpress ultraforce",
+        "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Mineral funcional"
       }
