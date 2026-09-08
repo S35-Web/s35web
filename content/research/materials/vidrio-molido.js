@@ -112,7 +112,7 @@ module.exports = {
   ],
   relatedMaterials: ['vidrio-expandido', 'arena-de-cuarzo', 'arena-silicea-graduada', 'cemento-gris', 'microsilice'],
   relatedResearch: ['caracterizacion-vidrio-molido'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'vidrio-molido.html',
   techMotion: true,

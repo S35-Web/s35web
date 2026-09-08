@@ -96,7 +96,7 @@ module.exports = {
   ],
   relatedMaterials: ['dioxido-de-titanio', 'cemento-gris', 'cemento-blanco'],
   relatedResearch: ['caracterizacion-oxido-de-hierro-rojo'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'oxido-de-hierro-rojo.html',
   techMotion: true,

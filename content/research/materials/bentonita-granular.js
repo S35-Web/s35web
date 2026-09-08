@@ -156,7 +156,7 @@ module.exports = {
   ],
   relatedMaterials: ['bentonita-sodica', 'yeso', 'cemento-gris'],
   relatedResearch: ['caracterizacion-bentonita-granular'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'bentonita-granular.html',
   techMotion: true,

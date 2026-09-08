@@ -113,7 +113,7 @@ module.exports = {
   ],
   relatedMaterials: ['ceniza-volante', 'metacaolin', 'cemento-gris', 'cal', 'microsilice'],
   relatedResearch: ['caracterizacion-escoria-granulada-de-alto-horno'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'escoria-granulada-de-alto-horno.html',
   techMotion: true,

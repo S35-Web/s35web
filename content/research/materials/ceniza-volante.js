@@ -132,7 +132,7 @@ module.exports = {
   ],
   relatedMaterials: ['metacaolin', 'jal-pumita', 'escoria-granulada-de-alto-horno', 'cemento-gris', 'cal', 'puzolana-volcanica', 'microsilice'],
   relatedResearch: ['caracterizacion-ceniza-volante'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'ceniza-volante.html',
   techMotion: true,

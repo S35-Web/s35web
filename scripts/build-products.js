@@ -38,7 +38,7 @@ function s35Nav() {
     '  <div class="nav-container">\n' +
     '    <div class="nav-logo"><a href="/"><img src="/Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image"></a></div>\n' +
     '    <div class="nav-menu">\n' +
-    '      <a href="/catalogo.html" class="nav-link" data-i18n="nav.catalog">Catálogo</a>\n' +
+    '      <a href="/productos" class="nav-link" data-i18n="nav.catalog">Catálogo</a>\n' +
     '      <a href="/laboratorio/materials" class="nav-link" data-i18n="nav.materialab">Laboratorio</a>\n' +
     '      <a href="/#contacto" class="nav-link contact-btn" data-i18n="nav.contact">Contacto</a>\n' +
     '    </div>\n' +
@@ -48,13 +48,13 @@ function s35Nav() {
     '</nav>';
 }
 
-function subnav(current) {
+function subnav(current, label) {
   const items = catalog.taxonomy.FAMILIES.map(function (f) {
     return '<a href="/productos#' + f.id + '">' + esc(f.name) + '</a>';
   }).join('');
   return '<div class="pr-subnav"><div class="pr-subnav-inner">' +
     '<nav class="pr-subnav-links" aria-label="Familias de producto">' + items + '</nav>' +
-    '<a class="pr-subnav-back" href="' + esc(current) + '">← Catálogo</a>' +
+    '<a class="pr-subnav-back" href="' + esc(current) + '">' + esc(label || '← Catálogo') + '</a>' +
     '</div></div>';
 }
 
@@ -68,7 +68,7 @@ function footer() {
     '<p class="footer-tagline">Tecnología de construcción para el futuro</p></div>\n' +
     '<div class="footer-links">\n' +
     '<div class="footer-column"><h4 class="footer-title">Productos</h4><ul class="footer-list">' +
-    '<li><a href="/productos">Índice de fichas</a></li><li><a href="/catalogo.html">Catálogo completo</a></li>' + famLinks +
+    '<li><a href="/productos">Catálogo</a></li>' + famLinks +
     '</ul></div>\n' +
     '<div class="footer-column"><h4 class="footer-title">Tecnología</h4><ul class="footer-list">' +
     '<li><a href="/laboratorio/materials">Laboratorio</a></li><li><a href="/laboratorio/materials">Índice de materiales</a></li>' +
@@ -105,7 +105,7 @@ function layout(opts, body) {
     (opts.jsonLd ? '<script type="application/ld+json">' + JSON.stringify(opts.jsonLd) + '</script>\n' : '') +
     '</head>\n<body class="pr-page" style="--pr-accent:' + esc(accent) + '">\n' +
     s35Nav() + '\n' +
-    subnav(opts.backHref || '/catalogo.html') + '\n' +
+    subnav(opts.backHref || '/productos', opts.backLabel) + '\n' +
     body + '\n' +
     footer() + '\n' +
     '<script src="/i18n.js"></script>\n<script src="/script.js"></script>\n<script src="/productos/productos.js"></script>\n' +
@@ -437,7 +437,7 @@ function indexPage() {
     '<div class="pr-mast">' +
     '<span class="pr-mast-brand"><img src="/Assets/Logotipo Principal.png" alt="S-35" class="pr-logo">' +
     'S35®Tech · Tecnología en materiales para construcción</span>' +
-    '<span>Índice de fichas de producto</span></div>' +
+    '<span>Catálogo de productos</span></div>' +
     '<div class="pr-hair"></div>';
 
   body += '<section class="pr-row">' +
@@ -473,8 +473,8 @@ function indexPage() {
     '<span>www.s-35.com</span></div></article>';
 
   return layout({
-    title: 'Fichas técnicas de producto | S-35 Technology',
-    description: 'Índice de fichas técnicas de los productos S-35: estucos premium Waxtard, microconcretos, Panel System, Pro+ Systems, adhesivos Pegaxpress y líquidos.',
+    title: 'Catálogo de productos | S-35 Technology',
+    description: 'Catálogo S-35: estucos premium Waxtard, microconcretos, Panel System, Pro+ Systems, adhesivos Pegaxpress y líquidos. Cada producto abre su ficha técnica.',
     path: '/productos',
     accent: '#2f7d32',
     backLabel: '← Inicio',
@@ -601,19 +601,7 @@ function catalogGridHtml() {
 }
 
 function patchCatalogPage() {
-  const file = path.join(ROOT, 'public', 'catalogo.html');
-  if (!fs.existsSync(file)) return;
-  const html = fs.readFileSync(file, 'utf8');
-  const start = '<!-- PR-CATALOG-GRID:START -->';
-  const end = '<!-- PR-CATALOG-GRID:END -->';
-  const i = html.indexOf(start);
-  const j = html.indexOf(end);
-  if (i === -1 || j === -1 || j < i) {
-    throw new Error('catalogo.html: faltan los marcadores PR-CATALOG-GRID');
-  }
-  const next = html.slice(0, i + start.length) + '\n            ' + catalogGridHtml() + '\n            ' + html.slice(j);
-  fs.writeFileSync(file, next);
-  console.log('  public/catalogo.html (tarjetas → /productos/<slug>)');
+  writeRedirect('catalogo.html', '/productos');
 }
 
 const OLD_PRODUCT_PAGES = [
@@ -628,8 +616,8 @@ function writeRedirect(file, dest) {
     '<title>Redirigiendo a la ficha técnica</title>\n' +
     '<link rel="canonical" href="' + ORIGIN + dest + '">\n' +
     '<meta http-equiv="refresh" content="0;url=' + dest + '">\n' +
-    '<script>location.replace(' + JSON.stringify(dest) + ');</script>\n' +
-    '</head>\n<body>\n<p><a href="' + dest + '">Continuar a la ficha técnica</a></p>\n' +
+    '<script>location.replace(' + JSON.stringify(dest) + ' + location.hash);</script>\n' +
+    '</head>\n<body>\n<p><a href="' + dest + '">Continuar</a></p>\n' +
     '</body>\n</html>\n';
   fs.writeFileSync(path.join(ROOT, 'public', file), html);
   console.log('  public/' + file + ' → ' + dest);

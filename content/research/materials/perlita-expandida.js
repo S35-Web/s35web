@@ -157,7 +157,7 @@ module.exports = {
   ],
   relatedMaterials: ['yeso', 'cal', 'arena-de-rio', 'jal-pumita', 'vermiculita-expandida', 'celulosa-hpmc', 'diatomita', 'barita', 'vidrio-expandido'],
   relatedResearch: ['caracterizacion-perlita-expandida'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'perlita-expandida.html',
   techMotion: true,

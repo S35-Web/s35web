@@ -158,7 +158,7 @@ module.exports = {
   ],
   relatedMaterials: ['carbonato-de-calcio', 'marmolina-fina', 'cal', 'cemento-blanco'],
   relatedResearch: ['caracterizacion-dolomita'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'dolomita.html',
   techMotion: true,

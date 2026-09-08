@@ -100,7 +100,7 @@ module.exports = {
   ],
   relatedMaterials: ['perlita-expandida', 'jal-pumita', 'carbonato-de-calcio', 'arena-de-cuarzo', 'basalto'],
   relatedResearch: ['caracterizacion-barita'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'barita.html',
   techMotion: true,

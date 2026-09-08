@@ -149,7 +149,7 @@ module.exports = {
   ],
   relatedMaterials: ['marmolina-fina', 'cemento-gris', 'arena-silicea-graduada', 'arena-de-cuarzo', 'basalto'],
   relatedResearch: ['caracterizacion-arena-de-rio'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'arena-de-rio.html',
   techMotion: true,

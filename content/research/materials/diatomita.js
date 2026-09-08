@@ -101,7 +101,7 @@ module.exports = {
   ],
   relatedMaterials: ['perlita-expandida', 'microsilice', 'vermiculita-expandida'],
   relatedResearch: ['caracterizacion-diatomita'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'diatomita.html',
   techMotion: true,

@@ -171,7 +171,7 @@ module.exports = {
   ],
   relatedMaterials: ['arena-silicea-graduada', 'yeso', 'cemento-gris', 'bentonita-granular', 'caolin', 'celulosa-hpmc'],
   relatedResearch: ['caracterizacion-bentonita-sodica'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'bentonita-sodica.html',
   techMotion: true,

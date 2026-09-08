@@ -114,7 +114,7 @@ module.exports = {
   ],
   relatedMaterials: ['ceniza-volante', 'metacaolin', 'escoria-granulada-de-alto-horno', 'diatomita', 'cemento-gris', 'vidrio-molido'],
   relatedResearch: ['caracterizacion-microsilice'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'microsilice.html',
   techMotion: true,

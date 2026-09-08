@@ -105,7 +105,7 @@ module.exports = {
   ],
   relatedMaterials: ['caolin', 'carbonato-de-calcio', 'cemento-blanco', 'cal', 'oxido-de-hierro-rojo'],
   relatedResearch: ['caracterizacion-dioxido-de-titanio'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'dioxido-de-titanio.html',
   techMotion: true,

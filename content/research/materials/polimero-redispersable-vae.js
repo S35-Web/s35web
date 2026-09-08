@@ -117,7 +117,7 @@ module.exports = {
   ],
   relatedMaterials: ['celulosa-hpmc', 'eter-de-almidon', 'cemento-gris', 'cemento-blanco', 'yeso'],
   relatedResearch: ['caracterizacion-polimero-redispersable-vae'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'polimero-redispersable-vae.html',
   techMotion: true,

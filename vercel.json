@@ -13,6 +13,8 @@
     { "source": "/materialab/research", "destination": "/laboratorio/research", "permanent": true },
     { "source": "/materialab/materials", "destination": "/laboratorio/materials", "permanent": true },
     { "source": "/materialab/materials/:slug", "destination": "/laboratorio/materials/:slug", "permanent": true },
+    { "source": "/catalogo", "destination": "/productos", "permanent": true },
+    { "source": "/catalogo.html", "destination": "/productos", "permanent": true },
     { "source": "/producto-waxtard-perla", "destination": "/productos/waxtard-blanco-perla", "permanent": true },
     { "source": "/producto-waxtard-perla.html", "destination": "/productos/waxtard-blanco-perla", "permanent": true },
     { "source": "/producto-waxtard-extra-anclaje", "destination": "/productos/waxtard-extra-anclaje", "permanent": true },

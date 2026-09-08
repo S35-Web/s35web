@@ -113,7 +113,7 @@ module.exports = {
   ],
   relatedMaterials: ['mica', 'carbonato-de-calcio', 'caolin'],
   relatedResearch: ['caracterizacion-talco-silicato'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'talco-silicato.html',
   techMotion: true,

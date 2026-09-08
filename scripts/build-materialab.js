@@ -175,7 +175,7 @@ function s35Nav() {
     '    <div class="nav-menu">\n' +
     '      <div class="nav-dropdown"><a href="http://s-35.com/clientes/#login" class="nav-link" target="_blank" rel="noopener"><span data-i18n="nav.login">Iniciar sesión</span> <i class="fas fa-chevron-right"></i></a></div>\n' +
     '      <a href="/#noticias" class="nav-link" data-i18n="nav.news">News</a>\n' +
-    '      <a href="/catalogo.html" class="nav-link" data-i18n="nav.catalog">Catálogo</a>\n' +
+    '      <a href="/productos" class="nav-link" data-i18n="nav.catalog">Catálogo</a>\n' +
     '      <a href="/laboratorio/materials" class="nav-link" data-i18n="nav.materialab">Laboratorio</a>\n' +
     '      <a href="/#contacto" class="nav-link contact-btn" data-i18n="nav.contact">Contact</a>\n' +
     '    </div>\n' +

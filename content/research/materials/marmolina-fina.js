@@ -144,7 +144,7 @@ module.exports = {
   ],
   relatedMaterials: ['arena-de-rio', 'cal', 'cemento-blanco', 'arena-silicea-graduada', 'carbonato-de-calcio', 'dolomita', 'caolin'],
   relatedResearch: ['caracterizacion-marmolina-fina'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'marmolina-fina.html',
   techMotion: true,

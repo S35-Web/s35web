@@ -123,7 +123,7 @@ module.exports = {
   ],
   relatedMaterials: ['eter-de-almidon', 'polimero-redispersable-vae', 'perlita-expandida', 'arena-silicea-graduada', 'bentonita-sodica', 'yeso'],
   relatedResearch: ['caracterizacion-celulosa-hpmc'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'celulosa-hpmc.html',
   techMotion: true,

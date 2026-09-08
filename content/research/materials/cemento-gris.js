@@ -102,7 +102,7 @@ module.exports = {
   ],
   relatedMaterials: ['cemento-blanco', 'cemento-aluminato-de-calcio', 'yeso', 'metacaolin', 'ceniza-volante', 'escoria-granulada-de-alto-horno', 'polimero-redispersable-vae', 'puzolana-volcanica', 'microsilice', 'vidrio-molido', 'basalto', 'oxido-de-hierro-rojo'],
   relatedResearch: ['caracterizacion-cemento-gris'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'cemento-gris.html',
   techMotion: true,

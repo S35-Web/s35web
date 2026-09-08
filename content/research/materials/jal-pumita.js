@@ -157,7 +157,7 @@ module.exports = {
   ],
   relatedMaterials: ['perlita-expandida', 'cal', 'cemento-gris', 'vermiculita-expandida', 'metacaolin', 'ceniza-volante', 'barita', 'puzolana-volcanica', 'vidrio-expandido', 'basalto'],
   relatedResearch: ['caracterizacion-jal-pumita'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'jal-pumita.html',
   techMotion: true,

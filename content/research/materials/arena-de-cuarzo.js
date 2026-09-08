@@ -150,7 +150,7 @@ module.exports = {
   ],
   relatedMaterials: ['arena-de-rio', 'arena-silicea-graduada', 'cemento-gris', 'marmolina-fina', 'barita', 'vidrio-molido'],
   relatedResearch: ['caracterizacion-arena-de-cuarzo'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'arena-de-cuarzo.html',
   techMotion: true,

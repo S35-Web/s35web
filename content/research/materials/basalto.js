@@ -115,7 +115,7 @@ module.exports = {
   ],
   relatedMaterials: ['arena-de-rio', 'barita', 'jal-pumita', 'cemento-gris', 'puzolana-volcanica'],
   relatedResearch: ['caracterizacion-basalto'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'basalto.html',
   techMotion: true,

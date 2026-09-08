@@ -110,7 +110,7 @@ module.exports = {
   ],
   relatedMaterials: ['celulosa-hpmc', 'polimero-redispersable-vae', 'yeso'],
   relatedResearch: ['caracterizacion-eter-de-almidon'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'eter-de-almidon.html',
   techMotion: true,

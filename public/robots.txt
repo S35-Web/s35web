@@ -10,7 +10,7 @@ Disallow: /admin-login.html
 
 # Allow all other content
 Allow: /Assets/
-Allow: /catalogo.html
+Allow: /productos
 Allow: /conoce-mas.html
 Allow: /laboratorio
 Allow: /laboratorio/

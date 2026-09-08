@@ -114,7 +114,7 @@ module.exports = {
   ],
   relatedMaterials: ['perlita-expandida', 'vermiculita-expandida', 'jal-pumita', 'vidrio-molido'],
   relatedResearch: ['caracterizacion-vidrio-expandido'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'vidrio-expandido.html',
   techMotion: true,

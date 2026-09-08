@@ -131,7 +131,7 @@ module.exports = {
   ],
   relatedMaterials: ['cemento-gris', 'cemento-blanco', 'cal', 'yeso'],
   relatedResearch: ['caracterizacion-cemento-aluminato-de-calcio'],
-  applicationHref: '/catalogo.html',
+  applicationHref: '/productos',
   applicationLabel: 'Sistemas de recubrimiento S-35',
   techFile: 'cemento-aluminato-de-calcio.html',
   techMotion: true,
