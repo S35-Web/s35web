@@ -82,6 +82,15 @@ function familyAccentMap() {
   return map;
 }
 
+function familyGradientCss() {
+  const accents = familyAccentMap();
+  const colors = catalog.taxonomy.FAMILIES.map(function (f) {
+    return accents[f.id];
+  }).filter(Boolean);
+  if (!colors.length) return 'var(--pr-accent)';
+  return 'linear-gradient(90deg, ' + colors.join(', ') + ')';
+}
+
 function subnav(current, label, familyId) {
   const accents = familyAccentMap();
   const items = catalog.taxonomy.FAMILIES.map(function (f) {
@@ -478,7 +487,7 @@ function indexPage() {
     '<span class="pr-mast-brand"><img src="/Assets/Logotipo Principal.png" alt="S-35" class="pr-logo">' +
     'S35®Tech · Tecnología en materiales para construcción</span>' +
     '<span>Catálogo de productos</span></div>' +
-    '<div class="pr-hair"></div>';
+    '<div class="pr-hair pr-hair--families" style="--pr-family-gradient:' + familyGradientCss() + '"></div>';
 
   body += '<section class="pr-row">' +
     '<div class="pr-rail"><span class="pr-rail-lead">Fichas técnicas<br>de producto</span>' +

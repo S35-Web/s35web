@@ -161,6 +161,10 @@
   background-color: var(--pr-accent);
 }
 
+.pr-hair--families {
+  background: var(--pr-family-gradient, var(--pr-accent));
+}
+
 .pr-row {
   display: grid;
   grid-template-columns: var(--pr-rail) minmax(0, 1fr);
