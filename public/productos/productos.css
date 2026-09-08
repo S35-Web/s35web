@@ -88,7 +88,13 @@
   border: 1px solid var(--pr-line);
   border-radius: 6px;
   box-sizing: border-box;
-  transition: color 200ms var(--pr-ease), border-color 200ms var(--pr-ease);
+  transition: color 200ms var(--pr-ease), border-color 200ms var(--pr-ease), background-color 200ms var(--pr-ease);
+}
+
+.pr-subnav-links a.pr-subnav-family {
+  color: var(--family-accent, var(--pr-gray));
+  border-color: var(--family-accent, var(--pr-line));
+  background: #fff;
 }
 
 .pr-subnav-back {
@@ -99,6 +105,13 @@
 .pr-subnav a:hover {
   color: var(--pr-black);
   border-color: #b0b0b0;
+}
+
+.pr-subnav-links a.pr-subnav-family:hover,
+.pr-subnav-links a.pr-subnav-family[aria-current="true"] {
+  color: #fff;
+  background: var(--family-accent, var(--pr-black));
+  border-color: var(--family-accent, var(--pr-black));
 }
 
 /* ── Sheet shell ──────────────────────────────────────── */
@@ -843,7 +856,7 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 1rem;
-  border-top: 5px solid var(--pr-accent);
+  border-top: 5px solid var(--family-accent, var(--pr-accent));
   padding-top: 8px;
   margin-bottom: 14px;
 }
@@ -895,7 +908,7 @@
 }
 
 .pr-list a:hover {
-  color: var(--pr-accent);
+  color: var(--family-accent, var(--pr-accent));
 }
 
 .pr-list-thumb {
@@ -1006,7 +1019,7 @@
 
 .pr-sheet--motion.is-armed .pr-family-head::after {
   height: 5px;
-  background: var(--pr-accent);
+  background: var(--family-accent, var(--pr-accent));
   transition: transform 0.85s var(--pr-ease);
 }
 

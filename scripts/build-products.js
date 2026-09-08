@@ -48,9 +48,23 @@ function s35Nav() {
     '</nav>';
 }
 
-function subnav(current, label) {
+function familyAccentMap() {
+  const map = {};
+  catalog.byFamily().forEach(function (g) {
+    const first = g.items[0];
+    if (first && first.accent) map[g.family.id] = first.accent;
+  });
+  return map;
+}
+
+function subnav(current, label, familyId) {
+  const accents = familyAccentMap();
   const items = catalog.taxonomy.FAMILIES.map(function (f) {
-    return '<a href="/productos#' + f.id + '">' + esc(f.name) + '</a>';
+    const accent = accents[f.id];
+    const style = accent ? ' style="--family-accent:' + esc(accent) + '"' : '';
+    const currentAttr = familyId && familyId === f.id ? ' aria-current="true"' : '';
+    return '<a href="/productos#' + f.id + '" class="pr-subnav-family"' + style + currentAttr + '>' +
+      esc(f.name) + '</a>';
   }).join('');
   return '<div class="pr-subnav"><div class="pr-subnav-inner">' +
     '<nav class="pr-subnav-links" aria-label="Familias de producto">' + items + '</nav>' +
@@ -105,7 +119,7 @@ function layout(opts, body) {
     (opts.jsonLd ? '<script type="application/ld+json">' + JSON.stringify(opts.jsonLd) + '</script>\n' : '') +
     '</head>\n<body class="pr-page" style="--pr-accent:' + esc(accent) + '">\n' +
     s35Nav() + '\n' +
-    subnav(opts.backHref || '/productos', opts.backLabel) + '\n' +
+    subnav(opts.backHref || '/productos', opts.backLabel, opts.familyId) + '\n' +
     body + '\n' +
     footer() + '\n' +
     '<script src="/i18n.js"></script>\n<script src="/script.js"></script>\n<script src="/productos/productos.js"></script>\n' +
@@ -411,6 +425,7 @@ function productPage(p) {
     description: p.seo.description,
     path: '/productos/' + p.slug,
     accent: p.accent,
+    familyId: p.family,
     ogType: 'product',
     og: pack ? ORIGIN + pack.src : undefined,
     jsonLd: {
@@ -450,7 +465,8 @@ function indexPage() {
     'Las fichas marcadas como borrador están redactadas internamente y siguen en revisión.</p></div></section>';
 
   groups.forEach(function (g) {
-    body += '<section class="pr-row" id="' + esc(g.family.id) + '">' +
+    const familyAccent = (g.items[0] && g.items[0].accent) || '#2f7d32';
+    body += '<section class="pr-row" id="' + esc(g.family.id) + '" style="--family-accent:' + esc(familyAccent) + '">' +
       '<div class="pr-rail">' + esc(g.family.name) + '</div>' +
       '<div class="pr-body pr-family">' +
       '<div class="pr-family-head"><h2>' + esc(g.family.name) + '</h2>' +

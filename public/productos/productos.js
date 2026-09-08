@@ -2,6 +2,33 @@
 (function () {
   'use strict';
 
+  function familyIdFromHref(href) {
+    var i = String(href || '').indexOf('#');
+    return i === -1 ? '' : href.slice(i + 1);
+  }
+
+  function syncFamilyNav() {
+    var hash = (location.hash || '').replace(/^#/, '');
+    if (!hash) return;
+    var links = document.querySelectorAll('.pr-subnav-family');
+    for (var i = 0; i < links.length; i++) {
+      var id = familyIdFromHref(links[i].getAttribute('href') || '');
+      if (id === hash) links[i].setAttribute('aria-current', 'true');
+      else links[i].removeAttribute('aria-current');
+    }
+  }
+
+  window.addEventListener('hashchange', syncFamilyNav);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', syncFamilyNav);
+  } else {
+    syncFamilyNav();
+  }
+})();
+
+(function () {
+  'use strict';
+
   function qs(sel, root) { return (root || document).querySelector(sel); }
   function qsa(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
