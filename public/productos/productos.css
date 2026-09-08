@@ -72,6 +72,10 @@
   flex-wrap: nowrap;
 }
 
+.pr-subnav.is-flipping .pr-subnav-links {
+  overflow: visible;
+}
+
 .pr-subnav-links::-webkit-scrollbar {
   display: none;
 }
@@ -95,6 +99,7 @@
 }
 
 .pr-subnav-links a.pr-subnav-family {
+  flex: none;
   color: var(--family-accent, var(--pr-gray));
   border-color: var(--family-accent, var(--pr-line));
   background: #fff;
@@ -115,6 +120,10 @@
   color: #fff;
   background: var(--family-accent, var(--pr-black));
   border-color: var(--family-accent, var(--pr-black));
+}
+
+.pr-subnav-links a.pr-subnav-family[aria-current="true"] {
+  z-index: 1;
 }
 
 /* ── Sheet shell ──────────────────────────────────────── */

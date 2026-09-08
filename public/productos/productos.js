@@ -1,4 +1,4 @@
-/* S-35 — Fichas técnicas de producto: animación de entrada de la retícula. */
+/* S-35 — Fichas técnicas de producto: menú de familias y animación de entrada. */
 (function () {
   'use strict';
 
@@ -7,22 +7,125 @@
     return i === -1 ? '' : href.slice(i + 1);
   }
 
-  function syncFamilyNav() {
-    var hash = (location.hash || '').replace(/^#/, '');
-    if (!hash) return;
-    var links = document.querySelectorAll('.pr-subnav-family');
+  var nav = document.querySelector('.pr-subnav-links');
+  if (!nav) return;
+
+  var links = Array.prototype.slice.call(nav.querySelectorAll('.pr-subnav-family'));
+  if (!links.length) return;
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var currentId = '';
+  var spyTick = false;
+  var flipTimer = 0;
+  var sections = Array.prototype.slice.call(document.querySelectorAll('.pr-sheet .pr-row[id]'));
+  var wrap = document.querySelector('.pr-subnav');
+
+  links.forEach(function (el, i) {
+    el.dataset.familyIndex = String(i);
+    el.style.order = String(i);
+  });
+
+  function linkById(id) {
     for (var i = 0; i < links.length; i++) {
-      var id = familyIdFromHref(links[i].getAttribute('href') || '');
-      if (id === hash) links[i].setAttribute('aria-current', 'true');
-      else links[i].removeAttribute('aria-current');
+      if (familyIdFromHref(links[i].getAttribute('href') || '') === id) return links[i];
     }
+    return null;
   }
 
-  window.addEventListener('hashchange', syncFamilyNav);
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', syncFamilyNav);
-  } else {
-    syncFamilyNav();
+  function spyId() {
+    if (!sections.length) return '';
+    var sticky = wrap ? wrap.getBoundingClientRect().bottom : 90;
+    var y = sticky + 88;
+    var id = sections[0].id;
+    for (var i = 0; i < sections.length; i++) {
+      var r = sections[i].getBoundingClientRect();
+      if (r.top <= y) id = sections[i].id;
+    }
+    return id;
+  }
+
+  function clearFlip() {
+    if (wrap) wrap.classList.remove('is-flipping');
+    links.forEach(function (el) {
+      el.style.transition = '';
+      el.style.transform = '';
+    });
+  }
+
+  function dock(id, animate) {
+    if (!id || id === currentId) return;
+    var next = linkById(id);
+    if (!next) return;
+
+    var first = {};
+    if (animate && !reduce) {
+      links.forEach(function (el) {
+        first[el.dataset.familyIndex] = el.getBoundingClientRect();
+      });
+    }
+
+    currentId = id;
+    links.forEach(function (el) {
+      el.removeAttribute('aria-current');
+      el.style.order = el.dataset.familyIndex;
+    });
+    next.setAttribute('aria-current', 'true');
+    next.style.order = '-1';
+
+    if (nav.scrollLeft) {
+      nav.scrollTo({ left: 0, behavior: reduce || !animate ? 'auto' : 'smooth' });
+    }
+
+    if (!animate || reduce) return;
+
+    if (wrap) wrap.classList.add('is-flipping');
+    links.forEach(function (el) {
+      var from = first[el.dataset.familyIndex];
+      if (!from) return;
+      var dx = from.left - el.getBoundingClientRect().left;
+      if (Math.abs(dx) < 0.5) return;
+      el.style.transition = 'none';
+      el.style.transform = 'translateX(' + dx + 'px)';
+    });
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        links.forEach(function (el) {
+          el.style.transition = 'transform 0.62s cubic-bezier(0.22, 1.78, 0.32, 1)';
+          el.style.transform = '';
+        });
+        window.clearTimeout(flipTimer);
+        flipTimer = window.setTimeout(clearFlip, 680);
+      });
+    });
+  }
+
+  nav.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('.pr-subnav-family');
+    if (!a) return;
+    dock(familyIdFromHref(a.getAttribute('href') || ''), true);
+  });
+
+  var start = familyIdFromHref(location.hash || '');
+  if (!linkById(start)) {
+    var marked = nav.querySelector('[aria-current="true"]');
+    start = spyId() || (marked ? familyIdFromHref(marked.getAttribute('href') || '') : '');
+  }
+  if (!start && links[0]) start = familyIdFromHref(links[0].getAttribute('href') || '');
+  dock(start, false);
+
+  if (sections.length > 1) {
+    window.addEventListener('scroll', function () {
+      if (spyTick) return;
+      spyTick = true;
+      requestAnimationFrame(function () {
+        spyTick = false;
+        dock(spyId(), true);
+      });
+    }, { passive: true });
+    window.addEventListener('hashchange', function () {
+      dock(familyIdFromHref(location.hash || ''), true);
+    });
   }
 })();
 

@@ -147,7 +147,7 @@ function layout(opts, body) {
     '<meta property="og:image" content="' + esc(opts.og || ORIGIN + '/Assets/Logotipo_Principal.png') + '">\n' +
     '<meta name="theme-color" content="' + esc(accent) + '">\n' +
     '<link rel="stylesheet" href="/styles.css">\n' +
-    '<link rel="stylesheet" href="/productos/productos.css">\n' +
+    '<link rel="stylesheet" href="/productos/productos.css?v=dock1">\n' +
     '<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">\n' +
     '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">\n' +
     (opts.jsonLd ? '<script type="application/ld+json">' + JSON.stringify(opts.jsonLd) + '</script>\n' : '') +
@@ -156,7 +156,7 @@ function layout(opts, body) {
     subnav(opts.backHref || '/productos', opts.backLabel, opts.familyId) + '\n' +
     body + '\n' +
     footer() + '\n' +
-    '<script src="/i18n.js"></script>\n<script src="/script.js"></script>\n<script src="/productos/productos.js"></script>\n' +
+    '<script src="/i18n.js"></script>\n<script src="/script.js"></script>\n<script src="/productos/productos.js?v=dock2"></script>\n' + +
     '</body>\n</html>\n';
 }
 
