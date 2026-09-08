@@ -40,11 +40,12 @@ function displayCase(s) {
     })
     .replace(/\bs-35\b/gi, 'S-35')
     .replace(/\bpro\+/gi, 'Pro+')
+    .replace(/\bplus\b/gi, 'Plus')
     .replace(/\bpro\b/gi, 'Pro');
 }
 
 function colonTitle(p) {
-  return !!(p.variant && (p.family === 'adhesivos-pro' || p.family === 'microconcretos'));
+  return !!(p.variant && (p.family === 'adhesivos-pro' || p.family === 'microconcretos' || p.family === 'panel-system'));
 }
 
 function fullName(p) {

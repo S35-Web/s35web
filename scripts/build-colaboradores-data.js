@@ -40,12 +40,13 @@ function normalizeName(name) {
   out = out.replace(/\((.)/g, function (_, c) {
     return '(' + String(c).toLocaleUpperCase('es');
   });
+  out = out.replace(/\bplus\b/gi, 'Plus');
   out = out.replace(/(\d)\s*l\b/g, '$1L');
   return out;
 }
 
 function productDisplayName(p) {
-  if (p.variant && (p.family === 'adhesivos-pro' || p.family === 'microconcretos')) {
+  if (p.variant && (p.family === 'adhesivos-pro' || p.family === 'microconcretos' || p.family === 'panel-system')) {
     return normalizeName(p.name) + ': ' + normalizeName(p.variant);
   }
   const raw = p.variant ? p.name + ' ' + p.variant : p.name;

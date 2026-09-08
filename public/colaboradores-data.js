@@ -114,14 +114,14 @@ window.S35_PANEL_DATA = {
     },
     {
       "slug": "basecoat-plus-blanco",
-      "name": "Basecoat plus blanco absoluto",
+      "name": "Basecoat Plus: Blanco absoluto",
       "code": "FT-PS-001",
       "family": "Panel System",
       "status": "verified"
     },
     {
       "slug": "basecoat-plus-gris",
-      "name": "Basecoat plus gris",
+      "name": "Basecoat Plus: Gris",
       "code": "FT-PS-002",
       "family": "Panel System",
       "status": "verified"
@@ -1184,7 +1184,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "basecoat-plus-gris",
-      "name": "Basecoat plus gris",
+      "name": "Basecoat Plus: Gris",
       "code": "FT-PS-002",
       "family": "Panel System",
       "kind": "seco",
@@ -1284,7 +1284,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "basecoat-plus-blanco",
-      "name": "Basecoat plus blanco absoluto",
+      "name": "Basecoat Plus: Blanco absoluto",
       "code": "FT-PS-001",
       "family": "Panel System",
       "kind": "seco",
@@ -2099,7 +2099,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "Basecoat plus blanco absoluto",
+        "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
         "role": "Cementante"
       }
@@ -2169,13 +2169,13 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "Basecoat plus gris",
+        "name": "Basecoat Plus: Gris",
         "code": "FT-PS-002",
         "role": "Carga"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "Basecoat plus blanco absoluto",
+        "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
         "role": "Carga"
       },
@@ -2255,13 +2255,13 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "Basecoat plus gris",
+        "name": "Basecoat Plus: Gris",
         "code": "FT-PS-002",
         "role": "Polímero redispersable"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "Basecoat plus blanco absoluto",
+        "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
         "role": "Polímero redispersable"
       },
@@ -2341,13 +2341,13 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "Basecoat plus gris",
+        "name": "Basecoat Plus: Gris",
         "code": "FT-PS-002",
         "role": "Retención de agua / reología"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "Basecoat plus blanco absoluto",
+        "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
         "role": "Retención de agua / reología"
       },
@@ -2421,13 +2421,13 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "Basecoat plus gris",
+        "name": "Basecoat Plus: Gris",
         "code": "FT-PS-002",
         "role": "Antideslizamiento"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "Basecoat plus blanco absoluto",
+        "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
         "role": "Antideslizamiento"
       },
@@ -2489,7 +2489,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "Basecoat plus blanco absoluto",
+        "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
         "role": "Pigmento"
       }
@@ -2509,7 +2509,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "Basecoat plus gris",
+        "name": "Basecoat Plus: Gris",
         "code": "FT-PS-002",
         "role": "Cementante"
       },
@@ -2573,13 +2573,13 @@ window.S35_PANEL_DATA = {
       },
       {
         "slug": "basecoat-plus-gris",
-        "name": "Basecoat plus gris",
+        "name": "Basecoat Plus: Gris",
         "code": "FT-PS-002",
         "role": "Agregado"
       },
       {
         "slug": "basecoat-plus-blanco",
-        "name": "Basecoat plus blanco absoluto",
+        "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
         "role": "Agregado"
       },
