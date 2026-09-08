@@ -1,14 +1,14 @@
 /* Catálogo S-35 — móvil primero, fichas agrupadas por familia */
 
 body.catalog-page {
-    --catalog-paper: #f3f1ec;
+    --catalog-paper: #ffffff;
     --catalog-ink: #141414;
     --catalog-muted: #6a6a6a;
     --catalog-line: rgba(20, 20, 20, 0.1);
     --catalog-card: #ffffff;
     --catalog-accent: #2f7d32;
     --catalog-sans: Helvetica, 'Helvetica Neue', Arial, sans-serif;
-    background: var(--catalog-paper);
+    background: #ffffff;
     color: var(--catalog-ink);
     font-family: var(--catalog-sans);
     -webkit-font-smoothing: antialiased;
@@ -21,7 +21,7 @@ body.catalog-page .nav.visible.on-white-bg,
 body.catalog-page .nav.on-light-bg,
 body.catalog-page .nav.on-dark-bg,
 body.catalog-page .nav.on-default-bg {
-    background: rgba(243, 241, 236, 0.94);
+    background: #fff;
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     border-bottom: 1px solid var(--catalog-line);
@@ -137,7 +137,7 @@ body.catalog-page .nav-toggle span {
     position: sticky;
     top: 60px;
     z-index: 40;
-    background: rgba(243, 241, 236, 0.94);
+    background: #fff;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--catalog-line);
@@ -270,7 +270,7 @@ body.catalog-page .nav-toggle span {
     max-width: none;
     flex-shrink: 0;
     background: var(--catalog-card);
-    border: 1px solid var(--catalog-line);
+    border: 1px solid transparent;
     border-radius: 14px;
     overflow: hidden;
     display: block;
@@ -299,8 +299,8 @@ body.catalog-page .nav-toggle span {
 
 .product-card:hover {
     transform: none;
-    border-color: rgba(20, 20, 20, 0.28);
-    box-shadow: 0 8px 24px rgba(20, 20, 20, 0.06);
+    border-color: rgba(20, 20, 20, 0.12);
+    box-shadow: 0 8px 24px rgba(20, 20, 20, 0.04);
 }
 
 .product-card-link {
@@ -331,7 +331,6 @@ body.catalog-page .nav-toggle span {
     height: 100%;
     object-fit: contain;
     display: block;
-    filter: drop-shadow(0 10px 16px rgba(20, 20, 20, 0.12));
 }
 
 .product-thumb--empty {
