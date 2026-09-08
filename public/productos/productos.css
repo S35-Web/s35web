@@ -13,6 +13,9 @@
   --pr-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --pr-pad: 1.5rem;
   --pr-rail: 10.5rem;
+  --pr-nav-h: 60px;
+  --pr-subnav-h: 2.9rem;
+  --pr-anchor-peek: 6rem;
   background: #fff;
   color: var(--pr-black);
   font-family: var(--pr-sans);
@@ -163,6 +166,10 @@
   grid-template-columns: var(--pr-rail) minmax(0, 1fr);
   gap: 22px;
   margin: 0 0 30px;
+}
+
+.pr-row[id] {
+  scroll-margin-top: calc(var(--pr-nav-h) + var(--pr-subnav-h) + var(--pr-anchor-peek));
 }
 
 .pr-rail {
@@ -1142,6 +1149,7 @@
 @media (max-width: 800px) {
   .pr-page {
     --pr-pad: 1.15rem;
+    --pr-anchor-peek: 4.75rem;
   }
 
   .pr-row {
