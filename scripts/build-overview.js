@@ -30,6 +30,14 @@ function media(slot, opts) {
     '</figure>';
 }
 
+function comparePanel(slot, on) {
+  const capClass = 'ov-compare-cap' + (on ? ' ov-compare-cap--on' : '');
+  return '<figure class="ov-compare-panel">' +
+    '<img src="' + esc(assetHref(slot.src)) + '" alt="' + esc(slot.alt || '') + '" loading="lazy" decoding="async">' +
+    '<figcaption class="' + capClass + '"><span>' + esc(slot.label) + '</span>' + esc(slot.note) + '</figcaption>' +
+    '</figure>';
+}
+
 function video(src, poster, fallback) {
   if (src) {
     return '<div class="ov-video">' +
@@ -83,10 +91,9 @@ function overviewHtml(p) {
     '<h2>' + esc(ov.problem.title) + '</h2>' +
     '<p>' + esc(ov.problem.text) + '</p>' +
     '</div>' +
-    media(ov.problem.compare) +
-    '<div class="ov-compare-caption">' +
-    '<div><span>' + esc(ov.problem.compare.left.label) + '</span>' + esc(ov.problem.compare.left.note) + '</div>' +
-    '<div class="ov-compare-caption--on"><span>' + esc(ov.problem.compare.right.label) + '</span>' + esc(ov.problem.compare.right.note) + '</div>' +
+    '<div class="ov-compare">' +
+    comparePanel(ov.problem.compare.left) +
+    comparePanel(ov.problem.compare.right, true) +
     '</div></section>';
 
   html += '<section class="ov-flex">' +

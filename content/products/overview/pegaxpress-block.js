@@ -23,11 +23,18 @@ module.exports = {
     title: 'En obra, nunca se mezcla dos veces igual.',
     text: 'Una pala más de cemento, un poco menos de agua, arena de otra procedencia. Cada bache de mezcla sale distinto, y esa variación es la causa más común de que las juntas se agrieten meses después.',
     compare: {
-      src: DIR + '/compare-wall.png',
-      alt: 'Comparativa: muro con junta rígida que fisura frente a junta micro flexible de Pegaxpress/Block',
-      placeholder: 'COMPARATIVA: muro partido en dos. Izquierda, junta gruesa y agrietada (mezcla de obra). Derecha, junta delgada y continua con Pegaxpress/Block. Misma luz, mismo encuadre.',
-      left: { label: 'Mezcla en obra', note: 'Dosificación variable, junta rígida' },
-      right: { label: 'Pegaxpress/Block', note: 'Fórmula fija, junta micro flexible' },
+      left: {
+        src: DIR + '/problem-fail.png',
+        alt: 'Junta de block agrietada: la mezcla rígida de obra se abre meses después',
+        label: 'Mezcla en obra',
+        note: 'Dosificación variable, junta rígida',
+      },
+      right: {
+        src: DIR + '/problem-ok.png',
+        alt: 'Junta de Pegaxpress/Block continua, uniforme y sin fisuras',
+        label: 'Pegaxpress/Block',
+        note: 'Fórmula fija, junta continua',
+      },
     },
   },
   flex: {
