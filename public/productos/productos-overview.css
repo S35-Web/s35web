@@ -229,8 +229,7 @@
 .ov-problem,
 .ov-flex,
 .ov-apply,
-.ov-yield,
-.ov-extras {
+.ov-yield {
   padding: 110px 28px;
 }
 
@@ -551,16 +550,6 @@
 
 .ov-cta:hover {
   background: #96d17f;
-}
-
-.ov-extras {
-  background: #0a0a0a;
-}
-
-.ov-extras .ov-ph {
-  max-width: 1100px;
-  margin: 0 auto;
-  min-height: 360px;
 }
 
 .pr-page--split.is-overview .footer {

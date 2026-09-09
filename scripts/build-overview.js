@@ -150,14 +150,6 @@ function overviewHtml(p) {
     '<button type="button" class="ov-cta" data-ov-tab="ficha">' + esc(ov.close.cta) + '</button>' +
     '</div></section>';
 
-  if (ov.extraPlaceholders && ov.extraPlaceholders.length) {
-    html += '<section class="ov-extras" aria-label="Tomas pendientes">' +
-      ov.extraPlaceholders.map(function (ph) {
-        return media({ placeholder: ph.legend });
-      }).join('') +
-      '</section>';
-  }
-
   html += '</div>';
   return html;
 }

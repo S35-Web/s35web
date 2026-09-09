@@ -107,10 +107,4 @@ module.exports = {
     text: 'Cuando la fórmula deja de cambiar, el resultado es estable. Eso es todo lo que un muro necesita.',
     cta: 'Ver ficha técnica completa',
   },
-  extraPlaceholders: [
-    {
-      id: 'orbit',
-      legend: 'GIRO 3D: saco aislado en estudio negro, rotación lenta 360°, reflejo en piso. Para un loop de 8 s debajo del hero, como el packshot de un iPhone.',
-    },
-  ],
 };
