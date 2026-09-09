@@ -147,7 +147,7 @@ function layout(opts, body) {
     '<meta property="og:image" content="' + esc(opts.og || ORIGIN + '/Assets/Logotipo_Principal.png') + '">\n' +
     '<meta name="theme-color" content="' + esc(accent) + '">\n' +
     '<link rel="stylesheet" href="/styles.css">\n' +
-    '<link rel="stylesheet" href="/productos/productos.css?v=dock1">\n' +
+    '<link rel="stylesheet" href="/productos/productos.css?v=bags1">\n' +
     '<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">\n' +
     '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">\n' +
     (opts.jsonLd ? '<script type="application/ld+json">' + JSON.stringify(opts.jsonLd) + '</script>\n' : '') +
@@ -156,7 +156,7 @@ function layout(opts, body) {
     subnav(opts.backHref || '/productos', opts.backLabel, opts.familyId) + '\n' +
     body + '\n' +
     footer() + '\n' +
-    '<script src="/i18n.js"></script>\n<script src="/script.js"></script>\n<script src="/productos/productos.js?v=dock2"></script>\n' + +
+    '<script src="/i18n.js"></script>\n<script src="/script.js"></script>\n<script src="/productos/productos.js?v=dock2"></script>\n' +
     '</body>\n</html>\n';
 }
 
@@ -507,7 +507,7 @@ function indexPage() {
       '<div class="pr-family-head"><h2>' + esc(g.family.name) + '</h2>' +
       '<span class="pr-family-count">' + g.items.length + ' ' + (g.items.length === 1 ? 'producto' : 'productos') + '</span></div>' +
       (g.family.note ? '<p class="pr-family-note">' + esc(g.family.note) + '</p>' : '') +
-      '<ul class="pr-list">' +
+      '<ul class="pr-list' + (g.family.id === 'liquidos' ? ' pr-list--liquid' : ' pr-list--bag') + '">' +
       g.items.map(function (p) {
         return '<li><a href="/productos/' + esc(p.slug) + '">' +
           listThumb(p) +
@@ -598,11 +598,13 @@ function catalogInitials(p) {
 function listThumb(p) {
   const pack = p.figures && p.figures.pack;
   const src = pack && pack.src ? catalogImgSrc(pack.src) : '';
+  const isLiquid = p.family === 'liquidos';
+  const thumbClass = 'pr-list-thumb ' + (isLiquid ? 'pr-list-thumb--liquid' : 'pr-list-thumb--bag');
   if (src) {
-    return '<span class="pr-list-thumb"><img src="' + esc(src) + '" alt="' +
-      esc(pack.alt || fullName(p)) + '" width="56" height="70" loading="lazy" decoding="async"></span>';
+    return '<span class="' + thumbClass + '"><img src="' + esc(src) + '" alt="' +
+      esc(pack.alt || fullName(p)) + '" loading="lazy" decoding="async"></span>';
   }
-  return '<span class="pr-list-thumb pr-list-thumb--ph" style="--thumb-accent:' +
+  return '<span class="' + thumbClass + ' pr-list-thumb--ph" style="--thumb-accent:' +
     esc(p.accent) + '" aria-hidden="true">' + esc(catalogInitials(p)) + '</span>';
 }
 
