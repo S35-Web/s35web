@@ -4,13 +4,14 @@
 // Perla" (Rev. 01 · 2026). Blanco Absoluto y Gris reutilizan estos datos.
 
 const waxtardPremium = require('../waxtard-premium');
+const { sack2026 } = require('../sheet');
 
 module.exports = waxtardPremium({
   slug: 'waxtard-blanco-perla',
   code: 'FT-PR-001',
   variant: 'Blanco Perla',
   accent: '#2f7d32',
-  packSrc: '/Assets/productos_background/WAXTARD-blanco-perla.png',
+  packSrc: sack2026('Waxtard-Blanco-Perla.png'),
   packAlt: 'Saco de 25 kg de Waxtard Blanco Perla',
   seo: 'Waxtard Blanco Perla: estuco premium hidrófugo y antisalitre para exteriores e interiores. Repele el agua líquida sin cerrar el paso al vapor. Saco de 25 kg.',
   lead: 'Mortero seco de acabado, listo para amasar con agua. Da un acabado blanco perla terso y, al mismo tiempo, repele el agua líquida sin cerrar el paso al vapor: el muro sigue respirando mientras la lluvia y el salitre se quedan afuera. Formulado para aplicarse a mano o proyectado en espesores delgados, sobre repellos, block, concreto y sistemas de fachada. Aporta un acabado tono blanco perla cálido con matices minerales naturales, ideal para acabados aparentes rústicos o contemporáneos, o como base estabilizada para pintura.',

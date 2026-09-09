@@ -1,6 +1,6 @@
 'use strict';
 
-const { draft, NOTICE_VERIFIED } = require('../sheet');
+const { draft, sack2026, NOTICE_VERIFIED } = require('../sheet');
 
 // Ficha de Pegaxpress Porcelánico Universal. Valores de adhesivo tipo C
 // (ANSI A118.4 / NMX-C-420) adaptados a saco de 25 kg. No se copia marca,
@@ -22,7 +22,7 @@ module.exports = draft({
     'Tipo C · saco de 25 kg',
   ],
   lead: 'Mortero adhesivo de granulometría media, enriquecido con polímeros, para pegar porcelánico y porcelanato de baja absorción. El dorso denso no toma agua como la cerámica habitual: el adhesivo tiene que mojar pieza y soporte. Porcelánico hasta 90 × 90 cm; cerámico en cualquier formato.',
-  pack: '/Assets/productos_background/porcelanico.png',
+  pack: sack2026('Pegaexpres-Porcelanico.png'),
   packAlt: 'Saco de 25 kg de Pegaxpress Porcelánico Universal',
   identification: [
     { label: 'Tipo de producto', value: 'Mortero adhesivo cementoso tipo C, enriquecido con polímeros' },

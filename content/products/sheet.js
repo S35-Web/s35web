@@ -6,6 +6,10 @@ const NOTICE_VERIFIED =
 const NOTICE_DRAFT =
   'Ficha en borrador interno, pendiente de validación comercial. Los valores son de referencia y no constituyen especificación. Solicitar la ficha impresa vigente antes de especificar en obra.';
 
+function sack2026(file) {
+  return '/Assets/Diseno de Sacos 2026/' + file;
+}
+
 function packFig(src, alt) {
   return {
     pack: src
@@ -76,4 +80,4 @@ function draft(p) {
   return out;
 }
 
-module.exports = { draft, packFig, storagePairs, NOTICE_VERIFIED, NOTICE_DRAFT };
+module.exports = { draft, packFig, storagePairs, sack2026, NOTICE_VERIFIED, NOTICE_DRAFT };

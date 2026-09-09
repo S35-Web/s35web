@@ -1,6 +1,6 @@
 'use strict';
 
-const { draft, NOTICE_VERIFIED } = require('../sheet');
+const { draft, sack2026, NOTICE_VERIFIED } = require('../sheet');
 
 // Ficha de Styrobond Pro+. Datos de mortero para pegar y revestir EPS/XPS,
 // adaptados a saco de 25 kg. No se copia marca ni garantía de terceros.
@@ -22,7 +22,7 @@ module.exports = draft({
     'Línea Pro+ · saco de 25 kg',
   ],
   lead: 'Mortero para pegar y revestir placas y elementos decorativos de poliestireno expandido (EPS) y extruido, en interior y exterior. Reforzado con microfibras para reducir agrietamientos. Como acabado se flotea y se puede pintar.',
-  pack: '/Assets/productos_background/styrobond.png',
+  pack: sack2026('Styrobond-Pro.png'),
   packAlt: 'Saco de 25 kg de Styrobond Pro+, pegamento y recubrimiento para EPS',
   identification: [
     { label: 'Tipo de producto', value: 'Mortero adhesivo y recubrimiento para poliestireno' },

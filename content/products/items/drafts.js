@@ -1,6 +1,6 @@
 'use strict';
 
-const { draft } = require('../sheet');
+const { draft, sack2026 } = require('../sheet');
 
 function mortar(p) {
   return draft(Object.assign({
@@ -69,7 +69,7 @@ module.exports = [
     variant: 'Block',
     line: 'Adhesivo para block de concreto',
     accent: '#2e7d32',
-    pack: '/Assets/productos_background/pastablock.png',
+    pack: sack2026('Pegaexpress-Block.png'),
     description: 'Pegaxpress: Block, adhesivo para pegado de block de concreto. Saco de 25 kg.',
     strip: ['Adhesivo para block de concreto', 'Saco de 25 kg'],
     lead: 'Adhesivo de la línea Pegaxpress para asentar block de concreto. Mortero seco, listo para amasar con agua. Borrador interno.',

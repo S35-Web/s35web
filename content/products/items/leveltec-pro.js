@@ -1,6 +1,6 @@
 'use strict';
 
-const { draft, NOTICE_VERIFIED } = require('../sheet');
+const { draft, sack2026, NOTICE_VERIFIED } = require('../sheet');
 
 // Contenido tomado de la ficha de Leveltec Pro® que entregó el equipo.
 // Densidades, tiempos, resistencias, adherencia y contracción son estimaciones
@@ -22,7 +22,7 @@ module.exports = draft({
     '2–10 mm por capa · saco de 35 kg',
   ],
   lead: 'Mortero nivelante de base cementante para corregir irregularidades, nivelar y dejar una base lisa, uniforme y resistente antes de instalar el revestimiento. Residencial, comercial e industrial; interior y exterior. Se tiende con llana, rastra o regla.',
-  pack: '/Assets/productos_background/LEVELTEC-pro.jpg',
+  pack: sack2026('Leveltec-Pro.png'),
   packAlt: 'Saco de 35 kg de Leveltec Pro, nivelante cementante de pisos',
   identification: [
     { label: 'Tipo de producto', value: 'Mortero nivelante cementante para pisos' },

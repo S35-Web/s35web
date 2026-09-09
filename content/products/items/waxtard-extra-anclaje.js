@@ -1,6 +1,6 @@
 'use strict';
 
-const { draft, storagePairs, NOTICE_VERIFIED } = require('../sheet');
+const { draft, storagePairs, sack2026, NOTICE_VERIFIED } = require('../sheet');
 
 // Contenido tomado de la ficha publicada de Waxtard Extra Anclaje (EIFS Extra
 // Anclaje). El saco es el de EIFS / Extra Anclaje; no se usa el de Estuco Base.
@@ -21,7 +21,7 @@ module.exports = draft({
     'Para sustratos lisos · saco de 25 kg',
   ],
   lead: 'Estuco para sustrato de baja o nula absorción. Ancla químicamente sin necesidad de picar el sustrato ni aplicar un puente adhesivo aparte. Acabado blanco perla, fino. Pensado para superficies lisas o poco porosas: concreto cimbrado, prefabricado, sistemas EIFS/panel, pintura firme y azulejo o vitrificado sin picar.',
-  pack: '/Assets/productos_background/WAXTARD-extra-anclaje.jpg',
+  pack: sack2026('Waxtard-Extra-Anclaje.png'),
   packAlt: 'Saco de 25 kg de Waxtard Extra Anclaje (EIFS Extra Anclaje)',
   identification: [
     { label: 'Tipo de producto', value: 'Estuco hidrófugo fino con anclaje químico' },

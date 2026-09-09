@@ -1,6 +1,6 @@
 'use strict';
 
-const { draft, NOTICE_VERIFIED } = require('../sheet');
+const { draft, sack2026, NOTICE_VERIFIED } = require('../sheet');
 
 // Ficha de Pegaxpress Piso sobre piso. Los valores de clase adhesivo tipo C
 // (ANSI A118.4 / NMX-C-420) se adaptan a saco de 25 kg. No se copia marca,
@@ -22,7 +22,7 @@ module.exports = draft({
     'Tipo C · saco de 25 kg',
   ],
   lead: 'Mortero adhesivo de granulometría media, con polímeros, para pegar pieza nueva sobre cerámica existente, concreto pulido, block, tabique o paneles preparados, sin demoler el recubrimiento viejo. La pieza existente debe estar firme y el brillo graso se prepara antes de pegar. Los desniveles se corrigen con Leveltec.',
-  pack: '/Assets/productos_background/piso-sobre-piso.png',
+  pack: sack2026('Pegaexpres-PSP.png'),
   packAlt: 'Saco de 25 kg de Pegaxpress Piso sobre piso',
   identification: [
     { label: 'Tipo de producto', value: 'Mortero adhesivo cementoso tipo C, enriquecido con polímeros' },

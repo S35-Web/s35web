@@ -1,6 +1,6 @@
 'use strict';
 
-const { draft, NOTICE_VERIFIED } = require('../sheet');
+const { draft, sack2026, NOTICE_VERIFIED } = require('../sheet');
 
 // Ficha de Pegaxpress Ultraforce. Valores de adhesivo tipo C semiflexible
 // (ANSI A118.4 / NMX-C-420) adaptados a saco de 25 kg. No se copia marca,
@@ -22,7 +22,7 @@ module.exports = draft({
     'Tipo C · saco de 25 kg',
   ],
   lead: 'Mortero adhesivo semiflexible de granulometría media, modificado con polímeros, para pegar piezas de alta gama. Soporta flexiones, vibraciones, cambios de temperatura, inmersión permanente y tráfico industrial. Sirve también para piso sobre piso. Los desniveles se corrigen con Leveltec.',
-  pack: '/Assets/productos_background/ultraforce.png',
+  pack: sack2026('Pegaexpres-Ultraforce.png'),
   packAlt: 'Saco de 25 kg de Pegaxpress Ultraforce',
   identification: [
     { label: 'Tipo de producto', value: 'Mortero adhesivo cementoso semiflexible tipo C, modificado con polímeros' },

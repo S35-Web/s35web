@@ -1,6 +1,6 @@
 'use strict';
 
-const { draft, NOTICE_VERIFIED } = require('../sheet');
+const { draft, sack2026, NOTICE_VERIFIED } = require('../sheet');
 
 // Ficha de Pegaxpress Cerámico. Valores de adhesivo tipo B (ANSI A118.1 /
 // NMX-C-420) adaptados a saco de 25 kg. No se copia marca, certificado,
@@ -22,7 +22,7 @@ module.exports = draft({
     'Tipo B · saco de 25 kg',
   ],
   lead: 'Mortero adhesivo de cemento Portland, cargas seleccionadas y aditivos, para pegar recubrimiento cerámico de media y alta absorción sobre sustrato firme base cemento, rugoso o liso. Uso interior: estancias, recámaras, cocinas y baños.',
-  pack: '/Assets/productos_background/ceramico.png',
+  pack: sack2026('Pegaexpres-Ceramico.png'),
   packAlt: 'Saco de 25 kg de Pegaxpress Cerámico',
   identification: [
     { label: 'Tipo de producto', value: 'Mortero adhesivo cementoso tipo B, en seco' },

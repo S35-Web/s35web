@@ -27,6 +27,11 @@ function attr(name, value) {
   return value ? ' ' + name + '="' + esc(value) + '"' : '';
 }
 
+function assetHref(src) {
+  if (!src) return '';
+  return String(src).split('/').map(encodeURIComponent).join('/');
+}
+
 function displayCase(s) {
   const t = String(s == null ? '' : s).trim();
   if (!t) return '';
@@ -167,7 +172,7 @@ function figure(fig, opts) {
   if (!fig || !fig.src) {
     return '<div class="pr-fig-missing">' + esc(opts.missing || 'Fotografía pendiente') + '</div>';
   }
-  return '<img src="' + esc(fig.src) + '" alt="' + esc(fig.alt || '') + '"' +
+  return '<img src="' + esc(assetHref(fig.src)) + '" alt="' + esc(fig.alt || '') + '"' +
     (opts.priority ? ' fetchpriority="high"' : ' loading="lazy"') + ' decoding="async">';
 }
 
@@ -461,7 +466,7 @@ function productPage(p) {
     accent: p.accent,
     familyId: p.family,
     ogType: 'product',
-    og: pack ? ORIGIN + pack.src : undefined,
+    og: pack && pack.src ? ORIGIN + assetHref(pack.src) : undefined,
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Product',
@@ -470,7 +475,7 @@ function productPage(p) {
       category: family ? family.name : undefined,
       brand: { '@type': 'Brand', name: 'S-35' },
       manufacturer: { '@type': 'Organization', name: 'S-35 Technology' },
-      image: pack ? ORIGIN + pack.src : undefined,
+      image: pack && pack.src ? ORIGIN + assetHref(pack.src) : undefined,
       url: ORIGIN + '/productos/' + p.slug,
     },
   }, body);
@@ -581,6 +586,7 @@ function validate() {
 
 function catalogImgSrc(src) {
   if (!src) return '';
+  if (src.indexOf('/Diseno de Sacos 2026/') !== -1) return src;
   const base = path.basename(src).replace(/\.[^.]+$/, '');
   const thumb = '/Assets/productos_thumbs/' + base + '.jpg';
   if (fs.existsSync(path.join(ROOT, 'public', thumb.replace(/^\//, '')))) return thumb;
@@ -601,7 +607,7 @@ function listThumb(p) {
   const isLiquid = p.family === 'liquidos';
   const thumbClass = 'pr-list-thumb ' + (isLiquid ? 'pr-list-thumb--liquid' : 'pr-list-thumb--bag');
   if (src) {
-    return '<span class="' + thumbClass + '"><img src="' + esc(src) + '" alt="' +
+    return '<span class="' + thumbClass + '"><img src="' + esc(assetHref(src)) + '" alt="' +
       esc(pack.alt || fullName(p)) + '" loading="lazy" decoding="async"></span>';
   }
   return '<span class="' + thumbClass + ' pr-list-thumb--ph" style="--thumb-accent:' +
@@ -614,7 +620,7 @@ function catalogCard(p) {
   const pack = p.figures && p.figures.pack;
   const src = pack && pack.src ? catalogImgSrc(pack.src) : '';
   const thumb = src
-    ? '<img src="' + esc(src) + '" alt="' + esc(pack.alt || fullName(p)) + '" loading="lazy" decoding="async">'
+    ? '<img src="' + esc(assetHref(src)) + '" alt="' + esc(pack.alt || fullName(p)) + '" loading="lazy" decoding="async">'
     : '<span>' + esc(catalogInitials(p)) + '</span>';
   const thumbClass = src ? 'product-thumb' : 'product-thumb product-thumb--empty';
   const packLabel = /cubeta/i.test(p.packaging || '') ? p.packaging : (p.packaging ? 'Saco ' + p.packaging : '');

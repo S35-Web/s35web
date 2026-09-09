@@ -1,6 +1,6 @@
 'use strict';
 
-const { draft, storagePairs, NOTICE_VERIFIED } = require('../sheet');
+const { draft, storagePairs, sack2026, NOTICE_VERIFIED } = require('../sheet');
 
 // Contenido tomado de la ficha publicada de Cemento Plástico Concreto Aparente.
 
@@ -20,7 +20,7 @@ module.exports = draft({
     'Capas delgadas a llana · saco de 25 kg',
   ],
   lead: 'Microconcreto de acabado aparente aplicado en capas delgadas a llana. Se pule para obtener un acabado continuo tono Dolphin Fin (gris pulido). La variación de tono es propia del concreto aparente, no un defecto.',
-  pack: '/Assets/productos_background/cemento-plastico.png',
+  pack: sack2026('Microconcreto-Concreto-Aparente.png'),
   packAlt: 'Saco de 25 kg de Microconcreto: Concreto aparente (Cemento plástico)',
   identification: [
     { label: 'Tipo de producto', value: 'Microconcreto de acabado aparente' },

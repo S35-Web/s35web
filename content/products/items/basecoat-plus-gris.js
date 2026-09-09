@@ -4,6 +4,7 @@
 // Blanco Absoluto reutiliza estos datos y solo cambia el color.
 
 const basecoatPlus = require('../basecoat-plus');
+const { sack2026 } = require('../sheet');
 
 module.exports = basecoatPlus({
   slug: 'basecoat-plus-gris',
@@ -12,7 +13,7 @@ module.exports = basecoatPlus({
   color: 'Gris',
   colorLower: 'gris',
   accent: '#4a4a4a',
-  pack: '/Assets/productos_background/basecoat.png',
+  pack: sack2026('Basecoat-Blanco-Gris.png'),
   packAlt: 'Saco de 25 kg de Basecoat Plus: Gris',
   seo: 'Basecoat Plus: Gris, adhesivo y recubrimiento para paneles de cemento, yeso y poliestireno. Interior y exterior. Saco de 25 kg.',
   lead: 'Mortero adhesivo y recubrimiento de la línea Panel System, en gris. Base cemento con resinas y microfibras: sirve como base sobre paneles de cemento, yeso y poliestireno que van a recibir texturizado o pintura; como adhesivo de placas y molduras de EPS; y como recubrimiento decorativo de molduras. Interior y exterior.',
