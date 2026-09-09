@@ -360,6 +360,18 @@
   background: #ddd;
 }
 
+.ov-flex .ov-video {
+  overflow: hidden;
+  background: #ddd;
+  line-height: 0;
+}
+
+.ov-flex .ov-video video {
+  background: #ddd;
+  border: 0;
+  outline: none;
+}
+
 .ov-lab {
   position: relative;
   background: #000;
@@ -580,6 +592,19 @@
 
   .ov-video video {
     height: 320px;
+  }
+
+  .ov-flex .ov-video {
+    overflow: hidden;
+    margin-left: -16px;
+    margin-right: -16px;
+    width: calc(100% + 32px);
+    max-width: none;
+  }
+
+  .ov-flex .ov-video video {
+    background: #ddd;
+    transform: scale(1.04);
   }
 
   .ov-hero,
