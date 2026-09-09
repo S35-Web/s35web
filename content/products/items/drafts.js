@@ -1,6 +1,6 @@
 'use strict';
 
-const { draft, sack2026 } = require('../sheet');
+const { draft } = require('../sheet');
 
 function mortar(p) {
   return draft(Object.assign({
@@ -59,36 +59,6 @@ module.exports = [
     notes: [
       'Descontinuado: no aparece en el catálogo, el índice de /productos ni el sitemap.',
     ],
-  }),
-
-  mortar({
-    slug: 'pegaxpress-block',
-    code: 'FT-PP-004',
-    family: 'adhesivos-pro',
-    name: 'PEGAXPRESS',
-    variant: 'Block',
-    line: 'Adhesivo para block de concreto',
-    accent: '#2e7d32',
-    pack: sack2026('Pegaexpress-Block.png'),
-    description: 'Pegaxpress: Block, adhesivo para pegado de block de concreto. Saco de 25 kg.',
-    strip: ['Adhesivo para block de concreto', 'Saco de 25 kg'],
-    lead: 'Adhesivo de la línea Pegaxpress para asentar block de concreto. Mortero seco, listo para amasar con agua. Borrador interno.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Adhesivo cementoso para mampostería de concreto' },
-      { label: 'Función', value: 'Pegado de block de concreto' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'Mortero de asiento para block de concreto.',
-      'Para loseta sobre loseta, Pegaxpress: Piso sobre piso. Cellbond (block celular) está fuera de catálogo.',
-    ],
-    uses: [
-      { title: 'Block de concreto.', text: 'Asiento y junta en muros de block.' },
-      { title: 'Geometría.', text: 'Seguir el espesor de junta del proyecto.' },
-      { title: 'Sustrato.', text: 'Cimentación y arranque según el proyecto estructural.' },
-    ],
-    apply: 'Aplicar en la junta, asentar el block y retirar el excedente antes de que filme.',
-    kpi3v: 'Block', kpi3l: 'asiento de mampostería',
   }),
 
   mortar({
