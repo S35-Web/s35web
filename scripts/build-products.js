@@ -9,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const catalog = require('../content/products');
+const { overviewHtml } = require('./build-overview');
 
 const ROOT = path.join(__dirname, '..');
 const OUT = path.join(ROOT, 'public', 'productos');
@@ -153,15 +154,16 @@ function layout(opts, body) {
     '<meta name="theme-color" content="' + esc(accent) + '">\n' +
     '<link rel="stylesheet" href="/styles.css">\n' +
     '<link rel="stylesheet" href="/productos/productos.css?v=bags2">\n' +
-    '<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">\n' +
+    (opts.split ? '<link rel="stylesheet" href="/productos/productos-overview.css?v=ov1">\n' : '') +
+    '<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">\n' +
     '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">\n' +
     (opts.jsonLd ? '<script type="application/ld+json">' + JSON.stringify(opts.jsonLd) + '</script>\n' : '') +
-    '</head>\n<body class="pr-page" style="--pr-accent:' + esc(accent) + '">\n' +
+    '</head>\n<body class="pr-page' + (opts.split ? ' pr-page--split is-overview' : '') + '" style="--pr-accent:' + esc(accent) + '">\n' +
     s35Nav() + '\n' +
-    subnav(opts.backHref || '/productos', opts.backLabel, opts.familyId) + '\n' +
+    (opts.split ? '' : subnav(opts.backHref || '/productos', opts.backLabel, opts.familyId) + '\n') +
     body + '\n' +
     footer() + '\n' +
-    '<script src="/i18n.js"></script>\n<script src="/script.js"></script>\n<script src="/productos/productos.js?v=dock2"></script>\n' +
+    '<script src="/i18n.js"></script>\n<script src="/script.js"></script>\n<script src="/productos/productos.js?v=ov1"></script>\n' +
     '</body>\n</html>\n';
 }
 
@@ -458,6 +460,13 @@ function productPage(p) {
 
   body += '</article>';
 
+  if (p.overview) {
+    body = overviewHtml(p) +
+      '<div id="ov-panel-ficha" class="ov-view ov-view--ficha" role="tabpanel" aria-labelledby="ov-tab-ficha" hidden>' +
+      body +
+      '</div>';
+  }
+
   const family = catalog.taxonomy.FAMILY_BY_ID[p.family];
   return layout({
     title: title + ' | ' + p.line + ' | S-35 Technology',
@@ -465,6 +474,7 @@ function productPage(p) {
     path: '/productos/' + p.slug,
     accent: p.accent,
     familyId: p.family,
+    split: !!p.overview,
     ogType: 'product',
     og: pack && pack.src ? ORIGIN + assetHref(pack.src) : undefined,
     jsonLd: {

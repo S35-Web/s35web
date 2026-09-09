@@ -77,6 +77,7 @@ function draft(p) {
     notice: p.notice || (p.status === 'verified' ? NOTICE_VERIFIED : NOTICE_DRAFT),
   };
   if (p.legacy) out.legacy = true;
+  if (p.overview) out.overview = p.overview;
   return out;
 }
 

@@ -1,6 +1,7 @@
 'use strict';
 
 const { draft, sack2026 } = require('../sheet');
+const overview = require('../overview/pegaxpress-block');
 
 // Contenido tomado de la ficha técnica oficial "Ficha Tecnica Pastablock"
 // (Pegaxpress/Block, FT-PR-006 · Rev. 01 · 2026). No se inventan litros de
@@ -24,6 +25,7 @@ module.exports = draft({
   lead: 'Pegaxpress/Block S-35® es un pegamento en polvo diseñado específicamente para el pegado de piezas de block hueco. Su fórmula incluye una combinación precisa de cemento, polímeros y aditivos dosificados en laboratorio: solo requiere agregar agua para quedar listo, con un desempeño uniforme en cada saco. La dosificación profesional y controlada de su fórmula reduce de forma notable la aparición de grietas frente a una mezcla dosificada en obra.',
   pack: sack2026('Pegaexpress-Block.png'),
   packAlt: 'Saco de 30 kg de Pegaxpress: Block',
+  overview: overview,
   identification: [
     { label: 'Tipo de producto', value: 'Pegamento cementante en polvo, premezclado en seco' },
     { label: 'Función', value: 'Pegado de piezas de block hueco' },
