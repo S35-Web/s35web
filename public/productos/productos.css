@@ -956,6 +956,87 @@
   border-left: 3px solid var(--thumb-accent, var(--pr-accent));
 }
 
+/* Saquitos: empaque completo legible (no miniatura de fila). */
+.pr-list--packs {
+  gap: 0;
+}
+
+.pr-list-item--pack a {
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+  align-items: start;
+  padding: 1.15rem 0 1.3rem;
+}
+
+.pr-list-pack {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 220px;
+  padding: 0.35rem 0 0.15rem;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 100%, rgba(20, 20, 20, 0.05), transparent 70%);
+}
+
+.pr-list-pack img {
+  width: auto;
+  height: auto;
+  max-width: min(58vw, 210px);
+  max-height: 290px;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 14px 24px rgba(20, 20, 20, 0.12));
+}
+
+.pr-list-pack--ph {
+  width: min(58vw, 210px);
+  min-height: 220px;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--thumb-accent, var(--pr-accent));
+  border-bottom: 3px solid var(--thumb-accent, var(--pr-accent));
+  background: #fafafa;
+}
+
+.pr-list-item--pack .pr-list-copy {
+  gap: 4px;
+}
+
+.pr-list-item--pack .pr-list-name {
+  font-size: 17px;
+}
+
+.pr-list-item--pack .pr-list-meta {
+  justify-self: start;
+  white-space: normal;
+}
+
+@media (min-width: 640px) {
+  .pr-list--packs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.75rem;
+  }
+
+  .pr-list-item--pack {
+    border-bottom: 1px solid var(--pr-line);
+  }
+
+  .pr-list-pack img {
+    max-width: 200px;
+    max-height: 300px;
+  }
+}
+
+@media (min-width: 960px) {
+  .pr-list--packs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .pr-list-copy {
   min-width: 0;
   display: flex;
@@ -1270,7 +1351,7 @@
     width: 100%;
     max-width: 220px;
   }
-  .pr-list a {
+  .pr-list:not(.pr-list--packs) a {
     grid-template-columns: 48px minmax(0, 1fr);
   }
   .pr-list-thumb {
@@ -1278,8 +1359,18 @@
     height: 60px;
     grid-row: 1 / span 2;
   }
-  .pr-list-meta {
+  .pr-list:not(.pr-list--packs) .pr-list-meta {
     justify-self: start;
+  }
+  .pr-list-item--pack a {
+    grid-template-columns: 1fr;
+  }
+  .pr-list-pack {
+    min-height: 200px;
+  }
+  .pr-list-pack img {
+    max-width: min(64vw, 200px);
+    max-height: 270px;
   }
 }
 
