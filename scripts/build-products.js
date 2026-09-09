@@ -501,21 +501,16 @@ function indexPage() {
   const accents = familyAccentMap();
   groups.forEach(function (g) {
     const familyAccent = accents[g.family.id] || '#2f7d32';
+    const liquidFamily = isLiquidProduct({ family: g.family.id });
     body += '<section class="pr-row" id="' + esc(g.family.id) + '" style="--family-accent:' + esc(familyAccent) + '">' +
       '<div class="pr-rail">' + esc(g.family.name) + '</div>' +
       '<div class="pr-body pr-family">' +
       '<div class="pr-family-head"><h2>' + esc(g.family.name) + '</h2>' +
       '<span class="pr-family-count">' + g.items.length + ' ' + (g.items.length === 1 ? 'producto' : 'productos') + '</span></div>' +
       (g.family.note ? '<p class="pr-family-note">' + esc(g.family.note) + '</p>' : '') +
-      '<ul class="pr-list">' +
+      '<ul class="pr-list' + (liquidFamily ? '' : ' pr-list--packs') + '">' +
       g.items.map(function (p) {
-        return '<li><a href="/productos/' + esc(p.slug) + '">' +
-          listThumb(p) +
-          '<span class="pr-list-copy">' +
-          '<span class="pr-list-name">' + esc(fullName(p)) + '</span>' +
-          '<span class="pr-list-line">' + esc(p.line) + '</span></span>' +
-          '<span class="pr-list-meta">' + esc(p.packaging) +
-          (p.status === 'verified' ? '' : ' · borrador') + '</span></a></li>';
+        return listItem(p);
       }).join('') +
       '</ul></div></section>';
   });
@@ -595,6 +590,20 @@ function catalogInitials(p) {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
+function isLiquidProduct(p) {
+  if (!p) return false;
+  if (p.family === 'liquidos') return true;
+  return /cubeta/i.test(p.packaging || '');
+}
+
+function listItemCopy(p) {
+  return '<span class="pr-list-copy">' +
+    '<span class="pr-list-name">' + esc(fullName(p)) + '</span>' +
+    '<span class="pr-list-line">' + esc(p.line) + '</span></span>' +
+    '<span class="pr-list-meta">' + esc(p.packaging) +
+    (p.status === 'verified' ? '' : ' · borrador') + '</span>';
+}
+
 function listThumb(p) {
   const pack = p.figures && p.figures.pack;
   const src = pack && pack.src ? catalogImgSrc(pack.src) : '';
@@ -604,6 +613,29 @@ function listThumb(p) {
   }
   return '<span class="pr-list-thumb pr-list-thumb--ph" style="--thumb-accent:' +
     esc(p.accent) + '" aria-hidden="true">' + esc(catalogInitials(p)) + '</span>';
+}
+
+// Saquitos y secos: imagen de empaque a tamaño legible (diseño completo).
+// Líquidos siguen en fila compacta con miniatura.
+function listPack(p) {
+  const pack = p.figures && p.figures.pack;
+  const src = pack && pack.src ? catalogImgSrc(pack.src) : '';
+  if (src) {
+    return '<span class="pr-list-pack"><img src="' + esc(src) + '" alt="' +
+      esc(pack.alt || fullName(p)) + '" width="180" height="248" loading="lazy" decoding="async"></span>';
+  }
+  return '<span class="pr-list-pack pr-list-pack--ph" style="--thumb-accent:' +
+    esc(p.accent) + '" aria-hidden="true">' + esc(catalogInitials(p)) + '</span>';
+}
+
+function listItem(p) {
+  const href = '/productos/' + esc(p.slug);
+  if (isLiquidProduct(p)) {
+    return '<li class="pr-list-item"><a href="' + href + '">' +
+      listThumb(p) + listItemCopy(p) + '</a></li>';
+  }
+  return '<li class="pr-list-item pr-list-item--pack"><a href="' + href + '">' +
+    listPack(p) + listItemCopy(p) + '</a></li>';
 }
 
 function catalogCard(p) {
