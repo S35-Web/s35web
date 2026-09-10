@@ -634,6 +634,25 @@
     padding-left: 16px;
     padding-right: 16px;
   }
+
+  .ov-hero {
+    overflow: hidden;
+  }
+
+  .ov-hero .ov-media {
+    max-width: none;
+    width: calc(100% + 32px);
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-bottom: 8px;
+  }
+
+  .ov-hero .ov-media img {
+    width: 155%;
+    max-width: none;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 @media (max-width: 560px) {
@@ -646,6 +665,10 @@
 
   .ov-yield-card strong {
     font-size: 32px;
+  }
+
+  .ov-hero .ov-media img {
+    width: 168%;
   }
 }
 
