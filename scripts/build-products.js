@@ -63,7 +63,7 @@ function colonTitle(p) {
 
 function fullName(p) {
   if (colonTitle(p)) {
-    return displayCase(p.name) + ': ' + displayVariant(p.variant);
+    return displayCase(p.name) + ': ' + displayCase(p.variant);
   }
   const raw = p.variant ? p.name + ' ' + p.variant : p.name;
   return displayCase(raw);
