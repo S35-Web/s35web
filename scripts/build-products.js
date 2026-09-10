@@ -50,13 +50,20 @@ function displayCase(s) {
     .replace(/\bpro\b/gi, 'Pro');
 }
 
+function displayVariant(s) {
+  const t = String(s == null ? '' : s).trim();
+  if (!t) return '';
+  if (t === t.toLocaleUpperCase('es') && /[A-ZÁÉÍÓÚÑ]/.test(t)) return t;
+  return displayCase(t);
+}
+
 function colonTitle(p) {
   return !!(p.variant && (p.family === 'adhesivos-pro' || p.family === 'microconcretos' || p.family === 'panel-system'));
 }
 
 function fullName(p) {
   if (colonTitle(p)) {
-    return displayCase(p.name) + ': ' + displayCase(p.variant);
+    return displayCase(p.name) + ': ' + displayVariant(p.variant);
   }
   const raw = p.variant ? p.name + ' ' + p.variant : p.name;
   return displayCase(raw);
@@ -399,7 +406,7 @@ function productPage(p) {
 
   let heroMain = '<div class="pr-hero-main">' +
     '<h1>' + esc(displayCase(p.name)) + (colonTitle(p) ? ':' : '') + '</h1>' +
-    (p.variant ? '<div class="pr-variant">' + esc(displayCase(p.variant)) + '</div>' : '') +
+    (p.variant ? '<div class="pr-variant">' + esc(displayVariant(p.variant)) + '</div>' : '') +
     '<div class="pr-strip">' + p.strip.join('<br>') + '</div>' +
     '<p class="pr-lead">' + p.lead + '</p>';
 
@@ -640,7 +647,7 @@ function catalogCard(p) {
     '<div class="product-copy">' +
     '<p class="product-kicker">' + esc(family ? family.name : '') + '</p>' +
     '<h3>' + esc(fullName(p)) + '</h3>' +
-    (colonTitle(p) ? '' : (p.variant ? '<p class="product-variant">' + esc(displayCase(p.variant)) + '</p>' : '')) +
+    (colonTitle(p) ? '' : (p.variant ? '<p class="product-variant">' + esc(displayVariant(p.variant)) + '</p>' : '')) +
     (p.line ? '<p class="product-line">' + esc(p.line) + '</p>' : '') +
     '<p class="product-meta"><span>' + esc(packLabel) + '</span><span class="product-go">Ver ficha</span></p>' +
     '</div></a></article>';

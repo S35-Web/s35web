@@ -4,7 +4,7 @@ const DIR = '/Assets/overview/pegaxpress-block';
 
 module.exports = {
   kicker: 'Waxtard S-35',
-  headline: ['PEGAXPRESS', '/Block'],
+  headline: ['PEGAXPRESS', '/BLOCK'],
   deck: 'La mezcla deja de ser una variable. Dosificada en laboratorio, gramo por gramo, para que cada saco se comporte exactamente igual que el anterior.',
   meta: 'Saco de 30 kg · Solo agrega agua',
   stats: [

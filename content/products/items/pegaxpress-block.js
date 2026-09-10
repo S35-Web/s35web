@@ -13,7 +13,7 @@ module.exports = draft({
   family: 'adhesivos-pro',
   status: 'verified',
   name: 'PEGAXPRESS',
-  variant: 'Block',
+  variant: 'BLOCK',
   line: 'Pegamento premium en seco para pegado de piezas de block',
   accent: '#3f6b3a',
   packaging: '30 kg',

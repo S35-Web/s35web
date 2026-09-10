@@ -63,7 +63,7 @@ function productDock(p, brand) {
 
 function overviewHtml(p) {
   const ov = p.overview;
-  const brand = { name: 'Pegaxpress', slash: '/Block' };
+  const brand = { name: ov.headline[0], slash: ov.headline[1] };
 
   let html = productDock(p, brand);
   html += '<div id="ov-panel-overview" class="ov-view" role="tabpanel" aria-labelledby="ov-tab-overview">';
