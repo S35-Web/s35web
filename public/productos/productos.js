@@ -67,7 +67,7 @@
       });
     });
     var current = pills.filter(function (b) { return b.getAttribute('aria-pressed') === 'true'; })[0];
-    paint(current ? current.getAttribute('data-joint') : '3 mm');
+    paint(current ? current.getAttribute('data-joint') : '6 mm');
   }
 })();
 

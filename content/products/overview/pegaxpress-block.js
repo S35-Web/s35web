@@ -74,15 +74,9 @@ module.exports = {
     kicker: 'Rendimiento',
     title: 'Cuánto muro levanta un saco.',
     note: 'Valores de referencia sobre saco de 30 kg. La tabla completa está en Technical data.',
-    joints: ['3 mm', '6 mm', '10 mm'],
-    defaultJoint: '3 mm',
+    joints: ['6 mm', '10 mm'],
+    defaultJoint: '6 mm',
     rows: {
-      '3 mm': [
-        { medida: '10 × 20 × 40', m2: '9.5 m²', detalle: '≈ 119 piezas' },
-        { medida: '12 × 20 × 40', m2: '7.9 m²', detalle: '≈ 99 piezas' },
-        { medida: '15 × 20 × 40', m2: '6.3 m²', detalle: '≈ 79 piezas' },
-        { medida: '20 × 20 × 40', m2: '4.8 m²', detalle: '≈ 60 piezas' },
-      ],
       '6 mm': [
         { medida: '10 × 20 × 40', m2: '4.8 m²', detalle: '≈ 60 piezas' },
         { medida: '12 × 20 × 40', m2: '4.0 m²', detalle: '≈ 49 piezas' },
