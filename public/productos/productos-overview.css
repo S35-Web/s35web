@@ -118,6 +118,15 @@
   color: var(--ov-lime);
 }
 
+.ov-hero--warm h1 {
+  font-size: clamp(55px, 9.6vw, 125px);
+}
+
+.ov-hero--warm h1 span {
+  color: #2e7d32;
+  font-size: 0.84em;
+}
+
 .ov-copy h2,
 .ov-lab h2,
 .ov-close h2 {
@@ -761,6 +770,10 @@
 @media (max-width: 560px) {
   .ov-hero h1 {
     font-size: clamp(28px, 8.6vw, 40px);
+  }
+
+  .ov-hero--warm h1 {
+    font-size: clamp(34px, 10.3vw, 48px);
   }
 
   .ov-hero h1 span {
