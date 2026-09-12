@@ -147,6 +147,11 @@ html, body {
   border: 0;
 }
 
+.tv-item img.tv-bottle {
+  width: 120px;
+  height: auto;
+}
+
 .tv-item-copy {
   display: inline-block;
   vertical-align: middle;
