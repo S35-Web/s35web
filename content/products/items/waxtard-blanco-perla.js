@@ -5,12 +5,14 @@
 
 const waxtardPremium = require('../waxtard-premium');
 const { sack2026 } = require('../sheet');
+const overview = require('../overview/waxtard-blanco-perla');
 
 module.exports = waxtardPremium({
   slug: 'waxtard-blanco-perla',
   code: 'FT-PR-001',
   variant: 'Blanco Perla',
   accent: '#2f7d32',
+  overview: overview,
   packSrc: sack2026('Waxtard-Blanco-Perla.png'),
   packAlt: 'Saco de 25 kg de Waxtard Blanco Perla',
   seo: 'Waxtard Blanco Perla: estuco premium hidrófugo y antisalitre para exteriores e interiores. Repele el agua líquida sin cerrar el paso al vapor. Saco de 25 kg.',

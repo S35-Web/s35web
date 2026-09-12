@@ -8,7 +8,7 @@ function waxtardPremium(tone) {
   const name = 'WAXTARD';
   const full = name + ' ' + tone.variant;
 
-  return {
+  const out = {
     slug: tone.slug,
     code: tone.code,
     family: 'estucos-premium',
@@ -354,6 +354,9 @@ function waxtardPremium(tone) {
 
     notice: 'Valores típicos obtenidos en laboratorio a 23 °C y 50 % HR; no constituyen especificación de garantía. El desempeño en obra depende del sustrato, el espesor, la dosificación de agua y las condiciones de aplicación y curado. Se recomienda un paño de prueba en cada proyecto. La formulación del producto es información propietaria de S-35.',
   };
+
+  if (tone.overview) out.overview = tone.overview;
+  return out;
 }
 
 module.exports = waxtardPremium;

@@ -161,7 +161,7 @@ function layout(opts, body) {
     '<meta name="theme-color" content="' + esc(accent) + '">\n' +
     '<link rel="stylesheet" href="/styles.css">\n' +
     '<link rel="stylesheet" href="/productos/productos.css?v=bags2">\n' +
-    (opts.split ? '<link rel="stylesheet" href="/productos/productos-overview.css?v=ov8">\n' : '') +
+    (opts.split ? '<link rel="stylesheet" href="/productos/productos-overview.css?v=ov13">\n' : '') +
     '<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">\n' +
     '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">\n' +
     (opts.jsonLd ? '<script type="application/ld+json">' + JSON.stringify(opts.jsonLd) + '</script>\n' : '') +
