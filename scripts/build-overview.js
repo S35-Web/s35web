@@ -71,9 +71,10 @@ function overviewHtml(p) {
   let html = productDock(p, brand);
   html += '<div id="ov-panel-overview" class="ov-view" role="tabpanel" aria-labelledby="ov-tab-overview">';
 
-  html += '<section class="ov-hero">' +
+  const heroWarm = ov.hero && ov.hero.theme === 'warm';
+  html += '<section class="ov-hero' + (heroWarm ? ' ov-hero--warm' : '') + '">' +
     '<div class="ov-hero-copy">' +
-    '<p class="ov-kicker ov-kicker--light">' + esc(ov.kicker) + '</p>' +
+    '<p class="ov-kicker' + (heroWarm ? '' : ' ov-kicker--light') + '">' + esc(ov.kicker) + '</p>' +
     '<h1>' + esc(ov.headline[0]) + '<br><span>' + esc(ov.headline[1]) + '</span></h1>' +
     '<p class="ov-deck">' + esc(ov.deck) + '</p>' +
     '<p class="ov-meta">' + esc(ov.meta) + '</p>' +
@@ -81,7 +82,7 @@ function overviewHtml(p) {
     media(ov.hero, { priority: true }) +
     '</section>';
 
-  html += '<div class="ov-stats-wrap"><section class="ov-stats" aria-label="Datos clave">' +
+  html += '<div class="ov-stats-wrap' + (heroWarm ? ' ov-stats-wrap--warm' : '') + '"><section class="ov-stats" aria-label="Datos clave">' +
     ov.stats.map(function (s) {
       return '<div class="ov-stat"><div class="ov-stat-val">' + esc(s.value) + '</div>' +
         '<div class="ov-stat-lab">' + esc(s.label) + '</div></div>';

@@ -14,8 +14,9 @@ module.exports = {
     { value: 'µ ≤ 15', label: 'Permeabilidad al vapor' },
   ],
   hero: {
+    theme: 'warm',
     src: DIR + '/hero.png',
-    alt: 'Saco de Waxtard Blanco Perla sobre fondo negro, con el polvo de la fórmula en suspensión',
+    alt: 'Saco de Waxtard Blanco Perla, con el polvo de la fórmula en suspensión',
   },
   problem: {
     kicker: 'El problema',

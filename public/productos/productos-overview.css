@@ -226,6 +226,38 @@
   line-height: 1.5;
 }
 
+.ov-hero--warm,
+.ov-stats-wrap--warm {
+  background: #e8e4dc;
+  color: #33301f;
+}
+
+.ov-hero--warm .ov-deck {
+  color: #5a5640;
+}
+
+.ov-hero--warm .ov-meta {
+  color: #7a7568;
+}
+
+.ov-hero--warm .ov-media img {
+  mix-blend-mode: multiply;
+}
+
+.ov-stats-wrap--warm .ov-stats {
+  background: #d4cfc4;
+  border-color: #d4cfc4;
+}
+
+.ov-stats-wrap--warm .ov-stat {
+  background: #e8e4dc;
+  color: #33301f;
+}
+
+.ov-stats-wrap--warm .ov-stat-lab {
+  color: #7a7568;
+}
+
 .ov-problem,
 .ov-flex,
 .ov-apply,
