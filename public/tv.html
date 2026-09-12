@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#ffffff">
   <link rel="canonical" href="https://www.s-35.com.mx/tv">
-  <link rel="stylesheet" href="/tv.css?v=3">
+  <link rel="stylesheet" href="/tv.css?v=4">
 </head>
 <body class="tv-page">
   <div class="tv-board">
@@ -247,7 +247,8 @@
     var slides = document.getElementById('tv-main').getElementsByTagName('section');
     var buttons = document.getElementById('tv-dots').getElementsByTagName('button');
     var total = slides.length;
-    var index = 0;
+    var start = parseInt((location.search || '').replace('?cat=', ''), 10);
+    var index = isNaN(start) ? 0 : start;
     var i;
     function paint(next) {
       index = next % total;
@@ -264,6 +265,7 @@
     for (i = 0; i < buttons.length; i++) {
       buttons[i].onclick = onDot(i);
     }
+    if (index) paint(index);
     setInterval(function () { paint(index + 1); }, INTERVAL);
   })();
   </script>

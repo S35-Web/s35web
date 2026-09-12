@@ -119,34 +119,38 @@ html, body {
 }
 
 .tv-grid {
-  overflow: hidden;
+  width: 100%;
 }
 
 .tv-item {
-  float: left;
-  width: 48%;
-  margin-right: 2%;
-  margin-bottom: 8px;
-  padding: 10px 0;
+  display: inline-block;
+  width: 47%;
+  vertical-align: top;
+  margin: 0 2% 8px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #ededed;
 }
 
 .tv-grid--one .tv-item {
-  float: none;
-  width: 70%;
+  display: block;
+  width: 78%;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .tv-item img {
-  float: left;
-  width: 160px;
-  height: 160px;
+  display: inline-block;
+  vertical-align: middle;
+  width: 150px;
+  height: 150px;
   margin-right: 20px;
   border: 0;
 }
 
 .tv-item-copy {
-  overflow: hidden;
-  padding-top: 36px;
+  display: inline-block;
+  vertical-align: middle;
+  width: 58%;
 }
 
 .tv-item-name {
