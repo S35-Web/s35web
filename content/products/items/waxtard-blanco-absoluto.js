@@ -4,12 +4,14 @@
 
 const waxtardPremium = require('../waxtard-premium');
 const { sack2026 } = require('../sheet');
+const overview = require('../overview/waxtard-blanco-absoluto');
 
 module.exports = waxtardPremium({
   slug: 'waxtard-blanco-absoluto',
   code: 'FT-PR-002',
   variant: 'Blanco Absoluto',
   accent: '#c62828',
+  overview: overview,
   packSrc: sack2026('Waxtard-Blanco-Absoluto.png'),
   packAlt: 'Saco de 25 kg de Waxtard Blanco Absoluto',
   seo: 'Waxtard Blanco Absoluto: estuco premium hidrófugo y antisalitre para exteriores e interiores. Color blanco intenso. Repele el agua líquida sin cerrar el paso al vapor. Saco de 25 kg.',

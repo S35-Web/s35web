@@ -290,6 +290,44 @@
   color: #7a7568;
 }
 
+.ov-hero--light,
+.ov-stats-wrap--light {
+  background: #fff;
+  color: #111;
+}
+
+.ov-hero--light .ov-kicker {
+  color: #4a4a4a;
+  letter-spacing: 0.28em;
+}
+
+.ov-hero--light h1 .ov-variant {
+  color: #d70000;
+  white-space: nowrap;
+}
+
+.ov-hero--light .ov-deck {
+  color: #4a4a4a;
+}
+
+.ov-hero--light .ov-meta {
+  color: #6b6b6b;
+}
+
+.ov-stats-wrap--light .ov-stats {
+  background: #d4d4d4;
+  border-color: #d4d4d4;
+}
+
+.ov-stats-wrap--light .ov-stat {
+  background: #fff;
+  color: #111;
+}
+
+.ov-stats-wrap--light .ov-stat-lab {
+  color: #6b6b6b;
+}
+
 .ov-hero--blue,
 .ov-stats-wrap--blue {
   background: #005dbd;
@@ -890,6 +928,10 @@
   .ov-hero--blue h1 .ov-variant {
     font-size: 1em;
     white-space: nowrap;
+  }
+
+  .ov-hero--light h1 .ov-variant {
+    white-space: normal;
   }
 
   .ov-stats,
