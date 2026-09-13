@@ -71,10 +71,15 @@ function overviewHtml(p) {
   let html = productDock(p, brand);
   html += '<div id="ov-panel-overview" class="ov-view" role="tabpanel" aria-labelledby="ov-tab-overview">';
 
-  const heroWarm = ov.hero && ov.hero.theme === 'warm';
-  html += '<section class="ov-hero' + (heroWarm ? ' ov-hero--warm' : '') + '">' +
+  const heroTheme = ov.hero && ov.hero.theme;
+  const heroMod = heroTheme === 'warm' ? ' ov-hero--warm'
+    : heroTheme === 'blue' ? ' ov-hero--blue' : '';
+  const statsMod = heroTheme === 'warm' ? ' ov-stats-wrap--warm'
+    : heroTheme === 'blue' ? ' ov-stats-wrap--blue' : '';
+  const heroKickerLight = heroTheme !== 'warm';
+  html += '<section class="ov-hero' + heroMod + '">' +
     '<div class="ov-hero-copy">' +
-    '<p class="ov-kicker' + (heroWarm ? '' : ' ov-kicker--light') + '">' + esc(ov.kicker) + '</p>' +
+    '<p class="ov-kicker' + (heroKickerLight ? ' ov-kicker--light' : '') + '">' + esc(ov.kicker) + '</p>' +
     '<h1>' + esc(ov.headline[0]) + '<br><span>' + esc(ov.headline[1]) + '</span></h1>' +
     '<p class="ov-deck">' + esc(ov.deck) + '</p>' +
     '<p class="ov-meta">' + esc(ov.meta) + '</p>' +
@@ -82,7 +87,7 @@ function overviewHtml(p) {
     media(ov.hero, { priority: true }) +
     '</section>';
 
-  html += '<div class="ov-stats-wrap' + (heroWarm ? ' ov-stats-wrap--warm' : '') + '"><section class="ov-stats" aria-label="Datos clave">' +
+  html += '<div class="ov-stats-wrap' + statsMod + '"><section class="ov-stats" aria-label="Datos clave">' +
     ov.stats.map(function (s) {
       return '<div class="ov-stat"><div class="ov-stat-val">' + esc(s.value) + '</div>' +
         '<div class="ov-stat-lab">' + esc(s.label) + '</div></div>';
@@ -182,10 +187,13 @@ function overviewHtml(p) {
       '</section>';
   }
 
-  const closeTheme = ov.close.theme === 'warm' ? ' ov-close--warm' : '';
-  const closeCopy = ov.close.theme === 'warm' ? 'ov-copy ov-copy--center' : 'ov-copy ov-copy--on-dark ov-copy--center';
+  const closeTheme = ov.close.theme === 'warm' ? ' ov-close--warm'
+    : ov.close.theme === 'cool' ? ' ov-close--cool' : '';
+  const closeCopy = ov.close.theme === 'warm' || ov.close.theme === 'cool'
+    ? 'ov-copy ov-copy--center'
+    : 'ov-copy ov-copy--on-dark ov-copy--center';
   html += '<section class="ov-close' + closeTheme + '">' +
-    media(ov.close.image) +
+    (ov.close.image && ov.close.image.src ? media(ov.close.image) : '') +
     '<div class="' + closeCopy + '">' +
     '<h2>' + esc(ov.close.title) + '</h2>' +
     '<p>' + esc(ov.close.text) + '</p>' +

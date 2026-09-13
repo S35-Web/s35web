@@ -267,6 +267,49 @@
   color: #7a7568;
 }
 
+.ov-hero--blue,
+.ov-stats-wrap--blue {
+  background: #005dbd;
+  color: #111;
+}
+
+.ov-hero--blue .ov-kicker--light {
+  color: #bcd6f7;
+}
+
+.ov-hero--blue h1 {
+  color: #111;
+  font-size: clamp(38px, 6.2vw, 80px);
+}
+
+.ov-hero--blue h1 span {
+  color: #fff;
+  font-size: 0.78em;
+  white-space: nowrap;
+}
+
+.ov-hero--blue .ov-deck {
+  color: #e8f0fb;
+}
+
+.ov-hero--blue .ov-meta {
+  color: #bcd6f7;
+}
+
+.ov-stats-wrap--blue .ov-stats {
+  background: #024a96;
+  border-color: #024a96;
+}
+
+.ov-stats-wrap--blue .ov-stat {
+  background: #0257af;
+  color: #fff;
+}
+
+.ov-stats-wrap--blue .ov-stat-lab {
+  color: #bcd6f7;
+}
+
 .ov-problem,
 .ov-flex,
 .ov-apply,
@@ -649,6 +692,11 @@
   color: #33301f;
 }
 
+.ov-close--cool {
+  background: #e6eefc;
+  color: #0f2a4a;
+}
+
 .ov-close .ov-copy {
   margin-top: 60px;
 }
@@ -661,6 +709,23 @@
 
 .ov-close--warm p {
   color: #5a5640;
+}
+
+.ov-close--cool .ov-copy {
+  margin-top: 0;
+}
+
+.ov-close--cool p {
+  color: #3a5270;
+}
+
+.ov-close--cool .ov-cta {
+  background: #005dbd;
+  color: #fff;
+}
+
+.ov-close--cool .ov-cta:hover {
+  background: #024a96;
 }
 
 .ov-cta {
@@ -774,6 +839,14 @@
 
   .ov-hero--warm h1 {
     font-size: clamp(34px, 10.3vw, 48px);
+  }
+
+  .ov-hero--blue h1 {
+    font-size: clamp(28px, 8vw, 40px);
+  }
+
+  .ov-hero--blue h1 span {
+    white-space: normal;
   }
 
   .ov-hero h1 span {
