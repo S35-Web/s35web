@@ -81,7 +81,7 @@ function overviewHtml(p) {
     '<div class="ov-hero-copy">' +
     '<p class="ov-kicker' + (heroKickerLight ? ' ov-kicker--light' : '') + '">' + esc(ov.kicker) + '</p>' +
     '<h1><span class="ov-word">' + esc(ov.headline[0]) +
-    (ov.registered ? '<span class="ov-reg">®</span>' : '') +
+    (ov.registered ? '<sup class="ov-reg">®</sup>' : '') +
     '</span><br><span class="ov-variant">' + esc(ov.headline[1]) + '</span></h1>' +
     '<p class="ov-deck">' + esc(ov.deck) + '</p>' +
     '<p class="ov-meta">' + esc(ov.meta) + '</p>' +

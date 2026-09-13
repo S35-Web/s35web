@@ -124,15 +124,17 @@
   overflow: visible;
 }
 
-.ov-hero h1 .ov-reg {
-  display: inline-block;
+.ov-hero h1 .ov-reg,
+.ov-hero h1 .ov-word .ov-reg {
+  display: inline;
   position: relative;
-  top: -0.72em;
-  margin-left: 0.05em;
+  top: -0.38em;
+  margin-left: -0.02em;
+  padding: 0;
   font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif;
   font-weight: 400;
   font-style: normal;
-  font-size: 0.15em;
+  font-size: 0.52em;
   line-height: 1;
   letter-spacing: 0;
   color: inherit;
@@ -295,31 +297,40 @@
 }
 
 .ov-hero--blue .ov-kicker--light {
-  color: #bcd6f7;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 0.28em;
+  margin-bottom: 28px;
 }
 
 .ov-hero--blue h1 {
   color: #111;
   font-size: clamp(48px, 8.6vw, 120px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  margin-bottom: 28px;
 }
 
 .ov-hero--blue .ov-hero-copy {
-  max-width: min(1100px, 94vw);
+  max-width: min(1280px, 96vw);
 }
 
 .ov-hero--blue h1 .ov-variant {
   color: #fff;
-  font-size: 0.78em;
+  font-size: 1em;
   white-space: nowrap;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
+}
+
+.ov-hero--blue h1 .ov-word .ov-reg {
+  font-size: 0.52em;
 }
 
 .ov-hero--blue .ov-deck {
-  color: #e8f0fb;
+  color: #fff;
 }
 
 .ov-hero--blue .ov-meta {
-  color: #bcd6f7;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .ov-stats-wrap--blue .ov-stats {
@@ -877,7 +888,7 @@
   }
 
   .ov-hero--blue h1 .ov-variant {
-    font-size: 0.68em;
+    font-size: 1em;
     white-space: nowrap;
   }
 
