@@ -4,12 +4,14 @@
 
 const waxtardPremium = require('../waxtard-premium');
 const { sack2026 } = require('../sheet');
+const overview = require('../overview/waxtard-gris');
 
 module.exports = waxtardPremium({
   slug: 'waxtard-gris',
   code: 'FT-PR-003',
   variant: 'Gris',
   accent: '#3d3d3d',
+  overview: overview,
   packSrc: sack2026('Waxtard-Gris.png'),
   packAlt: 'Saco de 25 kg de Waxtard Gris',
   seo: 'Waxtard Gris: estuco premium hidrófugo y antisalitre para exteriores e interiores. Color gris. Repele el agua líquida sin cerrar el paso al vapor. Saco de 25 kg.',

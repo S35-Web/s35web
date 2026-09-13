@@ -74,11 +74,13 @@ function overviewHtml(p) {
   const heroTheme = ov.hero && ov.hero.theme;
   const heroMod = heroTheme === 'warm' ? ' ov-hero--warm'
     : heroTheme === 'blue' ? ' ov-hero--blue'
-    : heroTheme === 'light' ? ' ov-hero--light' : '';
+    : heroTheme === 'light' ? ' ov-hero--light'
+    : heroTheme === 'gray' ? ' ov-hero--gray' : '';
   const statsMod = heroTheme === 'warm' ? ' ov-stats-wrap--warm'
     : heroTheme === 'blue' ? ' ov-stats-wrap--blue'
-    : heroTheme === 'light' ? ' ov-stats-wrap--light' : '';
-  const heroKickerLight = heroTheme !== 'warm' && heroTheme !== 'light';
+    : heroTheme === 'light' ? ' ov-stats-wrap--light'
+    : heroTheme === 'gray' ? ' ov-stats-wrap--gray' : '';
+  const heroKickerLight = heroTheme !== 'warm' && heroTheme !== 'light' && heroTheme !== 'gray';
   html += '<section class="ov-hero' + heroMod + '">' +
     '<div class="ov-hero-copy">' +
     '<p class="ov-kicker' + (heroKickerLight ? ' ov-kicker--light' : '') + '">' + esc(ov.kicker) + '</p>' +

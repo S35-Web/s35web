@@ -291,12 +291,15 @@
 }
 
 .ov-hero--light,
-.ov-stats-wrap--light {
+.ov-hero--gray,
+.ov-stats-wrap--light,
+.ov-stats-wrap--gray {
   background: #fff;
   color: #111;
 }
 
-.ov-hero--light .ov-kicker {
+.ov-hero--light .ov-kicker,
+.ov-hero--gray .ov-kicker {
   color: #4a4a4a;
   letter-spacing: 0.28em;
 }
@@ -306,25 +309,38 @@
   white-space: nowrap;
 }
 
-.ov-hero--light .ov-deck {
+.ov-hero--gray .ov-kicker {
+  color: #595959;
+}
+
+.ov-hero--gray h1 .ov-variant {
+  color: #595959;
+}
+
+.ov-hero--light .ov-deck,
+.ov-hero--gray .ov-deck {
   color: #4a4a4a;
 }
 
-.ov-hero--light .ov-meta {
+.ov-hero--light .ov-meta,
+.ov-hero--gray .ov-meta {
   color: #6b6b6b;
 }
 
-.ov-stats-wrap--light .ov-stats {
+.ov-stats-wrap--light .ov-stats,
+.ov-stats-wrap--gray .ov-stats {
   background: #d4d4d4;
   border-color: #d4d4d4;
 }
 
-.ov-stats-wrap--light .ov-stat {
+.ov-stats-wrap--light .ov-stat,
+.ov-stats-wrap--gray .ov-stat {
   background: #fff;
   color: #111;
 }
 
-.ov-stats-wrap--light .ov-stat-lab {
+.ov-stats-wrap--light .ov-stat-lab,
+.ov-stats-wrap--gray .ov-stat-lab {
   color: #6b6b6b;
 }
 
