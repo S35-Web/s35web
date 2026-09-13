@@ -119,15 +119,10 @@
 }
 
 .ov-hero .ov-brand {
-  position: relative;
   display: inline-block;
-  padding-right: 0.46em;
 }
 
 .ov-hero .ov-reg {
-  position: absolute;
-  top: 12%;
-  right: 0;
   font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif;
   font-weight: 400;
   font-style: normal;
@@ -135,6 +130,7 @@
   line-height: 1;
   letter-spacing: 0;
   color: inherit;
+  vertical-align: middle;
 }
 
 .ov-hero--warm h1 {
