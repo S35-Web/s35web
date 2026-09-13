@@ -118,23 +118,25 @@
   color: var(--ov-lime);
 }
 
-.ov-hero .ov-brand {
-  position: relative;
+.ov-hero h1 .ov-word {
   display: inline-block;
+  color: inherit;
+  overflow: visible;
 }
 
-.ov-hero .ov-reg {
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translate(-0.18em, -50%);
+.ov-hero h1 .ov-reg {
+  display: inline-block;
+  position: relative;
+  top: -0.72em;
+  margin-left: 0.05em;
   font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif;
   font-weight: 400;
   font-style: normal;
-  font-size: 40%;
+  font-size: 0.15em;
   line-height: 1;
   letter-spacing: 0;
   color: inherit;
+  vertical-align: baseline;
 }
 
 .ov-hero--warm h1 {
@@ -298,14 +300,18 @@
 
 .ov-hero--blue h1 {
   color: #111;
-  font-size: clamp(58px, 10.4vw, 136px);
+  font-size: clamp(48px, 8.6vw, 120px);
+}
+
+.ov-hero--blue .ov-hero-copy {
+  max-width: min(1100px, 94vw);
 }
 
 .ov-hero--blue h1 .ov-variant {
   color: #fff;
-  font-size: 0.42em;
+  font-size: 0.78em;
   white-space: nowrap;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
 }
 
 .ov-hero--blue .ov-deck {
@@ -862,7 +868,7 @@
   }
 
   .ov-hero--blue h1 {
-    font-size: clamp(40px, 12.4vw, 56px);
+    font-size: clamp(34px, 10.4vw, 48px);
   }
 
   .ov-hero h1 .ov-variant {
@@ -871,7 +877,7 @@
   }
 
   .ov-hero--blue h1 .ov-variant {
-    font-size: 0.42em;
+    font-size: 0.68em;
     white-space: nowrap;
   }
 

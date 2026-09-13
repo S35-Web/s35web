@@ -64,15 +64,6 @@ function productDock(p, brand) {
     '</div></div>';
 }
 
-function brandLine(headline) {
-  const name = String(headline[0] || '');
-  const mark = name.toUpperCase() === 'WAXTARD'
-    ? '<span class="ov-reg">®</span>'
-    : '';
-  return '<span class="ov-brand">' + esc(name) + mark + '</span>' +
-    '<br><span class="ov-variant">' + esc(headline[1]) + '</span>';
-}
-
 function overviewHtml(p) {
   const ov = p.overview;
   const brand = { name: ov.headline[0], slash: ov.headline[1] };
@@ -89,7 +80,9 @@ function overviewHtml(p) {
   html += '<section class="ov-hero' + heroMod + '">' +
     '<div class="ov-hero-copy">' +
     '<p class="ov-kicker' + (heroKickerLight ? ' ov-kicker--light' : '') + '">' + esc(ov.kicker) + '</p>' +
-    '<h1>' + brandLine(ov.headline) + '</h1>' +
+    '<h1><span class="ov-word">' + esc(ov.headline[0]) +
+    (ov.registered ? '<span class="ov-reg">®</span>' : '') +
+    '</span><br><span class="ov-variant">' + esc(ov.headline[1]) + '</span></h1>' +
     '<p class="ov-deck">' + esc(ov.deck) + '</p>' +
     '<p class="ov-meta">' + esc(ov.meta) + '</p>' +
     '</div>' +
