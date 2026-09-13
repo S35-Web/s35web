@@ -114,15 +114,34 @@
   margin: 0 0 26px;
 }
 
-.ov-hero h1 span {
+.ov-hero h1 .ov-variant {
   color: var(--ov-lime);
+}
+
+.ov-hero .ov-brand {
+  position: relative;
+  display: inline-block;
+}
+
+.ov-hero .ov-reg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(85%, 8%);
+  font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 15%;
+  line-height: 1;
+  letter-spacing: 0;
+  color: inherit;
 }
 
 .ov-hero--warm h1 {
   font-size: clamp(55px, 9.6vw, 125px);
 }
 
-.ov-hero--warm h1 span {
+.ov-hero--warm h1 .ov-variant {
   color: #2e7d32;
   font-size: 0.84em;
 }
@@ -282,7 +301,7 @@
   font-size: clamp(58px, 10.4vw, 136px);
 }
 
-.ov-hero--blue h1 span {
+.ov-hero--blue h1 .ov-variant {
   color: #fff;
   font-size: 0.42em;
   white-space: nowrap;
@@ -846,12 +865,12 @@
     font-size: clamp(40px, 12.4vw, 56px);
   }
 
-  .ov-hero h1 span {
+  .ov-hero h1 .ov-variant {
     display: block;
     font-size: 0.78em;
   }
 
-  .ov-hero--blue h1 span {
+  .ov-hero--blue h1 .ov-variant {
     font-size: 0.42em;
     white-space: nowrap;
   }
