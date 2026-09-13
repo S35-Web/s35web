@@ -15,7 +15,7 @@ module.exports = {
   ],
   hero: {
     theme: 'blue',
-    src: DIR + '/hero.png',
+    src: DIR + '/hero-pack.png',
     alt: 'Saco de Waxtard Extra Anclaje, con el anclaje químico uniendo concreto y acabado',
   },
   problem: {
