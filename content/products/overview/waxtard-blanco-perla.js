@@ -3,8 +3,9 @@
 const DIR = '/Assets/overview/waxtard-blanco-perla';
 
 module.exports = {
-  kicker: 'Waxtard S-35',
+  kicker: 'Waxtard® S-35',
   headline: ['WAXTARD', 'BLANCO PERLA'],
+  registered: true,
   deck: 'Deja pasar el vapor. Detiene el agua. Un acabado que respira mientras la lluvia y el salitre se quedan afuera.',
   meta: 'Saco de 25 kg · Exteriores e interiores',
   stats: [

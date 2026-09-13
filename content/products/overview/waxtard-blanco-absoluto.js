@@ -3,7 +3,7 @@
 const DIR = '/Assets/overview/waxtard-blanco-absoluto';
 
 module.exports = {
-  kicker: 'Waxtard S-35',
+  kicker: 'Waxtard® S-35',
   headline: ['WAXTARD', 'BLANCO ABSOLUTO'],
   registered: true,
   deck: 'Deja pasar el vapor. Detiene el agua. El blanco más intenso, limpio y uniforme de la línea, sin cerrarle el paso a la respiración del muro.',

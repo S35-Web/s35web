@@ -3,7 +3,7 @@
 const DIR = '/Assets/overview/waxtard-extra-anclaje';
 
 module.exports = {
-  kicker: 'Waxtard S-35',
+  kicker: 'Waxtard® S-35',
   headline: ['WAXTARD', 'EXTRA ANCLAJE'],
   registered: true,
   deck: 'Donde un estuco normal no agarra, este ancla. Concreto liso, prefabricado, sistemas EIFS y pintura firme.',
