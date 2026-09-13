@@ -67,7 +67,7 @@ function productDock(p, brand) {
 function brandLine(headline) {
   const name = String(headline[0] || '');
   const mark = name.toUpperCase() === 'WAXTARD'
-    ? '<sup class="ov-reg">®</sup>'
+    ? '<span class="ov-reg">®</span>'
     : '';
   return '<span class="ov-brand">' + esc(name) + mark + '</span>' +
     '<br><span class="ov-variant">' + esc(headline[1]) + '</span>';
