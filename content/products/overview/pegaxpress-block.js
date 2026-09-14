@@ -42,12 +42,6 @@ module.exports = {
     title: 'Una junta que se mueve con el muro, no contra él.',
     text: 'Los polímeros modificados de la fórmula dan a la junta ya curada la capacidad de absorber el movimiento natural entre piezas. Donde una mezcla rígida se fisura, esta cede lo justo y vuelve.',
     video: DIR + '/flex.mp4',
-    poster: DIR + '/compare-flex.png',
-    fallback: {
-      src: DIR + '/compare-flex.png',
-      alt: 'Dos bloques bajo el mismo esfuerzo: a la izquierda la junta se rompe; a la derecha se estira y sostiene',
-      placeholder: 'VIDEO LOOP: close-up de una junta micro flexible deformándose y recuperando, en cámara lenta, fondo neutro de estudio.',
-    },
   },
   lab: {
     kicker: 'Formulación',
