@@ -177,6 +177,14 @@ const server = http.createServer((req, res) => {
         serveStaticFile(req, res, path.join(__dirname, 'public', 'colaboradores', 'panel.html'));
         return;
     }
+    if (pathname === '/pos' || pathname === '/pos/') {
+        serveStaticFile(req, res, path.join(__dirname, 'public', 'pos', 'index.html'));
+        return;
+    }
+    if (pathname === '/pos/app' || pathname === '/pos/app/') {
+        serveStaticFile(req, res, path.join(__dirname, 'public', 'pos', 'app.html'));
+        return;
+    }
 
     // Laboratorio: URL pública /laboratorio; archivos en public/materialab
     if (pathname === '/laboratorio' || pathname === '/materialab') {
