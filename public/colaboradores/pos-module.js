@@ -1237,8 +1237,8 @@
             const badge = p.fromRecipe ? '' : '<div class="muted">Solo lista · sin ficha POS</div>';
             return '<tr>' +
                 '<td class="muted">' + esc(p.code || p.id) + '</td>' +
-                '<td>' + esc(p.name) +
-                '<div class="muted fam" title="' + esc(p.family || '') + '">' + (p.family ? familyDot(p.family) : '') + '</div>' +
+                '<td>' + (p.family ? '<span class="fam" title="' + esc(p.family) + '">' + familyDot(p.family) + '</span> ' : '') +
+                esc(p.name) +
                 badge + '</td>' +
                 '<td class="num">' + esc(String(kg)) + '</td>' +
                 '<td class="muted">' + esc(unit) + '</td>' +
