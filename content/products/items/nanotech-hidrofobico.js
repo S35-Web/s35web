@@ -10,7 +10,7 @@ module.exports = liquidVerified({
   slug: 'nanotech-hidrofobico',
   code: 'FT-PR-005',
   name: 'NANOTECH',
-  variant: 'Sellador hidrofóbico S-35',
+  variant: 'Sellador hidrofóbico',
   line: 'Sellador hidrofóbico transparente',
   accent: '#8bb432',
   packaging: 'Cubeta 1 L',

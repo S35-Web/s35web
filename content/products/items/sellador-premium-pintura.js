@@ -1,8 +1,8 @@
 'use strict';
 
 // Contenido tomado de la ficha oficial "Ficha Tecnica Sellador Premium"
-// (FT-PR-008 · Rev. 01 · 2026). Nombre canónico: Sellador premium adhesivo s-35.
-// Slug histórico /sellador-premium-pintura. Presentaciones 1 L / 18 L (FT-PR-008).
+// (FT-PR-008 · Rev. 01 · 2026). Nombre canónico: Sellador premium adhesivo.
+// Slug histórico /sellador-premium-pintura. Litro FT-PR-008 / Cubeta FT-PC-008.
 
 const liquidVerified = require('../liquid-verified');
 const S = require('../shared');
@@ -11,7 +11,7 @@ module.exports = liquidVerified({
   slug: 'sellador-premium-pintura',
   code: 'FT-PR-008',
   name: 'SELLADOR PREMIUM ADHESIVO',
-  variant: 'S-35',
+  variant: '',
   line: 'Adhesivo sellador acrílico',
   accent: '#1e5ab2',
   packaging: 'Cubeta 1 L',

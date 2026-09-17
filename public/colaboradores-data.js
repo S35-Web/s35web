@@ -101,7 +101,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "slug": "nanotech-hidrofobico",
-      "name": "Nanotech sellador hidrofóbico s-35",
+      "name": "Nanotech sellador hidrofóbico",
       "code": "FT-PR-005",
       "family": "Líquidos",
       "status": "verified",
@@ -119,7 +119,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "slug": "adhesivo-darawell",
-      "name": "Darawell adhesivo s-35",
+      "name": "Darawell adhesivo",
       "code": "FT-PR-007",
       "family": "Líquidos",
       "status": "verified",
@@ -128,7 +128,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "slug": "sellador-premium-pintura",
-      "name": "Sellador premium adhesivo s-35",
+      "name": "Sellador premium adhesivo",
       "code": "FT-PR-008",
       "family": "Líquidos",
       "status": "verified",
@@ -137,7 +137,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "slug": "adhesivo-heavy-duty",
-      "name": "Heavy duty adhesivo s-35",
+      "name": "Heavy duty adhesivo",
       "code": "FT-PR-009",
       "family": "Líquidos",
       "status": "verified",
@@ -2094,7 +2094,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "nanotech-hidrofobico",
-      "name": "Nanotech sellador hidrofóbico s-35",
+      "name": "Nanotech sellador hidrofóbico",
       "code": "FT-PR-005",
       "family": "Líquidos",
       "kind": "liquido",
@@ -2108,13 +2108,13 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "sellador-premium-pintura",
-      "name": "Sellador premium adhesivo s-35",
+      "name": "Sellador premium adhesivo",
       "code": "FT-PR-008",
       "family": "Líquidos",
       "kind": "liquido",
       "water": "",
       "status": "pendiente",
-      "note": "Sellador premium adhesivo s-35 (FT-PR-008). Receta de planta pendiente de cargar.",
+      "note": "Sellador premium adhesivo (FT-PR-008 Litro / FT-PC-008 Cubeta). Receta de planta pendiente de cargar.",
       "image": "/Assets/productos_thumbs/sellador-premium-pintura.jpg",
       "imageAlt": "Envase de 1 L de Sellador premium adhesivo s-35",
       "items": [],
@@ -2122,7 +2122,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "adhesivo-darawell",
-      "name": "Darawell adhesivo s-35",
+      "name": "Darawell adhesivo",
       "code": "FT-PR-007",
       "family": "Líquidos",
       "kind": "liquido",
@@ -2136,7 +2136,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "product": "adhesivo-heavy-duty",
-      "name": "Heavy duty adhesivo s-35",
+      "name": "Heavy duty adhesivo",
       "code": "FT-PR-009",
       "family": "Líquidos",
       "kind": "liquido",
@@ -2755,7 +2755,7 @@ window.S35_PANEL_DATA = {
   },
   "priceList": {
     "version": 3,
-    "presentationNote": "Lista oficial: sacos 25 kg (Pastablock 30 kg); líquidos 1 L / 18 L. Precios por tramo sin conversión.",
+    "presentationNote": "Lista oficial: sacos 25 kg (Pastablock 30 kg); líquidos Litro (FT-PR) / Cubeta (FT-PC). Precios por tramo sin conversión.",
     "tiers": [
       {
         "id": "t1",
@@ -2805,6 +2805,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "waxtard-blanco-perla",
         "code": "FT-PR-001",
         "note": "FT-PR-001",
+        "unitLabel": "",
         "tiers": [
           210,
           189,
@@ -2832,6 +2833,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "waxtard-blanco-absoluto",
         "code": "FT-PR-002",
         "note": "FT-PR-002 · ficha Waxtard Blanco Absoluto",
+        "unitLabel": "",
         "tiers": [
           230,
           207,
@@ -2859,6 +2861,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "waxtard-gris",
         "code": "FT-PR-003",
         "note": "FT-PR-003",
+        "unitLabel": "",
         "tiers": [
           205,
           184.5,
@@ -2886,6 +2889,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "waxtard-extra-anclaje",
         "code": "FT-PR-004",
         "note": "FT-PR-004",
+        "unitLabel": "",
         "tiers": [
           335,
           301.5,
@@ -2913,6 +2917,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "basecoat-plus-blanco",
         "code": "FT-PS-001",
         "note": "FT-PS-001 · canónico (merge: basecoat-blanco-intenso-plus)",
+        "unitLabel": "",
         "tiers": [
           360,
           324,
@@ -2940,6 +2945,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "basecoat-plus-gris",
         "code": "FT-PS-002",
         "note": "FT-PS-002 · canónico (merge: waxtard-basecoat-gris-plus)",
+        "unitLabel": "",
         "tiers": [
           340,
           306,
@@ -2967,6 +2973,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "cemento-plastico-concreto",
         "code": "FT-MC-001",
         "note": "FT-MC-001",
+        "unitLabel": "",
         "tiers": [
           545,
           490.5,
@@ -2994,6 +3001,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "styrobond-pro",
         "code": "FT-PP-001",
         "note": "FT-PP-001",
+        "unitLabel": "",
         "tiers": [
           435.71,
           392.14,
@@ -3021,6 +3029,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "leveltec-pro",
         "code": "FT-PP-003",
         "note": "FT-PP-003",
+        "unitLabel": "",
         "tiers": [
           220,
           198,
@@ -3048,6 +3057,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "ultraforce",
         "code": "FT-AD-003",
         "note": "FT-AD-003",
+        "unitLabel": "",
         "tiers": [
           500,
           450,
@@ -3075,6 +3085,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "pegaxpress-psp",
         "code": "FT-AD-004",
         "note": "FT-AD-004 · canónico (sin variante blanco suelta)",
+        "unitLabel": "",
         "tiers": [
           350,
           315,
@@ -3102,6 +3113,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "porcelanico-universal",
         "code": "FT-AD-001",
         "note": "FT-AD-001 · canónico (sin variante blanco suelta)",
+        "unitLabel": "",
         "tiers": [
           264.29,
           211.43,
@@ -3129,6 +3141,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "ceramico",
         "code": "FT-AD-002",
         "note": "FT-AD-002 · canónico (sin variante blanco suelta)",
+        "unitLabel": "",
         "tiers": [
           228.57,
           182.86,
@@ -3156,6 +3169,7 @@ window.S35_PANEL_DATA = {
         "recipeSlug": "pegaxpress-block",
         "code": "FT-PR-006",
         "note": "FT-PR-006 · 30 kg (precio de lista, sin convertir desde 35)",
+        "unitLabel": "",
         "tiers": [
           160,
           144,
@@ -3175,14 +3189,15 @@ window.S35_PANEL_DATA = {
       },
       {
         "id": "adhesivo-darawell",
-        "name": "DARAWELL PREMIUM",
+        "name": "Darawell adhesivo",
         "category": "LIQUIDOS",
         "kind": "liquido",
         "presentationKg": 1,
         "oldKg": 1,
         "recipeSlug": "adhesivo-darawell",
         "code": "FT-PR-007",
-        "note": "FT-PR-007 · 1 L",
+        "note": "FT-PR-007 · Litro",
+        "unitLabel": "Litro",
         "tiers": [
           100,
           90,
@@ -3202,14 +3217,15 @@ window.S35_PANEL_DATA = {
       },
       {
         "id": "adhesivo-darawell-18",
-        "name": "DARAWELL PREMIUM",
+        "name": "Darawell adhesivo",
         "category": "LIQUIDOS",
         "kind": "liquido",
         "presentationKg": 18,
         "oldKg": 18,
         "recipeSlug": null,
-        "code": "FT-PR-007",
-        "note": "FT-PR-007 · 18 L",
+        "code": "FT-PC-007",
+        "note": "FT-PC-007 · Cubeta",
+        "unitLabel": "Cubeta",
         "tiers": [
           1200,
           1080,
@@ -3229,14 +3245,15 @@ window.S35_PANEL_DATA = {
       },
       {
         "id": "sellador-premium-pintura",
-        "name": "Sellador premium adhesivo s-35",
+        "name": "Sellador premium adhesivo",
         "category": "LIQUIDOS",
         "kind": "liquido",
         "presentationKg": 1,
         "oldKg": 1,
         "recipeSlug": "sellador-premium-pintura",
         "code": "FT-PR-008",
-        "note": "FT-PR-008 · 1 L",
+        "note": "FT-PR-008 · Litro",
+        "unitLabel": "Litro",
         "tiers": [
           85,
           76.5,
@@ -3256,14 +3273,15 @@ window.S35_PANEL_DATA = {
       },
       {
         "id": "sellador-premium-pintura-18",
-        "name": "Sellador premium adhesivo s-35",
+        "name": "Sellador premium adhesivo",
         "category": "LIQUIDOS",
         "kind": "liquido",
         "presentationKg": 18,
         "oldKg": 18,
         "recipeSlug": null,
-        "code": "FT-PR-008",
-        "note": "FT-PR-008 · 18 L",
+        "code": "FT-PC-008",
+        "note": "FT-PC-008 · Cubeta",
+        "unitLabel": "Cubeta",
         "tiers": [
           850,
           765,
@@ -3283,14 +3301,15 @@ window.S35_PANEL_DATA = {
       },
       {
         "id": "adhesivo-heavy-duty",
-        "name": "ADHESIVO HEAVY DUTY",
+        "name": "Heavy duty adhesivo",
         "category": "LIQUIDOS",
         "kind": "liquido",
         "presentationKg": 1,
         "oldKg": 1,
         "recipeSlug": "adhesivo-heavy-duty",
         "code": "FT-PR-009",
-        "note": "FT-PR-009 · 1 L",
+        "note": "FT-PR-009 · Litro",
+        "unitLabel": "Litro",
         "tiers": [
           155,
           139.5,
@@ -3310,14 +3329,15 @@ window.S35_PANEL_DATA = {
       },
       {
         "id": "nanotech-hidrofobico",
-        "name": "NANOTECH HIDROFOBICO",
+        "name": "Nanotech sellador hidrofóbico",
         "category": "LIQUIDOS",
         "kind": "liquido",
         "presentationKg": 1,
         "oldKg": 1,
         "recipeSlug": "nanotech-hidrofobico",
         "code": "FT-PR-005",
-        "note": "FT-PR-005 · 1 L",
+        "note": "FT-PR-005 · Litro",
+        "unitLabel": "Litro",
         "tiers": [
           230,
           207,
@@ -3337,14 +3357,15 @@ window.S35_PANEL_DATA = {
       },
       {
         "id": "nanotech-hidrofobico-18",
-        "name": "NANOTECH HIDROFOBICO",
+        "name": "Nanotech sellador hidrofóbico",
         "category": "LIQUIDOS",
         "kind": "liquido",
         "presentationKg": 18,
         "oldKg": 18,
         "recipeSlug": null,
-        "code": "FT-PR-005",
-        "note": "FT-PR-005 · 18 L",
+        "code": "FT-PC-005",
+        "note": "FT-PC-005 · Cubeta",
+        "unitLabel": "Cubeta",
         "tiers": [
           3315,
           2983.5,

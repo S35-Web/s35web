@@ -10,7 +10,7 @@ module.exports = liquidVerified({
   slug: 'adhesivo-heavy-duty',
   code: 'FT-PR-009',
   name: 'HEAVY DUTY',
-  variant: 'Adhesivo S-35',
+  variant: 'Adhesivo',
   line: 'Adhesivo acrílico multiuso',
   accent: '#e64a19',
   packaging: 'Cubeta 1 L',

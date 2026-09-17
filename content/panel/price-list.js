@@ -4,7 +4,8 @@
  * Fuente oficial (lista reacomodada): precios YA en presentación de venta.
  * No convertir kg salvo que oldKg ≠ newKg / oldLt ≠ newLt.
  *
- * Presentación: sacos 25 kg (Pastablock 30 kg); líquidos 1 L / 18 L.
+ * Presentación: sacos 25 kg (Pastablock 30 kg); líquidos Litro (1) / Cubeta (18).
+ * Códigos líquidos: Litro = FT-PR-NNN; Cubeta = FT-PC-NNN (C = Cubeta).
  *
  * Escalones (unidades totales en el ticket / carrito):
  *   1) 1–100  2) 100–500  3) 500–999  4) 1000–2000  5) 2000–3000  6) 3000–5000
@@ -64,15 +65,14 @@ const RAW = [
   { id: 'ceramico', name: 'ADHESIVO CERAMICO PRO+', category: 'PEGAXPRESS', oldKg: 25, newKg: 25, prices: [228.57, 182.86, 146.29, 131.66, 129.02, 126.44], recipeSlug: 'ceramico', note: 'FT-AD-002 · canónico (sin variante blanco suelta)' },
   { id: 'pegaxpress-block', name: 'PASTABLOCK+', category: 'PEGAXPRESS', oldKg: 30, newKg: 30, prices: [160, 144, 139.68, 125.71, 123.2, 120.73], recipeSlug: 'pegaxpress-block', note: 'FT-PR-006 · 30 kg (precio de lista, sin convertir desde 35)' },
 
-  // LÍQUIDOS — 1 L canónico en ficha; 18 L solo lista (sin ficha POS aparte).
-  // Misma base FT-PR-NNN para 1 L y 18 L; el tamaño va en note / presentationKg.
-  { id: 'adhesivo-darawell', name: 'DARAWELL PREMIUM', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [100, 90, 87.3, 78.57, 77, 75.46], recipeSlug: 'adhesivo-darawell', code: 'FT-PR-007', note: 'FT-PR-007 · 1 L' },
-  { id: 'adhesivo-darawell-18', name: 'DARAWELL PREMIUM', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, prices: [1200, 1080, 1047.6, 942.84, 923.98, 905.5], recipeSlug: null, code: 'FT-PR-007', note: 'FT-PR-007 · 18 L' },
-  { id: 'sellador-premium-pintura', name: 'Sellador premium adhesivo s-35', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [85, 76.5, 74.21, 66.78, 65.45, 64.14], recipeSlug: 'sellador-premium-pintura', code: 'FT-PR-008', note: 'FT-PR-008 · 1 L' },
-  { id: 'sellador-premium-pintura-18', name: 'Sellador premium adhesivo s-35', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, prices: [850, 765, 742.05, 667.85, 654.49, 641.4], recipeSlug: null, code: 'FT-PR-008', note: 'FT-PR-008 · 18 L' },
-  { id: 'adhesivo-heavy-duty', name: 'ADHESIVO HEAVY DUTY', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [155, 139.5, 135.32, 121.78, 119.35, 116.96], recipeSlug: 'adhesivo-heavy-duty', code: 'FT-PR-009', note: 'FT-PR-009 · 1 L' },
-  { id: 'nanotech-hidrofobico', name: 'NANOTECH HIDROFOBICO', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [230, 207, 200.79, 180.71, 177.1, 173.55], recipeSlug: 'nanotech-hidrofobico', code: 'FT-PR-005', note: 'FT-PR-005 · 1 L' },
-  { id: 'nanotech-hidrofobico-18', name: 'NANOTECH HIDROFOBICO', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, prices: [3315, 2983.5, 2894, 2604.6, 2552.5, 2501.45], recipeSlug: null, code: 'FT-PR-005', note: 'FT-PR-005 · 18 L' },
+  // LÍQUIDOS — Litro = FT-PR-NNN (ficha); Cubeta = FT-PC-NNN (solo lista).
+  { id: 'adhesivo-darawell', name: 'Darawell adhesivo', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, unitLabel: 'Litro', prices: [100, 90, 87.3, 78.57, 77, 75.46], recipeSlug: 'adhesivo-darawell', code: 'FT-PR-007', note: 'FT-PR-007 · Litro' },
+  { id: 'adhesivo-darawell-18', name: 'Darawell adhesivo', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, unitLabel: 'Cubeta', prices: [1200, 1080, 1047.6, 942.84, 923.98, 905.5], recipeSlug: null, code: 'FT-PC-007', note: 'FT-PC-007 · Cubeta' },
+  { id: 'sellador-premium-pintura', name: 'Sellador premium adhesivo', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, unitLabel: 'Litro', prices: [85, 76.5, 74.21, 66.78, 65.45, 64.14], recipeSlug: 'sellador-premium-pintura', code: 'FT-PR-008', note: 'FT-PR-008 · Litro' },
+  { id: 'sellador-premium-pintura-18', name: 'Sellador premium adhesivo', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, unitLabel: 'Cubeta', prices: [850, 765, 742.05, 667.85, 654.49, 641.4], recipeSlug: null, code: 'FT-PC-008', note: 'FT-PC-008 · Cubeta' },
+  { id: 'adhesivo-heavy-duty', name: 'Heavy duty adhesivo', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, unitLabel: 'Litro', prices: [155, 139.5, 135.32, 121.78, 119.35, 116.96], recipeSlug: 'adhesivo-heavy-duty', code: 'FT-PR-009', note: 'FT-PR-009 · Litro' },
+  { id: 'nanotech-hidrofobico', name: 'Nanotech sellador hidrofóbico', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, unitLabel: 'Litro', prices: [230, 207, 200.79, 180.71, 177.1, 173.55], recipeSlug: 'nanotech-hidrofobico', code: 'FT-PR-005', note: 'FT-PR-005 · Litro' },
+  { id: 'nanotech-hidrofobico-18', name: 'Nanotech sellador hidrofóbico', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, unitLabel: 'Cubeta', prices: [3315, 2983.5, 2894, 2604.6, 2552.5, 2501.45], recipeSlug: null, code: 'FT-PC-005', note: 'FT-PC-005 · Cubeta' },
 ];
 
 const items = RAW.map(function (row) {
@@ -89,6 +89,7 @@ const items = RAW.map(function (row) {
     recipeSlug: row.recipeSlug,
     code: row.code || (String(row.note || '').match(/^(FT-[A-Z]{2}-\d{3})/) || [])[1] || '',
     note: row.note || '',
+    unitLabel: row.unitLabel || '',
     tiers: tiers,
     pricesByTier: {
       t1: tiers[0],
@@ -105,5 +106,5 @@ module.exports = {
   VOLUME_TIERS: VOLUME_TIERS,
   items: items,
   version: 3,
-  presentationNote: 'Lista oficial: sacos 25 kg (Pastablock 30 kg); líquidos 1 L / 18 L. Precios por tramo sin conversión.',
+  presentationNote: 'Lista oficial: sacos 25 kg (Pastablock 30 kg); líquidos Litro (FT-PR) / Cubeta (FT-PC). Precios por tramo sin conversión.',
 };

@@ -434,13 +434,16 @@
                 byId[key].listName = it.name;
                 byId[key].category = it.category;
                 if (kind === 'liquido') byId[key].kind = 'liquido';
-                if (listCode && !byId[key].code) byId[key].code = listCode;
+                if (it.unitLabel) byId[key].unitLabel = it.unitLabel;
+                // En precios, el código de la fila de lista (Litro FT-PR / Cubeta FT-PC) manda.
+                if (listCode) byId[key].code = listCode;
                 return;
             }
-            // Presentación hermana (p. ej. 18 L): mismo código FT → mismo nombre canónico.
+            // Cubeta (FT-PC-NNN) empareja con ficha Litro (FT-PR-NNN) por número.
+            const litCode = String(listCode || '').replace(/^FT-PC-/, 'FT-PR-');
             const sibling = listCode
                 ? Object.keys(byId).map(function (k) { return byId[k]; }).filter(function (p) {
-                    return p.fromRecipe && p.code === listCode;
+                    return p.fromRecipe && (p.code === listCode || p.code === litCode);
                 })[0]
                 : null;
             byId[it.id] = {
@@ -452,6 +455,7 @@
                 recipe: sibling ? sibling.recipe : null,
                 fromRecipe: false,
                 presentationKg: it.presentationKg,
+                unitLabel: it.unitLabel || '',
                 listName: it.name,
                 category: it.category
             };
@@ -469,14 +473,24 @@
         return getRecipes().filter(function (x) { return x.product === slug; })[0] || null;
     }
 
+    function liquidUnitLabel(size, explicit) {
+        if (explicit) return explicit;
+        if (Number(size) === 1) return 'Litro';
+        if (Number(size) === 18) return 'Cubeta';
+        if (size) return size + ' L';
+        return 'Cubeta';
+    }
+
     function unitFor(entryOrRecipe) {
         const r = entryOrRecipe && entryOrRecipe.recipe ? entryOrRecipe.recipe : entryOrRecipe;
         const id = entryOrRecipe && entryOrRecipe.id ? entryOrRecipe.id : (r && r.product);
         const size = presentationKgFor(id);
         const kind = (entryOrRecipe && entryOrRecipe.kind) || (r && r.kind);
         if (kind === 'liquido' || (r && r.kind === 'liquido')) {
-            if (size) return size + ' L';
-            return 'Cubeta';
+            const list = priceListItems().filter(function (it) {
+                return it.id === id || it.recipeSlug === id;
+            })[0];
+            return liquidUnitLabel(size, list && list.unitLabel);
         }
         if (size) return 'Saco ' + size + ' kg';
         return 'Saco';
@@ -1232,8 +1246,9 @@
         tbody.innerHTML = list.map(function (p) {
             const entry = prices[p.id] || { presentationKg: p.presentationKg, tiers: sixTiers(400) };
             const kg = entry.presentationKg != null ? entry.presentationKg : (p.presentationKg != null ? p.presentationKg : '—');
+            const displayName = (p.kind === 'liquido' && p.listName) ? p.listName : p.name;
             const unit = p.kind === 'liquido'
-                ? (kg !== '—' ? (kg + ' L') : 'Cubeta')
+                ? liquidUnitLabel(kg === '—' ? null : kg, p.unitLabel)
                 : (kg !== '—' ? ('Saco ' + kg + ' kg') : 'Saco');
             const tierCells = TIER_IDS.map(function (tid, i) {
                 const val = entry.tiers && entry.tiers[i] != null ? entry.tiers[i] : 0;
@@ -1244,7 +1259,7 @@
             return '<tr>' +
                 '<td class="muted">' + esc(p.code || p.id) + '</td>' +
                 '<td>' + (p.family ? '<span class="fam" title="' + esc(p.family) + '">' + familyDot(p.family) + '</span> ' : '') +
-                esc(p.name) +
+                esc(displayName) +
                 badge + '</td>' +
                 '<td class="num">' + esc(String(kg)) + '</td>' +
                 '<td class="muted">' + esc(unit) + '</td>' +
