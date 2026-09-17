@@ -49,6 +49,10 @@
 
     let cortesPeriod = 'day';
     let cortesOffset = 0;
+    let pdSalesPeriod = 'month';
+    let pdSalesOffset = 0;
+    let pdSalesSlug = null;
+    let pdSalesBound = false;
 
     function esc(s) {
         return String(s == null ? '' : s)
@@ -231,9 +235,15 @@
         return '$' + Math.round(v).toLocaleString('es-MX');
     }
 
-    function renderCortesChart(period, bounds, list, prevBounds, prevList) {
-        const host = document.getElementById('cortesChart');
-        const subEl = document.getElementById('cortesChartSub');
+    function renderRhythmChart(opts) {
+        const host = opts.host;
+        const subEl = opts.subEl;
+        const period = opts.period;
+        const bounds = opts.bounds;
+        const list = opts.list;
+        const prevBounds = opts.prevBounds;
+        const prevList = opts.prevList;
+        const hatchId = opts.hatchId || 'cortesHatch';
         if (!host) return;
 
         const cur = fillRhythmBuckets(period, bounds, list);
@@ -361,7 +371,7 @@
 
         const defs =
             '<defs>' +
-            '<pattern id="cortesHatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">' +
+            '<pattern id="' + esc(hatchId) + '" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">' +
             '<line x1="0" y1="0" x2="0" y2="7" stroke="currentColor" stroke-width="1" opacity="0.35"/>' +
             '</pattern>' +
             '</defs>';
@@ -370,11 +380,24 @@
         host.innerHTML = emptyNote +
             '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
             defs + grid + yLabels +
-            (hasData ? '<path class="area-hatch" d="' + areaPath + '"/>' : '') +
+            (hasData ? '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + esc(hatchId) + ')"/>' : '') +
             '<path class="line-prev" d="' + prevLine + '"/>' +
             '<path class="line-cur" d="' + curLine + '"/>' +
             xLabels +
             '</svg>';
+    }
+
+    function renderCortesChart(period, bounds, list, prevBounds, prevList) {
+        renderRhythmChart({
+            host: document.getElementById('cortesChart'),
+            subEl: document.getElementById('cortesChartSub'),
+            hatchId: 'cortesHatch',
+            period: period,
+            bounds: bounds,
+            list: list,
+            prevBounds: prevBounds,
+            prevList: prevList
+        });
     }
 
     function relativeSaleSub(d) {
@@ -1034,6 +1057,7 @@
         renderProducts();
         renderHistory();
         renderCortes();
+        if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
         toast('Venta ' + ticket.folio + ' · ' + payLabel(paymentMethod) + ' · ' + billLabel(billing));
     }
 
@@ -1417,6 +1441,7 @@
                 saveSales();
                 renderHistory();
                 renderCortes();
+                if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
                 updatePosKpis();
             });
         }
@@ -1631,6 +1656,271 @@
         }).join('') + '</div>';
     }
 
+    function addFtSiblingCodes(code, into) {
+        const c = String(code || '').trim();
+        if (!c) return;
+        into[c] = true;
+        if (/^FT-PR-/i.test(c)) into[c.replace(/^FT-PR-/i, 'FT-PC-')] = true;
+        if (/^FT-PC-/i.test(c)) into[c.replace(/^FT-PC-/i, 'FT-PR-')] = true;
+    }
+
+    /** IDs/códigos canónicos del producto (slug + presentaciones Litro/Cubeta + merges legacy). */
+    function productMatchKeys(slug) {
+        const ids = {};
+        const codes = {};
+        if (!slug) return { ids: ids, codes: codes };
+
+        ids[slug] = true;
+        Object.keys(PRICE_MERGE_FROM).forEach(function (from) {
+            if (PRICE_MERGE_FROM[from] === slug) ids[from] = true;
+        });
+        if (PRICE_MERGE_FROM[slug]) ids[PRICE_MERGE_FROM[slug]] = true;
+
+        const recipe = recipeBySlug(slug);
+        if (recipe) {
+            if (recipe.product) ids[recipe.product] = true;
+            addFtSiblingCodes(recipe.code, codes);
+        }
+
+        presentationsForSlug(slug).forEach(function (p) {
+            if (p.id) ids[p.id] = true;
+            if (p.parentId) ids[p.parentId] = true;
+            addFtSiblingCodes(p.code, codes);
+        });
+
+        pricedCatalog().forEach(function (p) {
+            if (p.id === slug || (p.recipe && p.recipe.product === slug) || ids[p.id]) {
+                if (p.id) ids[p.id] = true;
+                addFtSiblingCodes(p.code, codes);
+            }
+        });
+
+        return { ids: ids, codes: codes };
+    }
+
+    function lineMatchesProduct(line, keys) {
+        if (!line) return false;
+        const pid = line.product;
+        if (pid && keys.ids[pid]) return true;
+        const code = String(line.code || '').trim();
+        if (code && keys.codes[code]) return true;
+        return false;
+    }
+
+    function lineAmount(it) {
+        const lt = Number(it.lineTotal);
+        if (isFinite(lt) && lt > 0) return lt;
+        return (Number(it.qty) || 0) * (Number(it.price) || 0);
+    }
+
+    function productContribution(sale, keys) {
+        let qty = 0;
+        let amount = 0;
+        let unitSum = 0;
+        let unitCount = 0;
+        (sale.items || []).forEach(function (it) {
+            if (!lineMatchesProduct(it, keys)) return;
+            const q = Number(it.qty) || 0;
+            const amt = lineAmount(it);
+            qty += q;
+            amount += amt;
+            if (q > 0) {
+                unitSum += (Number(it.price) || (q ? amt / q : 0)) * q;
+                unitCount += q;
+            }
+        });
+        return { qty: qty, amount: amount, unitSum: unitSum, unitCount: unitCount };
+    }
+
+    function productRhythmSeries(list, keys) {
+        return list.map(function (s) {
+            const c = productContribution(s, keys);
+            if (!c.amount && !c.qty) return null;
+            return { createdAt: s.createdAt, total: c.amount };
+        }).filter(Boolean);
+    }
+
+    function productHasAnySales(keys) {
+        return sales.some(function (s) {
+            const c = productContribution(s, keys);
+            return c.qty > 0 || c.amount > 0;
+        });
+    }
+
+    function topClientsForProduct(list, keys, limit) {
+        const map = {};
+        list.forEach(function (s) {
+            const c = productContribution(s, keys);
+            if (!c.qty && !c.amount) return;
+            const key = s.clientId || ('name:' + (s.customer || 'Mostrador'));
+            if (!map[key]) {
+                map[key] = {
+                    name: (s.client && s.client.name) || s.customer || 'Mostrador',
+                    qty: 0,
+                    amount: 0,
+                    tickets: 0
+                };
+            }
+            map[key].qty += c.qty;
+            map[key].amount += c.amount;
+            map[key].tickets += 1;
+        });
+        return Object.keys(map).map(function (k) { return map[k]; })
+            .sort(function (a, b) { return b.amount - a.amount || b.qty - a.qty; })
+            .slice(0, limit || 5);
+    }
+
+    function bindProductSalesControls() {
+        if (pdSalesBound) return;
+        pdSalesBound = true;
+        document.addEventListener('click', function (e) {
+            const root = e.target.closest('#pdSalesAnalytics');
+            if (!root || !pdSalesSlug) return;
+            const periodBtn = e.target.closest('[data-pd-sales-period]');
+            if (periodBtn) {
+                const next = periodBtn.getAttribute('data-pd-sales-period');
+                if (['day', 'week', 'month'].indexOf(next) < 0) return;
+                pdSalesPeriod = next;
+                pdSalesOffset = 0;
+                renderProductSalesAnalytics(pdSalesSlug);
+                return;
+            }
+            if (e.target.closest('[data-pd-sales-prev]')) {
+                pdSalesOffset -= 1;
+                renderProductSalesAnalytics(pdSalesSlug);
+                return;
+            }
+            if (e.target.closest('[data-pd-sales-next]')) {
+                if (pdSalesOffset >= 0) return;
+                pdSalesOffset += 1;
+                renderProductSalesAnalytics(pdSalesSlug);
+                return;
+            }
+            if (e.target.closest('[data-pd-sales-reset]')) {
+                pdSalesOffset = 0;
+                renderProductSalesAnalytics(pdSalesSlug);
+            }
+        });
+    }
+
+    function renderProductSalesAnalytics(slug) {
+        const mount = document.getElementById('pdSalesAnalytics');
+        if (!mount) return;
+        bindProductSalesControls();
+
+        if (!slug) {
+            mount.innerHTML = '';
+            pdSalesSlug = null;
+            return;
+        }
+
+        if (pdSalesSlug !== slug) {
+            pdSalesSlug = slug;
+            pdSalesPeriod = 'month';
+            pdSalesOffset = 0;
+        } else {
+            pdSalesSlug = slug;
+        }
+
+        const keys = productMatchKeys(slug);
+        if (!productHasAnySales(keys)) {
+            mount.innerHTML =
+                '<div class="pd-sales-block">' +
+                '<p class="pd-section-label">Ventas</p>' +
+                '<div class="pd-sales-empty">' +
+                '<p class="empty-title">Sin ventas registradas</p>' +
+                '<p class="muted">Aún no hay tickets del POS con este producto.</p>' +
+                '</div></div>';
+            return;
+        }
+
+        const bounds = periodBounds(pdSalesPeriod, pdSalesOffset);
+        const prevBounds = periodBounds(pdSalesPeriod, pdSalesOffset - 1);
+        const periodSales = salesInRange(sales, bounds.start, bounds.end);
+        const prevPeriodSales = salesInRange(sales, prevBounds.start, prevBounds.end);
+        const curSeries = productRhythmSeries(periodSales, keys);
+        const prevSeries = productRhythmSeries(prevPeriodSales, keys);
+
+        let units = 0;
+        let amount = 0;
+        let unitSum = 0;
+        let unitCount = 0;
+        let ticketCount = 0;
+        periodSales.forEach(function (s) {
+            const c = productContribution(s, keys);
+            if (!c.qty && !c.amount) return;
+            ticketCount += 1;
+            units += c.qty;
+            amount += c.amount;
+            unitSum += c.unitSum;
+            unitCount += c.unitCount;
+        });
+        const avgPrice = unitCount ? unitSum / unitCount : 0;
+        const clients = topClientsForProduct(periodSales, keys, 5);
+        const canGoNext = pdSalesOffset < 0;
+
+        mount.innerHTML =
+            '<div class="pd-sales-block">' +
+            '<div class="pd-sales-head">' +
+            '<div>' +
+            '<p class="pd-section-label">Ventas</p>' +
+            '<p class="page-sub" style="margin:0">Ritmo y clientes de este producto · POS local</p>' +
+            '</div>' +
+            '<div class="cortes-range pd-sales-range">' +
+            '<button type="button" class="cortes-nav-btn" data-pd-sales-prev title="Periodo anterior" aria-label="Periodo anterior"><i class="fa-solid fa-chevron-left"></i></button>' +
+            '<span class="cortes-range-label" id="pdSalesRangeLabel">' + esc(formatPeriodLabel(pdSalesPeriod, bounds.start, bounds.end)) + '</span>' +
+            '<button type="button" class="cortes-nav-btn" data-pd-sales-next title="Periodo siguiente" aria-label="Periodo siguiente"' +
+            (canGoNext ? '' : ' disabled') + '><i class="fa-solid fa-chevron-right"></i></button>' +
+            '<button type="button" class="cortes-today-btn" data-pd-sales-reset>Actual</button>' +
+            '</div></div>' +
+            '<div class="seg-control pd-sales-periods" role="tablist" aria-label="Periodo de ventas del producto">' +
+            [['day', 'Día'], ['week', 'Semana'], ['month', 'Mes']].map(function (pair) {
+                const on = pdSalesPeriod === pair[0];
+                return '<button type="button" role="tab" data-pd-sales-period="' + pair[0] + '"' +
+                    (on ? ' class="active" aria-selected="true"' : ' aria-selected="false"') + '>' +
+                    pair[1] + '</button>';
+            }).join('') +
+            '</div>' +
+            '<div class="pd-summary-grid pd-sales-kpis">' +
+            '<div class="pd-stat"><div class="label">Unidades</div><div class="val">' + esc(String(units)) + '</div></div>' +
+            '<div class="pd-stat"><div class="label">Monto</div><div class="val">' + money(amount) + '</div></div>' +
+            '<div class="pd-stat"><div class="label">Precio promedio</div><div class="val">' + (unitCount ? money(avgPrice) : '—') + '</div></div>' +
+            '<div class="pd-stat"><div class="label">Ventas</div><div class="val">' + esc(String(ticketCount)) + '</div></div>' +
+            '</div>' +
+            '<div class="cortes-chart-panel pd-sales-chart-panel">' +
+            '<div class="cortes-chart-head">' +
+            '<div><h3>Ritmo de ventas</h3><p class="panel-sub" id="pdSalesChartSub"></p></div>' +
+            '<div class="cortes-chart-legend" aria-hidden="true">' +
+            '<span class="leg"><span class="swatch"></span> Periodo</span>' +
+            '<span class="leg"><span class="swatch prev"></span> Anterior</span>' +
+            '</div></div>' +
+            '<div class="cortes-chart" id="pdSalesChart" role="img" aria-label="Ritmo de ventas del producto"></div>' +
+            '</div>' +
+            '<div class="pd-sales-clients">' +
+            '<p class="pd-section-label">Principales clientes</p>' +
+            '<div id="pdSalesClients">' +
+            (clients.length
+                ? clients.map(function (c) {
+                    return '<div class="cortes-row">' +
+                        '<div class="left"><span class="name">' + esc(c.name) + '</span></div>' +
+                        '<span class="amt">' + esc(String(c.qty)) + ' u · ' + money(c.amount) + '</span>' +
+                        '</div>';
+                }).join('')
+                : '<div class="cortes-empty">Sin clientes en este periodo</div>') +
+            '</div></div></div>';
+
+        renderRhythmChart({
+            host: document.getElementById('pdSalesChart'),
+            subEl: document.getElementById('pdSalesChartSub'),
+            hatchId: 'pdSalesHatch',
+            period: pdSalesPeriod,
+            bounds: bounds,
+            list: curSeries,
+            prevBounds: prevBounds,
+            prevList: prevSeries
+        });
+    }
+
     function onSectionShow(id) {
         if (id === 'venta') {
             renderChips();
@@ -1681,6 +1971,7 @@
             setTierPrice: setTierPrice,
             resetPricesToDefaults: resetPricesToDefaults,
             priceEditorHtml: priceEditorHtml,
+            renderProductSalesAnalytics: renderProductSalesAnalytics,
             baseUnitPrice: baseUnitPrice,
             unitFor: unitFor
         };

@@ -1121,6 +1121,56 @@
             background: var(--bg);
         }
         .pd-overview-actions { margin-top: 14px; }
+        .pd-sales-block {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+        }
+        .pd-sales-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .pd-sales-head .pd-section-label { margin-bottom: 4px; }
+        .pd-sales-range { margin: 0; }
+        .pd-sales-periods { margin-bottom: 14px; }
+        .pd-sales-kpis {
+            border-top: none;
+            padding-top: 0;
+            margin-bottom: 14px;
+        }
+        .pd-sales-chart-panel { margin-bottom: 16px; }
+        .pd-sales-clients .cortes-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .pd-sales-clients .cortes-row:last-child { border-bottom: none; }
+        .pd-sales-clients .amt {
+            font-variant-numeric: tabular-nums;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+        .pd-sales-empty {
+            padding: 28px 16px;
+            text-align: center;
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+        }
+        .pd-sales-empty .empty-title {
+            margin: 0 0 6px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        .pd-sales-empty .muted { margin: 0; font-size: 13px; }
         .products-table tbody tr { cursor: pointer; }
         .products-table tbody tr:hover { background: var(--hover); }
         .pd-price-blocks { display: grid; gap: 14px; }
@@ -1241,6 +1291,9 @@
         .cortes-chart .area-hatch {
             fill: url(#cortesHatch);
             stroke: none;
+        }
+        #pdSalesChart .area-hatch {
+            fill: url(#pdSalesHatch);
         }
         .cortes-chart .axis-label {
             fill: var(--muted);
@@ -3240,7 +3293,11 @@
                 fichaAction +
                 '</div></div>' +
                 opsHtml +
-                presHtml;
+                presHtml +
+                '<div id="pdSalesAnalytics"></div>';
+            if (window.S35PosModule && window.S35PosModule.renderProductSalesAnalytics) {
+                window.S35PosModule.renderProductSalesAnalytics(slug);
+            }
         }
 
         const formulaBtn = document.getElementById('pdTabFormulaBtn');
@@ -3481,6 +3538,9 @@
             if (typeof renderProductHubList === 'function') renderProductHubList();
             if (hubProductSlug && hubProductTab === 'precios' && typeof renderProductPricesTab === 'function') {
                 renderProductPricesTab();
+            }
+            if (hubProductSlug && window.S35PosModule && window.S35PosModule.renderProductSalesAnalytics) {
+                window.S35PosModule.renderProductSalesAnalytics(hubProductSlug);
             }
         },
         role: currentRole,
