@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const catalog = require('../content/products');
+const commerce = require('../content/products/commerce');
 const research = require('../content/research');
 const formulations = require('../content/panel/formulations');
 const plantMaterials = require('../content/panel/plant-materials');
@@ -242,6 +243,7 @@ const out = 'window.S35_PANEL_DATA = ' + JSON.stringify({
   plantMaterials: inventory,
   recipes: recipes,
   usedIn: usedIn,
+  presentations: commerce.PRESENTATIONS,
   priceList: {
     version: priceList.version,
     presentationNote: priceList.presentationNote,

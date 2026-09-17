@@ -2753,9 +2753,266 @@ window.S35_PANEL_DATA = {
       }
     ]
   },
+  "presentations": [
+    {
+      "id": "waxtard-blanco-perla",
+      "productSlug": "waxtard-blanco-perla",
+      "code": "FT-PR-001",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "WAXTARD",
+      "listName": "WAXTARD BLANCO PERLA",
+      "sellable": true
+    },
+    {
+      "id": "waxtard-blanco-absoluto",
+      "productSlug": "waxtard-blanco-absoluto",
+      "code": "FT-PR-002",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "WAXTARD",
+      "listName": "WAXTARD BLANCO INTENSO",
+      "sellable": true
+    },
+    {
+      "id": "waxtard-gris",
+      "productSlug": "waxtard-gris",
+      "code": "FT-PR-003",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "WAXTARD",
+      "listName": "WAXTARD GRIS",
+      "sellable": true
+    },
+    {
+      "id": "waxtard-extra-anclaje",
+      "productSlug": "waxtard-extra-anclaje",
+      "code": "FT-PR-004",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "WAXTARD",
+      "listName": "WAXTARD EXTRA ANCLAJE",
+      "sellable": true
+    },
+    {
+      "id": "basecoat-plus-blanco",
+      "productSlug": "basecoat-plus-blanco",
+      "code": "FT-PS-001",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "RECUBRIMIENTO PANELES",
+      "listName": "BASECOAT BLANCO INTENSO",
+      "sellable": true
+    },
+    {
+      "id": "basecoat-plus-gris",
+      "productSlug": "basecoat-plus-gris",
+      "code": "FT-PS-002",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "RECUBRIMIENTO PANELES",
+      "listName": "BASECOAT GRIS",
+      "sellable": true
+    },
+    {
+      "id": "cemento-plastico-concreto",
+      "productSlug": "cemento-plastico-concreto",
+      "code": "FT-MC-001",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "PRODUCTOS ARQUITECTONICOS",
+      "listName": "CONCRETO APARENTE",
+      "sellable": true
+    },
+    {
+      "id": "styrobond-pro",
+      "productSlug": "styrobond-pro",
+      "code": "FT-PP-001",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "PRODUCTOS PROFESIONALES",
+      "listName": "STYROBOND PRO+",
+      "sellable": true
+    },
+    {
+      "id": "leveltec-pro",
+      "productSlug": "leveltec-pro",
+      "code": "FT-PP-003",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "PRODUCTOS PROFESIONALES",
+      "listName": "LEVELTEC PRO+",
+      "sellable": true
+    },
+    {
+      "id": "ultraforce",
+      "productSlug": "ultraforce",
+      "code": "FT-AD-003",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "PEGAXPRESS",
+      "listName": "ADHESIVO ULTRAFORCE PRO+",
+      "sellable": true
+    },
+    {
+      "id": "pegaxpress-psp",
+      "productSlug": "pegaxpress-psp",
+      "code": "FT-AD-004",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "PEGAXPRESS",
+      "listName": "ADHESIVO PISO SOBRE PISO PRO+",
+      "sellable": true
+    },
+    {
+      "id": "porcelanico-universal",
+      "productSlug": "porcelanico-universal",
+      "code": "FT-AD-001",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "PEGAXPRESS",
+      "listName": "ADHESIVO PORCELANICO PRO+",
+      "sellable": true
+    },
+    {
+      "id": "ceramico",
+      "productSlug": "ceramico",
+      "code": "FT-AD-002",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "PEGAXPRESS",
+      "listName": "ADHESIVO CERAMICO PRO+",
+      "sellable": true
+    },
+    {
+      "id": "pegaxpress-block",
+      "productSlug": "pegaxpress-block",
+      "code": "FT-PR-006",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 30,
+      "label": "Saco",
+      "category": "PEGAXPRESS",
+      "listName": "PASTABLOCK+",
+      "sellable": true
+    },
+    {
+      "id": "adhesivo-darawell",
+      "productSlug": "adhesivo-darawell",
+      "code": "FT-PR-007",
+      "kind": "liquido",
+      "unit": "L",
+      "size": 1,
+      "label": "Litro",
+      "category": "LIQUIDOS",
+      "listName": "Darawell adhesivo",
+      "sellable": true
+    },
+    {
+      "id": "adhesivo-darawell-18",
+      "productSlug": "adhesivo-darawell",
+      "code": "FT-PC-007",
+      "kind": "liquido",
+      "unit": "L",
+      "size": 18,
+      "label": "Cubeta",
+      "category": "LIQUIDOS",
+      "listName": "Darawell adhesivo",
+      "parentId": "adhesivo-darawell",
+      "sellable": true
+    },
+    {
+      "id": "sellador-premium-pintura",
+      "productSlug": "sellador-premium-pintura",
+      "code": "FT-PR-008",
+      "kind": "liquido",
+      "unit": "L",
+      "size": 1,
+      "label": "Litro",
+      "category": "LIQUIDOS",
+      "listName": "Sellador premium adhesivo",
+      "sellable": true
+    },
+    {
+      "id": "sellador-premium-pintura-18",
+      "productSlug": "sellador-premium-pintura",
+      "code": "FT-PC-008",
+      "kind": "liquido",
+      "unit": "L",
+      "size": 18,
+      "label": "Cubeta",
+      "category": "LIQUIDOS",
+      "listName": "Sellador premium adhesivo",
+      "parentId": "sellador-premium-pintura",
+      "sellable": true
+    },
+    {
+      "id": "adhesivo-heavy-duty",
+      "productSlug": "adhesivo-heavy-duty",
+      "code": "FT-PR-009",
+      "kind": "liquido",
+      "unit": "L",
+      "size": 1,
+      "label": "Litro",
+      "category": "LIQUIDOS",
+      "listName": "Heavy duty adhesivo",
+      "sellable": true
+    },
+    {
+      "id": "nanotech-hidrofobico",
+      "productSlug": "nanotech-hidrofobico",
+      "code": "FT-PR-005",
+      "kind": "liquido",
+      "unit": "L",
+      "size": 1,
+      "label": "Litro",
+      "category": "LIQUIDOS",
+      "listName": "Nanotech sellador hidrofóbico",
+      "sellable": true
+    },
+    {
+      "id": "nanotech-hidrofobico-18",
+      "productSlug": "nanotech-hidrofobico",
+      "code": "FT-PC-005",
+      "kind": "liquido",
+      "unit": "L",
+      "size": 18,
+      "label": "Cubeta",
+      "category": "LIQUIDOS",
+      "listName": "Nanotech sellador hidrofóbico",
+      "parentId": "nanotech-hidrofobico",
+      "sellable": true
+    }
+  ],
   "priceList": {
     "version": 3,
-    "presentationNote": "Lista oficial: sacos 25 kg (Pastablock 30 kg); líquidos Litro (FT-PR) / Cubeta (FT-PC). Precios por tramo sin conversión.",
+    "presentationNote": "Lista oficial vía commerce.js: sacos 25 kg (Pastablock 30 kg); líquidos Litro (FT-PR) / Cubeta 18 L (FT-PC). Precios por tramo sin conversión salvo oldKg ≠ size.",
     "tiers": [
       {
         "id": "t1",
@@ -2806,6 +3063,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PR-001",
         "note": "FT-PR-001",
         "unitLabel": "",
+        "productSlug": "waxtard-blanco-perla",
+        "parentId": null,
         "tiers": [
           210,
           189,
@@ -2834,6 +3093,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PR-002",
         "note": "FT-PR-002 · ficha Waxtard Blanco Absoluto",
         "unitLabel": "",
+        "productSlug": "waxtard-blanco-absoluto",
+        "parentId": null,
         "tiers": [
           230,
           207,
@@ -2862,6 +3123,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PR-003",
         "note": "FT-PR-003",
         "unitLabel": "",
+        "productSlug": "waxtard-gris",
+        "parentId": null,
         "tiers": [
           205,
           184.5,
@@ -2890,6 +3153,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PR-004",
         "note": "FT-PR-004",
         "unitLabel": "",
+        "productSlug": "waxtard-extra-anclaje",
+        "parentId": null,
         "tiers": [
           335,
           301.5,
@@ -2918,6 +3183,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PS-001",
         "note": "FT-PS-001 · canónico (merge: basecoat-blanco-intenso-plus)",
         "unitLabel": "",
+        "productSlug": "basecoat-plus-blanco",
+        "parentId": null,
         "tiers": [
           360,
           324,
@@ -2946,6 +3213,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PS-002",
         "note": "FT-PS-002 · canónico (merge: waxtard-basecoat-gris-plus)",
         "unitLabel": "",
+        "productSlug": "basecoat-plus-gris",
+        "parentId": null,
         "tiers": [
           340,
           306,
@@ -2974,6 +3243,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-MC-001",
         "note": "FT-MC-001",
         "unitLabel": "",
+        "productSlug": "cemento-plastico-concreto",
+        "parentId": null,
         "tiers": [
           545,
           490.5,
@@ -3002,6 +3273,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PP-001",
         "note": "FT-PP-001",
         "unitLabel": "",
+        "productSlug": "styrobond-pro",
+        "parentId": null,
         "tiers": [
           435.71,
           392.14,
@@ -3030,6 +3303,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PP-003",
         "note": "FT-PP-003",
         "unitLabel": "",
+        "productSlug": "leveltec-pro",
+        "parentId": null,
         "tiers": [
           220,
           198,
@@ -3058,6 +3333,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-AD-003",
         "note": "FT-AD-003",
         "unitLabel": "",
+        "productSlug": "ultraforce",
+        "parentId": null,
         "tiers": [
           500,
           450,
@@ -3086,6 +3363,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-AD-004",
         "note": "FT-AD-004 · canónico (sin variante blanco suelta)",
         "unitLabel": "",
+        "productSlug": "pegaxpress-psp",
+        "parentId": null,
         "tiers": [
           350,
           315,
@@ -3114,6 +3393,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-AD-001",
         "note": "FT-AD-001 · canónico (sin variante blanco suelta)",
         "unitLabel": "",
+        "productSlug": "porcelanico-universal",
+        "parentId": null,
         "tiers": [
           264.29,
           211.43,
@@ -3142,6 +3423,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-AD-002",
         "note": "FT-AD-002 · canónico (sin variante blanco suelta)",
         "unitLabel": "",
+        "productSlug": "ceramico",
+        "parentId": null,
         "tiers": [
           228.57,
           182.86,
@@ -3170,6 +3453,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PR-006",
         "note": "FT-PR-006 · 30 kg (precio de lista, sin convertir desde 35)",
         "unitLabel": "",
+        "productSlug": "pegaxpress-block",
+        "parentId": null,
         "tiers": [
           160,
           144,
@@ -3198,6 +3483,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PR-007",
         "note": "FT-PR-007 · Litro",
         "unitLabel": "Litro",
+        "productSlug": "adhesivo-darawell",
+        "parentId": null,
         "tiers": [
           100,
           90,
@@ -3226,6 +3513,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PC-007",
         "note": "FT-PC-007 · Cubeta",
         "unitLabel": "Cubeta",
+        "productSlug": "adhesivo-darawell",
+        "parentId": "adhesivo-darawell",
         "tiers": [
           1200,
           1080,
@@ -3254,6 +3543,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PR-008",
         "note": "FT-PR-008 · Litro",
         "unitLabel": "Litro",
+        "productSlug": "sellador-premium-pintura",
+        "parentId": null,
         "tiers": [
           85,
           76.5,
@@ -3282,6 +3573,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PC-008",
         "note": "FT-PC-008 · Cubeta",
         "unitLabel": "Cubeta",
+        "productSlug": "sellador-premium-pintura",
+        "parentId": "sellador-premium-pintura",
         "tiers": [
           850,
           765,
@@ -3310,6 +3603,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PR-009",
         "note": "FT-PR-009 · Litro",
         "unitLabel": "Litro",
+        "productSlug": "adhesivo-heavy-duty",
+        "parentId": null,
         "tiers": [
           155,
           139.5,
@@ -3338,6 +3633,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PR-005",
         "note": "FT-PR-005 · Litro",
         "unitLabel": "Litro",
+        "productSlug": "nanotech-hidrofobico",
+        "parentId": null,
         "tiers": [
           230,
           207,
@@ -3366,6 +3663,8 @@ window.S35_PANEL_DATA = {
         "code": "FT-PC-005",
         "note": "FT-PC-005 · Cubeta",
         "unitLabel": "Cubeta",
+        "productSlug": "nanotech-hidrofobico",
+        "parentId": "nanotech-hidrofobico",
         "tiers": [
           3315,
           2983.5,

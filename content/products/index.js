@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const taxonomy = require('./taxonomy');
+const commerce = require('./commerce');
 
 const ITEMS_DIR = path.join(__dirname, 'items');
 
@@ -56,6 +57,7 @@ function stats() {
 module.exports = {
   taxonomy: taxonomy,
   products: products,
+  commerce: commerce,
   bySlug: bySlug,
   published: published,
   legacy: legacy,
