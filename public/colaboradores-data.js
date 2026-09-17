@@ -2754,8 +2754,8 @@ window.S35_PANEL_DATA = {
     ]
   },
   "priceList": {
-    "version": 2,
-    "presentationNote": "Todos los sacos a 25 kg excepto Pastablock (30 kg). Precios convertidos conservando $/kg.",
+    "version": 3,
+    "presentationNote": "Lista oficial: sacos 25 kg (Pastablock 30 kg); líquidos 1 L / 18 L. Precios por tramo sin conversión.",
     "tiers": [
       {
         "id": "t1",
@@ -2798,11 +2798,12 @@ window.S35_PANEL_DATA = {
       {
         "id": "waxtard-blanco-perla",
         "name": "WAXTARD BLANCO PERLA",
-        "category": "PRODUCTO CLASICOS",
+        "category": "WAXTARD",
+        "kind": "seco",
         "presentationKg": 25,
         "oldKg": 25,
         "recipeSlug": "waxtard-blanco-perla",
-        "note": "",
+        "note": "FT-PR-001",
         "tiers": [
           210,
           189,
@@ -2823,11 +2824,12 @@ window.S35_PANEL_DATA = {
       {
         "id": "waxtard-blanco-absoluto",
         "name": "WAXTARD BLANCO INTENSO",
-        "category": "PRODUCTO CLASICOS",
+        "category": "WAXTARD",
+        "kind": "seco",
         "presentationKg": 25,
         "oldKg": 25,
         "recipeSlug": "waxtard-blanco-absoluto",
-        "note": "Mapeado a Waxtard Blanco Absoluto",
+        "note": "FT-PR-002 · ficha Waxtard Blanco Absoluto",
         "tiers": [
           230,
           207,
@@ -2848,11 +2850,12 @@ window.S35_PANEL_DATA = {
       {
         "id": "waxtard-gris",
         "name": "WAXTARD GRIS",
-        "category": "PRODUCTO CLASICOS",
+        "category": "WAXTARD",
+        "kind": "seco",
         "presentationKg": 25,
         "oldKg": 25,
         "recipeSlug": "waxtard-gris",
-        "note": "",
+        "note": "FT-PR-003",
         "tiers": [
           205,
           184.5,
@@ -2873,11 +2876,12 @@ window.S35_PANEL_DATA = {
       {
         "id": "waxtard-extra-anclaje",
         "name": "WAXTARD EXTRA ANCLAJE",
-        "category": "PRODUCTO CLASICOS",
+        "category": "WAXTARD",
+        "kind": "seco",
         "presentationKg": 25,
         "oldKg": 25,
         "recipeSlug": "waxtard-extra-anclaje",
-        "note": "",
+        "note": "FT-PR-004",
         "tiers": [
           335,
           301.5,
@@ -2896,113 +2900,14 @@ window.S35_PANEL_DATA = {
         }
       },
       {
-        "id": "estuco-base-s35",
-        "name": "ESTUCO BASE S35",
-        "category": "PRODUCTO CLASICOS",
-        "presentationKg": 25,
-        "oldKg": 35,
-        "recipeSlug": null,
-        "note": "",
-        "tiers": [
-          157.14,
-          141.43,
-          134.36,
-          114.21,
-          111.92,
-          109.68
-        ],
-        "pricesByTier": {
-          "t1": 157.14,
-          "t2": 141.43,
-          "t3": 134.36,
-          "t4": 114.21,
-          "t5": 111.92,
-          "t6": 109.68
-        }
-      },
-      {
-        "id": "aplanado-base-pro",
-        "name": "APLANADO BASE PRO+",
-        "category": "PRODUCTO CLASICOS",
-        "presentationKg": 25,
-        "oldKg": 35,
-        "recipeSlug": null,
-        "note": "",
-        "tiers": [
-          157.14,
-          141.43,
-          135.77,
-          115.41,
-          113.1,
-          110.84
-        ],
-        "pricesByTier": {
-          "t1": 157.14,
-          "t2": 141.43,
-          "t3": 135.77,
-          "t4": 115.41,
-          "t5": 113.1,
-          "t6": 110.84
-        }
-      },
-      {
         "id": "basecoat-plus-blanco",
-        "name": "BASECOAT BLANCO INTENSO PLUS+",
+        "name": "BASECOAT BLANCO INTENSO",
         "category": "RECUBRIMIENTO PANELES",
+        "kind": "seco",
         "presentationKg": 25,
         "oldKg": 25,
         "recipeSlug": "basecoat-plus-blanco",
-        "note": "FT-PS-001 · precio de basecoat-blanco-intenso-plus",
-        "tiers": [
-          620,
-          558,
-          541.26,
-          487.13,
-          477.39,
-          467.84
-        ],
-        "pricesByTier": {
-          "t1": 620,
-          "t2": 558,
-          "t3": 541.26,
-          "t4": 487.13,
-          "t5": 477.39,
-          "t6": 467.84
-        }
-      },
-      {
-        "id": "basecoat-plus-gris",
-        "name": "BASECOAT GRIS PLUS+",
-        "category": "RECUBRIMIENTO PANELES",
-        "presentationKg": 25,
-        "oldKg": 25,
-        "recipeSlug": "basecoat-plus-gris",
-        "note": "FT-PS-002 · precio de waxtard-basecoat-gris-plus",
-        "tiers": [
-          599,
-          539.1,
-          522.93,
-          470.63,
-          461.22,
-          452
-        ],
-        "pricesByTier": {
-          "t1": 599,
-          "t2": 539.1,
-          "t3": 522.93,
-          "t4": 470.63,
-          "t5": 461.22,
-          "t6": 452
-        }
-      },
-      {
-        "id": "microconcreto-pulido",
-        "name": "MICROCONCRETO PULIDO",
-        "category": "PRODUCTOS ARQUITECTONICOS",
-        "presentationKg": 25,
-        "oldKg": 25,
-        "recipeSlug": null,
-        "note": "",
+        "note": "FT-PS-001 · canónico (merge: basecoat-blanco-intenso-plus)",
         "tiers": [
           360,
           324,
@@ -3021,13 +2926,40 @@ window.S35_PANEL_DATA = {
         }
       },
       {
+        "id": "basecoat-plus-gris",
+        "name": "BASECOAT GRIS",
+        "category": "RECUBRIMIENTO PANELES",
+        "kind": "seco",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "basecoat-plus-gris",
+        "note": "FT-PS-002 · canónico (merge: waxtard-basecoat-gris-plus)",
+        "tiers": [
+          340,
+          306,
+          296.82,
+          267.14,
+          261.8,
+          256.56
+        ],
+        "pricesByTier": {
+          "t1": 340,
+          "t2": 306,
+          "t3": 296.82,
+          "t4": 267.14,
+          "t5": 261.8,
+          "t6": 256.56
+        }
+      },
+      {
         "id": "cemento-plastico-concreto",
         "name": "CONCRETO APARENTE",
         "category": "PRODUCTOS ARQUITECTONICOS",
+        "kind": "seco",
         "presentationKg": 25,
         "oldKg": 25,
         "recipeSlug": "cemento-plastico-concreto",
-        "note": "",
+        "note": "FT-MC-001",
         "tiers": [
           545,
           490.5,
@@ -3046,45 +2978,21 @@ window.S35_PANEL_DATA = {
         }
       },
       {
-        "id": "coloriometry-series",
-        "name": "COLORIOMETRY SERIES",
-        "category": "PRODUCTOS ARQUITECTONICOS",
-        "presentationKg": 25,
-        "oldKg": 10,
-        "recipeSlug": null,
-        "note": "",
-        "tiers": [
-          1325,
-          1192.5,
-          1156.72,
-          1041.05,
-          1020.22,
-          999.83
-        ],
-        "pricesByTier": {
-          "t1": 1325,
-          "t2": 1192.5,
-          "t3": 1156.72,
-          "t4": 1041.05,
-          "t5": 1020.22,
-          "t6": 999.83
-        }
-      },
-      {
         "id": "styrobond-pro",
         "name": "STYROBOND PRO+",
         "category": "PRODUCTOS PROFESIONALES",
+        "kind": "seco",
         "presentationKg": 25,
-        "oldKg": 35,
+        "oldKg": 25,
         "recipeSlug": "styrobond-pro",
-        "note": "",
+        "note": "FT-PP-001",
         "tiers": [
           435.71,
           392.14,
           380.38,
           342.34,
           335.49,
-          328.79
+          328.78
         ],
         "pricesByTier": {
           "t1": 435.71,
@@ -3092,42 +3000,44 @@ window.S35_PANEL_DATA = {
           "t3": 380.38,
           "t4": 342.34,
           "t5": 335.49,
-          "t6": 328.79
+          "t6": 328.78
         }
       },
       {
-        "id": "cellbond-pro",
-        "name": "CELLBOND PRO+",
+        "id": "leveltec-pro",
+        "name": "LEVELTEC PRO+",
         "category": "PRODUCTOS PROFESIONALES",
+        "kind": "seco",
         "presentationKg": 25,
-        "oldKg": 35,
-        "recipeSlug": null,
-        "note": "",
+        "oldKg": 25,
+        "recipeSlug": "leveltec-pro",
+        "note": "FT-PP-003",
         "tiers": [
-          435.71,
-          392.14,
-          380.38,
-          342.34,
-          335.49,
-          328.79
+          220,
+          198,
+          192.06,
+          172.85,
+          169.4,
+          166.01
         ],
         "pricesByTier": {
-          "t1": 435.71,
-          "t2": 392.14,
-          "t3": 380.38,
-          "t4": 342.34,
-          "t5": 335.49,
-          "t6": 328.79
+          "t1": 220,
+          "t2": 198,
+          "t3": 192.06,
+          "t4": 172.85,
+          "t5": 169.4,
+          "t6": 166.01
         }
       },
       {
         "id": "ultraforce",
         "name": "ADHESIVO ULTRAFORCE PRO+",
-        "category": "PRODUCTOS PROFESIONALES",
+        "category": "PEGAXPRESS",
+        "kind": "seco",
         "presentationKg": 25,
-        "oldKg": 35,
+        "oldKg": 25,
         "recipeSlug": "ultraforce",
-        "note": "",
+        "note": "FT-AD-003",
         "tiers": [
           500,
           450,
@@ -3148,92 +3058,44 @@ window.S35_PANEL_DATA = {
       {
         "id": "pegaxpress-psp",
         "name": "ADHESIVO PISO SOBRE PISO PRO+",
-        "category": "PRODUCTOS PROFESIONALES",
+        "category": "PEGAXPRESS",
+        "kind": "seco",
         "presentationKg": 25,
-        "oldKg": 35,
+        "oldKg": 25,
         "recipeSlug": "pegaxpress-psp",
-        "note": "Variante gris/pro como precio POS principal",
+        "note": "FT-AD-004 · canónico (sin variante blanco suelta)",
         "tiers": [
           350,
           315,
           305.55,
-          274.99,
-          269.49,
+          275,
+          269.5,
           264.11
         ],
         "pricesByTier": {
           "t1": 350,
           "t2": 315,
           "t3": 305.55,
-          "t4": 274.99,
-          "t5": 269.49,
+          "t4": 275,
+          "t5": 269.5,
           "t6": 264.11
-        }
-      },
-      {
-        "id": "pegaxpress-psp-blanco",
-        "name": "ADHESIVO PISO SOBRE PISO BLANCO PRO+",
-        "category": "PRODUCTOS PROFESIONALES",
-        "presentationKg": 25,
-        "oldKg": 35,
-        "recipeSlug": null,
-        "note": "",
-        "tiers": [
-          350,
-          315,
-          305.55,
-          274.99,
-          269.49,
-          264.11
-        ],
-        "pricesByTier": {
-          "t1": 350,
-          "t2": 315,
-          "t3": 305.55,
-          "t4": 274.99,
-          "t5": 269.49,
-          "t6": 264.11
-        }
-      },
-      {
-        "id": "porcelanico-blanco",
-        "name": "ADHESIVO PORCELANICO BLANCO PRO+",
-        "category": "PRODUCTOS PROFESIONALES",
-        "presentationKg": 25,
-        "oldKg": 35,
-        "recipeSlug": null,
-        "note": "",
-        "tiers": [
-          285.71,
-          242.86,
-          235.57,
-          188.46,
-          184.69,
-          180.99
-        ],
-        "pricesByTier": {
-          "t1": 285.71,
-          "t2": 242.86,
-          "t3": 235.57,
-          "t4": 188.46,
-          "t5": 184.69,
-          "t6": 180.99
         }
       },
       {
         "id": "porcelanico-universal",
-        "name": "ADHESIVO PORCELANICO GRIS PRO+",
-        "category": "PRODUCTOS PROFESIONALES",
+        "name": "ADHESIVO PORCELANICO PRO+",
+        "category": "PEGAXPRESS",
+        "kind": "seco",
         "presentationKg": 25,
-        "oldKg": 35,
+        "oldKg": 25,
         "recipeSlug": "porcelanico-universal",
-        "note": "GRIS como precio primario del slug único",
+        "note": "FT-AD-001 · canónico (sin variante blanco suelta)",
         "tiers": [
           264.29,
           211.43,
           190.29,
           152.23,
-          149.19,
+          149.18,
           146.2
         ],
         "pricesByTier": {
@@ -3241,43 +3103,19 @@ window.S35_PANEL_DATA = {
           "t2": 211.43,
           "t3": 190.29,
           "t4": 152.23,
-          "t5": 149.19,
+          "t5": 149.18,
           "t6": 146.2
         }
       },
       {
-        "id": "ceramico-blanco",
-        "name": "ADHESIVO CERAMICO BLANCO PRO+",
-        "category": "PRODUCTOS PROFESIONALES",
-        "presentationKg": 25,
-        "oldKg": 35,
-        "recipeSlug": null,
-        "note": "",
-        "tiers": [
-          250,
-          200,
-          160,
-          144,
-          141.12,
-          138.3
-        ],
-        "pricesByTier": {
-          "t1": 250,
-          "t2": 200,
-          "t3": 160,
-          "t4": 144,
-          "t5": 141.12,
-          "t6": 138.3
-        }
-      },
-      {
         "id": "ceramico",
-        "name": "ADHESIVO CERAMICO GRIS PRO+",
-        "category": "PRODUCTOS PROFESIONALES",
+        "name": "ADHESIVO CERAMICO PRO+",
+        "category": "PEGAXPRESS",
+        "kind": "seco",
         "presentationKg": 25,
-        "oldKg": 35,
+        "oldKg": 25,
         "recipeSlug": "ceramico",
-        "note": "GRIS como precio primario del slug único",
+        "note": "FT-AD-002 · canónico (sin variante blanco suelta)",
         "tiers": [
           228.57,
           182.86,
@@ -3296,53 +3134,211 @@ window.S35_PANEL_DATA = {
         }
       },
       {
-        "id": "leveltec-pro",
-        "name": "LEVELTEC PRO+",
-        "category": "PRODUCTOS PROFESIONALES",
-        "presentationKg": 25,
-        "oldKg": 25,
-        "recipeSlug": "leveltec-pro",
-        "note": "",
+        "id": "pegaxpress-block",
+        "name": "PASTABLOCK+",
+        "category": "PEGAXPRESS",
+        "kind": "seco",
+        "presentationKg": 30,
+        "oldKg": 30,
+        "recipeSlug": "pegaxpress-block",
+        "note": "FT-PR-006 · 30 kg (precio de lista, sin convertir desde 35)",
         "tiers": [
-          220,
-          198,
-          192.06,
-          172.85,
-          169.4,
-          166.01
+          160,
+          144,
+          139.68,
+          125.71,
+          123.2,
+          120.73
         ],
         "pricesByTier": {
-          "t1": 220,
-          "t2": 198,
-          "t3": 192.06,
-          "t4": 172.85,
-          "t5": 169.4,
-          "t6": 166.01
+          "t1": 160,
+          "t2": 144,
+          "t3": 139.68,
+          "t4": 125.71,
+          "t5": 123.2,
+          "t6": 120.73
         }
       },
       {
-        "id": "pegaxpress-block",
-        "name": "PASTABLOCK+",
-        "category": "PRODUCTOS PROFESIONALES",
-        "presentationKg": 30,
-        "oldKg": 35,
-        "recipeSlug": "pegaxpress-block",
-        "note": "",
+        "id": "adhesivo-darawell",
+        "name": "DARAWELL PREMIUM",
+        "category": "LIQUIDOS",
+        "kind": "liquido",
+        "presentationKg": 1,
+        "oldKg": 1,
+        "recipeSlug": "adhesivo-darawell",
+        "note": "FT-PR-002 · 1 L",
         "tiers": [
-          137.14,
-          123.43,
-          119.73,
-          107.75,
-          105.6,
-          103.48
+          100,
+          90,
+          87.3,
+          78.57,
+          77,
+          75.46
         ],
         "pricesByTier": {
-          "t1": 137.14,
-          "t2": 123.43,
-          "t3": 119.73,
-          "t4": 107.75,
-          "t5": 105.6,
-          "t6": 103.48
+          "t1": 100,
+          "t2": 90,
+          "t3": 87.3,
+          "t4": 78.57,
+          "t5": 77,
+          "t6": 75.46
+        }
+      },
+      {
+        "id": "adhesivo-darawell-18",
+        "name": "DARAWELL PREMIUM",
+        "category": "LIQUIDOS",
+        "kind": "liquido",
+        "presentationKg": 18,
+        "oldKg": 18,
+        "recipeSlug": null,
+        "note": "FT-PR-002 · 18 L",
+        "tiers": [
+          1200,
+          1080,
+          1047.6,
+          942.84,
+          923.98,
+          905.5
+        ],
+        "pricesByTier": {
+          "t1": 1200,
+          "t2": 1080,
+          "t3": 1047.6,
+          "t4": 942.84,
+          "t5": 923.98,
+          "t6": 905.5
+        }
+      },
+      {
+        "id": "sellador-premium-pintura",
+        "name": "SELLADOR PREMIUM",
+        "category": "LIQUIDOS",
+        "kind": "liquido",
+        "presentationKg": 1,
+        "oldKg": 1,
+        "recipeSlug": "sellador-premium-pintura",
+        "note": "FT-PR-003 · 1 L",
+        "tiers": [
+          85,
+          76.5,
+          74.21,
+          66.78,
+          65.45,
+          64.14
+        ],
+        "pricesByTier": {
+          "t1": 85,
+          "t2": 76.5,
+          "t3": 74.21,
+          "t4": 66.78,
+          "t5": 65.45,
+          "t6": 64.14
+        }
+      },
+      {
+        "id": "sellador-premium-pintura-18",
+        "name": "SELLADOR PREMIUM",
+        "category": "LIQUIDOS",
+        "kind": "liquido",
+        "presentationKg": 18,
+        "oldKg": 18,
+        "recipeSlug": null,
+        "note": "FT-PR-003 · 18 L",
+        "tiers": [
+          850,
+          765,
+          742.05,
+          667.85,
+          654.49,
+          641.4
+        ],
+        "pricesByTier": {
+          "t1": 850,
+          "t2": 765,
+          "t3": 742.05,
+          "t4": 667.85,
+          "t5": 654.49,
+          "t6": 641.4
+        }
+      },
+      {
+        "id": "adhesivo-heavy-duty",
+        "name": "ADHESIVO HEAVY DUTY",
+        "category": "LIQUIDOS",
+        "kind": "liquido",
+        "presentationKg": 1,
+        "oldKg": 1,
+        "recipeSlug": "adhesivo-heavy-duty",
+        "note": "FT-PR-004 · 1 L",
+        "tiers": [
+          155,
+          139.5,
+          135.32,
+          121.78,
+          119.35,
+          116.96
+        ],
+        "pricesByTier": {
+          "t1": 155,
+          "t2": 139.5,
+          "t3": 135.32,
+          "t4": 121.78,
+          "t5": 119.35,
+          "t6": 116.96
+        }
+      },
+      {
+        "id": "nanotech-hidrofobico",
+        "name": "NANOTECH HIDROFOBICO",
+        "category": "LIQUIDOS",
+        "kind": "liquido",
+        "presentationKg": 1,
+        "oldKg": 1,
+        "recipeSlug": "nanotech-hidrofobico",
+        "note": "FT-PR-005 · 1 L",
+        "tiers": [
+          230,
+          207,
+          200.79,
+          180.71,
+          177.1,
+          173.55
+        ],
+        "pricesByTier": {
+          "t1": 230,
+          "t2": 207,
+          "t3": 200.79,
+          "t4": 180.71,
+          "t5": 177.1,
+          "t6": 173.55
+        }
+      },
+      {
+        "id": "nanotech-hidrofobico-18",
+        "name": "NANOTECH HIDROFOBICO",
+        "category": "LIQUIDOS",
+        "kind": "liquido",
+        "presentationKg": 18,
+        "oldKg": 18,
+        "recipeSlug": null,
+        "note": "FT-PR-005 · 18 L",
+        "tiers": [
+          3315,
+          2983.5,
+          2894,
+          2604.6,
+          2552.5,
+          2501.45
+        ],
+        "pricesByTier": {
+          "t1": 3315,
+          "t2": 2983.5,
+          "t3": 2894,
+          "t4": 2604.6,
+          "t5": 2552.5,
+          "t6": 2501.45
         }
       }
     ]

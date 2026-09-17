@@ -2,9 +2,11 @@
 (function () {
     'use strict';
 
+    // v4: lista oficial (Basecoat 340/360, Pastablock 30 kg, líquidos).
     // v3: merges price-list duplicates (PLUS+) into FT-* recipe slugs.
-    const PRICE_KEY = 's35_pos_prices_v3';
-    const PRICE_KEY_LEGACY = 's35_pos_prices_v2';
+    const PRICE_KEY = 's35_pos_prices_v4';
+    const PRICE_KEY_LEGACY = 's35_pos_prices_v3';
+    const PRICE_KEY_LEGACY_V2 = 's35_pos_prices_v2';
     /** Slugs de lista eliminados → slug canónico (ficha FT / receta). */
     const PRICE_MERGE_FROM = {
         'basecoat-blanco-intenso-plus': 'basecoat-plus-blanco',
@@ -425,10 +427,12 @@
         });
         priceListItems().forEach(function (it) {
             const key = it.recipeSlug || it.id;
+            const kind = it.kind || 'seco';
             if (byId[key]) {
                 byId[key].presentationKg = it.presentationKg;
                 byId[key].listName = it.name;
                 byId[key].category = it.category;
+                if (kind === 'liquido') byId[key].kind = 'liquido';
                 return;
             }
             byId[it.id] = {
@@ -436,7 +440,7 @@
                 name: it.name,
                 code: '',
                 family: it.category || 'Lista mayorista',
-                kind: 'seco',
+                kind: kind,
                 recipe: null,
                 fromRecipe: false,
                 presentationKg: it.presentationKg,
@@ -459,9 +463,14 @@
 
     function unitFor(entryOrRecipe) {
         const r = entryOrRecipe && entryOrRecipe.recipe ? entryOrRecipe.recipe : entryOrRecipe;
-        if (r && r.kind === 'liquido') return 'Cubeta';
-        const kg = presentationKgFor(entryOrRecipe && entryOrRecipe.id ? entryOrRecipe.id : (r && r.product));
-        if (kg) return 'Saco ' + kg + ' kg';
+        const id = entryOrRecipe && entryOrRecipe.id ? entryOrRecipe.id : (r && r.product);
+        const size = presentationKgFor(id);
+        const kind = (entryOrRecipe && entryOrRecipe.kind) || (r && r.kind);
+        if (kind === 'liquido' || (r && r.kind === 'liquido')) {
+            if (size) return size + ' L';
+            return 'Cubeta';
+        }
+        if (size) return 'Saco ' + size + ' kg';
         return 'Saco';
     }
 
@@ -558,13 +567,29 @@
         });
         return map;
     }
+    function listManagedIds() {
+        const set = {};
+        priceListItems().forEach(function (it) {
+            set[it.id] = true;
+            if (it.recipeSlug) set[it.recipeSlug] = true;
+            Object.keys(PRICE_MERGE_FROM).forEach(function (dup) {
+                if (PRICE_MERGE_FROM[dup] === (it.recipeSlug || it.id)) set[dup] = true;
+            });
+        });
+        return set;
+    }
+
     function readStoredPrices() {
         try {
             const current = JSON.parse(localStorage.getItem(PRICE_KEY) || 'null');
             if (current && typeof current === 'object') {
                 return { raw: current, fromLegacy: false };
             }
-            const legacy = JSON.parse(localStorage.getItem(PRICE_KEY_LEGACY) || 'null');
+            let legacy = JSON.parse(localStorage.getItem(PRICE_KEY_LEGACY) || 'null');
+            let fromV3 = !!(legacy && typeof legacy === 'object');
+            if (!fromV3) {
+                legacy = JSON.parse(localStorage.getItem(PRICE_KEY_LEGACY_V2) || 'null');
+            }
             if (!legacy || typeof legacy !== 'object') return null;
             const mergeTargets = {};
             Object.keys(PRICE_MERGE_FROM).forEach(function (dup) {
@@ -575,12 +600,14 @@
                 if (PRICE_MERGE_FROM[id] || mergeTargets[id]) return;
                 migrated[id] = legacy[id];
             });
-            // Duplicados slug → canónico: el precio del duplicado gana; si no hay, queda el seed.
-            Object.keys(PRICE_MERGE_FROM).forEach(function (dup) {
-                const target = PRICE_MERGE_FROM[dup];
-                if (legacy[dup] != null) migrated[target] = legacy[dup];
-            });
-            return { raw: migrated, fromLegacy: true };
+            // Duplicados slug → canónico (solo en migración antigua v2).
+            if (!fromV3) {
+                Object.keys(PRICE_MERGE_FROM).forEach(function (dup) {
+                    const target = PRICE_MERGE_FROM[dup];
+                    if (legacy[dup] != null) migrated[target] = legacy[dup];
+                });
+            }
+            return { raw: migrated, fromLegacy: true, reseedOfficial: true };
         } catch (_) {
             return null;
         }
@@ -592,19 +619,24 @@
             const stored = readStoredPrices();
             if (stored && stored.raw) {
                 const raw = stored.raw;
+                const official = listManagedIds();
                 const mergeTargets = {};
                 Object.keys(PRICE_MERGE_FROM).forEach(function (dup) {
                     mergeTargets[PRICE_MERGE_FROM[dup]] = true;
                 });
                 Object.keys(seed).forEach(function (id) {
+                    // v3→v4: forzar precios de lista oficial (corrige Basecoat 599/620, Pastablock, etc.).
+                    if (stored.reseedOfficial && official[id]) return;
                     // En upgrade v2→v3: no reaplicar el precio viejo del FT si no hubo
-                    // precio del duplicado; el seed ya trae el PLUS+.
+                    // precio del duplicado; el seed ya trae el canónico.
                     if (stored.fromLegacy && mergeTargets[id] && raw[id] == null) return;
                     if (raw[id] != null) {
                         seed[id] = normalizeEntry(raw[id], seed[id].tiers, seed[id].presentationKg);
                     }
                 });
                 Object.keys(raw).forEach(function (id) {
+                    if (stored.reseedOfficial && official[id]) return;
+                    if (PRICE_MERGE_FROM[id]) return;
                     if (!seed[id]) {
                         seed[id] = normalizeEntry(raw[id], null, null);
                     }
@@ -616,6 +648,7 @@
     function savePrices() {
         localStorage.setItem(PRICE_KEY, JSON.stringify(prices));
         try { localStorage.removeItem(PRICE_KEY_LEGACY); } catch (_) {}
+        try { localStorage.removeItem(PRICE_KEY_LEGACY_V2); } catch (_) {}
     }
 
     function applyCartTierPrices() {
@@ -1180,7 +1213,9 @@
         tbody.innerHTML = list.map(function (p) {
             const entry = prices[p.id] || { presentationKg: p.presentationKg, tiers: sixTiers(400) };
             const kg = entry.presentationKg != null ? entry.presentationKg : (p.presentationKg != null ? p.presentationKg : '—');
-            const unit = p.kind === 'liquido' ? 'Cubeta' : (kg !== '—' ? ('Saco ' + kg + ' kg') : 'Saco');
+            const unit = p.kind === 'liquido'
+                ? (kg !== '—' ? (kg + ' L') : 'Cubeta')
+                : (kg !== '—' ? ('Saco ' + kg + ' kg') : 'Saco');
             const tierCells = TIER_IDS.map(function (tid, i) {
                 const val = entry.tiers && entry.tiers[i] != null ? entry.tiers[i] : 0;
                 return '<td><input class="price-input num" type="number" min="0" step="0.01" ' +
