@@ -1,14 +1,16 @@
 'use strict';
 
 // Contenido tomado de la ficha oficial "Ficha Tecnica Adhesivo Heavy Duty"
-// (FT-PR-004 · Rev. 01 · 2026).
+// (Rev. 01 · 2026).
+// FT-PR-004 queda reservado a Waxtard Extra Anclaje; code = slug hasta
+// renumeración oficial de líquidos (sin inventar FT).
 
 const liquidVerified = require('../liquid-verified');
 const S = require('../shared');
 
 module.exports = liquidVerified({
   slug: 'adhesivo-heavy-duty',
-  code: 'FT-PR-004',
+  code: 'adhesivo-heavy-duty',
   name: 'HEAVY DUTY',
   variant: 'Adhesivo S-35',
   line: 'Adhesivo acrílico multiuso',

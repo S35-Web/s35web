@@ -1,14 +1,16 @@
 'use strict';
 
 // Contenido tomado de la ficha oficial "Ficha Tecnica Sellador Premium"
-// (FT-PR-003 · Rev. 01 · 2026). El slug conserva /sellador-premium-pintura.
+// (Rev. 01 · 2026). El slug conserva /sellador-premium-pintura.
+// FT-PR-003 queda reservado a Waxtard Gris; code = slug hasta renumeración
+// oficial de líquidos (sin inventar FT).
 
 const liquidVerified = require('../liquid-verified');
 const S = require('../shared');
 
 module.exports = liquidVerified({
   slug: 'sellador-premium-pintura',
-  code: 'FT-PR-003',
+  code: 'sellador-premium-pintura',
   name: 'SELLADOR PREMIUM',
   variant: 'Adhesivo S-35',
   line: 'Adhesivo sellador acrílico',

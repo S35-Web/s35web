@@ -1,14 +1,16 @@
 'use strict';
 
 // Contenido tomado de la ficha oficial
-// "Ficha Tecnica - Liquidos - Adhesivo Darawell" (FT-PR-002 · Rev. 02 · 2026).
+// "Ficha Tecnica - Liquidos - Adhesivo Darawell" (Rev. 02 · 2026).
+// FT-PR-002 queda reservado a Waxtard Blanco Absoluto; code = slug hasta
+// renumeración oficial de líquidos (sin inventar FT).
 
 const liquidVerified = require('../liquid-verified');
 const S = require('../shared');
 
 module.exports = liquidVerified({
   slug: 'adhesivo-darawell',
-  code: 'FT-PR-002',
+  code: 'adhesivo-darawell',
   name: 'DARAWELL',
   variant: 'Adhesivo S-35',
   line: 'Adhesivo acrílico multiuso',
