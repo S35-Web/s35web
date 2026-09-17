@@ -2,7 +2,14 @@
 (function () {
     'use strict';
 
-    const PRICE_KEY = 's35_pos_prices_v2';
+    // v3: merges price-list duplicates (PLUS+) into FT-* recipe slugs.
+    const PRICE_KEY = 's35_pos_prices_v3';
+    const PRICE_KEY_LEGACY = 's35_pos_prices_v2';
+    /** Slugs de lista eliminados → slug canónico (ficha FT / receta). */
+    const PRICE_MERGE_FROM = {
+        'basecoat-blanco-intenso-plus': 'basecoat-plus-blanco',
+        'waxtard-basecoat-gris-plus': 'basecoat-plus-gris'
+    };
     const SALES_KEY = 's35_pos_sales';
     const CLIENTS_KEY = 's35_pos_clients';
     const FINISHED_KEY = 's35_finished_stock';
@@ -551,12 +558,48 @@
         });
         return map;
     }
+    function readStoredPrices() {
+        try {
+            const current = JSON.parse(localStorage.getItem(PRICE_KEY) || 'null');
+            if (current && typeof current === 'object') {
+                return { raw: current, fromLegacy: false };
+            }
+            const legacy = JSON.parse(localStorage.getItem(PRICE_KEY_LEGACY) || 'null');
+            if (!legacy || typeof legacy !== 'object') return null;
+            const mergeTargets = {};
+            Object.keys(PRICE_MERGE_FROM).forEach(function (dup) {
+                mergeTargets[PRICE_MERGE_FROM[dup]] = true;
+            });
+            const migrated = {};
+            Object.keys(legacy).forEach(function (id) {
+                if (PRICE_MERGE_FROM[id] || mergeTargets[id]) return;
+                migrated[id] = legacy[id];
+            });
+            // Duplicados slug → canónico: el precio del duplicado gana; si no hay, queda el seed.
+            Object.keys(PRICE_MERGE_FROM).forEach(function (dup) {
+                const target = PRICE_MERGE_FROM[dup];
+                if (legacy[dup] != null) migrated[target] = legacy[dup];
+            });
+            return { raw: migrated, fromLegacy: true };
+        } catch (_) {
+            return null;
+        }
+    }
+
     function loadPrices() {
         const seed = seedPrices();
         try {
-            const raw = JSON.parse(localStorage.getItem(PRICE_KEY) || 'null');
-            if (raw && typeof raw === 'object') {
+            const stored = readStoredPrices();
+            if (stored && stored.raw) {
+                const raw = stored.raw;
+                const mergeTargets = {};
+                Object.keys(PRICE_MERGE_FROM).forEach(function (dup) {
+                    mergeTargets[PRICE_MERGE_FROM[dup]] = true;
+                });
                 Object.keys(seed).forEach(function (id) {
+                    // En upgrade v2→v3: no reaplicar el precio viejo del FT si no hubo
+                    // precio del duplicado; el seed ya trae el PLUS+.
+                    if (stored.fromLegacy && mergeTargets[id] && raw[id] == null) return;
                     if (raw[id] != null) {
                         seed[id] = normalizeEntry(raw[id], seed[id].tiers, seed[id].presentationKg);
                     }
@@ -572,6 +615,7 @@
     }
     function savePrices() {
         localStorage.setItem(PRICE_KEY, JSON.stringify(prices));
+        try { localStorage.removeItem(PRICE_KEY_LEGACY); } catch (_) {}
     }
 
     function applyCartTierPrices() {
@@ -1456,6 +1500,8 @@
 
     function init() {
         prices = loadPrices();
+        // Persistir v3 tras merge para no depender del legacy en cada carga.
+        savePrices();
         sales = loadSales();
         clients = loadClients();
         bind();

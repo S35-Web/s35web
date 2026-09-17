@@ -48,10 +48,10 @@ const RAW = [
   { id: 'aplanado-base-pro', name: 'APLANADO BASE PRO+', category: 'PRODUCTO CLASICOS', oldKg: 35, newKg: 25, prices: [220, 198, 190.08, 161.57, 158.34, 155.17], recipeSlug: null },
 
   // RECUBRIMIENTO PANELES
-  { id: 'basecoat-plus-blanco', name: 'BASECOAT BLANCO INTENSO', category: 'RECUBRIMIENTO PANELES', oldKg: 25, newKg: 25, prices: [360, 324, 314.28, 282.85, 277.19, 271.65], recipeSlug: 'basecoat-plus-blanco' },
-  { id: 'basecoat-plus-gris', name: 'BASECOAT GRIS', category: 'RECUBRIMIENTO PANELES', oldKg: 25, newKg: 25, prices: [340, 306, 296.82, 267.14, 261.8, 256.56], recipeSlug: 'basecoat-plus-gris' },
-  { id: 'basecoat-blanco-intenso-plus', name: 'BASECOAT BLANCO INTENSO PLUS+', category: 'RECUBRIMIENTO PANELES', oldKg: 25, newKg: 25, prices: [620, 558, 541.26, 487.13, 477.39, 467.84], recipeSlug: null },
-  { id: 'waxtard-basecoat-gris-plus', name: 'WAXTARD BASECOAT GRIS PLUS+', category: 'RECUBRIMIENTO PANELES', oldKg: 25, newKg: 25, prices: [599, 539.1, 522.93, 470.63, 461.22, 452], recipeSlug: null },
+  // Precios PLUS+ (antes filas sueltas basecoat-blanco-intenso-plus / waxtard-basecoat-gris-plus)
+  // mergeados a las fichas FT-PS-001 / FT-PS-002 para no duplicar en POS.
+  { id: 'basecoat-plus-blanco', name: 'BASECOAT BLANCO INTENSO PLUS+', category: 'RECUBRIMIENTO PANELES', oldKg: 25, newKg: 25, prices: [620, 558, 541.26, 487.13, 477.39, 467.84], recipeSlug: 'basecoat-plus-blanco', note: 'FT-PS-001 · precio de basecoat-blanco-intenso-plus' },
+  { id: 'basecoat-plus-gris', name: 'BASECOAT GRIS PLUS+', category: 'RECUBRIMIENTO PANELES', oldKg: 25, newKg: 25, prices: [599, 539.1, 522.93, 470.63, 461.22, 452], recipeSlug: 'basecoat-plus-gris', note: 'FT-PS-002 · precio de waxtard-basecoat-gris-plus' },
 
   // PRODUCTOS ARQUITECTÓNICOS
   { id: 'microconcreto-pulido', name: 'MICROCONCRETO PULIDO', category: 'PRODUCTOS ARQUITECTONICOS', oldKg: 25, newKg: 25, prices: [360, 324, 314.28, 282.85, 277.19, 271.65], recipeSlug: null },
@@ -98,6 +98,6 @@ const items = RAW.map(function (row) {
 module.exports = {
   VOLUME_TIERS: VOLUME_TIERS,
   items: items,
-  version: 1,
+  version: 2,
   presentationNote: 'Todos los sacos a 25 kg excepto Pastablock (30 kg). Precios convertidos conservando $/kg.',
 };

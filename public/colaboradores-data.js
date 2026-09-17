@@ -2754,7 +2754,7 @@ window.S35_PANEL_DATA = {
     ]
   },
   "priceList": {
-    "version": 1,
+    "version": 2,
     "presentationNote": "Todos los sacos a 25 kg excepto Pastablock (30 kg). Precios convertidos conservando $/kg.",
     "tiers": [
       {
@@ -2947,62 +2947,12 @@ window.S35_PANEL_DATA = {
       },
       {
         "id": "basecoat-plus-blanco",
-        "name": "BASECOAT BLANCO INTENSO",
-        "category": "RECUBRIMIENTO PANELES",
-        "presentationKg": 25,
-        "oldKg": 25,
-        "recipeSlug": "basecoat-plus-blanco",
-        "note": "",
-        "tiers": [
-          360,
-          324,
-          314.28,
-          282.85,
-          277.19,
-          271.65
-        ],
-        "pricesByTier": {
-          "t1": 360,
-          "t2": 324,
-          "t3": 314.28,
-          "t4": 282.85,
-          "t5": 277.19,
-          "t6": 271.65
-        }
-      },
-      {
-        "id": "basecoat-plus-gris",
-        "name": "BASECOAT GRIS",
-        "category": "RECUBRIMIENTO PANELES",
-        "presentationKg": 25,
-        "oldKg": 25,
-        "recipeSlug": "basecoat-plus-gris",
-        "note": "",
-        "tiers": [
-          340,
-          306,
-          296.82,
-          267.14,
-          261.8,
-          256.56
-        ],
-        "pricesByTier": {
-          "t1": 340,
-          "t2": 306,
-          "t3": 296.82,
-          "t4": 267.14,
-          "t5": 261.8,
-          "t6": 256.56
-        }
-      },
-      {
-        "id": "basecoat-blanco-intenso-plus",
         "name": "BASECOAT BLANCO INTENSO PLUS+",
         "category": "RECUBRIMIENTO PANELES",
         "presentationKg": 25,
         "oldKg": 25,
-        "recipeSlug": null,
-        "note": "",
+        "recipeSlug": "basecoat-plus-blanco",
+        "note": "FT-PS-001 · precio de basecoat-blanco-intenso-plus",
         "tiers": [
           620,
           558,
@@ -3021,13 +2971,13 @@ window.S35_PANEL_DATA = {
         }
       },
       {
-        "id": "waxtard-basecoat-gris-plus",
-        "name": "WAXTARD BASECOAT GRIS PLUS+",
+        "id": "basecoat-plus-gris",
+        "name": "BASECOAT GRIS PLUS+",
         "category": "RECUBRIMIENTO PANELES",
         "presentationKg": 25,
         "oldKg": 25,
-        "recipeSlug": null,
-        "note": "",
+        "recipeSlug": "basecoat-plus-gris",
+        "note": "FT-PS-002 · precio de waxtard-basecoat-gris-plus",
         "tiers": [
           599,
           539.1,
