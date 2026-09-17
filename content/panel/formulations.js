@@ -204,7 +204,7 @@ module.exports = [
   }),
   liquidMix({
     product: 'sellador-premium-pintura',
-    note: 'Sellador líquido para pintura. Receta de planta pendiente de cargar.',
+    note: 'Sellador premium adhesivo s-35 (FT-PR-008). Receta de planta pendiente de cargar.',
   }),
   liquidMix({
     product: 'adhesivo-darawell',

@@ -1,8 +1,8 @@
 'use strict';
 
 // Contenido tomado de la ficha oficial "Ficha Tecnica Sellador Premium"
-// (FT-PR-008 · Rev. 01 · 2026). El slug conserva /sellador-premium-pintura.
-// Presentaciones 1 L / 18 L comparten FT-PR-008 (sufijo en lista de precios).
+// (FT-PR-008 · Rev. 01 · 2026). Nombre canónico: Sellador premium adhesivo s-35.
+// Slug histórico /sellador-premium-pintura. Presentaciones 1 L / 18 L (FT-PR-008).
 
 const liquidVerified = require('../liquid-verified');
 const S = require('../shared');
@@ -10,15 +10,15 @@ const S = require('../shared');
 module.exports = liquidVerified({
   slug: 'sellador-premium-pintura',
   code: 'FT-PR-008',
-  name: 'SELLADOR PREMIUM',
-  variant: 'Adhesivo S-35',
+  name: 'SELLADOR PREMIUM ADHESIVO',
+  variant: 'S-35',
   line: 'Adhesivo sellador acrílico',
   accent: '#1e5ab2',
   packaging: 'Cubeta 1 L',
   pack: '/Assets/productos_thumbs/sellador-premium-pintura.jpg',
-  packAlt: 'Envase de 1 L de Sellador Premium S-35',
+  packAlt: 'Envase de 1 L de Sellador premium adhesivo s-35',
   packLabel: 'Fig. A · presentación 1 L',
-  description: 'Sellador Premium S-35: compuesto líquido blanco de media viscosidad para sellar superficies porosas, aditivar mezclas y usarse como adhesivo. 1 L, 1 galón, cubeta 19 L y 200 L.',
+  description: 'Sellador premium adhesivo s-35: compuesto líquido blanco de media viscosidad para sellar superficies porosas, aditivar mezclas y usarse como adhesivo. Presentaciones 1 L y 18 L.',
   strip: [
     'Adhesivo · aditivo de mezcla · sellador de porosidad',
     '1 litro · 1 galón · cubeta 19 L · 200 litros',

@@ -437,13 +437,19 @@
                 if (listCode && !byId[key].code) byId[key].code = listCode;
                 return;
             }
+            // Presentación hermana (p. ej. 18 L): mismo código FT → mismo nombre canónico.
+            const sibling = listCode
+                ? Object.keys(byId).map(function (k) { return byId[k]; }).filter(function (p) {
+                    return p.fromRecipe && p.code === listCode;
+                })[0]
+                : null;
             byId[it.id] = {
                 id: it.id,
-                name: it.name,
+                name: sibling ? sibling.name : it.name,
                 code: listCode,
-                family: it.category || 'Lista mayorista',
+                family: (sibling && sibling.family) || it.category || 'Lista mayorista',
                 kind: kind,
-                recipe: null,
+                recipe: sibling ? sibling.recipe : null,
                 fromRecipe: false,
                 presentationKg: it.presentationKg,
                 listName: it.name,

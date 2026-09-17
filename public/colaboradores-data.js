@@ -133,7 +133,7 @@ window.S35_PANEL_DATA = {
       "family": "Líquidos",
       "status": "verified",
       "image": "/Assets/productos_thumbs/sellador-premium-pintura.jpg",
-      "imageAlt": "Envase de 1 L de Sellador Premium S-35"
+      "imageAlt": "Envase de 1 L de Sellador premium adhesivo s-35"
     },
     {
       "slug": "adhesivo-heavy-duty",
@@ -2114,9 +2114,9 @@ window.S35_PANEL_DATA = {
       "kind": "liquido",
       "water": "",
       "status": "pendiente",
-      "note": "Sellador líquido para pintura. Receta de planta pendiente de cargar.",
+      "note": "Sellador premium adhesivo s-35 (FT-PR-008). Receta de planta pendiente de cargar.",
       "image": "/Assets/productos_thumbs/sellador-premium-pintura.jpg",
-      "imageAlt": "Envase de 1 L de Sellador Premium S-35",
+      "imageAlt": "Envase de 1 L de Sellador premium adhesivo s-35",
       "items": [],
       "suggested": []
     },
@@ -3229,7 +3229,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "id": "sellador-premium-pintura",
-        "name": "SELLADOR PREMIUM",
+        "name": "Sellador premium adhesivo s-35",
         "category": "LIQUIDOS",
         "kind": "liquido",
         "presentationKg": 1,
@@ -3256,7 +3256,7 @@ window.S35_PANEL_DATA = {
       },
       {
         "id": "sellador-premium-pintura-18",
-        "name": "SELLADOR PREMIUM",
+        "name": "Sellador premium adhesivo s-35",
         "category": "LIQUIDOS",
         "kind": "liquido",
         "presentationKg": 18,
