@@ -888,60 +888,11 @@
             background: var(--text);
             color: var(--bg);
         }
-        .cortes-hero {
-            display: grid;
-            grid-template-columns: 1.4fr 1fr;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-        .cortes-kpi-main {
-            padding: 28px 28px 24px;
-            border-right: 1px solid var(--border);
-        }
-        .cortes-kpi-main .label {
-            font-size: 12px;
-            color: var(--muted);
-            letter-spacing: .04em;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-        .cortes-kpi-main .val {
-            font-size: clamp(36px, 5vw, 48px);
-            font-weight: 500;
-            letter-spacing: -0.03em;
-            line-height: 1.05;
-            margin-bottom: 8px;
-        }
-        .cortes-kpi-main .hint {
-            font-size: 13px;
-            color: var(--muted);
-        }
-        .cortes-kpi-side {
-            display: grid;
-            grid-template-rows: 1fr 1fr;
-        }
-        .cortes-kpi-side .kpi-cell {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
-        }
-        .cortes-kpi-side .kpi-cell:last-child { border-bottom: none; }
-        .cortes-kpi-side .label {
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
-        .cortes-kpi-side .val {
-            font-size: 24px;
-            font-weight: 500;
-            letter-spacing: -0.02em;
-        }
         .cortes-chart-panel {
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 16px 18px 12px;
-            margin-bottom: 16px;
+            padding: 18px 20px 14px;
+            margin-bottom: 8px;
         }
         .cortes-chart-head {
             display: flex;
@@ -949,7 +900,7 @@
             justify-content: space-between;
             gap: 12px;
             flex-wrap: wrap;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .cortes-chart-head h3 {
             margin: 0 0 2px;
@@ -974,20 +925,20 @@
             gap: 6px;
         }
         .cortes-chart-legend .swatch {
-            width: 10px;
-            height: 10px;
-            border-radius: 2px;
+            width: 14px;
+            height: 2px;
+            border-radius: 1px;
             background: var(--text);
         }
         .cortes-chart-legend .swatch.prev {
-            background: #d4d4d4;
-        }
-        [data-theme="dark"] .cortes-chart-legend .swatch.prev {
-            background: #525252;
+            background: transparent;
+            border-top: 1.5px dashed #a3a3a3;
+            height: 0;
+            width: 14px;
         }
         .cortes-chart {
             width: 100%;
-            height: 180px;
+            height: 200px;
             position: relative;
         }
         .cortes-chart svg {
@@ -999,11 +950,27 @@
         .cortes-chart .grid-line {
             stroke: var(--border);
             stroke-width: 1;
-            stroke-dasharray: 2 3;
+            stroke-dasharray: 1.5 3;
         }
-        .cortes-chart .bar-cur { fill: var(--text); }
-        .cortes-chart .bar-prev { fill: #d4d4d4; }
-        [data-theme="dark"] .cortes-chart .bar-prev { fill: #525252; }
+        .cortes-chart .line-cur {
+            fill: none;
+            stroke: var(--text);
+            stroke-width: 1.75;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+        .cortes-chart .line-prev {
+            fill: none;
+            stroke: #a3a3a3;
+            stroke-width: 1.25;
+            stroke-dasharray: 4 3;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+        .cortes-chart .area-hatch {
+            fill: url(#cortesHatch);
+            stroke: none;
+        }
         .cortes-chart .axis-label {
             fill: var(--muted);
             font-size: 10px;
@@ -1022,6 +989,49 @@
             font-size: 13px;
             color: var(--muted);
             pointer-events: none;
+        }
+        .cortes-total-block {
+            padding: 8px 4px 20px;
+            margin-bottom: 4px;
+        }
+        .cortes-total-block .label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .cortes-total-block .val {
+            font-size: clamp(40px, 5.5vw, 52px);
+            font-weight: 500;
+            letter-spacing: -0.035em;
+            line-height: 1.05;
+            margin-bottom: 6px;
+        }
+        .cortes-total-block .hint {
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .cortes-secondary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .cortes-secondary .kpi-cell {
+            padding: 18px 22px;
+            border-right: 1px solid var(--border);
+        }
+        .cortes-secondary .kpi-cell:last-child { border-right: none; }
+        .cortes-secondary .label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .cortes-secondary .val {
+            font-size: 22px;
+            font-weight: 500;
+            letter-spacing: -0.02em;
         }
         .cortes-breakdowns {
             display: grid;
@@ -1095,25 +1105,112 @@
             color: var(--muted);
             padding: 8px 0;
         }
-        .cortes-list-card { margin-top: 0; }
-        .cortes-list-card .card-head {
+        .cortes-invoice-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: var(--bg);
+        }
+        .cortes-invoice-card .card-head {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
             gap: 12px;
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border);
+            padding: 16px 18px 12px;
         }
-        .cortes-list-card .card-head h3 {
+        .cortes-invoice-card .card-head h3 {
             margin: 0;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
         }
-        .cortes-list-card .card-head .muted { font-size: 12px; color: var(--muted); }
+        .cortes-invoice-card .card-head .muted {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .cortes-invoice-list {
+            display: flex;
+            flex-direction: column;
+        }
+        .cortes-invoice-row {
+            display: grid;
+            grid-template-columns: minmax(88px, 120px) minmax(120px, 180px) 1fr auto;
+            align-items: center;
+            gap: 12px 16px;
+            padding: 16px 18px;
+            border-top: 1px solid var(--border);
+            min-height: 64px;
+        }
+        .cortes-invoice-row:first-child { border-top: 1px solid var(--border); }
+        .cortes-invoice-date .d {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--text);
+        }
+        .cortes-invoice-date .sub {
+            margin-top: 2px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .cortes-invoice-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .cortes-pill {
+            display: inline-flex;
+            align-items: center;
+            height: 24px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text);
+            white-space: nowrap;
+        }
+        .cortes-pill.ok {
+            background: var(--success-bg);
+            border-color: transparent;
+            color: var(--success);
+        }
+        .cortes-invoice-client {
+            font-size: 13px;
+            color: var(--text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        .cortes-invoice-amt {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            text-align: right;
+            white-space: nowrap;
+        }
+        .cortes-invoice-empty {
+            padding: 28px 18px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--muted);
+            text-align: center;
+        }
         @media (max-width: 900px) {
-            .cortes-hero { grid-template-columns: 1fr; }
-            .cortes-kpi-main { border-right: none; border-bottom: 1px solid var(--border); }
+            .cortes-secondary { grid-template-columns: 1fr; }
+            .cortes-secondary .kpi-cell {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            .cortes-secondary .kpi-cell:last-child { border-bottom: none; }
             .cortes-breakdowns { grid-template-columns: 1fr; }
+            .cortes-invoice-row {
+                grid-template-columns: 1fr auto;
+                gap: 8px 12px;
+            }
+            .cortes-invoice-pills { grid-column: 1 / -1; }
+            .cortes-invoice-client { grid-column: 1 / -1; }
         }
         @media (max-width: 980px) {
             .pos-layout { grid-template-columns: 1fr; }
@@ -1466,24 +1563,6 @@
                         <button type="button" role="tab" data-period="year" aria-selected="false">Año</button>
                     </div>
 
-                    <div class="cortes-hero">
-                        <div class="cortes-kpi-main">
-                            <div class="label">Total ventas</div>
-                            <div class="val" id="cortesTotal">$0.00</div>
-                            <div class="hint" id="cortesCompareHint">Sin comparación</div>
-                        </div>
-                        <div class="cortes-kpi-side">
-                            <div class="kpi-cell">
-                                <div class="label">Tickets</div>
-                                <div class="val" id="cortesTickets">0</div>
-                            </div>
-                            <div class="kpi-cell">
-                                <div class="label">Ticket promedio</div>
-                                <div class="val" id="cortesAvg">$0.00</div>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="cortes-chart-panel">
                         <div class="cortes-chart-head">
                             <div>
@@ -1496,6 +1575,23 @@
                             </div>
                         </div>
                         <div class="cortes-chart" id="cortesChart" role="img" aria-label="Gráfica de ritmo de ventas"></div>
+                    </div>
+
+                    <div class="cortes-total-block">
+                        <div class="label">Total ventas</div>
+                        <div class="val" id="cortesTotal">$0.00</div>
+                        <div class="hint" id="cortesCompareHint">Sin comparación</div>
+                    </div>
+
+                    <div class="cortes-secondary">
+                        <div class="kpi-cell">
+                            <div class="label">Tickets</div>
+                            <div class="val" id="cortesTickets">0</div>
+                        </div>
+                        <div class="kpi-cell">
+                            <div class="label">Ticket promedio</div>
+                            <div class="val" id="cortesAvg">$0.00</div>
+                        </div>
                     </div>
 
                     <div class="cortes-breakdowns">
@@ -1518,26 +1614,12 @@
                         </div>
                     </div>
 
-                    <div class="card cortes-list-card">
+                    <div class="cortes-invoice-card">
                         <div class="card-head">
                             <h3>Ventas del periodo</h3>
                             <span class="muted" id="cortesListCount">0 tickets</span>
                         </div>
-                        <div class="table-card">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Folio</th>
-                                        <th>Cliente</th>
-                                        <th>Pago</th>
-                                        <th>Facturación</th>
-                                        <th>Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="cortesSalesBody"></tbody>
-                            </table>
-                        </div>
+                        <div class="cortes-invoice-list" id="cortesSalesBody"></div>
                     </div>
                 </section>
 

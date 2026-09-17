@@ -221,63 +221,92 @@
         const hasData = maxVal > 0;
 
         const W = 720;
-        const H = 180;
+        const H = 200;
         const padL = 44;
-        const padR = 8;
-        const padT = 12;
+        const padR = 10;
+        const padT = 14;
         const padB = 28;
         const plotW = W - padL - padR;
         const plotH = H - padT - padB;
-        const slot = plotW / Math.max(n, 1);
-        const groupW = Math.min(slot * 0.72, period === 'month' ? 16 : 28);
-        const barW = Math.max(2, (groupW - 2) / 2);
         const yMax = maxVal > 0 ? maxVal * 1.08 : 1;
+        const baseY = padT + plotH;
 
-        const gridYs = [0, 0.5, 1];
+        function ptX(i) {
+            if (n <= 1) return padL + plotW / 2;
+            return padL + (plotW * i) / (n - 1);
+        }
+        function ptY(v) {
+            return padT + plotH - ((Number(v) || 0) / yMax) * plotH;
+        }
+
+        const gridSteps = [0, 0.25, 0.5, 0.75, 1];
         let grid = '';
         let yLabels = '';
-        gridYs.forEach(function (f) {
+        gridSteps.forEach(function (f) {
             const y = padT + plotH * (1 - f);
-            const val = yMax * f;
             grid += '<line class="grid-line" x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '"/>';
-            if (hasData || f === 0) {
+            if (f === 0 || f === 0.5 || f === 1) {
                 yLabels += '<text class="y-label" x="' + (padL - 6) + '" y="' + (y + 3) + '" text-anchor="end">' +
-                    (f === 0 ? '$0' : compactMoney(val)) + '</text>';
+                    (f === 0 ? '0' : compactMoney(yMax * f)) + '</text>';
             }
         });
 
-        let bars = '';
+        function linePath(buckets) {
+            return buckets.map(function (b, i) {
+                return (i === 0 ? 'M' : 'L') + ptX(i).toFixed(1) + ' ' + ptY(b.amount).toFixed(1);
+            }).join(' ');
+        }
+
+        const curLine = linePath(cur.buckets);
+        const prevLine = linePath(prev.buckets);
+        const areaPath = curLine +
+            ' L' + ptX(n - 1).toFixed(1) + ' ' + baseY.toFixed(1) +
+            ' L' + ptX(0).toFixed(1) + ' ' + baseY.toFixed(1) + ' Z';
+
         let xLabels = '';
         const labelEvery = period === 'month' ? (n > 20 ? 2 : 1) : (period === 'day' ? 2 : 1);
         for (let i = 0; i < n; i++) {
-            const cx = padL + slot * i + slot / 2;
-            const prevAmt = (prev.buckets[i] && prev.buckets[i].amount) || 0;
-            const curAmt = cur.buckets[i].amount || 0;
-            const prevH = hasData ? (prevAmt / yMax) * plotH : 0;
-            const curH = hasData ? (curAmt / yMax) * plotH : 0;
-            const x0 = cx - groupW / 2;
-            bars += '<rect class="bar-prev" x="' + x0.toFixed(1) + '" y="' + (padT + plotH - prevH).toFixed(1) +
-                '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, prevH).toFixed(1) + '" rx="1"/>';
-            bars += '<rect class="bar-cur" x="' + (x0 + barW + 1).toFixed(1) + '" y="' + (padT + plotH - curH).toFixed(1) +
-                '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, curH).toFixed(1) + '" rx="1">' +
-                '<title>' + esc(cur.buckets[i].label) + ': ' + money(curAmt) +
-                (prevAmt ? ' · ant. ' + money(prevAmt) : '') + '</title></rect>';
-
             const showLabel = i === 0 || i === n - 1 || (i % labelEvery === 0);
-            if (showLabel) {
-                const lab = period === 'day'
-                    ? String(cur.buckets[i].key)
-                    : cur.buckets[i].label;
-                xLabels += '<text class="axis-label" x="' + cx.toFixed(1) + '" y="' + (H - 8) +
-                    '" text-anchor="middle">' + esc(lab) + '</text>';
-            }
+            if (!showLabel) continue;
+            const lab = period === 'day' ? String(cur.buckets[i].key) : cur.buckets[i].label;
+            xLabels += '<text class="axis-label" x="' + ptX(i).toFixed(1) + '" y="' + (H - 8) +
+                '" text-anchor="middle">' + esc(lab) + '</text>';
         }
+
+        const defs =
+            '<defs>' +
+            '<pattern id="cortesHatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">' +
+            '<line x1="0" y1="0" x2="0" y2="7" stroke="currentColor" stroke-width="1" opacity="0.35"/>' +
+            '</pattern>' +
+            '</defs>';
 
         const emptyNote = hasData ? '' : '<div class="cortes-chart-empty">Sin ventas en este ritmo</div>';
         host.innerHTML = emptyNote +
-            '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
-            grid + yLabels + bars + xLabels +
+            '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true" style="color:var(--text)">' +
+            defs + grid + yLabels +
+            (hasData ? '<path class="area-hatch" d="' + areaPath + '"/>' : '') +
+            '<path class="line-prev" d="' + prevLine + '"/>' +
+            '<path class="line-cur" d="' + curLine + '"/>' +
+            xLabels +
             '</svg>';
+    }
+
+    function relativeSaleSub(d) {
+        if (isNaN(d.getTime())) return '';
+        const now = new Date();
+        const startToday = startOfLocalDay(now);
+        const startSale = startOfLocalDay(d);
+        const dayDiff = Math.round((startToday.getTime() - startSale.getTime()) / 86400000);
+        const timeStr = d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+        if (dayDiff === 0) return 'hoy · ' + timeStr;
+        if (dayDiff === 1) return 'ayer · ' + timeStr;
+        if (dayDiff > 1 && dayDiff < 7) return 'hace ' + dayDiff + ' días · ' + timeStr;
+        return timeStr;
+    }
+
+    function formatInvoiceDate(d) {
+        if (isNaN(d.getTime())) return '—';
+        return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
     }
 
     function getRecipes() {
@@ -926,26 +955,30 @@
         const countEl = document.getElementById('cortesListCount');
         if (countEl) countEl.textContent = tickets + (tickets === 1 ? ' ticket' : ' tickets');
 
-        const tbody = document.getElementById('cortesSalesBody');
-        if (tbody) {
+        const listHost = document.getElementById('cortesSalesBody');
+        if (listHost) {
             if (!list.length) {
-                tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin ventas en este periodo</td></tr>';
+                listHost.innerHTML = '<div class="cortes-invoice-empty">Sin ventas en este periodo</div>';
             } else {
                 const sorted = list.slice().sort(function (a, b) {
                     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
                 });
-                tbody.innerHTML = sorted.map(function (s) {
+                listHost.innerHTML = sorted.map(function (s) {
                     const d = new Date(s.createdAt);
-                    const dateStr = isNaN(d) ? '' : d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
                     const clientLabel = s.client ? clientDisplay(s.client) : (s.customer || 'Mostrador');
-                    return '<tr>' +
-                        '<td class="muted">' + esc(dateStr) + '</td>' +
-                        '<td>' + esc(s.folio) + '</td>' +
-                        '<td>' + esc(clientLabel) + '</td>' +
-                        '<td><span class="badge">' + esc(payLabel(s.paymentMethod)) + '</span></td>' +
-                        '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing)) + '</span></td>' +
-                        '<td class="num">' + money(s.total) + '</td>' +
-                        '</tr>';
+                    const billOk = s.billing === 'facturado';
+                    return '<div class="cortes-invoice-row">' +
+                        '<div class="cortes-invoice-date">' +
+                            '<div class="d">' + esc(formatInvoiceDate(d)) + '</div>' +
+                            '<div class="sub">' + esc(relativeSaleSub(d)) + (s.folio ? ' · ' + esc(s.folio) : '') + '</div>' +
+                        '</div>' +
+                        '<div class="cortes-invoice-pills">' +
+                            '<span class="cortes-pill">' + esc(payLabel(s.paymentMethod)) + '</span>' +
+                            '<span class="cortes-pill' + (billOk ? ' ok' : '') + '">' + esc(billLabel(s.billing)) + '</span>' +
+                        '</div>' +
+                        '<div class="cortes-invoice-client">' + esc(clientLabel) + '</div>' +
+                        '<div class="cortes-invoice-amt">' + money(s.total) + '</div>' +
+                        '</div>';
                 }).join('');
             }
         }
