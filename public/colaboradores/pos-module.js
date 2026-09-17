@@ -17,6 +17,24 @@
         'Líquidos': 520
     };
 
+    /** Acentos de familia (catálogo / --pr-family-gradient / --family-accent). */
+    const FAMILY_COLORS = {
+        'Estucos premium': '#2f7d32',
+        'Microconcretos': '#5a5a5a',
+        'Panel System': '#1a1a1a',
+        'Pro+ Systems': '#e65100',
+        'Pegaxpress: Adhesivos': '#7b1fa2',
+        'Líquidos': '#c41626'
+    };
+    const FAMILY_COLOR_NEUTRAL = '#9a9a9a';
+
+    function familyDot(family) {
+        const color = family === 'all'
+            ? FAMILY_COLOR_NEUTRAL
+            : (FAMILY_COLORS[family] || FAMILY_COLOR_NEUTRAL);
+        return '<span class="dot" style="background:' + esc(color) + '" aria-hidden="true"></span>';
+    }
+
     const TIER_IDS = ['t1', 't2', 't3', 't4', 't5', 't6'];
     const TIER_LABELS = ['1 a 100', '100 a 500', '500 a 999', '1000 a 2000', '2000 a 3000', '3000 a 5000'];
 
@@ -606,7 +624,8 @@
         const list = ['all'].concat(families());
         chips.innerHTML = list.map(function (f) {
             const label = f === 'all' ? 'Todas' : f;
-            return '<button type="button" class="chip' + (f === familyFilter ? ' active' : '') + '" data-fam="' + esc(f) + '">' + esc(label) + '</button>';
+            return '<button type="button" class="chip' + (f === familyFilter ? ' active' : '') + '" data-fam="' + esc(f) + '">' +
+                familyDot(f) + esc(label) + '</button>';
         }).join('');
     }
 
@@ -643,7 +662,7 @@
                 : '';
             return '<button type="button" class="product-card" data-add="' + esc(r.product) + '">' +
                 img +
-                '<div class="fam">' + esc(r.family || '—') + '</div>' +
+                '<div class="fam">' + (r.family ? familyDot(r.family) : '') + esc(r.family || '—') + '</div>' +
                 '<div class="name">' + esc(r.name) + '</div>' +
                 '<div class="meta">' +
                 '<span class="price">' + money(base) + '</span>' +
