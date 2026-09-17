@@ -664,12 +664,6 @@
             const el = document.getElementById(id);
             if (el) el.addEventListener('click', closeClientModal);
         });
-        const clientModal = document.getElementById('clientModal');
-        if (clientModal) {
-            clientModal.addEventListener('click', function (e) {
-                if (e.target === clientModal) closeClientModal();
-            });
-        }
     }
 
     function onSectionShow(id) {
