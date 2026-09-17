@@ -1015,9 +1015,9 @@
             <nav class="nav">
                 <a href="#dashboard" data-section="dashboard" class="active" title="Inicio"><i class="fa-solid fa-border-all"></i></a>
                 <a href="#venta" data-section="venta" title="Venta"><i class="fa-solid fa-cash-register"></i></a>
+                <a href="#cortes" data-section="cortes" title="Cortes"><i class="fa-solid fa-chart-simple"></i></a>
                 <a href="#clients" data-section="clients" title="Clientes"><i class="fa-solid fa-user-group"></i></a>
                 <a href="#salesHistory" data-section="salesHistory" title="Historial de ventas"><i class="fa-solid fa-receipt"></i></a>
-                <a href="#cortes" data-section="cortes" title="Cortes"><i class="fa-solid fa-chart-simple"></i></a>
                 <a href="#prices" data-section="prices" title="Precios"><i class="fa-solid fa-tags"></i></a>
                 <a href="#messages" data-section="messages" title="Mensajes"><i class="fa-regular fa-envelope"></i></a>
                 <a href="#catalog" data-section="catalog" title="Catálogo"><i class="fa-solid fa-box"></i></a>
@@ -1722,7 +1722,7 @@
         sidebar.classList.toggle('open');
     });
 
-    const SECTION_IDS = ['dashboard', 'venta', 'clients', 'salesHistory', 'cortes', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production', 'site'];
+    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'clients', 'salesHistory', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production', 'site'];
 
     /* Roles / permisos — deben existir ANTES de showSection (evita TDZ en ROLE_PERMS). */
     const ROLE_PERMS = {
