@@ -1,4 +1,4 @@
-/* POS + Clientes + Historial + Precios — módulo del panel Colaboradores */
+/* POS + Clientes + Historial + Cortes + Precios — módulo del panel Colaboradores */
 (function () {
     'use strict';
 
@@ -15,6 +15,9 @@
         'Pegaxpress: Adhesivos': 380,
         'Líquidos': 520
     };
+
+    let cortesPeriod = 'day';
+    let cortesOffset = 0;
 
     function esc(s) {
         return String(s == null ? '' : s)
@@ -38,6 +41,87 @@
         el.classList.add('show');
         clearTimeout(toast._t);
         toast._t = setTimeout(function () { el.classList.remove('show'); }, 2200);
+    }
+
+    function startOfLocalDay(d) {
+        const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        return x;
+    }
+    function addDays(d, n) {
+        const x = new Date(d.getTime());
+        x.setDate(x.getDate() + n);
+        return x;
+    }
+    function startOfWeekMonday(d) {
+        const x = startOfLocalDay(d);
+        const dow = x.getDay();
+        const delta = dow === 0 ? -6 : 1 - dow;
+        return addDays(x, delta);
+    }
+    function startOfMonth(d) {
+        return new Date(d.getFullYear(), d.getMonth(), 1);
+    }
+    function startOfYear(d) {
+        return new Date(d.getFullYear(), 0, 1);
+    }
+    function periodBounds(period, offset, now) {
+        now = now || new Date();
+        let start;
+        let end;
+        if (period === 'week') {
+            start = addDays(startOfWeekMonday(now), offset * 7);
+            end = addDays(start, 7);
+        } else if (period === 'month') {
+            const base = startOfMonth(now);
+            start = new Date(base.getFullYear(), base.getMonth() + offset, 1);
+            end = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+        } else if (period === 'year') {
+            start = new Date(now.getFullYear() + offset, 0, 1);
+            end = new Date(start.getFullYear() + 1, 0, 1);
+        } else {
+            start = addDays(startOfLocalDay(now), offset);
+            end = addDays(start, 1);
+        }
+        return { start: start, end: end };
+    }
+    function formatPeriodLabel(period, start, end) {
+        const optsDay = { day: 'numeric', month: 'short', year: 'numeric' };
+        if (period === 'day') {
+            const today = startOfLocalDay(new Date());
+            if (start.getTime() === today.getTime()) return 'Hoy · ' + start.toLocaleDateString('es-MX', optsDay);
+            if (start.getTime() === addDays(today, -1).getTime()) return 'Ayer · ' + start.toLocaleDateString('es-MX', optsDay);
+            return start.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+        }
+        if (period === 'week') {
+            const last = addDays(end, -1);
+            return start.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) +
+                ' – ' + last.toLocaleDateString('es-MX', optsDay);
+        }
+        if (period === 'month') {
+            return start.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+        }
+        return String(start.getFullYear());
+    }
+    function salesInRange(list, start, end) {
+        return list.filter(function (s) {
+            const t = new Date(s.createdAt).getTime();
+            if (isNaN(t)) return false;
+            return t >= start.getTime() && t < end.getTime();
+        });
+    }
+    function sumTotals(list) {
+        return list.reduce(function (n, s) { return n + (Number(s.total) || 0); }, 0);
+    }
+    function pctDelta(cur, prev) {
+        if (!prev) return null;
+        return ((cur - prev) / prev) * 100;
+    }
+    function formatDelta(cur, prev) {
+        if (prev == null || (prev === 0 && cur === 0)) return 'Sin ventas en el periodo anterior';
+        if (prev === 0) return 'vs periodo anterior · ' + money(prev) + ' → nuevo';
+        const d = pctDelta(cur, prev);
+        const sign = d > 0 ? '+' : '';
+        return 'vs periodo anterior · ' + money(prev) + ' (' + sign + d.toFixed(0) + '%)';
     }
 
     function getRecipes() {
@@ -367,7 +451,141 @@
         renderCart();
         renderProducts();
         renderHistory();
+        renderCortes();
         toast('Venta ' + ticket.folio + ' · ' + payLabel(paymentMethod) + ' · ' + billLabel(billing));
+    }
+
+    function renderBreakdownRows(containerId, barId, rows, total) {
+        const rowsEl = document.getElementById(containerId);
+        const barEl = document.getElementById(barId);
+        if (!rowsEl) return;
+        if (!rows.length || !total) {
+            rowsEl.innerHTML = '<div class="cortes-empty">Sin datos en este periodo</div>';
+            if (barEl) barEl.innerHTML = '';
+            return;
+        }
+        if (barEl) {
+            barEl.innerHTML = rows.map(function (r) {
+                const pct = Math.max(0, (r.amount / total) * 100);
+                return '<span class="seg-' + esc(r.key) + '" style="width:' + pct + '%" title="' + esc(r.label) + '"></span>';
+            }).join('');
+        }
+        rowsEl.innerHTML = rows.map(function (r) {
+            return '<div class="cortes-row">' +
+                '<div class="left"><span class="dot ' + esc(r.key) + '"></span><span class="name">' + esc(r.label) + '</span></div>' +
+                '<span class="amt">' + money(r.amount) + '</span>' +
+                '</div>';
+        }).join('');
+    }
+
+    function renderCortes() {
+        const section = document.getElementById('cortes');
+        if (!section) return;
+
+        const bounds = periodBounds(cortesPeriod, cortesOffset);
+        const prevBounds = periodBounds(cortesPeriod, cortesOffset - 1);
+        const list = salesInRange(sales, bounds.start, bounds.end);
+        const prevList = salesInRange(sales, prevBounds.start, prevBounds.end);
+        const total = sumTotals(list);
+        const prevTotal = sumTotals(prevList);
+        const tickets = list.length;
+        const avg = tickets ? total / tickets : 0;
+
+        const rangeLabel = document.getElementById('cortesRangeLabel');
+        if (rangeLabel) rangeLabel.textContent = formatPeriodLabel(cortesPeriod, bounds.start, bounds.end);
+
+        const nextBtn = document.getElementById('cortesNext');
+        if (nextBtn) nextBtn.disabled = cortesOffset >= 0;
+
+        const totalEl = document.getElementById('cortesTotal');
+        if (totalEl) totalEl.textContent = money(total);
+        const ticketsEl = document.getElementById('cortesTickets');
+        if (ticketsEl) ticketsEl.textContent = String(tickets);
+        const avgEl = document.getElementById('cortesAvg');
+        if (avgEl) avgEl.textContent = money(avg);
+        const hintEl = document.getElementById('cortesCompareHint');
+        if (hintEl) hintEl.textContent = formatDelta(total, prevTotal);
+
+        const payKeys = ['efectivo', 'tarjeta', 'transferencia'];
+        const payRows = payKeys.map(function (k) {
+            const amount = list.reduce(function (n, s) {
+                return n + ((s.paymentMethod || 'efectivo') === k ? (Number(s.total) || 0) : 0);
+            }, 0);
+            return { key: k, label: payLabel(k), amount: amount };
+        }).filter(function (r) { return r.amount > 0; });
+        renderBreakdownRows('cortesPayRows', 'cortesPayBar', payRows, total);
+
+        const billKeys = [
+            { key: 'facturado', label: 'Facturado' },
+            { key: 'sin_facturar', label: 'Sin facturar' }
+        ];
+        const billRows = billKeys.map(function (b) {
+            const amount = list.reduce(function (n, s) {
+                const bill = s.billing || 'sin_facturar';
+                return n + (bill === b.key ? (Number(s.total) || 0) : 0);
+            }, 0);
+            return { key: b.key, label: b.label, amount: amount };
+        }).filter(function (r) { return r.amount > 0; });
+        renderBreakdownRows('cortesBillRows', 'cortesBillBar', billRows, total);
+
+        const productMap = {};
+        list.forEach(function (s) {
+            (s.items || []).forEach(function (it) {
+                const key = it.product || it.name || 'item';
+                if (!productMap[key]) productMap[key] = { name: it.name || key, qty: 0, amount: 0 };
+                productMap[key].qty += Number(it.qty) || 0;
+                productMap[key].amount += Number(it.lineTotal) || ((Number(it.qty) || 0) * (Number(it.price) || 0));
+            });
+        });
+        const topProducts = Object.keys(productMap).map(function (k) { return productMap[k]; })
+            .sort(function (a, b) { return b.qty - a.qty || b.amount - a.amount; })
+            .slice(0, 5);
+        const topEl = document.getElementById('cortesTopProducts');
+        if (topEl) {
+            if (!topProducts.length) {
+                topEl.innerHTML = '<div class="cortes-empty">Sin productos en este periodo</div>';
+            } else {
+                topEl.innerHTML = topProducts.map(function (p) {
+                    return '<div class="cortes-row">' +
+                        '<div class="left"><span class="name">' + esc(p.name) + '</span></div>' +
+                        '<span class="amt">' + p.qty + ' · ' + money(p.amount) + '</span>' +
+                        '</div>';
+                }).join('');
+            }
+        }
+
+        const countEl = document.getElementById('cortesListCount');
+        if (countEl) countEl.textContent = tickets + (tickets === 1 ? ' ticket' : ' tickets');
+
+        const tbody = document.getElementById('cortesSalesBody');
+        if (tbody) {
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin ventas en este periodo</td></tr>';
+            } else {
+                const sorted = list.slice().sort(function (a, b) {
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                });
+                tbody.innerHTML = sorted.map(function (s) {
+                    const d = new Date(s.createdAt);
+                    const dateStr = isNaN(d) ? '' : d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+                    const clientLabel = s.client ? clientDisplay(s.client) : (s.customer || 'Mostrador');
+                    return '<tr>' +
+                        '<td class="muted">' + esc(dateStr) + '</td>' +
+                        '<td>' + esc(s.folio) + '</td>' +
+                        '<td>' + esc(clientLabel) + '</td>' +
+                        '<td><span class="badge">' + esc(payLabel(s.paymentMethod)) + '</span></td>' +
+                        '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing)) + '</span></td>' +
+                        '<td class="num">' + money(s.total) + '</td>' +
+                        '</tr>';
+                }).join('');
+            }
+        }
+
+        document.querySelectorAll('#cortesPeriodTabs button').forEach(function (btn) {
+            const active = btn.getAttribute('data-period') === cortesPeriod;
+            btn.classList.toggle('active', active);
+            btn.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
     }
 
     function renderHistory() {
@@ -566,7 +784,43 @@
                 sales = [];
                 saveSales();
                 renderHistory();
+                renderCortes();
                 updatePosKpis();
+            });
+        }
+
+        const periodTabs = document.getElementById('cortesPeriodTabs');
+        if (periodTabs) {
+            periodTabs.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-period]');
+                if (!btn) return;
+                const next = btn.getAttribute('data-period');
+                if (!next || next === cortesPeriod) return;
+                cortesPeriod = next;
+                cortesOffset = 0;
+                renderCortes();
+            });
+        }
+        const cortesPrev = document.getElementById('cortesPrev');
+        if (cortesPrev) {
+            cortesPrev.addEventListener('click', function () {
+                cortesOffset -= 1;
+                renderCortes();
+            });
+        }
+        const cortesNext = document.getElementById('cortesNext');
+        if (cortesNext) {
+            cortesNext.addEventListener('click', function () {
+                if (cortesOffset >= 0) return;
+                cortesOffset += 1;
+                renderCortes();
+            });
+        }
+        const cortesReset = document.getElementById('cortesReset');
+        if (cortesReset) {
+            cortesReset.addEventListener('click', function () {
+                cortesOffset = 0;
+                renderCortes();
             });
         }
 
@@ -675,6 +929,8 @@
         } else if (id === 'salesHistory') {
             fillHistoryClientFilter();
             renderHistory();
+        } else if (id === 'cortes') {
+            renderCortes();
         } else if (id === 'prices') {
             renderPrices();
         }
@@ -691,6 +947,7 @@
         renderCart();
         fillHistoryClientFilter();
         renderHistory();
+        renderCortes();
         renderClients();
         renderPrices();
         updatePosKpis();

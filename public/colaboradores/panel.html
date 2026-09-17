@@ -789,6 +789,217 @@
             opacity: 0; pointer-events: none; transition: opacity .2s;
         }
         .toast.show { opacity: 1; }
+
+        /* —— Cortes (Midday-style reports) —— */
+        .cortes-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+        .cortes-head .page-sub { margin-bottom: 0; }
+        .cortes-range {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .cortes-range-label {
+            min-width: 160px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            padding: 0 4px;
+        }
+        .cortes-nav-btn {
+            width: 32px; height: 32px;
+            display: grid; place-items: center;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--text);
+            cursor: pointer;
+        }
+        .cortes-nav-btn:hover { background: var(--hover); }
+        .cortes-nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+        .cortes-today-btn {
+            height: 32px;
+            padding: 0 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--muted);
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .cortes-today-btn:hover { color: var(--text); background: var(--hover); }
+        .seg-control {
+            display: inline-flex;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .seg-control button {
+            height: 34px;
+            padding: 0 16px;
+            border: none;
+            border-right: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .seg-control button:last-child { border-right: none; }
+        .seg-control button:hover { color: var(--text); background: var(--hover); }
+        .seg-control button.active {
+            background: var(--text);
+            color: var(--bg);
+        }
+        .cortes-hero {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .cortes-kpi-main {
+            padding: 28px 28px 24px;
+            border-right: 1px solid var(--border);
+        }
+        .cortes-kpi-main .label {
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .cortes-kpi-main .val {
+            font-size: clamp(36px, 5vw, 48px);
+            font-weight: 500;
+            letter-spacing: -0.03em;
+            line-height: 1.05;
+            margin-bottom: 8px;
+        }
+        .cortes-kpi-main .hint {
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .cortes-kpi-side {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+        }
+        .cortes-kpi-side .kpi-cell {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .cortes-kpi-side .kpi-cell:last-child { border-bottom: none; }
+        .cortes-kpi-side .label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .cortes-kpi-side .val {
+            font-size: 24px;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+        .cortes-breakdowns {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .cortes-panel {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            min-height: 140px;
+        }
+        .cortes-panel h3 {
+            margin: 0 0 4px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .cortes-panel .panel-sub {
+            margin: 0 0 14px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .cortes-bar {
+            display: flex;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
+            margin-bottom: 14px;
+        }
+        .cortes-bar span { display: block; height: 100%; min-width: 0; }
+        .cortes-bar .seg-efectivo { background: var(--text); }
+        .cortes-bar .seg-tarjeta { background: #737373; }
+        .cortes-bar .seg-transferencia { background: #a3a3a3; }
+        .cortes-bar .seg-facturado { background: var(--text); }
+        .cortes-bar .seg-sin_facturar { background: #a3a3a3; }
+        .cortes-rows { display: flex; flex-direction: column; gap: 8px; }
+        .cortes-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13px;
+        }
+        .cortes-row .left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            min-width: 0;
+        }
+        .cortes-row .dot {
+            width: 8px; height: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+            background: var(--text);
+        }
+        .cortes-row .dot.tarjeta { background: #737373; }
+        .cortes-row .dot.transferencia,
+        .cortes-row .dot.sin_facturar { background: #a3a3a3; }
+        .cortes-row .amt { font-weight: 500; color: var(--text); white-space: nowrap; }
+        .cortes-row .name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .cortes-empty {
+            font-size: 13px;
+            color: var(--muted);
+            padding: 8px 0;
+        }
+        .cortes-list-card { margin-top: 0; }
+        .cortes-list-card .card-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .cortes-list-card .card-head h3 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .cortes-list-card .card-head .muted { font-size: 12px; color: var(--muted); }
+        @media (max-width: 900px) {
+            .cortes-hero { grid-template-columns: 1fr; }
+            .cortes-kpi-main { border-right: none; border-bottom: 1px solid var(--border); }
+            .cortes-breakdowns { grid-template-columns: 1fr; }
+        }
         @media (max-width: 980px) {
             .pos-layout { grid-template-columns: 1fr; }
             .pos-cart { position: static; max-height: none; }
@@ -806,6 +1017,7 @@
                 <a href="#venta" data-section="venta" title="Venta"><i class="fa-solid fa-cash-register"></i></a>
                 <a href="#clients" data-section="clients" title="Clientes"><i class="fa-solid fa-user-group"></i></a>
                 <a href="#salesHistory" data-section="salesHistory" title="Historial de ventas"><i class="fa-solid fa-receipt"></i></a>
+                <a href="#cortes" data-section="cortes" title="Cortes"><i class="fa-solid fa-chart-simple"></i></a>
                 <a href="#prices" data-section="prices" title="Precios"><i class="fa-solid fa-tags"></i></a>
                 <a href="#messages" data-section="messages" title="Mensajes"><i class="fa-regular fa-envelope"></i></a>
                 <a href="#catalog" data-section="catalog" title="Catálogo"><i class="fa-solid fa-box"></i></a>
@@ -842,6 +1054,7 @@
                     </div>
                     <div class="quick-actions">
                         <button type="button" class="qa-btn" id="goVenta"><i class="fa-solid fa-cash-register"></i> Venta</button>
+                        <button type="button" class="qa-btn" id="goCortes"><i class="fa-solid fa-chart-simple"></i> Cortes</button>
                         <button type="button" class="qa-btn" id="goFormulas"><i class="fa-solid fa-flask"></i> Formulaciones</button>
                         <button type="button" class="qa-btn" id="goProduction"><i class="fa-solid fa-industry"></i> Registrar producción</button>
                         <button type="button" class="qa-btn" id="goMaterials"><i class="fa-solid fa-cubes"></i> Inventario</button>
@@ -1111,6 +1324,88 @@
                                     </tr>
                                 </thead>
                                 <tbody id="posHistoryBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="cortes" class="section">
+                    <div class="cortes-head">
+                        <div>
+                            <h1 class="page-title">Cortes</h1>
+                            <p class="page-sub">Corte del día, semana, mes y año · ventas de este navegador.</p>
+                        </div>
+                        <div class="cortes-range">
+                            <button type="button" class="cortes-nav-btn" id="cortesPrev" title="Periodo anterior" aria-label="Periodo anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span class="cortes-range-label" id="cortesRangeLabel">Hoy</span>
+                            <button type="button" class="cortes-nav-btn" id="cortesNext" title="Periodo siguiente" aria-label="Periodo siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                            <button type="button" class="cortes-today-btn" id="cortesReset">Actual</button>
+                        </div>
+                    </div>
+
+                    <div class="seg-control" id="cortesPeriodTabs" role="tablist" aria-label="Periodo del corte">
+                        <button type="button" role="tab" data-period="day" class="active" aria-selected="true">Día</button>
+                        <button type="button" role="tab" data-period="week" aria-selected="false">Semana</button>
+                        <button type="button" role="tab" data-period="month" aria-selected="false">Mes</button>
+                        <button type="button" role="tab" data-period="year" aria-selected="false">Año</button>
+                    </div>
+
+                    <div class="cortes-hero">
+                        <div class="cortes-kpi-main">
+                            <div class="label">Total ventas</div>
+                            <div class="val" id="cortesTotal">$0.00</div>
+                            <div class="hint" id="cortesCompareHint">Sin comparación</div>
+                        </div>
+                        <div class="cortes-kpi-side">
+                            <div class="kpi-cell">
+                                <div class="label">Tickets</div>
+                                <div class="val" id="cortesTickets">0</div>
+                            </div>
+                            <div class="kpi-cell">
+                                <div class="label">Ticket promedio</div>
+                                <div class="val" id="cortesAvg">$0.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cortes-breakdowns">
+                        <div class="cortes-panel">
+                            <h3>Método de pago</h3>
+                            <p class="panel-sub">Por monto</p>
+                            <div class="cortes-bar" id="cortesPayBar" aria-hidden="true"></div>
+                            <div class="cortes-rows" id="cortesPayRows"></div>
+                        </div>
+                        <div class="cortes-panel">
+                            <h3>Facturación</h3>
+                            <p class="panel-sub">Por monto</p>
+                            <div class="cortes-bar" id="cortesBillBar" aria-hidden="true"></div>
+                            <div class="cortes-rows" id="cortesBillRows"></div>
+                        </div>
+                        <div class="cortes-panel">
+                            <h3>Top productos</h3>
+                            <p class="panel-sub">Por unidades</p>
+                            <div class="cortes-rows" id="cortesTopProducts"></div>
+                        </div>
+                    </div>
+
+                    <div class="card cortes-list-card">
+                        <div class="card-head">
+                            <h3>Ventas del periodo</h3>
+                            <span class="muted" id="cortesListCount">0 tickets</span>
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Folio</th>
+                                        <th>Cliente</th>
+                                        <th>Pago</th>
+                                        <th>Facturación</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cortesSalesBody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -1427,12 +1722,12 @@
         sidebar.classList.toggle('open');
     });
 
-    const SECTION_IDS = ['dashboard', 'venta', 'clients', 'salesHistory', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production', 'site'];
+    const SECTION_IDS = ['dashboard', 'venta', 'clients', 'salesHistory', 'cortes', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production', 'site'];
 
     /* Roles / permisos — deben existir ANTES de showSection (evita TDZ en ROLE_PERMS). */
     const ROLE_PERMS = {
         admin: ['*'],
-        ventas: ['dashboard', 'venta', 'clients', 'salesHistory', 'prices', 'materials']
+        ventas: ['dashboard', 'venta', 'clients', 'salesHistory', 'cortes', 'prices', 'materials']
     };
     let currentRole = 'admin';
     try {
@@ -2190,6 +2485,8 @@
         document.querySelectorAll('.section').forEach(function (el) {
             if (!canAccess(el.id)) el.classList.remove('active');
         });
+        const goCortesQa = document.getElementById('goCortes');
+        if (goCortesQa) goCortesQa.hidden = !canAccess('cortes');
     }
     applyNavPermissions();
     (function enforceRoleLanding() {
@@ -2226,6 +2523,8 @@
 
     const goVenta = document.getElementById('goVenta');
     if (goVenta) goVenta.addEventListener('click', function (e) { e.preventDefault(); showSection('venta'); });
+    const goCortes = document.getElementById('goCortes');
+    if (goCortes) goCortes.addEventListener('click', function (e) { e.preventDefault(); showSection('cortes'); });
     const goVentaSite = document.getElementById('goVentaSite');
     if (goVentaSite) goVentaSite.addEventListener('click', function (e) { e.preventDefault(); showSection('venta'); });
 
