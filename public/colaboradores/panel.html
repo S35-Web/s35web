@@ -468,12 +468,18 @@
             color: var(--text);
         }
         .chip .dot,
-        .product-card .fam .dot {
+        .product-card .fam .dot,
+        .prices-table .fam .dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             flex-shrink: 0;
             display: inline-block;
+        }
+        .prices-table .fam {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .split { display: grid; grid-template-columns: 260px 1fr; gap: 16px; }
@@ -1650,6 +1656,7 @@
                             <input id="posPriceSearch" class="search" type="search" placeholder="Buscar producto">
                             <button type="button" class="btn" id="posResetPricesBtn">Restablecer defaults</button>
                         </div>
+                        <div class="chips" id="posPriceFamilyChips"></div>
                         <div class="table-card">
                             <table class="prices-table">
                                 <thead>

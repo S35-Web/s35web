@@ -726,6 +726,7 @@
 
     let cart = [];
     let familyFilter = 'all';
+    let priceFamilyFilter = 'all';
     let historyClientFilter = 'all';
     let editingClientId = null;
 
@@ -754,15 +755,23 @@
         return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, 'es'); });
     }
 
-    function renderChips() {
-        const chips = document.getElementById('posFamilyChips');
+    function renderFamilyChips(containerId, activeFilter) {
+        const chips = document.getElementById(containerId);
         if (!chips) return;
         const list = ['all'].concat(families());
         chips.innerHTML = list.map(function (f) {
             const label = f === 'all' ? 'Todas' : f;
-            return '<button type="button" class="chip' + (f === familyFilter ? ' active' : '') + '" data-fam="' + esc(f) + '">' +
+            return '<button type="button" class="chip' + (f === activeFilter ? ' active' : '') + '" data-fam="' + esc(f) + '">' +
                 familyDot(f) + esc(label) + '</button>';
         }).join('');
+    }
+
+    function renderChips() {
+        renderFamilyChips('posFamilyChips', familyFilter);
+    }
+
+    function renderPriceChips() {
+        renderFamilyChips('posPriceFamilyChips', priceFamilyFilter);
     }
 
     function filteredProducts() {
@@ -1202,9 +1211,11 @@
         if (!tbody) return;
         const q = (document.getElementById('posPriceSearch') && document.getElementById('posPriceSearch').value || '').toLowerCase().trim();
         const list = pricedCatalog().filter(function (p) {
-            return !q || [p.name, p.code, p.family, p.listName, p.id].some(function (v) {
+            const famOk = priceFamilyFilter === 'all' || p.family === priceFamilyFilter;
+            const qOk = !q || [p.name, p.code, p.family, p.listName, p.id].some(function (v) {
                 return String(v || '').toLowerCase().includes(q);
             });
+            return famOk && qOk;
         });
         if (!list.length) {
             tbody.innerHTML = '<tr><td colspan="10" class="empty">Sin resultados</td></tr>';
@@ -1224,7 +1235,9 @@
             const badge = p.fromRecipe ? '' : '<div class="muted">Solo lista · sin ficha POS</div>';
             return '<tr>' +
                 '<td class="muted">' + esc(p.code || p.id) + '</td>' +
-                '<td>' + esc(p.name) + '<div class="muted">' + esc(p.family || '') + '</div>' + badge + '</td>' +
+                '<td>' + esc(p.name) +
+                '<div class="muted fam">' + (p.family ? familyDot(p.family) : '') + esc(p.family || '') + '</div>' +
+                badge + '</td>' +
                 '<td class="num">' + esc(String(kg)) + '</td>' +
                 '<td class="muted">' + esc(unit) + '</td>' +
                 tierCells +
@@ -1420,6 +1433,16 @@
             });
         }
 
+        const priceChips = document.getElementById('posPriceFamilyChips');
+        if (priceChips) {
+            priceChips.addEventListener('click', function (e) {
+                const btn = e.target.closest('.chip');
+                if (!btn) return;
+                priceFamilyFilter = btn.getAttribute('data-fam');
+                renderPriceChips();
+                renderPrices();
+            });
+        }
         const priceSearch = document.getElementById('posPriceSearch');
         if (priceSearch) priceSearch.addEventListener('input', renderPrices);
         const pricesBody = document.getElementById('posPricesBody');
@@ -1529,6 +1552,7 @@
         } else if (id === 'cortes') {
             renderCortes();
         } else if (id === 'prices') {
+            renderPriceChips();
             renderPrices();
         }
     }
@@ -1548,6 +1572,7 @@
         renderHistory();
         renderCortes();
         renderClients();
+        renderPriceChips();
         renderPrices();
         updatePosKpis();
         window.S35PosModule = { onSectionShow: onSectionShow, refreshProducts: renderProducts };
