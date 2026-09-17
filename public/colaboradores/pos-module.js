@@ -2,11 +2,12 @@
 (function () {
     'use strict';
 
-    const PRICE_KEY = 's35_pos_prices';
+    const PRICE_KEY = 's35_pos_prices_v2';
     const SALES_KEY = 's35_pos_sales';
     const CLIENTS_KEY = 's35_pos_clients';
     const FINISHED_KEY = 's35_finished_stock';
 
+    /** Fallback flat (sin lista mayorista) — se replica en los 6 escalones. */
     const FAMILY_DEFAULTS = {
         'Estucos premium': 450,
         'Microconcretos': 480,
@@ -15,6 +16,9 @@
         'Pegaxpress: Adhesivos': 380,
         'Líquidos': 520
     };
+
+    const TIER_IDS = ['t1', 't2', 't3', 't4', 't5', 't6'];
+    const TIER_LABELS = ['1 a 100', '100 a 500', '500 a 999', '1000 a 2000', '2000 a 3000', '3000 a 5000'];
 
     let cortesPeriod = 'day';
     let cortesOffset = 0;
@@ -124,6 +128,162 @@
         return 'vs periodo anterior · ' + money(prev) + ' (' + sign + d.toFixed(0) + '%)';
     }
 
+    function emptyRhythmBuckets(period, bounds) {
+        if (period === 'week') {
+            return {
+                subtitle: 'Lunes a viernes',
+                buckets: [
+                    { key: 0, label: 'Lun' },
+                    { key: 1, label: 'Mar' },
+                    { key: 2, label: 'Mié' },
+                    { key: 3, label: 'Jue' },
+                    { key: 4, label: 'Vie' }
+                ].map(function (b) { return { key: b.key, label: b.label, amount: 0 }; })
+            };
+        }
+        if (period === 'month') {
+            const days = new Date(bounds.start.getFullYear(), bounds.start.getMonth() + 1, 0).getDate();
+            const buckets = [];
+            for (let d = 1; d <= days; d++) {
+                buckets.push({ key: d, label: String(d), amount: 0 });
+            }
+            return { subtitle: 'Cada día del mes', buckets: buckets };
+        }
+        if (period === 'year') {
+            const labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            return {
+                subtitle: 'Enero a diciembre',
+                buckets: labels.map(function (label, i) {
+                    return { key: i, label: label, amount: 0 };
+                })
+            };
+        }
+        const buckets = [];
+        for (let h = 7; h <= 19; h++) {
+            buckets.push({
+                key: h,
+                label: (h < 10 ? '0' : '') + h + ':00',
+                amount: 0
+            });
+        }
+        return { subtitle: 'Por hora · 7:00–19:00', buckets: buckets };
+    }
+
+    function fillRhythmBuckets(period, bounds, list) {
+        const meta = emptyRhythmBuckets(period, bounds);
+        const buckets = meta.buckets;
+        list.forEach(function (s) {
+            const d = new Date(s.createdAt);
+            if (isNaN(d.getTime())) return;
+            const amt = Number(s.total) || 0;
+            if (period === 'day') {
+                const h = d.getHours();
+                if (h >= 7 && h <= 19) buckets[h - 7].amount += amt;
+            } else if (period === 'week') {
+                const dayStart = startOfLocalDay(d);
+                const diff = Math.round((dayStart.getTime() - bounds.start.getTime()) / 86400000);
+                if (diff >= 0 && diff <= 4) buckets[diff].amount += amt;
+            } else if (period === 'month') {
+                if (d.getFullYear() === bounds.start.getFullYear() && d.getMonth() === bounds.start.getMonth()) {
+                    const day = d.getDate();
+                    if (buckets[day - 1]) buckets[day - 1].amount += amt;
+                }
+            } else if (period === 'year') {
+                if (d.getFullYear() === bounds.start.getFullYear()) {
+                    buckets[d.getMonth()].amount += amt;
+                }
+            }
+        });
+        return { subtitle: meta.subtitle, buckets: buckets };
+    }
+
+    function compactMoney(n) {
+        const v = Number(n) || 0;
+        if (v >= 1000000) return '$' + (v / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (v >= 1000) return '$' + (v / 1000).toFixed(v >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'k';
+        return '$' + Math.round(v).toLocaleString('es-MX');
+    }
+
+    function renderCortesChart(period, bounds, list, prevBounds, prevList) {
+        const host = document.getElementById('cortesChart');
+        const subEl = document.getElementById('cortesChartSub');
+        if (!host) return;
+
+        const cur = fillRhythmBuckets(period, bounds, list);
+        const prev = fillRhythmBuckets(period, prevBounds, prevList);
+        if (subEl) subEl.textContent = cur.subtitle;
+
+        const n = cur.buckets.length;
+        let maxVal = 0;
+        for (let i = 0; i < n; i++) {
+            maxVal = Math.max(maxVal, cur.buckets[i].amount, (prev.buckets[i] && prev.buckets[i].amount) || 0);
+        }
+        const hasData = maxVal > 0;
+
+        const W = 720;
+        const H = 180;
+        const padL = 44;
+        const padR = 8;
+        const padT = 12;
+        const padB = 28;
+        const plotW = W - padL - padR;
+        const plotH = H - padT - padB;
+        const slot = plotW / Math.max(n, 1);
+        const groupW = Math.min(slot * 0.72, period === 'month' ? 16 : 28);
+        const barW = Math.max(2, (groupW - 2) / 2);
+        const yMax = maxVal > 0 ? maxVal * 1.08 : 1;
+
+        function yPos(v) {
+            return padT + plotH - (v / yMax) * plotH;
+        }
+
+        const gridYs = [0, 0.5, 1];
+        let grid = '';
+        let yLabels = '';
+        gridYs.forEach(function (f) {
+            const y = padT + plotH * (1 - f);
+            const val = yMax * f;
+            grid += '<line class="grid-line" x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '"/>';
+            if (hasData || f === 0) {
+                yLabels += '<text class="y-label" x="' + (padL - 6) + '" y="' + (y + 3) + '" text-anchor="end">' +
+                    (f === 0 ? '$0' : compactMoney(val)) + '</text>';
+            }
+        });
+
+        let bars = '';
+        let xLabels = '';
+        const labelEvery = period === 'month' ? (n > 20 ? 2 : 1) : (period === 'day' ? 2 : 1);
+        for (let i = 0; i < n; i++) {
+            const cx = padL + slot * i + slot / 2;
+            const prevAmt = (prev.buckets[i] && prev.buckets[i].amount) || 0;
+            const curAmt = cur.buckets[i].amount || 0;
+            const prevH = hasData ? (prevAmt / yMax) * plotH : 0;
+            const curH = hasData ? (curAmt / yMax) * plotH : 0;
+            const x0 = cx - groupW / 2;
+            bars += '<rect class="bar-prev" x="' + x0.toFixed(1) + '" y="' + (padT + plotH - prevH).toFixed(1) +
+                '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, prevH).toFixed(1) + '" rx="1"/>';
+            bars += '<rect class="bar-cur" x="' + (x0 + barW + 1).toFixed(1) + '" y="' + (padT + plotH - curH).toFixed(1) +
+                '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, curH).toFixed(1) + '" rx="1">' +
+                '<title>' + esc(cur.buckets[i].label) + ': ' + money(curAmt) +
+                (prevAmt ? ' · ant. ' + money(prevAmt) : '') + '</title></rect>';
+
+            const showLabel = i === 0 || i === n - 1 || (i % labelEvery === 0);
+            if (showLabel) {
+                const lab = period === 'day'
+                    ? String(cur.buckets[i].key)
+                    : cur.buckets[i].label;
+                xLabels += '<text class="axis-label" x="' + cx.toFixed(1) + '" y="' + (H - 8) +
+                    '" text-anchor="middle">' + esc(lab) + '</text>';
+            }
+        }
+
+        const emptyNote = hasData ? '' : '<div class="cortes-chart-empty">Sin ventas en este ritmo</div>';
+        host.innerHTML = emptyNote +
+            '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
+            grid + yLabels + bars + xLabels +
+            '</svg>';
+    }
+
     function getRecipes() {
         const data = window.S35_PANEL_DATA || {};
         return (data.recipes || []).slice().sort(function (a, b) {
@@ -131,18 +291,162 @@
         });
     }
 
-    function unitFor(r) {
-        return r && r.kind === 'liquido' ? 'Cubeta' : 'Saco';
+    function getPriceListMeta() {
+        const data = window.S35_PANEL_DATA || {};
+        return data.priceList || { items: [], tiers: [], presentationNote: '' };
     }
-    function defaultPrice(r) {
+
+    function priceListItems() {
+        return getPriceListMeta().items || [];
+    }
+
+    /** Catálogo editable: recetas + productos de lista sin slug POS aún. */
+    function pricedCatalog() {
+        const byId = {};
+        getRecipes().forEach(function (r) {
+            byId[r.product] = {
+                id: r.product,
+                name: r.name,
+                code: r.code || '',
+                family: r.family || '',
+                kind: r.kind,
+                recipe: r,
+                fromRecipe: true
+            };
+        });
+        priceListItems().forEach(function (it) {
+            const key = it.recipeSlug || it.id;
+            if (byId[key]) {
+                byId[key].presentationKg = it.presentationKg;
+                byId[key].listName = it.name;
+                byId[key].category = it.category;
+                return;
+            }
+            byId[it.id] = {
+                id: it.id,
+                name: it.name,
+                code: '',
+                family: it.category || 'Lista mayorista',
+                kind: 'seco',
+                recipe: null,
+                fromRecipe: false,
+                presentationKg: it.presentationKg,
+                listName: it.name,
+                category: it.category
+            };
+        });
+        return Object.keys(byId).map(function (k) { return byId[k]; }).sort(function (a, b) {
+            return String(a.name || '').localeCompare(String(b.name || ''), 'es');
+        });
+    }
+
+    function catalogById(id) {
+        return pricedCatalog().filter(function (p) { return p.id === id; })[0] || null;
+    }
+
+    function recipeBySlug(slug) {
+        return getRecipes().filter(function (x) { return x.product === slug; })[0] || null;
+    }
+
+    function unitFor(entryOrRecipe) {
+        const r = entryOrRecipe && entryOrRecipe.recipe ? entryOrRecipe.recipe : entryOrRecipe;
+        if (r && r.kind === 'liquido') return 'Cubeta';
+        const kg = presentationKgFor(entryOrRecipe && entryOrRecipe.id ? entryOrRecipe.id : (r && r.product));
+        if (kg) return 'Saco ' + kg + ' kg';
+        return 'Saco';
+    }
+
+    function presentationKgFor(id) {
+        const entry = prices[id];
+        if (entry && entry.presentationKg != null) return entry.presentationKg;
+        const list = priceListItems().filter(function (it) {
+            return it.id === id || it.recipeSlug === id;
+        })[0];
+        return list ? list.presentationKg : null;
+    }
+
+    function flatDefaultFor(r) {
         return FAMILY_DEFAULTS[r.family] || 400;
     }
 
-    // —— Prices ——
+    function sixTiers(n) {
+        const v = Math.max(0, roundMoney(n));
+        return [v, v, v, v, v, v];
+    }
+
+    function roundMoney(n) {
+        return Math.round((Number(n) || 0) * 100) / 100;
+    }
+
+    function normalizeEntry(raw, fallbackTiers, presentationKg) {
+        if (raw && typeof raw === 'object' && Array.isArray(raw.tiers) && raw.tiers.length >= 6) {
+            return {
+                presentationKg: raw.presentationKg != null ? raw.presentationKg : presentationKg,
+                tiers: raw.tiers.slice(0, 6).map(roundMoney)
+            };
+        }
+        if (typeof raw === 'number') {
+            return { presentationKg: presentationKg, tiers: sixTiers(raw) };
+        }
+        return {
+            presentationKg: presentationKg,
+            tiers: (fallbackTiers || sixTiers(400)).slice(0, 6).map(roundMoney)
+        };
+    }
+
+    /**
+     * Escalón por unidades totales del carrito (volumen de compra).
+     * En el borde inferior se aplica el descuento del tramo superior (100 → t2, etc.).
+     */
+    function tierIndexForQty(qty) {
+        const q = Number(qty) || 0;
+        if (q >= 3000) return 5;
+        if (q >= 2000) return 4;
+        if (q >= 1000) return 3;
+        if (q >= 500) return 2;
+        if (q >= 100) return 1;
+        return 0;
+    }
+
+    function tierLabelForQty(qty) {
+        return TIER_LABELS[tierIndexForQty(qty)] || TIER_LABELS[0];
+    }
+
+    function unitPrice(id, cartUnits) {
+        const entry = prices[id];
+        if (!entry || !entry.tiers) return 0;
+        const idx = tierIndexForQty(cartUnits);
+        return roundMoney(entry.tiers[idx] != null ? entry.tiers[idx] : entry.tiers[0]);
+    }
+
+    function baseUnitPrice(id) {
+        const entry = prices[id];
+        if (!entry || !entry.tiers) return 0;
+        return roundMoney(entry.tiers[0] || 0);
+    }
+
+    // —— Prices (tiers + kg) ——
     let prices = {};
     function seedPrices() {
         const map = {};
-        getRecipes().forEach(function (r) { map[r.product] = defaultPrice(r); });
+        priceListItems().forEach(function (it) {
+            const key = it.recipeSlug || it.id;
+            map[key] = {
+                presentationKg: it.presentationKg,
+                tiers: (it.tiers || []).slice(0, 6).map(roundMoney)
+            };
+            if (it.recipeSlug && it.recipeSlug !== it.id) {
+                map[it.id] = map[key];
+            }
+        });
+        getRecipes().forEach(function (r) {
+            if (map[r.product]) return;
+            const kg = r.kind === 'liquido' ? null : 25;
+            map[r.product] = {
+                presentationKg: kg,
+                tiers: sixTiers(flatDefaultFor(r))
+            };
+        });
         return map;
     }
     function loadPrices() {
@@ -150,8 +454,15 @@
         try {
             const raw = JSON.parse(localStorage.getItem(PRICE_KEY) || 'null');
             if (raw && typeof raw === 'object') {
-                Object.keys(seed).forEach(function (slug) {
-                    if (raw[slug] != null) seed[slug] = Number(raw[slug]) || 0;
+                Object.keys(seed).forEach(function (id) {
+                    if (raw[id] != null) {
+                        seed[id] = normalizeEntry(raw[id], seed[id].tiers, seed[id].presentationKg);
+                    }
+                });
+                Object.keys(raw).forEach(function (id) {
+                    if (!seed[id]) {
+                        seed[id] = normalizeEntry(raw[id], null, null);
+                    }
                 });
             }
         } catch (_) {}
@@ -159,6 +470,14 @@
     }
     function savePrices() {
         localStorage.setItem(PRICE_KEY, JSON.stringify(prices));
+    }
+
+    function applyCartTierPrices() {
+        const units = cartQty();
+        cart.forEach(function (it) {
+            it.price = unitPrice(it.product, units);
+            it.tierIndex = tierIndexForQty(units);
+        });
     }
 
     // —— Sales ——
@@ -285,20 +604,27 @@
             grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Sin productos</div>';
             return;
         }
+        const cartUnits = cartQty();
         grid.innerHTML = list.map(function (r) {
-            const price = prices[r.product] != null ? prices[r.product] : defaultPrice(r);
+            const base = baseUnitPrice(r.product);
+            const live = unitPrice(r.product, cartUnits || 1);
             const stock = finishedQty(r.product);
+            const unit = unitFor(r);
             const img = r.image
                 ? '<div class="thumb"><img src="' + esc(r.image) + '" alt="' + esc(r.imageAlt || r.name) + '" loading="lazy" decoding="async"></div>'
                 : '<div class="thumb"><span class="thumb-fallback">S35</span></div>';
+            const priceNote = cartUnits >= 100 && live !== base
+                ? '<span class="muted" style="font-size:11px">Escalón ' + esc(tierLabelForQty(cartUnits)) + '</span>'
+                : '';
             return '<button type="button" class="product-card" data-add="' + esc(r.product) + '">' +
                 img +
                 '<div class="fam">' + esc(r.family || '—') + '</div>' +
                 '<div class="name">' + esc(r.name) + '</div>' +
                 '<div class="meta">' +
-                '<span class="price">' + money(price) + '</span>' +
-                '<span class="unit">' + esc(unitFor(r)) + (stock ? ' · stock ' + stock : '') + '</span>' +
+                '<span class="price">' + money(base) + '</span>' +
+                '<span class="unit">' + esc(unit) + (stock ? ' · stock ' + stock : '') + '</span>' +
                 '</div>' +
+                priceNote +
                 '<div class="muted">' + esc(r.code || r.product) + '</div>' +
                 '</button>';
         }).join('');
@@ -321,7 +647,15 @@
         const body = document.getElementById('posCartBody');
         const btn = document.getElementById('posCheckoutBtn');
         const totalEl = document.getElementById('posCartTotal');
+        const tierHint = document.getElementById('posCartTierHint');
         if (!body) return;
+        applyCartTierPrices();
+        const units = cartQty();
+        if (tierHint) {
+            tierHint.textContent = units
+                ? ('Volumen ticket: ' + units + ' u · escalón «' + tierLabelForQty(units) + '»')
+                : 'Volumen de compra: el escalón depende de las unidades totales del ticket';
+        }
         if (!cart.length) {
             body.innerHTML = '<div class="empty">Agrega productos del catálogo.</div>';
             if (btn) btn.disabled = true;
@@ -333,9 +667,10 @@
                     '<div class="ci-meta">' + money(it.price) + ' / ' + esc(it.unit) + '</div>' +
                     '<div></div>' +
                     '<div class="qty-row">' +
-                    '<button type="button" class="qty-btn" data-dec="' + idx + '">−</button>' +
-                    '<span class="qty-val">' + it.qty + '</span>' +
-                    '<button type="button" class="qty-btn" data-inc="' + idx + '">+</button>' +
+                    '<button type="button" class="qty-btn" data-dec="' + idx + '" aria-label="Menos">−</button>' +
+                    '<input class="qty-input" type="number" inputmode="numeric" min="1" step="1" ' +
+                    'data-qty="' + idx + '" value="' + esc(String(it.qty)) + '" aria-label="Cantidad">' +
+                    '<button type="button" class="qty-btn" data-inc="' + idx + '" aria-label="Más">+</button>' +
                     '<button type="button" class="btn ghost danger" data-rm="' + idx + '" style="margin-left:auto;height:28px;padding:0 8px">Quitar</button>' +
                     '</div></div>';
             }).join('');
@@ -343,6 +678,39 @@
         }
         if (totalEl) totalEl.textContent = money(cartTotal());
         updatePosKpis();
+    }
+
+    function setCartQty(idx, nextQty) {
+        if (!cart[idx]) return;
+        const n = Math.floor(Number(nextQty));
+        if (!isFinite(n) || n < 1) return false;
+        cart[idx].qty = n;
+        applyCartTierPrices();
+        renderCart();
+        renderProducts();
+        return true;
+    }
+
+    function commitQtyInput(input) {
+        if (!input) return;
+        const idx = Number(input.getAttribute('data-qty'));
+        if (!cart[idx]) return;
+        const prev = cart[idx].qty;
+        const raw = String(input.value || '').trim();
+        if (raw === '') {
+            input.value = String(prev);
+            return;
+        }
+        const n = Math.floor(Number(raw));
+        if (!isFinite(n) || n < 1) {
+            input.value = String(prev);
+            return;
+        }
+        if (n === prev) {
+            input.value = String(prev);
+            return;
+        }
+        setCartQty(idx, n);
     }
 
     function updatePosKpis() {
@@ -357,7 +725,7 @@
     }
 
     function addToCart(slug) {
-        const r = getRecipes().filter(function (x) { return x.product === slug; })[0];
+        const r = recipeBySlug(slug);
         if (!r) return;
         const existing = cart.filter(function (it) { return it.product === slug; })[0];
         if (existing) existing.qty += 1;
@@ -367,11 +735,13 @@
                 name: r.name,
                 code: r.code || '',
                 unit: unitFor(r),
-                price: prices[r.product] != null ? prices[r.product] : defaultPrice(r),
+                price: unitPrice(r.product, cartQty() + 1),
                 qty: 1
             });
         }
+        applyCartTierPrices();
         renderCart();
+        renderProducts();
         toast('Agregado: ' + r.name);
     }
 
@@ -505,6 +875,8 @@
         if (avgEl) avgEl.textContent = money(avg);
         const hintEl = document.getElementById('cortesCompareHint');
         if (hintEl) hintEl.textContent = formatDelta(total, prevTotal);
+
+        renderCortesChart(cortesPeriod, bounds, list, prevBounds, prevList);
 
         const payKeys = ['efectivo', 'tarjeta', 'transferencia'];
         const payRows = payKeys.map(function (k) {
@@ -644,20 +1016,33 @@
         const tbody = document.getElementById('posPricesBody');
         if (!tbody) return;
         const q = (document.getElementById('posPriceSearch') && document.getElementById('posPriceSearch').value || '').toLowerCase().trim();
-        const list = getRecipes().filter(function (r) {
-            return !q || [r.name, r.code, r.family].some(function (v) {
+        const list = pricedCatalog().filter(function (p) {
+            return !q || [p.name, p.code, p.family, p.listName, p.id].some(function (v) {
                 return String(v || '').toLowerCase().includes(q);
             });
         });
-        tbody.innerHTML = list.map(function (r) {
-            const price = prices[r.product] != null ? prices[r.product] : defaultPrice(r);
+        if (!list.length) {
+            tbody.innerHTML = '<tr><td colspan="10" class="empty">Sin resultados</td></tr>';
+            return;
+        }
+        tbody.innerHTML = list.map(function (p) {
+            const entry = prices[p.id] || { presentationKg: p.presentationKg, tiers: sixTiers(400) };
+            const kg = entry.presentationKg != null ? entry.presentationKg : (p.presentationKg != null ? p.presentationKg : '—');
+            const unit = p.kind === 'liquido' ? 'Cubeta' : (kg !== '—' ? ('Saco ' + kg + ' kg') : 'Saco');
+            const tierCells = TIER_IDS.map(function (tid, i) {
+                const val = entry.tiers && entry.tiers[i] != null ? entry.tiers[i] : 0;
+                return '<td><input class="price-input num" type="number" min="0" step="0.01" ' +
+                    'data-price-id="' + esc(p.id) + '" data-tier="' + i + '" value="' + esc(String(val)) + '"></td>';
+            }).join('');
+            const badge = p.fromRecipe ? '' : '<div class="muted">Solo lista · sin ficha POS</div>';
             return '<tr>' +
-                '<td class="muted">' + esc(r.code || '—') + '</td>' +
-                '<td>' + esc(r.name) + '<div class="muted">' + esc(r.family) + '</div></td>' +
-                '<td>' + esc(unitFor(r)) + '</td>' +
-                '<td><input class="price-input num" type="number" min="0" step="0.01" data-price="' + esc(r.product) + '" value="' + esc(String(price)) + '"></td>' +
+                '<td class="muted">' + esc(p.code || p.id) + '</td>' +
+                '<td>' + esc(p.name) + '<div class="muted">' + esc(p.family || '') + '</div>' + badge + '</td>' +
+                '<td class="num">' + esc(String(kg)) + '</td>' +
+                '<td class="muted">' + esc(unit) + '</td>' +
+                tierCells +
                 '</tr>';
-        }).join('') || '<tr><td colspan="4" class="empty">Sin resultados</td></tr>';
+        }).join('');
     }
 
     function renderClients() {
@@ -739,19 +1124,42 @@
                 const rm = e.target.closest('[data-rm]');
                 if (inc) {
                     const i = Number(inc.getAttribute('data-inc'));
-                    if (cart[i]) cart[i].qty += 1;
-                    renderCart();
+                    if (cart[i]) setCartQty(i, cart[i].qty + 1);
                 } else if (dec) {
                     const i = Number(dec.getAttribute('data-dec'));
                     if (cart[i]) {
-                        cart[i].qty -= 1;
-                        if (cart[i].qty <= 0) cart.splice(i, 1);
+                        if (cart[i].qty <= 1) {
+                            cart.splice(i, 1);
+                            applyCartTierPrices();
+                            renderCart();
+                            renderProducts();
+                        } else {
+                            setCartQty(i, cart[i].qty - 1);
+                        }
                     }
-                    renderCart();
                 } else if (rm) {
                     cart.splice(Number(rm.getAttribute('data-rm')), 1);
+                    applyCartTierPrices();
                     renderCart();
+                    renderProducts();
                 }
+            });
+            cartBody.addEventListener('change', function (e) {
+                const input = e.target.closest('.qty-input');
+                if (input) commitQtyInput(input);
+            });
+            cartBody.addEventListener('keydown', function (e) {
+                const input = e.target.closest('.qty-input');
+                if (!input) return;
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    commitQtyInput(input);
+                    input.blur();
+                }
+            });
+            cartBody.addEventListener('focusout', function (e) {
+                const input = e.target.closest('.qty-input');
+                if (input) commitQtyInput(input);
             });
         }
 
@@ -762,6 +1170,7 @@
                 if (!confirm('¿Vaciar el ticket?')) return;
                 cart = [];
                 renderCart();
+                renderProducts();
             });
         }
         const checkoutBtn = document.getElementById('posCheckoutBtn');
@@ -829,29 +1238,30 @@
         const pricesBody = document.getElementById('posPricesBody');
         if (pricesBody) {
             pricesBody.addEventListener('change', function (e) {
-                const input = e.target.closest('[data-price]');
+                const input = e.target.closest('[data-price-id]');
                 if (!input) return;
-                const slug = input.getAttribute('data-price');
-                prices[slug] = Math.max(0, Number(input.value) || 0);
+                const id = input.getAttribute('data-price-id');
+                const tier = Number(input.getAttribute('data-tier'));
+                if (!prices[id]) {
+                    prices[id] = { presentationKg: presentationKgFor(id), tiers: sixTiers(0) };
+                }
+                if (!prices[id].tiers) prices[id].tiers = sixTiers(0);
+                prices[id].tiers[tier] = Math.max(0, roundMoney(input.value));
                 savePrices();
+                applyCartTierPrices();
                 renderProducts();
-                cart.forEach(function (it) {
-                    if (it.product === slug) it.price = prices[slug];
-                });
                 renderCart();
             });
         }
         const resetPrices = document.getElementById('posResetPricesBtn');
         if (resetPrices) {
             resetPrices.addEventListener('click', function () {
-                if (!confirm('¿Restablecer precios por defecto?')) return;
+                if (!confirm('¿Restablecer precios por defecto (lista mayorista convertida)?')) return;
                 prices = seedPrices();
                 savePrices();
                 renderPrices();
+                applyCartTierPrices();
                 renderProducts();
-                cart.forEach(function (it) {
-                    it.price = prices[it.product] != null ? prices[it.product] : it.price;
-                });
                 renderCart();
                 toast('Precios restablecidos');
             });
