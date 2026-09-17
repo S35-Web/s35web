@@ -65,15 +65,14 @@ const RAW = [
   { id: 'pegaxpress-block', name: 'PASTABLOCK+', category: 'PEGAXPRESS', oldKg: 30, newKg: 30, prices: [160, 144, 139.68, 125.71, 123.2, 120.73], recipeSlug: 'pegaxpress-block', note: 'FT-PR-006 · 30 kg (precio de lista, sin convertir desde 35)' },
 
   // LÍQUIDOS — 1 L canónico en ficha; 18 L solo lista (sin ficha POS aparte).
-  // FT-PR-001..004 son Waxtard; no reutilizar esos códigos aquí (slug hasta
-  // renumeración oficial de fichas de líquidos).
-  { id: 'adhesivo-darawell', name: 'DARAWELL PREMIUM', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [100, 90, 87.3, 78.57, 77, 75.46], recipeSlug: 'adhesivo-darawell', note: 'adhesivo-darawell · 1 L' },
-  { id: 'adhesivo-darawell-18', name: 'DARAWELL PREMIUM', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, prices: [1200, 1080, 1047.6, 942.84, 923.98, 905.5], recipeSlug: null, note: 'adhesivo-darawell · 18 L' },
-  { id: 'sellador-premium-pintura', name: 'SELLADOR PREMIUM', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [85, 76.5, 74.21, 66.78, 65.45, 64.14], recipeSlug: 'sellador-premium-pintura', note: 'sellador-premium-pintura · 1 L' },
-  { id: 'sellador-premium-pintura-18', name: 'SELLADOR PREMIUM', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, prices: [850, 765, 742.05, 667.85, 654.49, 641.4], recipeSlug: null, note: 'sellador-premium-pintura · 18 L' },
-  { id: 'adhesivo-heavy-duty', name: 'ADHESIVO HEAVY DUTY', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [155, 139.5, 135.32, 121.78, 119.35, 116.96], recipeSlug: 'adhesivo-heavy-duty', note: 'adhesivo-heavy-duty · 1 L' },
-  { id: 'nanotech-hidrofobico', name: 'NANOTECH HIDROFOBICO', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [230, 207, 200.79, 180.71, 177.1, 173.55], recipeSlug: 'nanotech-hidrofobico', note: 'FT-PR-005 · 1 L' },
-  { id: 'nanotech-hidrofobico-18', name: 'NANOTECH HIDROFOBICO', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, prices: [3315, 2983.5, 2894, 2604.6, 2552.5, 2501.45], recipeSlug: null, note: 'FT-PR-005 · 18 L' },
+  // Misma base FT-PR-NNN para 1 L y 18 L; el tamaño va en note / presentationKg.
+  { id: 'adhesivo-darawell', name: 'DARAWELL PREMIUM', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [100, 90, 87.3, 78.57, 77, 75.46], recipeSlug: 'adhesivo-darawell', code: 'FT-PR-007', note: 'FT-PR-007 · 1 L' },
+  { id: 'adhesivo-darawell-18', name: 'DARAWELL PREMIUM', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, prices: [1200, 1080, 1047.6, 942.84, 923.98, 905.5], recipeSlug: null, code: 'FT-PR-007', note: 'FT-PR-007 · 18 L' },
+  { id: 'sellador-premium-pintura', name: 'SELLADOR PREMIUM', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [85, 76.5, 74.21, 66.78, 65.45, 64.14], recipeSlug: 'sellador-premium-pintura', code: 'FT-PR-008', note: 'FT-PR-008 · 1 L' },
+  { id: 'sellador-premium-pintura-18', name: 'SELLADOR PREMIUM', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, prices: [850, 765, 742.05, 667.85, 654.49, 641.4], recipeSlug: null, code: 'FT-PR-008', note: 'FT-PR-008 · 18 L' },
+  { id: 'adhesivo-heavy-duty', name: 'ADHESIVO HEAVY DUTY', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [155, 139.5, 135.32, 121.78, 119.35, 116.96], recipeSlug: 'adhesivo-heavy-duty', code: 'FT-PR-009', note: 'FT-PR-009 · 1 L' },
+  { id: 'nanotech-hidrofobico', name: 'NANOTECH HIDROFOBICO', category: 'LIQUIDOS', kind: 'liquido', oldKg: 1, newKg: 1, prices: [230, 207, 200.79, 180.71, 177.1, 173.55], recipeSlug: 'nanotech-hidrofobico', code: 'FT-PR-005', note: 'FT-PR-005 · 1 L' },
+  { id: 'nanotech-hidrofobico-18', name: 'NANOTECH HIDROFOBICO', category: 'LIQUIDOS', kind: 'liquido', oldKg: 18, newKg: 18, prices: [3315, 2983.5, 2894, 2604.6, 2552.5, 2501.45], recipeSlug: null, code: 'FT-PR-005', note: 'FT-PR-005 · 18 L' },
 ];
 
 const items = RAW.map(function (row) {
@@ -88,6 +87,7 @@ const items = RAW.map(function (row) {
     presentationKg: size,
     oldKg: row.oldKg,
     recipeSlug: row.recipeSlug,
+    code: row.code || (String(row.note || '').match(/^(FT-[A-Z]{2}-\d{3})/) || [])[1] || '',
     note: row.note || '',
     tiers: tiers,
     pricesByTier: {

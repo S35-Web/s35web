@@ -428,17 +428,19 @@
         priceListItems().forEach(function (it) {
             const key = it.recipeSlug || it.id;
             const kind = it.kind || 'seco';
+            const listCode = it.code || '';
             if (byId[key]) {
                 byId[key].presentationKg = it.presentationKg;
                 byId[key].listName = it.name;
                 byId[key].category = it.category;
                 if (kind === 'liquido') byId[key].kind = 'liquido';
+                if (listCode && !byId[key].code) byId[key].code = listCode;
                 return;
             }
             byId[it.id] = {
                 id: it.id,
                 name: it.name,
-                code: '',
+                code: listCode,
                 family: it.category || 'Lista mayorista',
                 kind: kind,
                 recipe: null,
