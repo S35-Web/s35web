@@ -985,8 +985,8 @@
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 10px 16px;
             margin: 0;
-            padding: 14px 0 0;
-            border-top: 1px solid var(--border);
+            padding: 0;
+            border-top: none;
         }
         .pd-stat {
             padding: 0;
@@ -996,18 +996,20 @@
         }
         .pd-stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
         .pd-stat .val { font-size: 15px; font-weight: 500; margin-top: 4px; }
-        .pd-overview {
-            display: grid;
-            grid-template-columns: minmax(140px, 200px) minmax(0, 1fr);
-            gap: 22px 28px;
-            align-items: start;
-            margin-bottom: 22px;
+        /* Identificación compacta — el viewport lo dominan las ventas */
+        .pd-id {
+            display: flex;
+            align-items: center;
+            gap: 12px 14px;
+            margin: 0 0 18px;
+            padding: 0 0 14px;
+            border-bottom: 1px solid var(--border);
+            min-width: 0;
         }
-        @media (max-width: 720px) {
-            .pd-overview { grid-template-columns: 1fr; }
-        }
-        .pd-overview-media {
-            aspect-ratio: 1;
+        .pd-id-media {
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             background: var(--bg);
@@ -1016,101 +1018,61 @@
             align-items: center;
             justify-content: center;
         }
-        .pd-overview-media img {
+        .pd-id-media img {
             width: 100%;
             height: 100%;
             object-fit: contain;
             display: block;
-            padding: 10px;
+            padding: 4px;
             box-sizing: border-box;
         }
-        .pd-overview-media .pd-thumb-fallback {
-            font-size: 13px;
+        .pd-id-media .pd-thumb-fallback {
+            font-size: 10px;
             color: var(--muted);
-            padding: 16px;
             text-align: center;
+            line-height: 1.2;
+            padding: 4px;
         }
-        .pd-overview-body { min-width: 0; }
-        .pd-overview-line {
-            margin: 0 0 6px;
-            font-size: 12px;
-            color: var(--muted);
-            letter-spacing: .02em;
-        }
-        .pd-overview-desc {
-            margin: 0 0 14px;
-            font-size: 14px;
-            line-height: 1.55;
-            color: var(--text);
-            max-width: 62ch;
-        }
-        .pd-overview-facts {
+        .pd-id-body { min-width: 0; flex: 1; }
+        .pd-id-meta {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px 18px;
-            margin: 0 0 14px;
+            gap: 4px 12px;
+            margin: 0;
             font-size: 13px;
             color: var(--muted);
+            line-height: 1.4;
         }
-        .pd-overview-facts strong {
+        .pd-id-meta strong {
             color: var(--text);
             font-weight: 500;
         }
-        .pd-highlights {
-            list-style: none;
-            margin: 0 0 16px;
-            padding: 0;
-            display: grid;
-            gap: 6px;
-        }
-        .pd-highlights li {
-            position: relative;
-            padding-left: 14px;
-            font-size: 13px;
-            line-height: 1.45;
-            color: var(--text);
-        }
-        .pd-highlights li::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: .55em;
-            width: 5px;
-            height: 5px;
-            border-radius: 1px;
-            background: var(--text);
-            opacity: .35;
-        }
-        .pd-kpis {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px 14px;
-            margin: 0 0 4px;
-        }
-        .pd-kpi .val {
-            font-size: 16px;
-            font-weight: 500;
-            letter-spacing: -.01em;
-            font-variant-numeric: tabular-nums;
-        }
-        .pd-kpi .label {
-            margin-top: 2px;
+        .pd-id-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 4px;
             font-size: 12px;
             color: var(--muted);
-            line-height: 1.35;
+            text-decoration: none;
         }
-        .pd-section-label {
-            margin: 0 0 8px;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-            color: var(--muted);
-        }
-        .pd-pres-block {
-            margin-top: 18px;
-            padding-top: 16px;
+        .pd-id-link:hover { color: var(--text); }
+        .pd-ops-details {
+            margin-top: 20px;
+            padding-top: 14px;
             border-top: 1px solid var(--border);
         }
+        .pd-ops-details > summary {
+            cursor: pointer;
+            list-style: none;
+            font-size: 12px;
+            color: var(--muted);
+            user-select: none;
+        }
+        .pd-ops-details > summary::-webkit-details-marker { display: none; }
+        .pd-ops-details > summary:hover { color: var(--text); }
+        .pd-ops-details[open] > summary { margin-bottom: 12px; color: var(--text); }
+        .pd-ops-details .pd-summary-grid { margin-bottom: 12px; }
         .pd-pres-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
         .pd-pres-chip {
             font-size: 12px;
@@ -1120,11 +1082,17 @@
             color: var(--muted);
             background: var(--bg);
         }
-        .pd-overview-actions { margin-top: 14px; }
+        .pd-section-label {
+            margin: 0 0 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--muted);
+        }
         .pd-sales-block {
-            margin-top: 22px;
-            padding-top: 18px;
-            border-top: 1px solid var(--border);
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
         }
         .pd-sales-head {
             display: flex;
@@ -1947,7 +1915,7 @@
                                 <div class="pd-hero-meta" id="pdMeta"></div>
                             </div>
                             <div class="toolbar" style="margin:0">
-                                <a class="btn" id="pdPublicLink" href="/productos" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ficha pública</a>
+                                <a class="btn ghost" id="pdPublicLink" href="/productos" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ficha pública</a>
                             </div>
                         </div>
                         <div class="seg-control pd-tabs" id="pdTabs" role="tablist" aria-label="Secciones del producto">
@@ -3218,83 +3186,59 @@
                         ? ' · ' + primaryPres.size + (primaryPres.unit === 'L' ? ' L' : ' kg')
                         : ''))
                 : '');
-        const desc = item.description || item.lead || '';
-        const strip = item.strip || [];
-        const kpis = item.kpis || [];
         const formulaLabel = item.hasRecipe
             ? (formulaComplete(formulas[slug]) ? 'Lista' : 'Pendiente')
             : 'N/A';
 
         const mediaHtml = item.image
             ? '<img src="' + esc(item.image) + '" alt="' + esc(item.imageAlt || item.name) + '" loading="lazy">'
-            : '<div class="pd-thumb-fallback">Sin imagen de catálogo</div>';
+            : '<div class="pd-thumb-fallback">—</div>';
 
-        const facts = [];
+        const metaBits = [];
+        metaBits.push('<span>Código <strong>' + esc(item.code || '—') + '</strong></span>');
         if (item.family) {
-            facts.push('<span>Familia <strong>' + familyDotHtml(item.family) + esc(item.family) + '</strong></span>');
+            metaBits.push('<span>Familia <strong>' + familyDotHtml(item.family) + esc(item.family) + '</strong></span>');
         }
         if (primaryLabel) {
-            facts.push('<span>Presentación <strong>' + esc(primaryLabel) + '</strong></span>');
-        }
-        if (item.status) {
-            facts.push('<span>Estado <strong>' + esc(item.status) + '</strong></span>');
+            metaBits.push('<span>Presentación <strong>' + esc(primaryLabel) + '</strong></span>');
         }
 
-        const highlightsHtml = strip.length
-            ? ('<ul class="pd-highlights">' + strip.map(function (s) {
-                return '<li>' + esc(s) + '</li>';
-            }).join('') + '</ul>')
-            : '';
-
-        const kpisHtml = kpis.length
-            ? ('<div class="pd-kpis">' + kpis.map(function (k) {
-                return '<div class="pd-kpi"><div class="val">' + esc(k.value) + '</div>' +
-                    (k.label ? '<div class="label">' + esc(k.label) + '</div>' : '') + '</div>';
-            }).join('') + '</div>')
+        const fichaLink = item.hasFicha
+            ? ('<a class="pd-id-link" href="/productos/' + encodeURIComponent(slug) +
+                '" target="_blank" rel="noopener">' +
+                '<i class="fa-solid fa-arrow-up-right-from-square"></i> Ficha pública</a>')
             : '';
 
         const opsHtml =
             '<div class="pd-summary-grid">' +
-            '<div class="pd-stat"><div class="label">Código FT</div><div class="val">' + esc(item.code || '—') + '</div></div>' +
             '<div class="pd-stat"><div class="label">Presentaciones</div><div class="val">' + esc(String(pres.length)) + '</div></div>' +
             '<div class="pd-stat"><div class="label">Stock terminado</div><div class="val">' + esc(String(fin.stock || 0)) + '</div></div>' +
             '<div class="pd-stat"><div class="label">Formulación</div><div class="val">' + esc(formulaLabel) + '</div></div>' +
-            '</div>';
-
-        const presHtml = '<div class="pd-pres-block">' +
-            '<p class="pd-section-label">Presentaciones de venta</p>' +
+            '</div>' +
             (pres.length
-                ? ('<div class="pd-pres-chips">' + pres.map(function (x) {
-                    return '<span class="pd-pres-chip">' + esc(x.label || x.id) +
-                        (x.code ? ' · ' + esc(x.code) : '') +
-                        (x.size != null ? ' · ' + x.size + (x.unit === 'L' ? ' L' : ' kg') : '') +
-                        '</span>';
-                }).join('') + '</div>')
-                : '<span class="muted">Sin presentaciones en commerce.js</span>') +
-            '</div>';
-
-        const fichaAction = item.hasFicha
-            ? ('<div class="pd-overview-actions"><a class="btn ghost" href="/productos/' +
-                encodeURIComponent(slug) + '" target="_blank" rel="noopener">' +
-                '<i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir ficha pública</a></div>')
-            : '';
+                ? ('<p class="pd-section-label">Presentaciones</p><div class="pd-pres-chips">' +
+                    pres.map(function (x) {
+                        return '<span class="pd-pres-chip">' + esc(x.label || x.id) +
+                            (x.code ? ' · ' + esc(x.code) : '') +
+                            (x.size != null ? ' · ' + x.size + (x.unit === 'L' ? ' L' : ' kg') : '') +
+                            '</span>';
+                    }).join('') + '</div>')
+                : '');
 
         const mount = document.getElementById('pdSummaryMount');
         if (mount) {
             mount.innerHTML =
-                '<div class="pd-overview">' +
-                '<div class="pd-overview-media">' + mediaHtml + '</div>' +
-                '<div class="pd-overview-body">' +
-                (item.line ? '<p class="pd-overview-line">' + esc(item.line) + '</p>' : '') +
-                (desc ? '<p class="pd-overview-desc">' + esc(desc) + '</p>' : '<p class="pd-overview-desc muted">Sin descripción en catálogo.</p>') +
-                (facts.length ? '<div class="pd-overview-facts">' + facts.join('') + '</div>' : '') +
-                highlightsHtml +
-                kpisHtml +
-                fichaAction +
+                '<div class="pd-id">' +
+                '<div class="pd-id-media">' + mediaHtml + '</div>' +
+                '<div class="pd-id-body">' +
+                '<p class="pd-id-meta">' + metaBits.join('') + '</p>' +
+                fichaLink +
                 '</div></div>' +
+                '<div id="pdSalesAnalytics"></div>' +
+                '<details class="pd-ops-details">' +
+                '<summary>Datos operativos</summary>' +
                 opsHtml +
-                presHtml +
-                '<div id="pdSalesAnalytics"></div>';
+                '</details>';
             if (window.S35PosModule && window.S35PosModule.renderProductSalesAnalytics) {
                 window.S35PosModule.renderProductSalesAnalytics(slug);
             }
