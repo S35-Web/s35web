@@ -233,10 +233,6 @@
         const barW = Math.max(2, (groupW - 2) / 2);
         const yMax = maxVal > 0 ? maxVal * 1.08 : 1;
 
-        function yPos(v) {
-            return padT + plotH - (v / yMax) * plotH;
-        }
-
         const gridYs = [0, 0.5, 1];
         let grid = '';
         let yLabels = '';
