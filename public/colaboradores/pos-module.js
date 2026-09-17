@@ -665,7 +665,8 @@
                     '<div class="qty-row">' +
                     '<button type="button" class="qty-btn" data-dec="' + idx + '" aria-label="Menos">−</button>' +
                     '<input class="qty-input" type="number" inputmode="numeric" min="1" step="1" ' +
-                    'data-qty="' + idx + '" value="' + esc(String(it.qty)) + '" aria-label="Cantidad">' +
+                    'data-qty="' + idx + '" value="' + esc(String(it.qty)) + '" ' +
+                    'aria-label="Cantidad" title="Escribe la cantidad">' +
                     '<button type="button" class="qty-btn" data-inc="' + idx + '" aria-label="Más">+</button>' +
                     '<button type="button" class="btn ghost danger" data-rm="' + idx + '" style="margin-left:auto;height:28px;padding:0 8px">Quitar</button>' +
                     '</div></div>';

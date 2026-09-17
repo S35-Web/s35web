@@ -7,6 +7,7 @@ const catalog = require('../content/products');
 const research = require('../content/research');
 const formulations = require('../content/panel/formulations');
 const plantMaterials = require('../content/panel/plant-materials');
+const priceList = require('../content/panel/price-list');
 
 const FAM = {};
 catalog.taxonomy.FAMILIES.forEach(function (f) { FAM[f.id] = f.name; });
@@ -241,8 +242,21 @@ const out = 'window.S35_PANEL_DATA = ' + JSON.stringify({
   plantMaterials: inventory,
   recipes: recipes,
   usedIn: usedIn,
+  priceList: {
+    version: priceList.version,
+    presentationNote: priceList.presentationNote,
+    tiers: priceList.VOLUME_TIERS,
+    items: priceList.items,
+  },
 }, null, 2) + ';\n';
 
 const dest = path.join(__dirname, '..', 'public', 'colaboradores-data.js');
 fs.writeFileSync(dest, out);
-console.log('colaboradores-data.js:', products.length, 'productos,', inventory.length, 'inventario planta,', materials.length, 'fichas lab,', recipes.length, 'recetas');
+console.log(
+  'colaboradores-data.js:',
+  products.length, 'productos,',
+  inventory.length, 'inventario planta,',
+  materials.length, 'fichas lab,',
+  recipes.length, 'recetas,',
+  priceList.items.length, 'precios'
+);

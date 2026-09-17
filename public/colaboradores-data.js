@@ -2752,5 +2752,649 @@ window.S35_PANEL_DATA = {
         "role": "Mineral funcional"
       }
     ]
+  },
+  "priceList": {
+    "version": 1,
+    "presentationNote": "Todos los sacos a 25 kg excepto Pastablock (30 kg). Precios convertidos conservando $/kg.",
+    "tiers": [
+      {
+        "id": "t1",
+        "label": "1 a 100",
+        "min": 1,
+        "max": 99
+      },
+      {
+        "id": "t2",
+        "label": "100 a 500",
+        "min": 100,
+        "max": 499
+      },
+      {
+        "id": "t3",
+        "label": "500 a 999",
+        "min": 500,
+        "max": 999
+      },
+      {
+        "id": "t4",
+        "label": "1000 a 2000",
+        "min": 1000,
+        "max": 1999
+      },
+      {
+        "id": "t5",
+        "label": "2000 a 3000",
+        "min": 2000,
+        "max": 2999
+      },
+      {
+        "id": "t6",
+        "label": "3000 a 5000",
+        "min": 3000,
+        "max": null
+      }
+    ],
+    "items": [
+      {
+        "id": "waxtard-blanco-perla",
+        "name": "WAXTARD BLANCO PERLA",
+        "category": "PRODUCTO CLASICOS",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "waxtard-blanco-perla",
+        "note": "",
+        "tiers": [
+          210,
+          189,
+          183.33,
+          165,
+          161.7,
+          158.46
+        ],
+        "pricesByTier": {
+          "t1": 210,
+          "t2": 189,
+          "t3": 183.33,
+          "t4": 165,
+          "t5": 161.7,
+          "t6": 158.46
+        }
+      },
+      {
+        "id": "waxtard-blanco-absoluto",
+        "name": "WAXTARD BLANCO INTENSO",
+        "category": "PRODUCTO CLASICOS",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "waxtard-blanco-absoluto",
+        "note": "Mapeado a Waxtard Blanco Absoluto",
+        "tiers": [
+          230,
+          207,
+          200.79,
+          180.71,
+          177.1,
+          173.55
+        ],
+        "pricesByTier": {
+          "t1": 230,
+          "t2": 207,
+          "t3": 200.79,
+          "t4": 180.71,
+          "t5": 177.1,
+          "t6": 173.55
+        }
+      },
+      {
+        "id": "waxtard-gris",
+        "name": "WAXTARD GRIS",
+        "category": "PRODUCTO CLASICOS",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "waxtard-gris",
+        "note": "",
+        "tiers": [
+          205,
+          184.5,
+          178.97,
+          161.07,
+          157.85,
+          154.69
+        ],
+        "pricesByTier": {
+          "t1": 205,
+          "t2": 184.5,
+          "t3": 178.97,
+          "t4": 161.07,
+          "t5": 157.85,
+          "t6": 154.69
+        }
+      },
+      {
+        "id": "waxtard-extra-anclaje",
+        "name": "WAXTARD EXTRA ANCLAJE",
+        "category": "PRODUCTO CLASICOS",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "waxtard-extra-anclaje",
+        "note": "",
+        "tiers": [
+          335,
+          301.5,
+          292.46,
+          263.21,
+          257.95,
+          252.79
+        ],
+        "pricesByTier": {
+          "t1": 335,
+          "t2": 301.5,
+          "t3": 292.46,
+          "t4": 263.21,
+          "t5": 257.95,
+          "t6": 252.79
+        }
+      },
+      {
+        "id": "estuco-base-s35",
+        "name": "ESTUCO BASE S35",
+        "category": "PRODUCTO CLASICOS",
+        "presentationKg": 25,
+        "oldKg": 35,
+        "recipeSlug": null,
+        "note": "",
+        "tiers": [
+          157.14,
+          141.43,
+          134.36,
+          114.21,
+          111.92,
+          109.68
+        ],
+        "pricesByTier": {
+          "t1": 157.14,
+          "t2": 141.43,
+          "t3": 134.36,
+          "t4": 114.21,
+          "t5": 111.92,
+          "t6": 109.68
+        }
+      },
+      {
+        "id": "aplanado-base-pro",
+        "name": "APLANADO BASE PRO+",
+        "category": "PRODUCTO CLASICOS",
+        "presentationKg": 25,
+        "oldKg": 35,
+        "recipeSlug": null,
+        "note": "",
+        "tiers": [
+          157.14,
+          141.43,
+          135.77,
+          115.41,
+          113.1,
+          110.84
+        ],
+        "pricesByTier": {
+          "t1": 157.14,
+          "t2": 141.43,
+          "t3": 135.77,
+          "t4": 115.41,
+          "t5": 113.1,
+          "t6": 110.84
+        }
+      },
+      {
+        "id": "basecoat-plus-blanco",
+        "name": "BASECOAT BLANCO INTENSO",
+        "category": "RECUBRIMIENTO PANELES",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "basecoat-plus-blanco",
+        "note": "",
+        "tiers": [
+          360,
+          324,
+          314.28,
+          282.85,
+          277.19,
+          271.65
+        ],
+        "pricesByTier": {
+          "t1": 360,
+          "t2": 324,
+          "t3": 314.28,
+          "t4": 282.85,
+          "t5": 277.19,
+          "t6": 271.65
+        }
+      },
+      {
+        "id": "basecoat-plus-gris",
+        "name": "BASECOAT GRIS",
+        "category": "RECUBRIMIENTO PANELES",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "basecoat-plus-gris",
+        "note": "",
+        "tiers": [
+          340,
+          306,
+          296.82,
+          267.14,
+          261.8,
+          256.56
+        ],
+        "pricesByTier": {
+          "t1": 340,
+          "t2": 306,
+          "t3": 296.82,
+          "t4": 267.14,
+          "t5": 261.8,
+          "t6": 256.56
+        }
+      },
+      {
+        "id": "basecoat-blanco-intenso-plus",
+        "name": "BASECOAT BLANCO INTENSO PLUS+",
+        "category": "RECUBRIMIENTO PANELES",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": null,
+        "note": "",
+        "tiers": [
+          620,
+          558,
+          541.26,
+          487.13,
+          477.39,
+          467.84
+        ],
+        "pricesByTier": {
+          "t1": 620,
+          "t2": 558,
+          "t3": 541.26,
+          "t4": 487.13,
+          "t5": 477.39,
+          "t6": 467.84
+        }
+      },
+      {
+        "id": "waxtard-basecoat-gris-plus",
+        "name": "WAXTARD BASECOAT GRIS PLUS+",
+        "category": "RECUBRIMIENTO PANELES",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": null,
+        "note": "",
+        "tiers": [
+          599,
+          539.1,
+          522.93,
+          470.63,
+          461.22,
+          452
+        ],
+        "pricesByTier": {
+          "t1": 599,
+          "t2": 539.1,
+          "t3": 522.93,
+          "t4": 470.63,
+          "t5": 461.22,
+          "t6": 452
+        }
+      },
+      {
+        "id": "microconcreto-pulido",
+        "name": "MICROCONCRETO PULIDO",
+        "category": "PRODUCTOS ARQUITECTONICOS",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": null,
+        "note": "",
+        "tiers": [
+          360,
+          324,
+          314.28,
+          282.85,
+          277.19,
+          271.65
+        ],
+        "pricesByTier": {
+          "t1": 360,
+          "t2": 324,
+          "t3": 314.28,
+          "t4": 282.85,
+          "t5": 277.19,
+          "t6": 271.65
+        }
+      },
+      {
+        "id": "cemento-plastico-concreto",
+        "name": "CONCRETO APARENTE",
+        "category": "PRODUCTOS ARQUITECTONICOS",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "cemento-plastico-concreto",
+        "note": "",
+        "tiers": [
+          545,
+          490.5,
+          475.79,
+          428.21,
+          419.64,
+          411.25
+        ],
+        "pricesByTier": {
+          "t1": 545,
+          "t2": 490.5,
+          "t3": 475.79,
+          "t4": 428.21,
+          "t5": 419.64,
+          "t6": 411.25
+        }
+      },
+      {
+        "id": "coloriometry-series",
+        "name": "COLORIOMETRY SERIES",
+        "category": "PRODUCTOS ARQUITECTONICOS",
+        "presentationKg": 25,
+        "oldKg": 10,
+        "recipeSlug": null,
+        "note": "",
+        "tiers": [
+          1325,
+          1192.5,
+          1156.72,
+          1041.05,
+          1020.22,
+          999.83
+        ],
+        "pricesByTier": {
+          "t1": 1325,
+          "t2": 1192.5,
+          "t3": 1156.72,
+          "t4": 1041.05,
+          "t5": 1020.22,
+          "t6": 999.83
+        }
+      },
+      {
+        "id": "styrobond-pro",
+        "name": "STYROBOND PRO+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "presentationKg": 25,
+        "oldKg": 35,
+        "recipeSlug": "styrobond-pro",
+        "note": "",
+        "tiers": [
+          435.71,
+          392.14,
+          380.38,
+          342.34,
+          335.49,
+          328.79
+        ],
+        "pricesByTier": {
+          "t1": 435.71,
+          "t2": 392.14,
+          "t3": 380.38,
+          "t4": 342.34,
+          "t5": 335.49,
+          "t6": 328.79
+        }
+      },
+      {
+        "id": "cellbond-pro",
+        "name": "CELLBOND PRO+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "presentationKg": 25,
+        "oldKg": 35,
+        "recipeSlug": null,
+        "note": "",
+        "tiers": [
+          435.71,
+          392.14,
+          380.38,
+          342.34,
+          335.49,
+          328.79
+        ],
+        "pricesByTier": {
+          "t1": 435.71,
+          "t2": 392.14,
+          "t3": 380.38,
+          "t4": 342.34,
+          "t5": 335.49,
+          "t6": 328.79
+        }
+      },
+      {
+        "id": "ultraforce",
+        "name": "ADHESIVO ULTRAFORCE PRO+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "presentationKg": 25,
+        "oldKg": 35,
+        "recipeSlug": "ultraforce",
+        "note": "",
+        "tiers": [
+          500,
+          450,
+          436.5,
+          392.85,
+          384.99,
+          377.29
+        ],
+        "pricesByTier": {
+          "t1": 500,
+          "t2": 450,
+          "t3": 436.5,
+          "t4": 392.85,
+          "t5": 384.99,
+          "t6": 377.29
+        }
+      },
+      {
+        "id": "pegaxpress-psp",
+        "name": "ADHESIVO PISO SOBRE PISO PRO+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "presentationKg": 25,
+        "oldKg": 35,
+        "recipeSlug": "pegaxpress-psp",
+        "note": "Variante gris/pro como precio POS principal",
+        "tiers": [
+          350,
+          315,
+          305.55,
+          274.99,
+          269.49,
+          264.11
+        ],
+        "pricesByTier": {
+          "t1": 350,
+          "t2": 315,
+          "t3": 305.55,
+          "t4": 274.99,
+          "t5": 269.49,
+          "t6": 264.11
+        }
+      },
+      {
+        "id": "pegaxpress-psp-blanco",
+        "name": "ADHESIVO PISO SOBRE PISO BLANCO PRO+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "presentationKg": 25,
+        "oldKg": 35,
+        "recipeSlug": null,
+        "note": "",
+        "tiers": [
+          350,
+          315,
+          305.55,
+          274.99,
+          269.49,
+          264.11
+        ],
+        "pricesByTier": {
+          "t1": 350,
+          "t2": 315,
+          "t3": 305.55,
+          "t4": 274.99,
+          "t5": 269.49,
+          "t6": 264.11
+        }
+      },
+      {
+        "id": "porcelanico-blanco",
+        "name": "ADHESIVO PORCELANICO BLANCO PRO+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "presentationKg": 25,
+        "oldKg": 35,
+        "recipeSlug": null,
+        "note": "",
+        "tiers": [
+          285.71,
+          242.86,
+          235.57,
+          188.46,
+          184.69,
+          180.99
+        ],
+        "pricesByTier": {
+          "t1": 285.71,
+          "t2": 242.86,
+          "t3": 235.57,
+          "t4": 188.46,
+          "t5": 184.69,
+          "t6": 180.99
+        }
+      },
+      {
+        "id": "porcelanico-universal",
+        "name": "ADHESIVO PORCELANICO GRIS PRO+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "presentationKg": 25,
+        "oldKg": 35,
+        "recipeSlug": "porcelanico-universal",
+        "note": "GRIS como precio primario del slug único",
+        "tiers": [
+          264.29,
+          211.43,
+          190.29,
+          152.23,
+          149.19,
+          146.2
+        ],
+        "pricesByTier": {
+          "t1": 264.29,
+          "t2": 211.43,
+          "t3": 190.29,
+          "t4": 152.23,
+          "t5": 149.19,
+          "t6": 146.2
+        }
+      },
+      {
+        "id": "ceramico-blanco",
+        "name": "ADHESIVO CERAMICO BLANCO PRO+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "presentationKg": 25,
+        "oldKg": 35,
+        "recipeSlug": null,
+        "note": "",
+        "tiers": [
+          250,
+          200,
+          160,
+          144,
+          141.12,
+          138.3
+        ],
+        "pricesByTier": {
+          "t1": 250,
+          "t2": 200,
+          "t3": 160,
+          "t4": 144,
+          "t5": 141.12,
+          "t6": 138.3
+        }
+      },
+      {
+        "id": "ceramico",
+        "name": "ADHESIVO CERAMICO GRIS PRO+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "presentationKg": 25,
+        "oldKg": 35,
+        "recipeSlug": "ceramico",
+        "note": "GRIS como precio primario del slug único",
+        "tiers": [
+          228.57,
+          182.86,
+          146.29,
+          131.66,
+          129.02,
+          126.44
+        ],
+        "pricesByTier": {
+          "t1": 228.57,
+          "t2": 182.86,
+          "t3": 146.29,
+          "t4": 131.66,
+          "t5": 129.02,
+          "t6": 126.44
+        }
+      },
+      {
+        "id": "leveltec-pro",
+        "name": "LEVELTEC PRO+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "leveltec-pro",
+        "note": "",
+        "tiers": [
+          220,
+          198,
+          192.06,
+          172.85,
+          169.4,
+          166.01
+        ],
+        "pricesByTier": {
+          "t1": 220,
+          "t2": 198,
+          "t3": 192.06,
+          "t4": 172.85,
+          "t5": 169.4,
+          "t6": 166.01
+        }
+      },
+      {
+        "id": "pegaxpress-block",
+        "name": "PASTABLOCK+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "presentationKg": 30,
+        "oldKg": 35,
+        "recipeSlug": "pegaxpress-block",
+        "note": "",
+        "tiers": [
+          137.14,
+          123.43,
+          119.73,
+          107.75,
+          105.6,
+          103.48
+        ],
+        "pricesByTier": {
+          "t1": 137.14,
+          "t2": 123.43,
+          "t3": 119.73,
+          "t4": 107.75,
+          "t5": 105.6,
+          "t6": 103.48
+        }
+      }
+    ]
   }
 };
