@@ -227,18 +227,13 @@
         }
 
         .content {
-            padding: 28px 32px 48px;
+            padding: 24px 20px 48px;
             min-width: 0;
             background: var(--bg);
         }
-        .section { display: none; max-width: 1120px; }
+        /* Ancho completo en todas las secciones (sin max-width Midday de 1120px) */
+        .section { display: none; max-width: none; }
         .section.active { display: block; }
-        /* POS: usar todo el ancho disponible en pantallas anchas / fullscreen */
-        #venta.section { max-width: none; }
-        .content:has(#venta.active) {
-            padding-left: 16px;
-            padding-right: 16px;
-        }
 
         .page-title {
             margin: 0 0 4px;
