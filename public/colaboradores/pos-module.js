@@ -188,6 +188,17 @@
             '<div class="sale-note-total"><span class="label">Total</span><span class="amount">' + money(sale.total) + '</span></div>';
     }
 
+    function isAdminRole() {
+        return !!(window.S35PanelAPI && window.S35PanelAPI.role === 'admin');
+    }
+
+    function syncSaleNoteDeleteVisibility() {
+        const delBtn = document.getElementById('saleNoteDelete');
+        if (!delBtn) return;
+        if (isAdminRole()) delBtn.removeAttribute('hidden');
+        else delBtn.setAttribute('hidden', '');
+    }
+
     function openSaleNoteModal(sale) {
         if (!sale) return;
         ensureSaleNote(sale);
@@ -203,6 +214,7 @@
         const email = (sale.client && sale.client.email) || (sale.note && sale.note.shareEmail) || '';
         if (phoneEl) phoneEl.value = phone;
         if (emailEl) emailEl.value = email;
+        syncSaleNoteDeleteVisibility();
         if (!modal) return;
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
@@ -214,6 +226,26 @@
         modal.classList.remove('show');
         modal.setAttribute('aria-hidden', 'true');
         activeNoteSaleId = null;
+    }
+
+    function deleteActiveSaleNote() {
+        if (!isAdminRole()) {
+            toast('Solo admin puede eliminar ventas');
+            return;
+        }
+        const id = activeNoteSaleId;
+        const sale = saleById(id);
+        if (!sale) return;
+        const folio = sale.folio || '';
+        if (!confirm('¿Eliminar esta venta? No se puede deshacer')) return;
+        sales = sales.filter(function (s) { return s.id !== id; });
+        saveSales();
+        closeSaleNoteModal();
+        renderHistory();
+        renderCortes();
+        if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
+        updatePosKpis();
+        toast(folio ? ('Venta ' + folio + ' eliminada') : 'Venta eliminada');
     }
 
     function saleById(id) {
@@ -1725,6 +1757,9 @@
         if (noteCopy) noteCopy.addEventListener('click', copyNoteText);
         const notePrint = document.getElementById('saleNotePrint');
         if (notePrint) notePrint.addEventListener('click', printSaleNote);
+        const noteDelete = document.getElementById('saleNoteDelete');
+        if (noteDelete) noteDelete.addEventListener('click', deleteActiveSaleNote);
+        syncSaleNoteDeleteVisibility();
 
         const periodTabs = document.getElementById('cortesPeriodTabs');
         if (periodTabs) {
