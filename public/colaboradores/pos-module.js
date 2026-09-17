@@ -78,6 +78,205 @@
         toast._t = setTimeout(function () { el.classList.remove('show'); }, 2200);
     }
 
+    let activeNoteSaleId = null;
+
+    function formatSaleDateTime(iso) {
+        const d = new Date(iso);
+        if (isNaN(d)) return '';
+        return d.toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' });
+    }
+
+    function saleClientLabel(sale) {
+        if (!sale) return 'Mostrador';
+        if (sale.client) return clientDisplay(sale.client);
+        return sale.customer || 'Mostrador';
+    }
+
+    function phoneDigits(raw) {
+        let d = String(raw || '').replace(/\D/g, '');
+        if (d.length === 10) d = '52' + d;
+        if (d.length === 12 && d.indexOf('52') === 0) return d;
+        if (d.length >= 10) return d;
+        return '';
+    }
+
+    function ensureSaleNote(sale) {
+        if (!sale) return null;
+        if (!sale.note || typeof sale.note !== 'object') {
+            sale.note = {
+                id: 'note-' + (sale.id || Date.now().toString(36)),
+                folio: sale.folio,
+                createdAt: sale.createdAt,
+                generatedAt: new Date().toISOString()
+            };
+        }
+        return sale.note;
+    }
+
+    function buildNotePlainText(sale) {
+        const lines = (sale.items || []).map(function (it) {
+            return '• ' + it.name + ' × ' + it.qty + ' @ ' + money(it.price) + ' = ' + money(it.lineTotal != null ? it.lineTotal : it.qty * it.price);
+        });
+        return [
+            'S-35 · Nota de venta',
+            'Folio: ' + (sale.folio || ''),
+            'Fecha: ' + formatSaleDateTime(sale.createdAt),
+            'Cliente: ' + saleClientLabel(sale),
+            '',
+            'Detalle:',
+            lines.join('\n') || '—',
+            '',
+            'Pago: ' + payLabel(sale.paymentMethod),
+            'Facturación: ' + billLabel(sale.billing),
+            'Total: ' + money(sale.total),
+            '',
+            'Gracias por su compra.'
+        ].join('\n');
+    }
+
+    function buildNoteHtml(sale) {
+        const items = sale.items || [];
+        const rows = items.map(function (it) {
+            const line = it.lineTotal != null ? it.lineTotal : it.qty * it.price;
+            return '<tr>' +
+                '<td><span class="line-name">' + esc(it.name) + '</span>' +
+                (it.unit ? '<span class="line-unit">' + esc(it.unit) + '</span>' : '') + '</td>' +
+                '<td class="num">' + esc(String(it.qty)) + '</td>' +
+                '<td class="num">' + money(it.price) + '</td>' +
+                '<td class="num">' + money(line) + '</td>' +
+                '</tr>';
+        }).join('');
+        return '<div class="sale-note-brand">' +
+            '<div class="mark">S-35<span>Midday</span></div>' +
+            '<div class="folio">' + esc(sale.folio || '') + '</div>' +
+            '</div>' +
+            '<div class="sale-note-meta">' +
+            '<div class="row"><span class="k">Fecha</span><span class="v">' + esc(formatSaleDateTime(sale.createdAt)) + '</span></div>' +
+            '<div class="row"><span class="k">Cliente</span><span class="v">' + esc(saleClientLabel(sale)) + '</span></div>' +
+            '<div class="row"><span class="k">Pago</span><span class="v">' + esc(payLabel(sale.paymentMethod)) + '</span></div>' +
+            '<div class="row"><span class="k">Facturación</span><span class="v">' + esc(billLabel(sale.billing)) + '</span></div>' +
+            '</div>' +
+            '<table class="sale-note-lines">' +
+            '<thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Importe</th></tr></thead>' +
+            '<tbody>' + (rows || '<tr><td colspan="4" class="muted">Sin líneas</td></tr>') + '</tbody>' +
+            '</table>' +
+            '<div class="sale-note-total"><span class="label">Total</span><span class="amount">' + money(sale.total) + '</span></div>';
+    }
+
+    function openSaleNoteModal(sale) {
+        if (!sale) return;
+        ensureSaleNote(sale);
+        activeNoteSaleId = sale.id;
+        const doc = document.getElementById('saleNoteDoc');
+        const title = document.getElementById('saleNoteModalTitle');
+        const phoneEl = document.getElementById('saleNotePhone');
+        const emailEl = document.getElementById('saleNoteEmail');
+        const modal = document.getElementById('saleNoteModal');
+        if (doc) doc.innerHTML = buildNoteHtml(sale);
+        if (title) title.textContent = 'Nota de venta · ' + (sale.folio || '');
+        const phone = (sale.client && sale.client.phone) || (sale.note && sale.note.sharePhone) || '';
+        const email = (sale.client && sale.client.email) || (sale.note && sale.note.shareEmail) || '';
+        if (phoneEl) phoneEl.value = phone;
+        if (emailEl) emailEl.value = email;
+        if (!modal) return;
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSaleNoteModal() {
+        const modal = document.getElementById('saleNoteModal');
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+        activeNoteSaleId = null;
+    }
+
+    function saleById(id) {
+        if (!id) return null;
+        return sales.filter(function (s) { return s.id === id; })[0] || null;
+    }
+
+    function persistNoteShareContacts(sale) {
+        if (!sale) return;
+        ensureSaleNote(sale);
+        const phoneEl = document.getElementById('saleNotePhone');
+        const emailEl = document.getElementById('saleNoteEmail');
+        sale.note.sharePhone = phoneEl ? (phoneEl.value || '').trim() : '';
+        sale.note.shareEmail = emailEl ? (emailEl.value || '').trim() : '';
+        sale.note.lastSharedAt = new Date().toISOString();
+        saveSales();
+    }
+
+    function shareNoteWhatsApp() {
+        const sale = saleById(activeNoteSaleId);
+        if (!sale) return;
+        const phoneEl = document.getElementById('saleNotePhone');
+        const raw = phoneEl ? phoneEl.value : '';
+        const digits = phoneDigits(raw);
+        if (raw.trim() && !digits) {
+            toast('Revisa el teléfono (10 dígitos o con lada)');
+            if (phoneEl) phoneEl.focus();
+            return;
+        }
+        persistNoteShareContacts(sale);
+        const text = encodeURIComponent(buildNotePlainText(sale));
+        const url = digits
+            ? ('https://wa.me/' + digits + '?text=' + text)
+            : ('https://wa.me/?text=' + text);
+        window.open(url, '_blank', 'noopener');
+        toast(digits ? 'Abriendo WhatsApp…' : 'WhatsApp sin número · elige el chat');
+    }
+
+    function shareNoteEmail() {
+        const sale = saleById(activeNoteSaleId);
+        if (!sale) return;
+        const emailEl = document.getElementById('saleNoteEmail');
+        const to = emailEl ? (emailEl.value || '').trim() : '';
+        persistNoteShareContacts(sale);
+        const subject = encodeURIComponent('Nota de venta ' + (sale.folio || '') + ' · S-35');
+        const body = encodeURIComponent(buildNotePlainText(sale));
+        const href = 'mailto:' + (to || '') + '?subject=' + subject + '&body=' + body;
+        window.location.href = href;
+        toast(to ? 'Abriendo correo…' : 'Correo sin destinatario · completa el para');
+    }
+
+    function copyNoteText() {
+        const sale = saleById(activeNoteSaleId);
+        if (!sale) return;
+        const text = buildNotePlainText(sale);
+        const done = function () { toast('Nota copiada'); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done).catch(function () {
+                fallbackCopy(text);
+            });
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    function fallbackCopy(text) {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            toast('Nota copiada');
+        } catch (_) {
+            toast('No se pudo copiar');
+        }
+    }
+
+    function printSaleNote() {
+        const sale = saleById(activeNoteSaleId);
+        if (!sale) return;
+        window.print();
+    }
+
     function startOfLocalDay(d) {
         const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
         return x;
@@ -1036,6 +1235,14 @@
             total: cartTotal(),
             user: userName
         };
+        ticket.note = {
+            id: 'note-' + ticket.id,
+            folio: ticket.folio,
+            createdAt: ticket.createdAt,
+            generatedAt: new Date().toISOString(),
+            sharePhone: clientSnapshot ? (clientSnapshot.phone || '') : '',
+            shareEmail: clientSnapshot ? (clientSnapshot.email || '') : ''
+        };
 
         ticket.items.forEach(function (it) {
             deductFinished(it.product, it.qty);
@@ -1059,6 +1266,7 @@
         renderCortes();
         if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
         toast('Venta ' + ticket.folio + ' · ' + payLabel(paymentMethod) + ' · ' + billLabel(billing));
+        openSaleNoteModal(ticket);
     }
 
     function renderBreakdownRows(containerId, barId, rows, total) {
@@ -1217,7 +1425,7 @@
             return hay.includes(q);
         });
         if (!list.length) {
-            tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin ventas todavía</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="empty">Sin ventas todavía</td></tr>';
             return;
         }
         tbody.innerHTML = list.map(function (s) {
@@ -1234,6 +1442,9 @@
                 '<td class="num">' + itemsN + '</td>' +
                 '<td class="num">' + money(s.total) + '</td>' +
                 '<td class="muted">' + esc(s.user || '') + '</td>' +
+                '<td><div class="row-actions">' +
+                '<button type="button" class="icon-action" data-open-note="' + esc(s.id) + '" title="Ver nota de venta"><i class="fa-solid fa-receipt"></i></button>' +
+                '</div></td>' +
                 '</tr>';
         }).join('');
     }
@@ -1432,6 +1643,18 @@
                 renderHistory();
             });
         }
+        const histBody = document.getElementById('posHistoryBody');
+        if (histBody) {
+            histBody.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-open-note]');
+                if (!btn) return;
+                const sale = saleById(btn.getAttribute('data-open-note'));
+                if (!sale) return;
+                ensureSaleNote(sale);
+                saveSales();
+                openSaleNoteModal(sale);
+            });
+        }
         const clearHist = document.getElementById('posClearHistoryBtn');
         if (clearHist) {
             clearHist.addEventListener('click', function () {
@@ -1445,6 +1668,23 @@
                 updatePosKpis();
             });
         }
+
+        const noteClose = document.getElementById('saleNoteModalClose');
+        if (noteClose) noteClose.addEventListener('click', closeSaleNoteModal);
+        const saleNoteModal = document.getElementById('saleNoteModal');
+        if (saleNoteModal) {
+            saleNoteModal.addEventListener('click', function (e) {
+                if (e.target === saleNoteModal) closeSaleNoteModal();
+            });
+        }
+        const noteWa = document.getElementById('saleNoteWhatsApp');
+        if (noteWa) noteWa.addEventListener('click', shareNoteWhatsApp);
+        const noteMail = document.getElementById('saleNoteEmailBtn');
+        if (noteMail) noteMail.addEventListener('click', shareNoteEmail);
+        const noteCopy = document.getElementById('saleNoteCopy');
+        if (noteCopy) noteCopy.addEventListener('click', copyNoteText);
+        const notePrint = document.getElementById('saleNotePrint');
+        if (notePrint) notePrint.addEventListener('click', printSaleNote);
 
         const periodTabs = document.getElementById('cortesPeriodTabs');
         if (periodTabs) {

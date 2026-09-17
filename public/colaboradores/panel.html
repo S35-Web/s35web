@@ -884,6 +884,183 @@
         }
         .toast.show { opacity: 1; }
 
+        /* —— Nota de venta —— */
+        #saleNoteModal .modal-card {
+            max-width: 440px;
+            max-height: calc(100vh - 32px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #saleNoteModal .modal-body {
+            overflow: auto;
+            flex: 1;
+            min-height: 0;
+        }
+        .sale-note-doc {
+            padding: 4px 2px 8px;
+            color: var(--text);
+        }
+        .sale-note-brand {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sale-note-brand .mark {
+            font-family: var(--font-display);
+            font-size: 28px;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .sale-note-brand .mark span {
+            color: var(--muted);
+            font-size: 14px;
+            margin-left: 6px;
+            font-family: var(--font);
+            letter-spacing: 0;
+        }
+        .sale-note-brand .folio {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+        }
+        .sale-note-meta {
+            display: grid;
+            gap: 6px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        .sale-note-meta .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .sale-note-meta .k { color: var(--muted); }
+        .sale-note-meta .v { text-align: right; font-weight: 500; }
+        .sale-note-lines {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+        .sale-note-lines th {
+            text-align: left;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 0 0 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sale-note-lines th.num,
+        .sale-note-lines td.num { text-align: right; }
+        .sale-note-lines td {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        .sale-note-lines .line-name { font-weight: 500; }
+        .sale-note-lines .line-unit {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 400;
+            margin-top: 2px;
+        }
+        .sale-note-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding-top: 4px;
+            margin-bottom: 16px;
+        }
+        .sale-note-total .label {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            font-weight: 500;
+        }
+        .sale-note-total .amount {
+            font-size: 24px;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+        }
+        .sale-note-hint {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
+            margin: 0 0 12px;
+        }
+        .sale-note-share-fields {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .sale-note-share-fields label {
+            display: grid;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .sale-note-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .sale-note-actions .btn {
+            justify-content: center;
+            height: 40px;
+            gap: 8px;
+        }
+        .sale-note-actions .btn.wa { background: #128c7e; border-color: #128c7e; color: #fff; }
+        .sale-note-actions .btn.wa:hover { filter: brightness(1.05); }
+        @media (max-width: 420px) {
+            .sale-note-actions { grid-template-columns: 1fr; }
+        }
+        @media print {
+            body * { visibility: hidden !important; }
+            #saleNoteModal,
+            #saleNoteModal.show,
+            #saleNoteModal .modal-card,
+            #saleNoteModal .modal-body,
+            #saleNoteDoc,
+            #saleNoteDoc * {
+                visibility: visible !important;
+            }
+            #saleNoteModal {
+                position: static !important;
+                display: block !important;
+                background: none !important;
+                padding: 0 !important;
+                inset: auto !important;
+            }
+            #saleNoteModal .modal-card {
+                max-width: none !important;
+                max-height: none !important;
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+            #saleNoteModal .modal-head,
+            #saleNoteModal .sale-note-hint,
+            #saleNoteModal .sale-note-share-fields,
+            #saleNoteModal .sale-note-actions {
+                display: none !important;
+            }
+            #saleNoteModal .modal-body { padding: 0 !important; overflow: visible !important; }
+            .sale-note-doc { color: #0a0a0a !important; }
+        }
+
         /* —— Cortes (Midday-style reports) —— */
         .cortes-head {
             display: flex;
@@ -1770,7 +1947,7 @@
 
                 <section id="salesHistory" class="section">
                     <h1 class="page-title">Historial de ventas</h1>
-                    <p class="page-sub">Tickets guardados en este navegador.</p>
+                    <p class="page-sub">Tickets y notas de venta guardados en este navegador.</p>
                     <div class="card">
                         <div class="toolbar">
                             <input id="posHistorySearch" class="search" type="search" placeholder="Buscar folio, cliente o producto">
@@ -1791,6 +1968,7 @@
                                         <th>Ítems</th>
                                         <th>Total</th>
                                         <th>Usuario</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody id="posHistoryBody"></tbody>
@@ -2011,6 +2189,33 @@
                     <button type="submit" class="btn primary">Guardar</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="saleNoteModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="saleNoteModalTitle">
+            <div class="modal-head">
+                <strong id="saleNoteModalTitle">Nota de venta</strong>
+                <button id="saleNoteModalClose" class="btn" type="button">Cerrar</button>
+            </div>
+            <div class="modal-body">
+                <div id="saleNoteDoc" class="sale-note-doc"></div>
+                <p class="sale-note-hint">Se abre WhatsApp o el correo de este dispositivo. No hay envío automático desde el servidor.</p>
+                <div class="sale-note-share-fields">
+                    <label>Teléfono WhatsApp
+                        <input id="saleNotePhone" class="customer-input" type="tel" inputmode="tel" placeholder="Ej. 6671234567" autocomplete="off">
+                    </label>
+                    <label>Correo
+                        <input id="saleNoteEmail" class="customer-input" type="email" inputmode="email" placeholder="cliente@correo.com" autocomplete="off">
+                    </label>
+                </div>
+                <div class="sale-note-actions">
+                    <button type="button" class="btn wa" id="saleNoteWhatsApp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+                    <button type="button" class="btn" id="saleNoteEmailBtn"><i class="fa-solid fa-envelope"></i> Correo</button>
+                    <button type="button" class="btn" id="saleNoteCopy"><i class="fa-solid fa-copy"></i> Copiar</button>
+                    <button type="button" class="btn primary" id="saleNotePrint"><i class="fa-solid fa-print"></i> Imprimir</button>
+                </div>
+            </div>
         </div>
     </div>
     <div class="toast" id="toast"></div>
