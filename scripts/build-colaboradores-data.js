@@ -93,6 +93,34 @@ function productImageAlt(p) {
   return productDisplayName(p);
 }
 
+function productStrip(p) {
+  const raw = p.strip;
+  if (Array.isArray(raw)) {
+    return raw.map(function (s) { return String(s || '').trim(); }).filter(Boolean);
+  }
+  if (typeof raw === 'string' && raw.trim()) return [raw.trim()];
+  return [];
+}
+
+function productKpis(p) {
+  return (p.kpis || []).slice(0, 4).map(function (k) {
+    return {
+      value: String((k && k.value) || '').trim(),
+      label: String((k && k.label) || '').trim(),
+    };
+  }).filter(function (k) { return k.value; });
+}
+
+function productDescription(p) {
+  const seo = (p.seo && p.seo.description) || '';
+  if (seo) return String(seo).trim();
+  const lead = String(p.lead || '').trim();
+  if (!lead) return '';
+  if (lead.length <= 220) return lead;
+  const cut = lead.slice(0, 217).replace(/\s+\S*$/, '');
+  return cut + '…';
+}
+
 const products = catalog.published().map(function (p) {
   return {
     slug: p.slug,
@@ -100,6 +128,12 @@ const products = catalog.published().map(function (p) {
     code: p.code || '',
     family: FAM[p.family] || p.family || '',
     status: p.status || '',
+    line: p.line || '',
+    packaging: p.packaging || '',
+    description: productDescription(p),
+    lead: String(p.lead || '').trim(),
+    strip: productStrip(p),
+    kpis: productKpis(p),
     image: productImage(p),
     imageAlt: productImageAlt(p),
   };

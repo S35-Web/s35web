@@ -6,6 +6,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-AD-001",
       "family": "Pegaxpress: Adhesivos",
       "status": "verified",
+      "line": "Adhesivo para porcelánico y porcelanato",
+      "packaging": "25 kg",
+      "description": "Pegaxpress Porcelánico Universal: adhesivo cementoso tipo C enriquecido con polímeros para piezas porcelánicas y porcelanato hasta 90 × 90 cm. Saco de 25 kg.",
+      "lead": "Mortero adhesivo de granulometría media, enriquecido con polímeros, para pegar porcelánico y porcelanato de baja absorción. El dorso denso no toma agua como la cerámica habitual: el adhesivo tiene que mojar pieza y soporte. Porcelánico hasta 90 × 90 cm; cerámico en cualquier formato.",
+      "strip": [
+        "Adhesivo para porcelánico · firmes interior y exterior",
+        "Tipo C · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "5.75–6.75 L",
+          "label": "agua de amasado por saco (23–27 %)"
+        },
+        {
+          "value": "120 min",
+          "label": "vida en charola a 23 °C"
+        },
+        {
+          "value": "90 × 90 cm",
+          "label": "porcelánico máximo de esta ficha"
+        }
+      ],
       "image": "/Assets/productos_thumbs/porcelanico.jpg",
       "imageAlt": "Saco de 25 kg de Pegaxpress Porcelánico Universal"
     },
@@ -15,6 +41,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-AD-002",
       "family": "Pegaxpress: Adhesivos",
       "status": "verified",
+      "line": "Adhesivo para cerámica de media y alta absorción",
+      "packaging": "25 kg",
+      "description": "Pegaxpress Cerámico: adhesivo cementoso tipo B en seco para piezas cerámicas de media y alta absorción, en piso, muro y lambrín interiores. Saco de 25 kg.",
+      "lead": "Mortero adhesivo de cemento Portland, cargas seleccionadas y aditivos, para pegar recubrimiento cerámico de media y alta absorción sobre sustrato firme base cemento, rugoso o liso. Uso interior: estancias, recámaras, cocinas y baños.",
+      "strip": [
+        "Adhesivo para cerámica · piso, muro y lambrín interiores",
+        "Tipo B · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "5.75–6.5 L",
+          "label": "agua de amasado por saco (23–26 %)"
+        },
+        {
+          "value": "90 min",
+          "label": "vida en charola a 23 °C"
+        },
+        {
+          "value": "24 h",
+          "label": "tránsito y emboquillado"
+        }
+      ],
       "image": "/Assets/productos_thumbs/ceramico.jpg",
       "imageAlt": "Saco de 25 kg de Pegaxpress Cerámico"
     },
@@ -24,6 +76,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-AD-003",
       "family": "Pegaxpress: Adhesivos",
       "status": "verified",
+      "line": "Adhesivo semiflexible de alto desempeño",
+      "packaging": "25 kg",
+      "description": "Pegaxpress Ultraforce: adhesivo cementoso semiflexible con adherencia química superior para piezas de alta gama, piso sobre piso, inmersión y tráfico industrial. Saco de 25 kg.",
+      "lead": "Mortero adhesivo semiflexible de granulometría media, modificado con polímeros, para pegar piezas de alta gama. Soporta flexiones, vibraciones, cambios de temperatura, inmersión permanente y tráfico industrial. Sirve también para piso sobre piso. Los desniveles se corrigen con Leveltec.",
+      "strip": [
+        "Adhesivo semiflexible · interior, exterior e inmersión",
+        "Tipo C · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "5.75–6.5 L",
+          "label": "agua de amasado por saco (23–26 %)"
+        },
+        {
+          "value": "120 min",
+          "label": "vida en charola a 23 °C"
+        },
+        {
+          "value": "24 h",
+          "label": "tránsito y emboquillado"
+        }
+      ],
       "image": "/Assets/productos_thumbs/ultraforce.jpg",
       "imageAlt": "Saco de 25 kg de Pegaxpress Ultraforce"
     },
@@ -33,6 +111,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-AD-004",
       "family": "Pegaxpress: Adhesivos",
       "status": "verified",
+      "line": "Adhesivo piso sobre piso",
+      "packaging": "25 kg",
+      "description": "Pegaxpress Piso sobre piso: adhesivo cementoso polimérico para colocar recubrimiento nuevo sobre piso o muro existente, firme y bien adherido. Saco de 25 kg.",
+      "lead": "Mortero adhesivo de granulometría media, con polímeros, para pegar pieza nueva sobre cerámica existente, concreto pulido, block, tabique o paneles preparados, sin demoler el recubrimiento viejo. La pieza existente debe estar firme y el brillo graso se prepara antes de pegar. Los desniveles se corrigen con Leveltec.",
+      "strip": [
+        "Adhesivo piso sobre piso · interior y exterior",
+        "Tipo C · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "6.0–6.5 L",
+          "label": "agua de amasado por saco (24–26 %)"
+        },
+        {
+          "value": "120 min",
+          "label": "vida en charola a 23 °C"
+        },
+        {
+          "value": "24 h",
+          "label": "tránsito y emboquillado"
+        }
+      ],
       "image": "/Assets/productos_thumbs/piso-sobre-piso.jpg",
       "imageAlt": "Saco de 25 kg de Pegaxpress Piso sobre piso"
     },
@@ -42,6 +146,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-MC-001",
       "family": "Microconcretos",
       "status": "verified",
+      "line": "Microconcreto de acabado · Dolphin Fin",
+      "packaging": "25 kg",
+      "description": "Microconcreto: Concreto aparente (Cemento plástico). Acabado en capas delgadas, tono Dolphin Fin. Muros, pisos de tránsito ligero y mobiliario. Saco de 25 kg.",
+      "lead": "Microconcreto de acabado aparente aplicado en capas delgadas a llana. Se pule para obtener un acabado continuo tono Dolphin Fin (gris pulido). La variación de tono es propia del concreto aparente, no un defecto.",
+      "strip": [
+        "Microconcreto de acabado · Dolphin Fin",
+        "Capas delgadas a llana · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "Solo agua",
+          "label": "consistencia de llana"
+        },
+        {
+          "value": "Delgadas",
+          "label": "varias manos a llana"
+        },
+        {
+          "value": "Pulido",
+          "label": "acabado continuo aparente"
+        }
+      ],
       "image": "/Assets/productos_thumbs/cemento-plastico.jpg",
       "imageAlt": "Saco de 25 kg de Microconcreto: Concreto aparente (Cemento plástico)"
     },
@@ -51,6 +181,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PP-001",
       "family": "Pro+ Systems",
       "status": "verified",
+      "line": "Pegamento y recubrimiento para poliestireno expandido (EPS)",
+      "packaging": "25 kg",
+      "description": "Styrobond Pro+: mortero para adherir y revestir placas y molduras de poliestireno expandido y extruido, interior y exterior. Saco de 25 kg.",
+      "lead": "Mortero para pegar y revestir placas y elementos decorativos de poliestireno expandido (EPS) y extruido, en interior y exterior. Reforzado con microfibras para reducir agrietamientos. Como acabado se flotea y se puede pintar.",
+      "strip": [
+        "Pegamento y recubrimiento para EPS · interior y exterior",
+        "Línea Pro+ · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "6.0–6.1 L",
+          "label": "agua de amasado por saco (24.0–24.5 %)"
+        },
+        {
+          "value": "10 min",
+          "label": "reposo de la mezcla"
+        },
+        {
+          "value": "8–38 °C",
+          "label": "temperatura de la superficie"
+        }
+      ],
       "image": "/Assets/productos_thumbs/styrobond.jpg",
       "imageAlt": "Saco de 25 kg de Styrobond Pro+, pegamento y recubrimiento para EPS"
     },
@@ -60,6 +216,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PP-003",
       "family": "Pro+ Systems",
       "status": "verified",
+      "line": "Nivelante cementante de pisos para uso profesional",
+      "packaging": "35 kg",
+      "description": "Leveltec Pro: mortero nivelante cementante para corregir irregularidades y preparar pisos antes del revestimiento. Interior y exterior. Saco de 35 kg.",
+      "lead": "Mortero nivelante de base cementante para corregir irregularidades, nivelar y dejar una base lisa, uniforme y resistente antes de instalar el revestimiento. Residencial, comercial e industrial; interior y exterior. Se tiende con llana, rastra o regla.",
+      "strip": [
+        "Nivelante cementante de pisos · uso profesional",
+        "2–10 mm por capa · saco de 35 kg"
+      ],
+      "kpis": [
+        {
+          "value": "35 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "4.0 L",
+          "label": "agua de amasado por saco"
+        },
+        {
+          "value": "2–10 mm",
+          "label": "espesor recomendado por capa"
+        },
+        {
+          "value": "≈ 3.88 m²",
+          "label": "rendimiento de referencia a 5 mm"
+        }
+      ],
       "image": "/Assets/productos_thumbs/LEVELTEC-pro.jpg",
       "imageAlt": "Saco de 35 kg de Leveltec Pro, nivelante cementante de pisos"
     },
@@ -69,6 +251,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PR-001",
       "family": "Estucos premium",
       "status": "verified",
+      "line": "Estuco premium hidrófugo",
+      "packaging": "25 kg",
+      "description": "Waxtard Blanco Perla: estuco premium hidrófugo y antisalitre para exteriores e interiores. Repele el agua líquida sin cerrar el paso al vapor. Saco de 25 kg.",
+      "lead": "Mortero seco de acabado, listo para amasar con agua. Da un acabado blanco perla terso y, al mismo tiempo, repele el agua líquida sin cerrar el paso al vapor: el muro sigue respirando mientras la lluvia y el salitre se quedan afuera. Formulado para aplicarse a mano o proyectado en espesores delgados, sobre repellos, block, concreto y sistemas de fachada. Aporta un acabado tono blanco perla cálido con matices minerales naturales, ideal para acabados aparentes rústicos o contemporáneos, o como base estabilizada para pintura.",
+      "strip": [
+        "Estuco premium hidrófugo · exteriores e interiores",
+        "Antisalitre · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "6.0–7.0 L",
+          "label": "agua de amasado por saco"
+        },
+        {
+          "value": "5–7 m²",
+          "label": "rendimiento por saco a 3 mm"
+        },
+        {
+          "value": "2–5 mm",
+          "label": "espesor por capa"
+        }
+      ],
       "image": "/Assets/productos_thumbs/WAXTARD-blanco-perla.jpg",
       "imageAlt": "Saco de 25 kg de Waxtard Blanco Perla"
     },
@@ -78,6 +286,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PR-002",
       "family": "Estucos premium",
       "status": "verified",
+      "line": "Estuco premium hidrófugo",
+      "packaging": "25 kg",
+      "description": "Waxtard Blanco Absoluto: estuco premium hidrófugo y antisalitre para exteriores e interiores. Color blanco intenso. Repele el agua líquida sin cerrar el paso al vapor. Saco de 25 kg.",
+      "lead": "Mortero seco de acabado, listo para amasar con agua. Da un acabado blanco intenso, más limpio y uniforme, y, al mismo tiempo, repele el agua líquida sin cerrar el paso al vapor: el muro sigue respirando mientras la lluvia y el salitre se quedan afuera. Formulado para aplicarse a mano o proyectado en espesores delgados, sobre repellos, block, concreto y sistemas de fachada. Aporta un acabado tono blanco intenso, ideal para acabados aparentes contemporáneos, o como base estabilizada para pintura.",
+      "strip": [
+        "Estuco premium hidrófugo · exteriores e interiores",
+        "Antisalitre · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "6.0–7.0 L",
+          "label": "agua de amasado por saco"
+        },
+        {
+          "value": "5–7 m²",
+          "label": "rendimiento por saco a 3 mm"
+        },
+        {
+          "value": "2–5 mm",
+          "label": "espesor por capa"
+        }
+      ],
       "image": "/Assets/productos_thumbs/WAXTARD-BLANCO-ABSOLUTO.jpg",
       "imageAlt": "Saco de 25 kg de Waxtard Blanco Absoluto"
     },
@@ -87,6 +321,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PR-003",
       "family": "Estucos premium",
       "status": "verified",
+      "line": "Estuco premium hidrófugo",
+      "packaging": "25 kg",
+      "description": "Waxtard Gris: estuco premium hidrófugo y antisalitre para exteriores e interiores. Color gris. Repele el agua líquida sin cerrar el paso al vapor. Saco de 25 kg.",
+      "lead": "Mortero seco de acabado, listo para amasar con agua. Da un acabado gris terso y, al mismo tiempo, repele el agua líquida sin cerrar el paso al vapor: el muro sigue respirando mientras la lluvia y el salitre se quedan afuera. Formulado para aplicarse a mano o proyectado en espesores delgados, sobre repellos, block, concreto y sistemas de fachada. Aporta un acabado tono gris mineral, ideal para acabados aparentes rústicos o contemporáneos, o como base estabilizada para recubrimiento.",
+      "strip": [
+        "Estuco premium hidrófugo · exteriores e interiores",
+        "Antisalitre · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "6.0–7.0 L",
+          "label": "agua de amasado por saco"
+        },
+        {
+          "value": "5–7 m²",
+          "label": "rendimiento por saco a 3 mm"
+        },
+        {
+          "value": "2–5 mm",
+          "label": "espesor por capa"
+        }
+      ],
       "image": "/Assets/productos_thumbs/WAXTARD-gris.jpg",
       "imageAlt": "Saco de 25 kg de Waxtard Gris"
     },
@@ -96,6 +356,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PR-004",
       "family": "Estucos premium",
       "status": "verified",
+      "line": "Estuco hidrófugo fino con anclaje químico",
+      "packaging": "25 kg",
+      "description": "Waxtard Extra Anclaje: estuco hidrófugo fino con anclaje químico para sustratos lisos, concreto cimbrado, EIFS y pintura firme. Saco de 25 kg.",
+      "lead": "Estuco para sustrato de baja o nula absorción. Ancla químicamente sin necesidad de picar el sustrato ni aplicar un puente adhesivo aparte. Acabado blanco perla, fino. Pensado para superficies lisas o poco porosas: concreto cimbrado, prefabricado, sistemas EIFS/panel, pintura firme y azulejo o vitrificado sin picar.",
+      "strip": [
+        "Estuco hidrófugo fino · anclaje químico",
+        "Para sustratos lisos · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "Solo agua",
+          "label": "amasado, sin aditivos ajenos"
+        },
+        {
+          "value": "Fino",
+          "label": "acabado blanco perla"
+        },
+        {
+          "value": "Sin picar",
+          "label": "anclaje químico al sustrato liso"
+        }
+      ],
       "image": "/Assets/productos_thumbs/WAXTARD-extra-anclaje.jpg",
       "imageAlt": "Saco de 25 kg de Waxtard Extra Anclaje (EIFS Extra Anclaje)"
     },
@@ -105,6 +391,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PR-005",
       "family": "Líquidos",
       "status": "verified",
+      "line": "Sellador hidrofóbico transparente",
+      "packaging": "Cubeta 1 L",
+      "description": "Nanotech Sellador Hidrofóbico S-35: compuesto líquido transparente de baja viscosidad que crea una barrera hidrofóbica invisible sobre materiales pétreos. 1 L, 1 galón, cubeta 19 L y 200 L.",
+      "lead": "Sellador Hidrofóbico Premium S-35® es un compuesto líquido transparente y de baja viscosidad formulado con polímeros modificados de alta calidad, para proteger superficies de la humedad y crear una barrera hidrofóbica que repele el agua de manera efectiva. No altera la apariencia original del material tratado: el agua forma gotas que perlan y escurren, sin penetrar.",
+      "strip": [
+        "Barrera hidrofóbica invisible para materiales pétreos",
+        "1 litro · 1 galón · cubeta 19 L · 200 litros"
+      ],
+      "kpis": [
+        {
+          "value": "Invisible",
+          "label": "no altera el color ni la apariencia original"
+        },
+        {
+          "value": "Puro",
+          "label": "se aplica sin diluir, directo de envase"
+        },
+        {
+          "value": "24 h",
+          "label": "tiempo de curado, sin exposición a agua"
+        },
+        {
+          "value": "No tóxico",
+          "label": "no flamable"
+        }
+      ],
       "image": "/Assets/productos_thumbs/nanotech-hidrofobico.jpg",
       "imageAlt": "Envase de 1 L de Nanotech Sellador hidrofóbico S-35"
     },
@@ -114,6 +426,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PR-006",
       "family": "Pegaxpress: Adhesivos",
       "status": "verified",
+      "line": "Pegamento premium en seco para pegado de piezas de block",
+      "packaging": "30 kg",
+      "description": "Pegaxpress: Block, pegamento en polvo para pegar piezas de block hueco. Dosificado en laboratorio; solo se añade agua. Saco de 30 kg.",
+      "lead": "Pegaxpress/Block S-35® es un pegamento en polvo diseñado específicamente para el pegado de piezas de block hueco. Su fórmula incluye una combinación precisa de cemento, polímeros y aditivos dosificados en laboratorio: solo requiere agregar agua para quedar listo, con un desempeño uniforme en cada saco. La dosificación profesional y controlada de su fórmula reduce de forma notable la aparición de grietas frente a una mezcla dosificada en obra.",
+      "strip": [
+        "Pegamento premium en seco para pegado de piezas de block",
+        "Saco de 30 kg"
+      ],
+      "kpis": [
+        {
+          "value": "Solo agua",
+          "label": "único insumo que se añade en obra"
+        },
+        {
+          "value": "4.8–9.5 m²",
+          "label": "rendimiento por saco, según ancho de block"
+        },
+        {
+          "value": "60 min",
+          "label": "tiempo abierto promedio de la mezcla"
+        },
+        {
+          "value": "Micro flexible",
+          "label": "permite el movimiento entre piezas sin fisurar"
+        }
+      ],
       "image": "/Assets/productos_thumbs/pastablock.jpg",
       "imageAlt": "Saco de 30 kg de Pegaxpress: Block"
     },
@@ -123,6 +461,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PR-007",
       "family": "Líquidos",
       "status": "verified",
+      "line": "Adhesivo acrílico multiuso",
+      "packaging": "Cubeta 1 L",
+      "description": "Adhesivo Darawell S-35: compuesto líquido blanco de media viscosidad para lechada de adherencia, aditivo de mezcla y sellador. 1 L, 1 galón, cubeta 19 L y 200 L.",
+      "lead": "Adhesivo Darawell S-35® es un compuesto líquido de color blanco de media viscosidad formulado a base de polímeros modificados de gran adhesividad, empleado en trabajos de construcción y ampliamente recomendado como adhesivo, aditivo de mezcla o sellador. Es la versión intermedia de la línea Adhesivo S-35®: aporta adherencia y trabajabilidad a la mezcla, entre la mayor concentración de Heavy Duty y el uso como sellador de porosidad de Sellador Premium.",
+      "strip": [
+        "Adhesivo · aditivo de mezcla · lechada de adherencia",
+        "1 litro · 1 galón · cubeta 19 L · 200 litros"
+      ],
+      "kpis": [
+        {
+          "value": "4 usos",
+          "label": "lechada, aditivo, aplanado y sellador en un solo producto"
+        },
+        {
+          "value": "12 meses",
+          "label": "vida útil en envase original cerrado"
+        },
+        {
+          "value": "15–20 min",
+          "label": "tiempo abierto a 23 °C"
+        },
+        {
+          "value": "> 5 °C",
+          "label": "temperatura mínima de aplicación"
+        }
+      ],
       "image": "/Assets/productos_thumbs/adhesivo-darawell.jpg",
       "imageAlt": "Envase de 1 L de Adhesivo Darawell S-35"
     },
@@ -132,6 +496,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PR-008",
       "family": "Líquidos",
       "status": "verified",
+      "line": "Adhesivo sellador acrílico",
+      "packaging": "Cubeta 1 L",
+      "description": "Sellador premium adhesivo s-35: compuesto líquido blanco de media viscosidad para sellar superficies porosas, aditivar mezclas y usarse como adhesivo. Presentaciones 1 L y 18 L.",
+      "lead": "Sellador Premium S-35® es un compuesto líquido de color blanco de media viscosidad formulado a base de polímeros modificados de gran adherividad. Ampliamente recomendado como adhesivo, aditivo de mezcla o sellador en trabajos de construcción. Especialmente indicado para sellar superficies porosas y disminuir la permeabilidad en concretos, morteros y estucos.",
+      "strip": [
+        "Adhesivo · aditivo de mezcla · sellador de porosidad",
+        "1 litro · 1 galón · cubeta 19 L · 200 litros"
+      ],
+      "kpis": [
+        {
+          "value": "1 L",
+          "label": "envase · producto líquido"
+        },
+        {
+          "value": "1:1",
+          "label": "puro como sellador / incorporado al agua de amasado como aditivo"
+        },
+        {
+          "value": "15–20 min",
+          "label": "tiempo abierto a 23 °C"
+        },
+        {
+          "value": "> 5 °C",
+          "label": "temperatura mínima de aplicación"
+        }
+      ],
       "image": "/Assets/productos_thumbs/sellador-premium-pintura.jpg",
       "imageAlt": "Envase de 1 L de Sellador premium adhesivo s-35"
     },
@@ -141,6 +531,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PR-009",
       "family": "Líquidos",
       "status": "verified",
+      "line": "Adhesivo acrílico multiuso",
+      "packaging": "Cubeta 1 L",
+      "description": "Adhesivo Heavy Duty S-35: versión más concentrada de la línea Adhesivo S-35, para aditivar concreto y mortero. 1 L, 1 galón, cubeta 19 L y 200 L.",
+      "lead": "Adhesivo Heavy Duty S-35® es la versión más concentrada y viscosa de la línea Adhesivo S-35®, formulada a base de polímeros modificados de gran adhesividad. Está pensado para aditivar fuertemente la mezcla: se incorpora directo al concreto o mortero para elevar de forma notable su adherencia y resistencia mecánica, más allá de lo que logra un puente de adherencia convencional.",
+      "strip": [
+        "Aditivo de mezcla de alta concentración para concreto y mortero",
+        "1 litro · 1 galón · cubeta 19 L · 200 litros"
+      ],
+      "kpis": [
+        {
+          "value": "Alta",
+          "label": "viscosidad, pensado para aditivar mezclas"
+        },
+        {
+          "value": "Concentrado",
+          "label": "se incorpora puro al agua de amasado"
+        },
+        {
+          "value": "15–20 min",
+          "label": "tiempo abierto a 23 °C"
+        },
+        {
+          "value": "No tóxico",
+          "label": "no flamable"
+        }
+      ],
       "image": "/Assets/productos_thumbs/adhesivo-heavy-duty.jpg",
       "imageAlt": "Envase de 1 L de Adhesivo Heavy Duty S-35"
     },
@@ -150,6 +566,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PS-001",
       "family": "Panel System",
       "status": "verified",
+      "line": "Adhesivo y recubrimiento para paneles de cemento, yeso y poliestireno",
+      "packaging": "25 kg",
+      "description": "Basecoat Plus: Blanco absoluto, adhesivo y recubrimiento para paneles de cemento, yeso y poliestireno. Color blanco. Interior y exterior. Saco de 25 kg.",
+      "lead": "Mortero adhesivo y recubrimiento de la línea Panel System, en blanco absoluto. Misma función que el Gris, en color blanco: base sobre paneles de cemento, yeso y poliestireno que van a recibir texturizado o pintura; adhesivo de placas y molduras de EPS; recubrimiento decorativo de molduras. Interior y exterior.",
+      "strip": [
+        "Interior y exterior · microfibras · alta impermeabilidad",
+        "Blanco absoluto · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "6.1 L",
+          "label": "agua de amasado con llana (24.5 %)"
+        },
+        {
+          "value": "7.5 L",
+          "label": "agua con brocha o compresor (30 %)"
+        },
+        {
+          "value": "8–38 °C",
+          "label": "temperatura de la superficie"
+        }
+      ],
       "image": "/Assets/productos_thumbs/basecoat-blanco.jpg",
       "imageAlt": "Saco de 25 kg de Basecoat Plus: Blanco absoluto"
     },
@@ -159,6 +601,32 @@ window.S35_PANEL_DATA = {
       "code": "FT-PS-002",
       "family": "Panel System",
       "status": "verified",
+      "line": "Adhesivo y recubrimiento para paneles de cemento, yeso y poliestireno",
+      "packaging": "25 kg",
+      "description": "Basecoat Plus: Gris, adhesivo y recubrimiento para paneles de cemento, yeso y poliestireno. Interior y exterior. Saco de 25 kg.",
+      "lead": "Mortero adhesivo y recubrimiento de la línea Panel System, en gris. Base cemento con resinas y microfibras: sirve como base sobre paneles de cemento, yeso y poliestireno que van a recibir texturizado o pintura; como adhesivo de placas y molduras de EPS; y como recubrimiento decorativo de molduras. Interior y exterior.",
+      "strip": [
+        "Interior y exterior · microfibras · alta impermeabilidad",
+        "Gris · saco de 25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "saco · producto seco"
+        },
+        {
+          "value": "6.1 L",
+          "label": "agua de amasado con llana (24.5 %)"
+        },
+        {
+          "value": "7.5 L",
+          "label": "agua con brocha o compresor (30 %)"
+        },
+        {
+          "value": "8–38 °C",
+          "label": "temperatura de la superficie"
+        }
+      ],
       "image": "/Assets/productos_thumbs/basecoat.jpg",
       "imageAlt": "Saco de 25 kg de Basecoat Plus: Gris"
     }

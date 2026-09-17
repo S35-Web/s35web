@@ -982,18 +982,145 @@
         .pd-tab-panel[hidden] { display: none !important; }
         .pd-summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px 16px;
+            margin: 0;
+            padding: 14px 0 0;
+            border-top: 1px solid var(--border);
         }
         .pd-stat {
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 12px 14px;
-            background: var(--panel);
+            padding: 0;
+            background: transparent;
+            border: none;
+            border-radius: 0;
         }
         .pd-stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
         .pd-stat .val { font-size: 15px; font-weight: 500; margin-top: 4px; }
+        .pd-overview {
+            display: grid;
+            grid-template-columns: minmax(140px, 200px) minmax(0, 1fr);
+            gap: 22px 28px;
+            align-items: start;
+            margin-bottom: 22px;
+        }
+        @media (max-width: 720px) {
+            .pd-overview { grid-template-columns: 1fr; }
+        }
+        .pd-overview-media {
+            aspect-ratio: 1;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pd-overview-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .pd-overview-media .pd-thumb-fallback {
+            font-size: 13px;
+            color: var(--muted);
+            padding: 16px;
+            text-align: center;
+        }
+        .pd-overview-body { min-width: 0; }
+        .pd-overview-line {
+            margin: 0 0 6px;
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: .02em;
+        }
+        .pd-overview-desc {
+            margin: 0 0 14px;
+            font-size: 14px;
+            line-height: 1.55;
+            color: var(--text);
+            max-width: 62ch;
+        }
+        .pd-overview-facts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 18px;
+            margin: 0 0 14px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .pd-overview-facts strong {
+            color: var(--text);
+            font-weight: 500;
+        }
+        .pd-highlights {
+            list-style: none;
+            margin: 0 0 16px;
+            padding: 0;
+            display: grid;
+            gap: 6px;
+        }
+        .pd-highlights li {
+            position: relative;
+            padding-left: 14px;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--text);
+        }
+        .pd-highlights li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: .55em;
+            width: 5px;
+            height: 5px;
+            border-radius: 1px;
+            background: var(--text);
+            opacity: .35;
+        }
+        .pd-kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px 14px;
+            margin: 0 0 4px;
+        }
+        .pd-kpi .val {
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: -.01em;
+            font-variant-numeric: tabular-nums;
+        }
+        .pd-kpi .label {
+            margin-top: 2px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.35;
+        }
+        .pd-section-label {
+            margin: 0 0 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--muted);
+        }
+        .pd-pres-block {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .pd-pres-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+        .pd-pres-chip {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            background: var(--bg);
+        }
+        .pd-overview-actions { margin-top: 14px; }
         .products-table tbody tr { cursor: pointer; }
         .products-table tbody tr:hover { background: var(--hover); }
         .pd-price-blocks { display: grid; gap: 14px; }
@@ -1030,14 +1157,6 @@
             font-variant-numeric: tabular-nums;
             width: 100%;
             box-sizing: border-box;
-        }
-        .pd-pres-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-        .pd-pres-chip {
-            font-size: 12px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            color: var(--muted);
         }
 
         .cortes-chart-panel {
@@ -1784,11 +1903,7 @@
                             <button type="button" role="tab" data-pd-tab="formula" id="pdTabFormulaBtn" aria-selected="false">Formulación</button>
                         </div>
                         <div class="pd-tab-panel" id="pdPanelResumen" data-pd-panel="resumen">
-                            <div class="pd-summary-grid" id="pdSummaryGrid"></div>
-                            <div class="card">
-                                <h3 style="margin-top:0">Presentaciones de venta</h3>
-                                <div id="pdPresentationsList" class="muted">—</div>
-                            </div>
+                            <div id="pdSummaryMount"></div>
                         </div>
                         <div class="pd-tab-panel" id="pdPanelPrecios" data-pd-panel="precios" hidden>
                             <div class="card">
@@ -2842,7 +2957,14 @@
                 code: p.code || '',
                 family: p.family || '',
                 status: p.status || '',
+                line: p.line || '',
+                packaging: p.packaging || '',
+                description: p.description || '',
+                lead: p.lead || '',
+                strip: Array.isArray(p.strip) ? p.strip : [],
+                kpis: Array.isArray(p.kpis) ? p.kpis : [],
                 image: p.image || '',
+                imageAlt: p.imageAlt || p.name || '',
                 hasFicha: true,
                 hasRecipe: !!recipesBySlug[p.slug],
                 presentations: []
@@ -2856,7 +2978,14 @@
                     code: r.code || '',
                     family: r.family || '',
                     status: '',
+                    line: '',
+                    packaging: '',
+                    description: '',
+                    lead: '',
+                    strip: [],
+                    kpis: [],
                     image: r.image || '',
+                    imageAlt: r.imageAlt || r.name || '',
                     hasFicha: false,
                     hasRecipe: true,
                     presentations: []
@@ -2865,6 +2994,8 @@
                 bySlug[r.product].hasRecipe = true;
                 if (!bySlug[r.product].code && r.code) bySlug[r.product].code = r.code;
                 if (!bySlug[r.product].family && r.family) bySlug[r.product].family = r.family;
+                if (!bySlug[r.product].image && r.image) bySlug[r.product].image = r.image;
+                if (!bySlug[r.product].imageAlt && r.imageAlt) bySlug[r.product].imageAlt = r.imageAlt;
             }
         });
         presentations.forEach(function (pres) {
@@ -2876,7 +3007,14 @@
                     code: pres.code || '',
                     family: pres.category || '',
                     status: '',
+                    line: '',
+                    packaging: '',
+                    description: '',
+                    lead: '',
+                    strip: [],
+                    kpis: [],
                     image: '',
+                    imageAlt: '',
                     hasFicha: false,
                     hasRecipe: !!recipesBySlug[slug],
                     presentations: []
@@ -3019,20 +3157,91 @@
 
         const fin = finishedStock[slug] || { stock: 0 };
         const pres = item.presentations || [];
-        document.getElementById('pdSummaryGrid').innerHTML =
+        const primaryPres = pres.filter(function (x) { return !x.parentId; })[0] || pres[0];
+        const primaryLabel = item.packaging
+            || (primaryPres
+                ? ((primaryPres.label || primaryPres.id || '') +
+                    (primaryPres.size != null
+                        ? ' · ' + primaryPres.size + (primaryPres.unit === 'L' ? ' L' : ' kg')
+                        : ''))
+                : '');
+        const desc = item.description || item.lead || '';
+        const strip = item.strip || [];
+        const kpis = item.kpis || [];
+        const formulaLabel = item.hasRecipe
+            ? (formulaComplete(formulas[slug]) ? 'Lista' : 'Pendiente')
+            : 'N/A';
+
+        const mediaHtml = item.image
+            ? '<img src="' + esc(item.image) + '" alt="' + esc(item.imageAlt || item.name) + '" loading="lazy">'
+            : '<div class="pd-thumb-fallback">Sin imagen de catálogo</div>';
+
+        const facts = [];
+        if (item.family) {
+            facts.push('<span>Familia <strong>' + familyDotHtml(item.family) + esc(item.family) + '</strong></span>');
+        }
+        if (primaryLabel) {
+            facts.push('<span>Presentación <strong>' + esc(primaryLabel) + '</strong></span>');
+        }
+        if (item.status) {
+            facts.push('<span>Estado <strong>' + esc(item.status) + '</strong></span>');
+        }
+
+        const highlightsHtml = strip.length
+            ? ('<ul class="pd-highlights">' + strip.map(function (s) {
+                return '<li>' + esc(s) + '</li>';
+            }).join('') + '</ul>')
+            : '';
+
+        const kpisHtml = kpis.length
+            ? ('<div class="pd-kpis">' + kpis.map(function (k) {
+                return '<div class="pd-kpi"><div class="val">' + esc(k.value) + '</div>' +
+                    (k.label ? '<div class="label">' + esc(k.label) + '</div>' : '') + '</div>';
+            }).join('') + '</div>')
+            : '';
+
+        const opsHtml =
+            '<div class="pd-summary-grid">' +
             '<div class="pd-stat"><div class="label">Código FT</div><div class="val">' + esc(item.code || '—') + '</div></div>' +
-            '<div class="pd-stat"><div class="label">Familia</div><div class="val">' + esc(item.family || '—') + '</div></div>' +
             '<div class="pd-stat"><div class="label">Presentaciones</div><div class="val">' + esc(String(pres.length)) + '</div></div>' +
             '<div class="pd-stat"><div class="label">Stock terminado</div><div class="val">' + esc(String(fin.stock || 0)) + '</div></div>' +
-            '<div class="pd-stat"><div class="label">Formulación</div><div class="val">' +
-            (item.hasRecipe ? (formulaComplete(formulas[slug]) ? 'Lista' : 'Pendiente') : 'N/A') + '</div></div>';
+            '<div class="pd-stat"><div class="label">Formulación</div><div class="val">' + esc(formulaLabel) + '</div></div>' +
+            '</div>';
 
-        document.getElementById('pdPresentationsList').innerHTML = pres.length
-            ? ('<div class="pd-pres-chips">' + pres.map(function (x) {
-                return '<span class="pd-pres-chip">' + esc(x.label || x.id) + ' · ' + esc(x.code || '') +
-                    (x.size != null ? ' · ' + x.size + (x.unit === 'L' ? ' L' : ' kg') : '') + '</span>';
-            }).join('') + '</div>')
-            : '<span class="muted">Sin presentaciones en commerce.js</span>';
+        const presHtml = '<div class="pd-pres-block">' +
+            '<p class="pd-section-label">Presentaciones de venta</p>' +
+            (pres.length
+                ? ('<div class="pd-pres-chips">' + pres.map(function (x) {
+                    return '<span class="pd-pres-chip">' + esc(x.label || x.id) +
+                        (x.code ? ' · ' + esc(x.code) : '') +
+                        (x.size != null ? ' · ' + x.size + (x.unit === 'L' ? ' L' : ' kg') : '') +
+                        '</span>';
+                }).join('') + '</div>')
+                : '<span class="muted">Sin presentaciones en commerce.js</span>') +
+            '</div>';
+
+        const fichaAction = item.hasFicha
+            ? ('<div class="pd-overview-actions"><a class="btn ghost" href="/productos/' +
+                encodeURIComponent(slug) + '" target="_blank" rel="noopener">' +
+                '<i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir ficha pública</a></div>')
+            : '';
+
+        const mount = document.getElementById('pdSummaryMount');
+        if (mount) {
+            mount.innerHTML =
+                '<div class="pd-overview">' +
+                '<div class="pd-overview-media">' + mediaHtml + '</div>' +
+                '<div class="pd-overview-body">' +
+                (item.line ? '<p class="pd-overview-line">' + esc(item.line) + '</p>' : '') +
+                (desc ? '<p class="pd-overview-desc">' + esc(desc) + '</p>' : '<p class="pd-overview-desc muted">Sin descripción en catálogo.</p>') +
+                (facts.length ? '<div class="pd-overview-facts">' + facts.join('') + '</div>' : '') +
+                highlightsHtml +
+                kpisHtml +
+                fichaAction +
+                '</div></div>' +
+                opsHtml +
+                presHtml;
+        }
 
         const formulaBtn = document.getElementById('pdTabFormulaBtn');
         if (formulaBtn) {
