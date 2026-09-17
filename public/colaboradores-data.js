@@ -5,126 +5,162 @@ window.S35_PANEL_DATA = {
       "name": "Pegaxpress: Porcelánico universal",
       "code": "FT-AD-001",
       "family": "Pegaxpress: Adhesivos",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/porcelanico.jpg",
+      "imageAlt": "Saco de 25 kg de Pegaxpress Porcelánico Universal"
     },
     {
       "slug": "ceramico",
       "name": "Pegaxpress: Cerámico",
       "code": "FT-AD-002",
       "family": "Pegaxpress: Adhesivos",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/ceramico.jpg",
+      "imageAlt": "Saco de 25 kg de Pegaxpress Cerámico"
     },
     {
       "slug": "ultraforce",
       "name": "Pegaxpress: Ultraforce",
       "code": "FT-AD-003",
       "family": "Pegaxpress: Adhesivos",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/ultraforce.jpg",
+      "imageAlt": "Saco de 25 kg de Pegaxpress Ultraforce"
     },
     {
       "slug": "pegaxpress-psp",
       "name": "Pegaxpress: Piso sobre piso",
       "code": "FT-AD-004",
       "family": "Pegaxpress: Adhesivos",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/piso-sobre-piso.jpg",
+      "imageAlt": "Saco de 25 kg de Pegaxpress Piso sobre piso"
     },
     {
       "slug": "cemento-plastico-concreto",
       "name": "Microconcreto: Concreto aparente (Cemento plástico)",
       "code": "FT-MC-001",
       "family": "Microconcretos",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/cemento-plastico.jpg",
+      "imageAlt": "Saco de 25 kg de Microconcreto: Concreto aparente (Cemento plástico)"
     },
     {
       "slug": "styrobond-pro",
       "name": "Styrobond pro+",
       "code": "FT-PP-001",
       "family": "Pro+ Systems",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/styrobond.jpg",
+      "imageAlt": "Saco de 25 kg de Styrobond Pro+, pegamento y recubrimiento para EPS"
     },
     {
       "slug": "leveltec-pro",
       "name": "Leveltec pro",
       "code": "FT-PP-003",
       "family": "Pro+ Systems",
-      "status": "verified"
-    },
-    {
-      "slug": "pegaxpress-block",
-      "name": "Pegaxpress: Block",
-      "code": "FT-PP-004",
-      "family": "Pegaxpress: Adhesivos",
-      "status": "draft"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/LEVELTEC-pro.jpg",
+      "imageAlt": "Saco de 35 kg de Leveltec Pro, nivelante cementante de pisos"
     },
     {
       "slug": "waxtard-blanco-perla",
       "name": "Waxtard blanco perla",
       "code": "FT-PR-001",
       "family": "Estucos premium",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/WAXTARD-blanco-perla.jpg",
+      "imageAlt": "Saco de 25 kg de Waxtard Blanco Perla"
     },
     {
       "slug": "adhesivo-darawell",
       "name": "Darawell adhesivo s-35",
       "code": "FT-PR-002",
       "family": "Líquidos",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/adhesivo-darawell.jpg",
+      "imageAlt": "Envase de 1 L de Adhesivo Darawell S-35"
     },
     {
       "slug": "waxtard-blanco-absoluto",
       "name": "Waxtard blanco absoluto",
       "code": "FT-PR-002",
       "family": "Estucos premium",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/WAXTARD-BLANCO-ABSOLUTO.jpg",
+      "imageAlt": "Saco de 25 kg de Waxtard Blanco Absoluto"
     },
     {
       "slug": "sellador-premium-pintura",
       "name": "Sellador premium adhesivo s-35",
       "code": "FT-PR-003",
       "family": "Líquidos",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/sellador-premium-pintura.jpg",
+      "imageAlt": "Envase de 1 L de Sellador Premium S-35"
     },
     {
       "slug": "waxtard-gris",
       "name": "Waxtard gris",
       "code": "FT-PR-003",
       "family": "Estucos premium",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/WAXTARD-gris.jpg",
+      "imageAlt": "Saco de 25 kg de Waxtard Gris"
     },
     {
       "slug": "adhesivo-heavy-duty",
       "name": "Heavy duty adhesivo s-35",
       "code": "FT-PR-004",
       "family": "Líquidos",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/adhesivo-heavy-duty.jpg",
+      "imageAlt": "Envase de 1 L de Adhesivo Heavy Duty S-35"
     },
     {
       "slug": "waxtard-extra-anclaje",
       "name": "Waxtard extra anclaje",
       "code": "FT-PR-004",
       "family": "Estucos premium",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/WAXTARD-extra-anclaje.jpg",
+      "imageAlt": "Saco de 25 kg de Waxtard Extra Anclaje (EIFS Extra Anclaje)"
     },
     {
       "slug": "nanotech-hidrofobico",
       "name": "Nanotech sellador hidrofóbico s-35",
       "code": "FT-PR-005",
       "family": "Líquidos",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/nanotech-hidrofobico.jpg",
+      "imageAlt": "Envase de 1 L de Nanotech Sellador hidrofóbico S-35"
+    },
+    {
+      "slug": "pegaxpress-block",
+      "name": "Pegaxpress: Block",
+      "code": "FT-PR-006",
+      "family": "Pegaxpress: Adhesivos",
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/pastablock.jpg",
+      "imageAlt": "Saco de 30 kg de Pegaxpress: Block"
     },
     {
       "slug": "basecoat-plus-blanco",
       "name": "Basecoat Plus: Blanco absoluto",
       "code": "FT-PS-001",
       "family": "Panel System",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/basecoat-blanco.jpg",
+      "imageAlt": "Saco de 25 kg de Basecoat Plus: Blanco absoluto"
     },
     {
       "slug": "basecoat-plus-gris",
       "name": "Basecoat Plus: Gris",
       "code": "FT-PS-002",
       "family": "Panel System",
-      "status": "verified"
+      "status": "verified",
+      "image": "/Assets/productos_thumbs/basecoat.jpg",
+      "imageAlt": "Saco de 25 kg de Basecoat Plus: Gris"
     }
   ],
   "materials": [
@@ -679,6 +715,8 @@ window.S35_PANEL_DATA = {
       "water": "6.0–7.0 L / saco 25 kg",
       "status": "mapa-funcional",
       "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "image": "/Assets/productos_thumbs/WAXTARD-blanco-perla.jpg",
+      "imageAlt": "Saco de 25 kg de Waxtard Blanco Perla",
       "items": [
         {
           "slug": "cemento-blanco",
@@ -774,6 +812,8 @@ window.S35_PANEL_DATA = {
       "water": "6.0–7.0 L / saco 25 kg",
       "status": "mapa-funcional",
       "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "image": "/Assets/productos_thumbs/WAXTARD-BLANCO-ABSOLUTO.jpg",
+      "imageAlt": "Saco de 25 kg de Waxtard Blanco Absoluto",
       "items": [
         {
           "slug": "cemento-blanco",
@@ -869,6 +909,8 @@ window.S35_PANEL_DATA = {
       "water": "6.0–7.0 L / saco 25 kg",
       "status": "mapa-funcional",
       "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "image": "/Assets/productos_thumbs/WAXTARD-gris.jpg",
+      "imageAlt": "Saco de 25 kg de Waxtard Gris",
       "items": [
         {
           "slug": "cemento-gris",
@@ -964,6 +1006,8 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua, consistencia de trabajo",
       "status": "mapa-funcional",
       "note": "Anclaje químico sobre sustrato liso: más polímero y metacaolín que un Waxtard de absorbente. Dosificación de planta pendiente.",
+      "image": "/Assets/productos_thumbs/WAXTARD-extra-anclaje.jpg",
+      "imageAlt": "Saco de 25 kg de Waxtard Extra Anclaje (EIFS Extra Anclaje)",
       "items": [
         {
           "slug": "cemento-blanco",
@@ -1080,6 +1124,8 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua, consistencia de llana",
       "status": "mapa-funcional",
       "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "image": "/Assets/productos_thumbs/cemento-plastico.jpg",
+      "imageAlt": "Saco de 25 kg de Microconcreto: Concreto aparente (Cemento plástico)",
       "items": [
         {
           "slug": "cemento-gris",
@@ -1191,6 +1237,8 @@ window.S35_PANEL_DATA = {
       "water": "6.1 L llana / 7.5 L proyección · saco 25 kg",
       "status": "mapa-funcional",
       "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "image": "/Assets/productos_thumbs/basecoat.jpg",
+      "imageAlt": "Saco de 25 kg de Basecoat Plus: Gris",
       "items": [
         {
           "slug": "cemento-gris",
@@ -1291,6 +1339,8 @@ window.S35_PANEL_DATA = {
       "water": "6.1 L llana / 7.5 L proyección · saco 25 kg",
       "status": "mapa-funcional",
       "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "image": "/Assets/productos_thumbs/basecoat-blanco.jpg",
+      "imageAlt": "Saco de 25 kg de Basecoat Plus: Blanco absoluto",
       "items": [
         {
           "slug": "cemento-blanco",
@@ -1399,6 +1449,8 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua",
       "status": "mapa-funcional",
       "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "image": "/Assets/productos_thumbs/styrobond.jpg",
+      "imageAlt": "Saco de 25 kg de Styrobond Pro+, pegamento y recubrimiento para EPS",
       "items": [
         {
           "slug": "cemento-gris",
@@ -1499,6 +1551,8 @@ window.S35_PANEL_DATA = {
       "water": "4.0 L / saco 35 kg",
       "status": "mapa-funcional",
       "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "image": "/Assets/productos_thumbs/LEVELTEC-pro.jpg",
+      "imageAlt": "Saco de 35 kg de Leveltec Pro, nivelante cementante de pisos",
       "items": [
         {
           "slug": "cemento-gris",
@@ -1572,12 +1626,14 @@ window.S35_PANEL_DATA = {
     {
       "product": "pegaxpress-block",
       "name": "Pegaxpress: Block",
-      "code": "FT-PP-004",
+      "code": "FT-PR-006",
       "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
       "water": "Solo agua",
       "status": "mapa-funcional",
       "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "image": "/Assets/productos_thumbs/pastablock.jpg",
+      "imageAlt": "Saco de 30 kg de Pegaxpress: Block",
       "items": [
         {
           "slug": "cemento-gris",
@@ -1665,6 +1721,8 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua",
       "status": "mapa-funcional",
       "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "image": "/Assets/productos_thumbs/ceramico.jpg",
+      "imageAlt": "Saco de 25 kg de Pegaxpress Cerámico",
       "items": [
         {
           "slug": "cemento-gris",
@@ -1760,6 +1818,8 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua",
       "status": "mapa-funcional",
       "note": "Tipo C: más polímero que el Cerámico. Dosificación de planta pendiente.",
+      "image": "/Assets/productos_thumbs/porcelanico.jpg",
+      "imageAlt": "Saco de 25 kg de Pegaxpress Porcelánico Universal",
       "items": [
         {
           "slug": "cemento-gris",
@@ -1847,6 +1907,8 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua",
       "status": "mapa-funcional",
       "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "image": "/Assets/productos_thumbs/piso-sobre-piso.jpg",
+      "imageAlt": "Saco de 25 kg de Pegaxpress Piso sobre piso",
       "items": [
         {
           "slug": "cemento-gris",
@@ -1934,6 +1996,8 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua",
       "status": "mapa-funcional",
       "note": "Tipo C semiflexible. CAC y microsílice entran como mapa funcional, no como receta de saco.",
+      "image": "/Assets/productos_thumbs/ultraforce.jpg",
+      "imageAlt": "Saco de 25 kg de Pegaxpress Ultraforce",
       "items": [
         {
           "slug": "cemento-gris",
@@ -2037,6 +2101,8 @@ window.S35_PANEL_DATA = {
       "water": "",
       "status": "pendiente",
       "note": "Sellador hidrofóbico líquido. Receta de planta (activos, solvente o vehículo) pendiente de cargar.",
+      "image": "/Assets/productos_thumbs/nanotech-hidrofobico.jpg",
+      "imageAlt": "Envase de 1 L de Nanotech Sellador hidrofóbico S-35",
       "items": [],
       "suggested": []
     },
@@ -2049,6 +2115,8 @@ window.S35_PANEL_DATA = {
       "water": "",
       "status": "pendiente",
       "note": "Sellador líquido para pintura. Receta de planta pendiente de cargar.",
+      "image": "/Assets/productos_thumbs/sellador-premium-pintura.jpg",
+      "imageAlt": "Envase de 1 L de Sellador Premium S-35",
       "items": [],
       "suggested": []
     },
@@ -2061,6 +2129,8 @@ window.S35_PANEL_DATA = {
       "water": "",
       "status": "pendiente",
       "note": "Adhesivo líquido. Receta de planta pendiente de cargar.",
+      "image": "/Assets/productos_thumbs/adhesivo-darawell.jpg",
+      "imageAlt": "Envase de 1 L de Adhesivo Darawell S-35",
       "items": [],
       "suggested": []
     },
@@ -2073,6 +2143,8 @@ window.S35_PANEL_DATA = {
       "water": "",
       "status": "pendiente",
       "note": "Adhesivo líquido de alto desempeño. Receta de planta pendiente de cargar.",
+      "image": "/Assets/productos_thumbs/adhesivo-heavy-duty.jpg",
+      "imageAlt": "Envase de 1 L de Adhesivo Heavy Duty S-35",
       "items": [],
       "suggested": []
     }
@@ -2194,7 +2266,7 @@ window.S35_PANEL_DATA = {
       {
         "slug": "pegaxpress-block",
         "name": "Pegaxpress: Block",
-        "code": "FT-PP-004",
+        "code": "FT-PR-006",
         "role": "Carga"
       },
       {
@@ -2280,7 +2352,7 @@ window.S35_PANEL_DATA = {
       {
         "slug": "pegaxpress-block",
         "name": "Pegaxpress: Block",
-        "code": "FT-PP-004",
+        "code": "FT-PR-006",
         "role": "Polímero redispersable"
       },
       {
@@ -2366,7 +2438,7 @@ window.S35_PANEL_DATA = {
       {
         "slug": "pegaxpress-block",
         "name": "Pegaxpress: Block",
-        "code": "FT-PP-004",
+        "code": "FT-PR-006",
         "role": "Retención de agua / reología"
       },
       {
@@ -2440,7 +2512,7 @@ window.S35_PANEL_DATA = {
       {
         "slug": "pegaxpress-block",
         "name": "Pegaxpress: Block",
-        "code": "FT-PP-004",
+        "code": "FT-PR-006",
         "role": "Antideslizamiento"
       },
       {
@@ -2528,7 +2600,7 @@ window.S35_PANEL_DATA = {
       {
         "slug": "pegaxpress-block",
         "name": "Pegaxpress: Block",
-        "code": "FT-PP-004",
+        "code": "FT-PR-006",
         "role": "Cementante"
       },
       {
@@ -2598,7 +2670,7 @@ window.S35_PANEL_DATA = {
       {
         "slug": "pegaxpress-block",
         "name": "Pegaxpress: Block",
-        "code": "FT-PP-004",
+        "code": "FT-PR-006",
         "role": "Agregado"
       },
       {

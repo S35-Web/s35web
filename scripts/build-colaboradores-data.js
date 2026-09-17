@@ -53,6 +53,44 @@ function productDisplayName(p) {
   return normalizeName(raw);
 }
 
+const THUMB_BY_SLUG = {
+  'waxtard-blanco-perla': '/Assets/productos_thumbs/WAXTARD-blanco-perla.jpg',
+  'waxtard-blanco-absoluto': '/Assets/productos_thumbs/WAXTARD-BLANCO-ABSOLUTO.jpg',
+  'waxtard-gris': '/Assets/productos_thumbs/WAXTARD-gris.jpg',
+  'waxtard-extra-anclaje': '/Assets/productos_thumbs/WAXTARD-extra-anclaje.jpg',
+  'cemento-plastico-concreto': '/Assets/productos_thumbs/cemento-plastico.jpg',
+  'basecoat-plus-gris': '/Assets/productos_thumbs/basecoat.jpg',
+  'basecoat-plus-blanco': '/Assets/productos_thumbs/basecoat-blanco.jpg',
+  'styrobond-pro': '/Assets/productos_thumbs/styrobond.jpg',
+  'leveltec-pro': '/Assets/productos_thumbs/LEVELTEC-pro.jpg',
+  'pegaxpress-block': '/Assets/productos_thumbs/pastablock.jpg',
+  'ceramico': '/Assets/productos_thumbs/ceramico.jpg',
+  'porcelanico-universal': '/Assets/productos_thumbs/porcelanico.jpg',
+  'pegaxpress-psp': '/Assets/productos_thumbs/piso-sobre-piso.jpg',
+  'ultraforce': '/Assets/productos_thumbs/ultraforce.jpg',
+  'nanotech-hidrofobico': '/Assets/productos_thumbs/nanotech-hidrofobico.jpg',
+  'sellador-premium-pintura': '/Assets/productos_thumbs/sellador-premium-pintura.jpg',
+  'adhesivo-darawell': '/Assets/productos_thumbs/adhesivo-darawell.jpg',
+  'adhesivo-heavy-duty': '/Assets/productos_thumbs/adhesivo-heavy-duty.jpg',
+};
+
+function productImage(p) {
+  if (THUMB_BY_SLUG[p.slug]) return THUMB_BY_SLUG[p.slug];
+  const pack = p.figures && p.figures.pack;
+  const src = pack && pack.src ? pack.src : '';
+  if (!src) return '';
+  const base = path.basename(src).replace(/\.[^.]+$/, '');
+  const thumb = '/Assets/productos_thumbs/' + base + '.jpg';
+  if (fs.existsSync(path.join(__dirname, '..', 'public', thumb.replace(/^\//, '')))) return thumb;
+  return src;
+}
+
+function productImageAlt(p) {
+  const pack = p.figures && p.figures.pack;
+  if (pack && pack.alt) return pack.alt;
+  return productDisplayName(p);
+}
+
 const products = catalog.published().map(function (p) {
   return {
     slug: p.slug,
@@ -60,6 +98,8 @@ const products = catalog.published().map(function (p) {
     code: p.code || '',
     family: FAM[p.family] || p.family || '',
     status: p.status || '',
+    image: productImage(p),
+    imageAlt: productImageAlt(p),
   };
 }).sort(function (a, b) { return String(a.code).localeCompare(String(b.code)); });
 
@@ -81,7 +121,10 @@ const byProd = {};
 products.forEach(function (p) { byProd[p.slug] = p; });
 
 const recipes = formulations.map(function (f) {
-  const product = byProd[f.product] || { slug: f.product, name: f.product, code: '', family: '' };
+  const product = byProd[f.product] || { slug: f.product, name: f.product, code: '', family: '', image: '', imageAlt: '' };
+  const full = catalog.bySlug(f.product);
+  const image = product.image || (full ? productImage(full) : '') || (THUMB_BY_SLUG[f.product] || '');
+  const imageAlt = product.imageAlt || (full ? productImageAlt(full) : product.name);
   const items = (f.items || []).map(function (it) {
     if (!it.slug) return { slug: null, name: '', code: '', category: '', role: it.role, note: it.note || '' };
     const mat = byMat[it.slug];
@@ -104,6 +147,8 @@ const recipes = formulations.map(function (f) {
     water: f.water || '',
     status: f.status,
     note: f.note,
+    image: image,
+    imageAlt: imageAlt,
     items: items,
   };
 });

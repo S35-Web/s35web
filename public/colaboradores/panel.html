@@ -292,9 +292,8 @@
             overflow: hidden;
             margin-bottom: 24px;
         }
-        #venta .kpis { grid-template-columns: 1fr 1fr; }
-        #venta .kpis .kpi:nth-child(2n) { border-right: none; }
-        #venta .kpis .kpi { border-bottom: none; }
+        #venta .kpis { grid-template-columns: 1fr; max-width: 320px; }
+        #venta .kpis .kpi { border-right: none; border-bottom: none; }
         .kpi {
             padding: 18px 20px;
             background: var(--panel);
@@ -668,12 +667,35 @@
         }
         .product-card {
             border: 1px solid var(--border); border-radius: var(--radius);
-            padding: 14px; background: var(--panel);
+            padding: 12px; background: var(--panel);
             display: grid; gap: 8px; text-align: left;
             cursor: pointer; transition: background .12s, border-color .12s;
             width: 100%; font: inherit; color: inherit;
         }
         .product-card:hover { background: var(--hover); border-color: var(--border-strong); }
+        .product-card .thumb {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: var(--radius-sm);
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+        }
+        .product-card .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 8px;
+            display: block;
+        }
+        .product-card .thumb-fallback {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+            letter-spacing: .04em;
+        }
         .product-card .name { font-weight: 500; font-size: 14px; letter-spacing: -0.01em; }
         .product-card .meta { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
         .product-card .price { font-weight: 500; font-variant-numeric: tabular-nums; }
@@ -981,9 +1003,7 @@
                     <h1 class="page-title">Venta</h1>
                     <p class="page-sub">Punto de venta con productos de formulaciones.</p>
                     <div class="kpis" style="margin-bottom:16px">
-                        <div class="kpi"><div class="label">Productos</div><div class="val" id="posKpiProducts">0</div><div class="hint">Formulaciones</div></div>
                         <div class="kpi"><div class="label">Hoy</div><div class="val" id="posKpiToday">$0</div><div class="hint" id="posKpiTodayHint">0 ventas</div></div>
-                        <div class="kpi"><div class="label">Ticket</div><div class="val" id="posKpiCart">$0</div><div class="hint" id="posKpiCartHint">0 ítems</div></div>
                     </div>
                     <div class="pos-layout">
                         <div>

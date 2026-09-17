@@ -204,7 +204,11 @@
         grid.innerHTML = list.map(function (r) {
             const price = prices[r.product] != null ? prices[r.product] : defaultPrice(r);
             const stock = finishedQty(r.product);
+            const img = r.image
+                ? '<div class="thumb"><img src="' + esc(r.image) + '" alt="' + esc(r.imageAlt || r.name) + '" loading="lazy" decoding="async"></div>'
+                : '<div class="thumb"><span class="thumb-fallback">S-35</span></div>';
             return '<button type="button" class="product-card" data-add="' + esc(r.product) + '">' +
+                img +
                 '<div class="fam">' + esc(r.family || '—') + '</div>' +
                 '<div class="name">' + esc(r.name) + '</div>' +
                 '<div class="meta">' +
@@ -266,10 +270,6 @@
         const kpiTH = document.getElementById('posKpiTodayHint');
         if (kpiT) kpiT.textContent = money(todayTotal);
         if (kpiTH) kpiTH.textContent = today.length + (today.length === 1 ? ' venta' : ' ventas');
-        const kpiC = document.getElementById('posKpiCart');
-        const kpiCH = document.getElementById('posKpiCartHint');
-        if (kpiC) kpiC.textContent = money(cartTotal());
-        if (kpiCH) kpiCH.textContent = cartQty() + (cartQty() === 1 ? ' ítem' : ' ítems');
     }
 
     function addToCart(slug) {
