@@ -764,17 +764,17 @@
                 <img src="/Assets/Logotipo Principal.png" alt="S-35">
             </a>
             <nav class="nav">
-                <a data-section="dashboard" class="active" title="Inicio"><i class="fa-solid fa-border-all"></i></a>
-                <a data-section="venta" title="Venta"><i class="fa-solid fa-cash-register"></i></a>
-                <a data-section="clients" title="Clientes"><i class="fa-solid fa-user-group"></i></a>
-                <a data-section="salesHistory" title="Historial de ventas"><i class="fa-solid fa-receipt"></i></a>
-                <a data-section="prices" title="Precios"><i class="fa-solid fa-tags"></i></a>
-                <a data-section="messages" title="Mensajes"><i class="fa-regular fa-envelope"></i></a>
-                <a data-section="catalog" title="Catálogo"><i class="fa-solid fa-box"></i></a>
-                <a data-section="materials" title="Materias primas"><i class="fa-solid fa-cubes"></i></a>
-                <a data-section="formulas" title="Formulaciones"><i class="fa-solid fa-flask"></i></a>
-                <a data-section="production" title="Producción"><i class="fa-solid fa-industry"></i></a>
-                <a data-section="site" title="Sitio"><i class="fa-solid fa-globe"></i></a>
+                <a href="#dashboard" data-section="dashboard" class="active" title="Inicio"><i class="fa-solid fa-border-all"></i></a>
+                <a href="#venta" data-section="venta" title="Venta"><i class="fa-solid fa-cash-register"></i></a>
+                <a href="#clients" data-section="clients" title="Clientes"><i class="fa-solid fa-user-group"></i></a>
+                <a href="#salesHistory" data-section="salesHistory" title="Historial de ventas"><i class="fa-solid fa-receipt"></i></a>
+                <a href="#prices" data-section="prices" title="Precios"><i class="fa-solid fa-tags"></i></a>
+                <a href="#messages" data-section="messages" title="Mensajes"><i class="fa-regular fa-envelope"></i></a>
+                <a href="#catalog" data-section="catalog" title="Catálogo"><i class="fa-solid fa-box"></i></a>
+                <a href="#materials" data-section="materials" title="Materias primas"><i class="fa-solid fa-cubes"></i></a>
+                <a href="#formulas" data-section="formulas" title="Formulaciones"><i class="fa-solid fa-flask"></i></a>
+                <a href="#production" data-section="production" title="Producción"><i class="fa-solid fa-industry"></i></a>
+                <a href="#site" data-section="site" title="Sitio"><i class="fa-solid fa-globe"></i></a>
             </nav>
             <div class="sidebar-foot">
                 <button class="iconbtn" id="themeBtn" type="button" title="Tema"><i class="fa-solid fa-moon"></i></button>
@@ -1393,6 +1393,24 @@
 
     const SECTION_IDS = ['dashboard', 'venta', 'clients', 'salesHistory', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production', 'site'];
 
+    /* Roles / permisos — deben existir ANTES de showSection (evita TDZ en ROLE_PERMS). */
+    const ROLE_PERMS = {
+        admin: ['*'],
+        ventas: ['dashboard', 'venta', 'clients', 'salesHistory', 'prices', 'materials']
+    };
+    let currentRole = 'admin';
+    try {
+        const uRole = JSON.parse(localStorage.getItem('s35_admin_user') || '{}');
+        if (uRole.role) currentRole = String(uRole.role);
+    } catch (_) {}
+    const roleOverride = localStorage.getItem('s35_role_override');
+    if (roleOverride && ROLE_PERMS[roleOverride]) currentRole = roleOverride;
+
+    function canAccess(section) {
+        const perms = ROLE_PERMS[currentRole] || ROLE_PERMS.admin;
+        return perms.indexOf('*') >= 0 || perms.indexOf(section) >= 0;
+    }
+
     function parseHash() {
         const raw = (location.hash || '').replace(/^#/, '').trim();
         if (!raw) return { section: 'dashboard', recipe: null };
@@ -1407,25 +1425,32 @@
         const active = document.querySelector('.section.active');
         if (!active) return;
         let hash = '#' + active.id;
-        if (active.id === 'formulas' && currentRecipe) hash += '/' + encodeURIComponent(currentRecipe);
+        if (active.id === 'formulas' && typeof currentRecipe !== 'undefined' && currentRecipe) {
+            hash += '/' + encodeURIComponent(currentRecipe);
+        }
         if (location.hash !== hash) history.replaceState(null, '', hash);
     }
 
     function showSection(id, opts) {
         opts = opts || {};
         if (SECTION_IDS.indexOf(id) < 0) id = 'dashboard';
-        if (typeof canAccess === 'function' && !canAccess(id)) {
+        if (!canAccess(id)) {
             const fallback = SECTION_IDS.filter(function (s) { return canAccess(s); })[0] || 'dashboard';
             id = fallback;
         }
         document.querySelectorAll('.section').forEach(function (el) { el.classList.toggle('active', el.id === id); });
-        document.querySelectorAll('.nav a').forEach(function (el) { el.classList.toggle('active', el.getAttribute('data-section') === id); });
+        document.querySelectorAll('.nav a[data-section]').forEach(function (el) {
+            el.classList.toggle('active', el.getAttribute('data-section') === id);
+        });
         sidebar.classList.remove('open');
         if (!opts.skipHash) syncPanelHash();
         if (window.S35PosModule && window.S35PosModule.onSectionShow) window.S35PosModule.onSectionShow(id);
     }
-    document.querySelectorAll('.nav a').forEach(function (a) {
-        a.addEventListener('click', function () { showSection(a.getAttribute('data-section')); });
+    document.querySelectorAll('.nav a[data-section]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+            e.preventDefault();
+            showSection(a.getAttribute('data-section'));
+        });
     });
     const goFormulas = document.getElementById('goFormulas');
     if (goFormulas) goFormulas.addEventListener('click', function (e) { e.preventDefault(); showSection('formulas'); });
@@ -2120,23 +2145,6 @@
 
     loadMessages();
 
-    /* —— Roles / permisos —— */
-    const ROLE_PERMS = {
-        admin: ['*'],
-        ventas: ['dashboard', 'venta', 'clients', 'salesHistory', 'prices', 'materials']
-    };
-    let currentRole = 'admin';
-    try {
-        const u = JSON.parse(localStorage.getItem('s35_admin_user') || '{}');
-        if (u.role) currentRole = String(u.role);
-    } catch (_) {}
-    const override = localStorage.getItem('s35_role_override');
-    if (override && ROLE_PERMS[override]) currentRole = override;
-
-    function canAccess(section) {
-        const perms = ROLE_PERMS[currentRole] || ROLE_PERMS.admin;
-        return perms.indexOf('*') >= 0 || perms.indexOf(section) >= 0;
-    }
     function applyNavPermissions() {
         document.querySelectorAll('.nav a[data-section]').forEach(function (a) {
             const id = a.getAttribute('data-section');
