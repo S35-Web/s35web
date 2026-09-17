@@ -1238,7 +1238,7 @@
             return '<tr>' +
                 '<td class="muted">' + esc(p.code || p.id) + '</td>' +
                 '<td>' + esc(p.name) +
-                '<div class="muted fam">' + (p.family ? familyDot(p.family) : '') + esc(p.family || '') + '</div>' +
+                '<div class="muted fam" title="' + esc(p.family || '') + '">' + (p.family ? familyDot(p.family) : '') + '</div>' +
                 badge + '</td>' +
                 '<td class="num">' + esc(String(kg)) + '</td>' +
                 '<td class="muted">' + esc(unit) + '</td>' +
