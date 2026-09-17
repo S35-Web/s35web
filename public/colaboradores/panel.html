@@ -469,7 +469,8 @@
         }
         .chip .dot,
         .product-card .fam .dot,
-        .prices-table .fam .dot {
+        .prices-table .fam .dot,
+        .products-table .fam .dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
@@ -480,6 +481,12 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+        }
+        .products-table .fam {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 4px;
         }
 
         .split { display: grid; grid-template-columns: 260px 1fr; gap: 16px; }
@@ -946,6 +953,93 @@
             background: var(--text);
             color: var(--bg);
         }
+
+        /* —— Hub Productos (lista + dashboard) —— */
+        .pd-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 0;
+            border: none;
+            background: none;
+            color: var(--muted);
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .pd-back:hover { color: var(--text); }
+        .pd-hero {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .pd-hero h1 { margin: 0; }
+        .pd-hero-meta { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 6px; font-size: 13px; color: var(--muted); }
+        .pd-tabs { margin-bottom: 16px; }
+        .pd-tab-panel[hidden] { display: none !important; }
+        .pd-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .pd-stat {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            background: var(--panel);
+        }
+        .pd-stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+        .pd-stat .val { font-size: 15px; font-weight: 500; margin-top: 4px; }
+        .products-table tbody tr { cursor: pointer; }
+        .products-table tbody tr:hover { background: var(--hover); }
+        .pd-price-blocks { display: grid; gap: 14px; }
+        .pd-price-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            background: var(--panel);
+        }
+        .pd-price-card-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .pd-tier-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .pd-tier-row {
+            display: grid;
+            gap: 4px;
+            font-size: 12px;
+        }
+        .pd-tier-row input {
+            height: 36px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 10px;
+            font-variant-numeric: tabular-nums;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .pd-pres-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .pd-pres-chip {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+
         .cortes-chart-panel {
             border: 1px solid var(--border);
             border-radius: var(--radius);
@@ -1288,11 +1382,9 @@
                 <a href="#cortes" data-section="cortes" title="Cortes"><i class="fa-solid fa-chart-simple"></i></a>
                 <a href="#clients" data-section="clients" title="Clientes"><i class="fa-solid fa-user-group"></i></a>
                 <a href="#salesHistory" data-section="salesHistory" title="Historial de ventas"><i class="fa-solid fa-receipt"></i></a>
-                <a href="#prices" data-section="prices" title="Precios"><i class="fa-solid fa-tags"></i></a>
+                <a href="#products" data-section="products" title="Productos"><i class="fa-solid fa-box"></i></a>
                 <a href="#messages" data-section="messages" title="Mensajes"><i class="fa-regular fa-envelope"></i></a>
-                <a href="#catalog" data-section="catalog" title="Catálogo"><i class="fa-solid fa-box"></i></a>
                 <a href="#materials" data-section="materials" title="Materias primas"><i class="fa-solid fa-cubes"></i></a>
-                <a href="#formulas" data-section="formulas" title="Formulaciones"><i class="fa-solid fa-flask"></i></a>
                 <a href="#production" data-section="production" title="Producción"><i class="fa-solid fa-industry"></i></a>
                 <a href="#site" data-section="site" title="Sitio"><i class="fa-solid fa-globe"></i></a>
             </nav>
@@ -1325,7 +1417,7 @@
                     <div class="quick-actions">
                         <button type="button" class="qa-btn" id="goVenta"><i class="fa-solid fa-cash-register"></i> Venta</button>
                         <button type="button" class="qa-btn" id="goCortes"><i class="fa-solid fa-chart-simple"></i> Cortes</button>
-                        <button type="button" class="qa-btn" id="goFormulas"><i class="fa-solid fa-flask"></i> Formulaciones</button>
+                        <button type="button" class="qa-btn" id="goProducts"><i class="fa-solid fa-box"></i> Productos</button>
                         <button type="button" class="qa-btn" id="goProduction"><i class="fa-solid fa-industry"></i> Registrar producción</button>
                         <button type="button" class="qa-btn" id="goMaterials"><i class="fa-solid fa-cubes"></i> Inventario</button>
                         <a class="qa-btn" href="/productos" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Catálogo público</a>
@@ -1412,22 +1504,6 @@
                     </div>
                 </section>
 
-                <section id="catalog" class="section">
-                    <h1 class="page-title">Catálogo</h1>
-                    <p class="page-sub">Fichas técnicas publicadas en el sitio.</p>
-                    <div class="card">
-                        <div class="toolbar">
-                            <input id="catalogSearch" class="search" type="search" placeholder="Buscar producto o código">
-                        </div>
-                        <div class="table-card">
-                            <table>
-                                <thead><tr><th>Código</th><th>Producto</th><th>Familia</th><th>Existencia</th><th>Estado</th><th></th></tr></thead>
-                                <tbody id="catalogBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
                 <section id="materials" class="section">
                     <h1 class="page-title">Materias primas</h1>
                     <p class="page-sub">Inventario de planta. Los cambios se guardan en este navegador.</p>
@@ -1442,23 +1518,6 @@
                                 <thead><tr><th>Nombre</th><th>Existencia</th><th>Mínimo</th><th></th></tr></thead>
                                 <tbody id="matBody"></tbody>
                             </table>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="formulas" class="section">
-                    <h1 class="page-title">Formulaciones</h1>
-                    <p class="page-sub">Receta de planta por producto. Al registrar producción se descuenta inventario.</p>
-                    <div class="split">
-                        <div class="card">
-                            <input id="formulaSearch" class="search" type="search" placeholder="Buscar producto" style="margin-bottom:10px;width:100%">
-                            <div class="recipe-nav" id="recipeNav"></div>
-                        </div>
-                        <div class="card" id="recipeDetail">
-                            <div class="empty">
-                                <p class="empty-title">Sin receta seleccionada</p>
-                                Elige un producto para ver su formulación.
-                            </div>
                         </div>
                     </div>
                 </section>
@@ -1681,35 +1740,80 @@
                     </div>
                 </section>
 
-                <section id="prices" class="section">
-                    <h1 class="page-title">Precios</h1>
-                    <p class="page-sub">Lista mayorista por volumen (MXN / saco). Todos a 25 kg excepto Pastablock 30 kg. Se guarda en este navegador.</p>
-                    <div class="card">
-                        <div class="toolbar">
-                            <input id="posPriceSearch" class="search" type="search" placeholder="Buscar producto">
-                            <button type="button" class="btn" id="posResetPricesBtn">Restablecer defaults</button>
-                        </div>
-                        <div class="chips" id="posPriceFamilyChips"></div>
-                        <div class="table-card">
-                            <table class="prices-table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Producto</th>
-                                        <th>Kg</th>
-                                        <th>Unidad</th>
-                                        <th class="tier">1 a 100</th>
-                                        <th class="tier">100 a 500</th>
-                                        <th class="tier">500 a 999</th>
-                                        <th class="tier">1000 a 2000</th>
-                                        <th class="tier">2000 a 3000</th>
-                                        <th class="tier">3000 a 5000</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="posPricesBody"></tbody>
-                            </table>
+                <section id="products" class="section">
+                    <div id="productsListView">
+                        <h1 class="page-title">Productos</h1>
+                        <p class="page-sub">Precios, presentaciones y formulaciones en un solo lugar. Se guarda en este navegador.</p>
+                        <div class="card">
+                            <div class="toolbar">
+                                <input id="productsSearch" class="search" type="search" placeholder="Buscar nombre, código o familia">
+                                <button type="button" class="btn" id="productsResetPricesBtn">Restablecer defaults</button>
+                            </div>
+                            <div class="chips" id="productsFamilyChips"></div>
+                            <div class="table-card">
+                                <table class="products-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Producto</th>
+                                            <th>Familia</th>
+                                            <th>Presentaciones</th>
+                                            <th>Receta</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productsListBody"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
+                    <div id="productsDetailView" hidden>
+                        <button type="button" class="pd-back" id="productsBackBtn"><i class="fa-solid fa-arrow-left"></i> Volver a productos</button>
+                        <div class="pd-hero">
+                            <div>
+                                <h1 class="page-title" id="pdName">Producto</h1>
+                                <div class="pd-hero-meta" id="pdMeta"></div>
+                            </div>
+                            <div class="toolbar" style="margin:0">
+                                <a class="btn" id="pdPublicLink" href="/productos" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ficha pública</a>
+                            </div>
+                        </div>
+                        <div class="seg-control pd-tabs" id="pdTabs" role="tablist" aria-label="Secciones del producto">
+                            <button type="button" role="tab" data-pd-tab="resumen" class="active" aria-selected="true">Resumen</button>
+                            <button type="button" role="tab" data-pd-tab="precios" aria-selected="false">Precios</button>
+                            <button type="button" role="tab" data-pd-tab="formula" id="pdTabFormulaBtn" aria-selected="false">Formulación</button>
+                        </div>
+                        <div class="pd-tab-panel" id="pdPanelResumen" data-pd-panel="resumen">
+                            <div class="pd-summary-grid" id="pdSummaryGrid"></div>
+                            <div class="card">
+                                <h3 style="margin-top:0">Presentaciones de venta</h3>
+                                <div id="pdPresentationsList" class="muted">—</div>
+                            </div>
+                        </div>
+                        <div class="pd-tab-panel" id="pdPanelPrecios" data-pd-panel="precios" hidden>
+                            <div class="card">
+                                <p class="page-sub" style="margin-top:0">Tramos mayoristas (MXN). El escalón del POS depende del volumen del ticket.</p>
+                                <div id="pdPricesMount"></div>
+                            </div>
+                        </div>
+                        <div class="pd-tab-panel" id="pdPanelFormula" data-pd-panel="formula" hidden>
+                            <div class="card" id="pdFormulaMount">
+                                <div class="empty">
+                                    <p class="empty-title">Sin formulación</p>
+                                    Este producto no tiene receta de planta.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Legacy redirects: #prices #catalog #formulas → #products -->
+                <section id="prices" class="section" hidden aria-hidden="true"></section>
+                <section id="catalog" class="section" hidden aria-hidden="true"></section>
+                <section id="formulas" class="section" hidden aria-hidden="true">
+                    <div id="recipeDetail" hidden></div>
+                    <input id="formulaSearch" type="search" hidden aria-hidden="true">
+                    <div id="recipeNav" hidden></div>
                 </section>
 
                 <section id="site" class="section">
@@ -2006,12 +2110,13 @@
         sidebar.classList.toggle('open');
     });
 
-    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'clients', 'salesHistory', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production', 'site'];
+    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'clients', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production', 'site'];
+    const LEGACY_TO_PRODUCTS = { prices: true, catalog: true, formulas: true };
 
     /* Roles / permisos — deben existir ANTES de showSection (evita TDZ en ROLE_PERMS). */
     const ROLE_PERMS = {
         admin: ['*'],
-        ventas: ['dashboard', 'venta', 'clients', 'salesHistory', 'cortes', 'prices', 'materials']
+        ventas: ['dashboard', 'venta', 'clients', 'salesHistory', 'cortes', 'products', 'prices', 'materials']
     };
     let currentRole = 'admin';
     try {
@@ -2022,53 +2127,99 @@
     if (roleOverride && ROLE_PERMS[roleOverride]) currentRole = roleOverride;
 
     function canAccess(section) {
+        if (LEGACY_TO_PRODUCTS[section]) section = 'products';
         const perms = ROLE_PERMS[currentRole] || ROLE_PERMS.admin;
         return perms.indexOf('*') >= 0 || perms.indexOf(section) >= 0;
     }
+    function canEditFormulas() {
+        return currentRole === 'admin' || (ROLE_PERMS[currentRole] || []).indexOf('*') >= 0;
+    }
+
+    let hubProductSlug = null;
+    let hubProductTab = 'resumen';
 
     function parseHash() {
         const raw = (location.hash || '').replace(/^#/, '').trim();
-        if (!raw) return { section: 'dashboard', recipe: null };
-        const slash = raw.indexOf('/');
-        const id = slash >= 0 ? raw.slice(0, slash) : raw;
-        const recipe = slash >= 0 ? decodeURIComponent(raw.slice(slash + 1)) : null;
-        if (SECTION_IDS.indexOf(id) < 0) return { section: 'dashboard', recipe: null };
-        return { section: id, recipe: recipe };
+        if (!raw) return { section: 'dashboard', recipe: null, tab: null };
+        const parts = raw.split('/');
+        let id = parts[0] || 'dashboard';
+        let recipe = parts[1] ? decodeURIComponent(parts[1]) : null;
+        let tab = parts[2] ? decodeURIComponent(parts[2]) : null;
+        if (id === 'prices' || id === 'catalog') {
+            id = 'products';
+            recipe = null;
+            tab = null;
+        } else if (id === 'formulas') {
+            id = 'products';
+            tab = 'formula';
+        } else if (id === 'products' && recipe && !tab) {
+            tab = null;
+        }
+        if (SECTION_IDS.indexOf(id) < 0) return { section: 'dashboard', recipe: null, tab: null };
+        return { section: id, recipe: recipe, tab: tab };
     }
 
     function syncPanelHash() {
         const active = document.querySelector('.section.active');
         if (!active) return;
         let hash = '#' + active.id;
-        if (active.id === 'formulas' && typeof currentRecipe !== 'undefined' && currentRecipe) {
-            hash += '/' + encodeURIComponent(currentRecipe);
+        if (active.id === 'products' && hubProductSlug) {
+            hash += '/' + encodeURIComponent(hubProductSlug);
+            if (hubProductTab && hubProductTab !== 'resumen') {
+                hash += '/' + encodeURIComponent(hubProductTab);
+            }
         }
         if (location.hash !== hash) history.replaceState(null, '', hash);
     }
 
     function showSection(id, opts) {
         opts = opts || {};
+        let legacyTab = opts.tab || null;
+        let legacyRecipe = opts.recipe || null;
+        if (id === 'prices' || id === 'catalog') {
+            id = 'products';
+        } else if (id === 'formulas') {
+            id = 'products';
+            legacyTab = legacyTab || 'formula';
+        }
         if (SECTION_IDS.indexOf(id) < 0) id = 'dashboard';
         if (!canAccess(id)) {
-            const fallback = SECTION_IDS.filter(function (s) { return canAccess(s); })[0] || 'dashboard';
+            const fallback = SECTION_IDS.filter(function (s) {
+                return !LEGACY_TO_PRODUCTS[s] && canAccess(s);
+            })[0] || 'dashboard';
             id = fallback;
         }
         document.querySelectorAll('.section').forEach(function (el) { el.classList.toggle('active', el.id === id); });
         document.querySelectorAll('.nav a[data-section]').forEach(function (el) {
-            el.classList.toggle('active', el.getAttribute('data-section') === id);
+            const sec = el.getAttribute('data-section');
+            el.classList.toggle('active', sec === id || (id === 'products' && (sec === 'prices' || sec === 'catalog' || sec === 'formulas')));
         });
         sidebar.classList.remove('open');
+        if (id === 'products' && typeof openProductHub === 'function') {
+            if (legacyRecipe || opts.slug) {
+                openProductHub(legacyRecipe || opts.slug, { tab: legacyTab || opts.tab || 'resumen', skipHash: true });
+            } else if (!hubProductSlug) {
+                showProductList({ skipHash: true });
+            }
+        }
         if (!opts.skipHash) syncPanelHash();
         if (window.S35PosModule && window.S35PosModule.onSectionShow) window.S35PosModule.onSectionShow(id);
     }
     document.querySelectorAll('.nav a[data-section]').forEach(function (a) {
         a.addEventListener('click', function (e) {
             e.preventDefault();
+            hubProductSlug = null;
+            hubProductTab = 'resumen';
             showSection(a.getAttribute('data-section'));
         });
     });
-    const goFormulas = document.getElementById('goFormulas');
-    if (goFormulas) goFormulas.addEventListener('click', function (e) { e.preventDefault(); showSection('formulas'); });
+    const goProducts = document.getElementById('goProducts');
+    if (goProducts) goProducts.addEventListener('click', function (e) {
+        e.preventDefault();
+        hubProductSlug = null;
+        hubProductTab = 'resumen';
+        showSection('products');
+    });
     const goMaterials = document.getElementById('goMaterials');
     if (goMaterials) goMaterials.addEventListener('click', function (e) { e.preventDefault(); showSection('materials'); });
     const goProduction = document.getElementById('goProduction');
@@ -2105,9 +2256,12 @@
             return String(m.name || '').toLowerCase().includes(q);
         });
         if (inProducts) {
-            showSection('catalog');
-            document.getElementById('catalogSearch').value = globalSearch.value;
-            document.getElementById('catalogSearch').dispatchEvent(new Event('input'));
+            showSection('products');
+            const ps = document.getElementById('productsSearch');
+            if (ps) {
+                ps.value = globalSearch.value;
+                ps.dispatchEvent(new Event('input'));
+            }
         } else if (inMats) {
             showSection('materials');
             document.getElementById('matSearch').value = globalSearch.value;
@@ -2270,19 +2424,10 @@
     });
 
     function renderCatalog(list) {
-        const tbody = document.getElementById('catalogBody');
-        tbody.innerHTML = list.map(function (p) {
-            const fin = finishedStock[p.slug] || { stock: 0 };
-            return '<tr><td class="muted">' + esc(p.code) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.family) + '</td><td class="num">' + esc(String(fin.stock)) + '</td><td>' + statusBadge(p.status) + '</td><td><a class="link" href="/productos/' + esc(p.slug) + '" target="_blank">Abrir</a></td></tr>';
-        }).join('') || '<tr><td colspan="6" class="empty">Sin resultados</td></tr>';
+        /* Catálogo fusionado en hub Productos — no-op para llamadas legacy. */
+        if (typeof renderProductHubList === 'function') renderProductHubList();
     }
-    renderCatalog(data.products);
-    document.getElementById('catalogSearch').addEventListener('input', function (e) {
-        const q = (e.target.value || '').toLowerCase();
-        renderCatalog(data.products.filter(function (p) {
-            return [p.name, p.code, p.family].some(function (v) { return String(v).toLowerCase().includes(q); });
-        }));
-    });
+    // catalogSearch eliminado; búsqueda vive en #productsSearch
 
     let matFilter = 'all';
     const plantCats = ['all', 'mineral', 'aglutinante', 'polymer', 'cellulose', 'fiber', 'chemical', 'packaging'];
@@ -2499,7 +2644,7 @@
     updateRecipeKpi();
 
     function filteredRecipes() {
-        const q = (document.getElementById('formulaSearch').value || '').toLowerCase();
+        const q = ((document.getElementById('formulaSearch') || {}).value || '').toLowerCase();
         return recipes.filter(function (r) {
             return !q || [r.name, r.code, r.family].some(function (v) { return String(v || '').toLowerCase().includes(q); });
         });
@@ -2509,8 +2654,12 @@
         if (f && f.items && f.items.length) return '<span class="badge b-warning">Falta dosis</span>';
         return '<span class="badge b-primary">Sin receta</span>';
     }
+    function formulaMountEl() {
+        return document.getElementById('pdFormulaMount') || document.getElementById('recipeDetail');
+    }
     function renderRecipeNav() {
         const nav = document.getElementById('recipeNav');
+        if (!nav) return;
         const list = filteredRecipes();
         nav.innerHTML = list.map(function (r) {
             const f = formulas[r.product];
@@ -2532,7 +2681,8 @@
     function readFormulaFromDom() {
         const f = formulas[currentRecipe];
         if (!f) return;
-        const detail = document.getElementById('recipeDetail');
+        const detail = formulaMountEl();
+        if (!detail) return;
         const batchSize = detail.querySelector('[data-field="batchSize"]');
         const batchUnit = detail.querySelector('[data-field="batchUnit"]');
         const batchLabel = detail.querySelector('[data-field="batchLabel"]');
@@ -2560,12 +2710,25 @@
             formulaDirty = false;
         }
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
-        if (!r) return;
+        const mount = formulaMountEl();
+        if (!mount) return;
+        if (!r) {
+            mount.innerHTML = '<div class="empty"><p class="empty-title">Sin formulación</p>Este producto no tiene receta de planta.</div>';
+            return;
+        }
         currentRecipe = slug;
         if (!formulas[slug]) formulas[slug] = seedFormula(r);
         const f = formulas[slug];
         renderRecipeNav();
+        const editable = canEditFormulas();
         const lines = (f.items || []).map(function (it, idx) {
+            if (!editable) {
+                const mat = plantById(it.plantId);
+                return '<div class="formula-line" style="grid-template-columns:1fr auto auto">' +
+                    '<div>' + esc(mat ? displayName(mat) : it.plantId) + '</div>' +
+                    '<div class="num">' + esc(String(it.amount)) + '</div>' +
+                    '<div class="muted">' + esc(it.unit || 'Kg') + '</div></div>';
+            }
             return '<div class="formula-line" data-line="' + idx + '">' +
                 '<select data-field="plantId">' + plantOptions(it.plantId) + '</select>' +
                 '<input data-field="amount" type="number" min="0" step="any" value="' + esc(String(it.amount)) + '">' +
@@ -2573,45 +2736,64 @@
                 '<button type="button" class="icon-action danger" data-remove-line="' + idx + '" title="Quitar" aria-label="Quitar"><i class="fa-solid fa-trash-can"></i></button>' +
                 '</div>';
         }).join('') || '<div class="empty">Agrega materias primas a esta receta.</div>';
-        document.getElementById('recipeDetail').innerHTML =
+        const meta = editable
+            ? ('<div class="formula-meta">' +
+                '<label>Tamaño de lote<input data-field="batchSize" type="number" min="0" step="any" value="' + esc(String(f.batchSize)) + '"></label>' +
+                '<label>Unidad del lote<select data-field="batchUnit">' + unitOptions(f.batchUnit) + '</select></label>' +
+                '<label>Lote (saco, cubeta)<input data-field="batchLabel" type="text" value="' + esc(f.batchLabel) + '"></label>' +
+                '<label>Agua (L)<input data-field="water" type="number" min="0" step="any" value="' + esc(String(f.water)) + '"></label>' +
+                '</div>')
+            : ('<div class="muted" style="margin-bottom:10px">Lote: ' + esc(String(f.batchSize)) + ' ' + esc(f.batchUnit) +
+                ' · ' + esc(f.batchLabel) + (f.water ? ' · agua ' + esc(String(f.water)) + ' L' : '') + '</div>');
+        const actions = editable
+            ? ('<div class="formula-actions">' +
+                '<button type="button" class="btn" id="formulaAddBtn"><i class="fa-solid fa-plus"></i> Agregar materia</button>' +
+                '<button type="button" class="btn primary" id="formulaSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Guardar receta</button>' +
+                '</div>')
+            : '<div class="muted" style="margin-top:10px">Solo lectura (rol ventas).</div>';
+        mount.innerHTML =
             '<div class="recipe-head"><div class="recipe-meta">' +
             '<h3 style="margin:0">' + esc(r.name) + '</h3>' +
             '<div class="muted">' + esc(r.code) + ' · ' + esc(r.family) + '</div></div>' +
             recipeStatus(f) + '</div>' +
             (r.note ? '<div class="note-box">' + esc(r.note) + '</div>' : '') +
-            '<div class="formula-meta">' +
-            '<label>Tamaño de lote<input data-field="batchSize" type="number" min="0" step="any" value="' + esc(String(f.batchSize)) + '"></label>' +
-            '<label>Unidad del lote<select data-field="batchUnit">' + unitOptions(f.batchUnit) + '</select></label>' +
-            '<label>Lote (saco, cubeta)<input data-field="batchLabel" type="text" value="' + esc(f.batchLabel) + '"></label>' +
-            '<label>Agua (L)<input data-field="water" type="number" min="0" step="any" value="' + esc(String(f.water)) + '"></label>' +
-            '</div>' +
+            meta +
             '<div class="muted" style="margin-bottom:8px">Dosis por un ' + esc(f.batchLabel) + '</div>' +
             '<div id="formulaLines">' + lines + '</div>' +
-            '<div class="formula-actions">' +
-            '<button type="button" class="btn" id="formulaAddBtn"><i class="fa-solid fa-plus"></i> Agregar materia</button>' +
-            '<button type="button" class="btn primary" id="formulaSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Guardar receta</button>' +
-            '</div>' +
-            '<div style="margin-top:14px"><a class="link" href="/productos/' + esc(r.product) + '" target="_blank">Abrir ficha pública</a></div>';
-        if (document.getElementById('formulas').classList.contains('active')) syncPanelHash();
+            actions;
+        if (document.getElementById('products') && document.getElementById('products').classList.contains('active')) syncPanelHash();
     }
-    document.getElementById('recipeNav').addEventListener('click', function (e) {
-        const btn = e.target.closest('button[data-recipe]');
-        if (btn) openRecipe(btn.getAttribute('data-recipe'));
-    });
-    document.getElementById('formulaSearch').addEventListener('input', renderRecipeNav);
-    document.getElementById('recipeDetail').addEventListener('input', function (e) {
-        if (!e.target.closest('[data-field]')) return;
+    const recipeNavEl = document.getElementById('recipeNav');
+    if (recipeNavEl) {
+        recipeNavEl.addEventListener('click', function (e) {
+            const btn = e.target.closest('button[data-recipe]');
+            if (btn) openRecipe(btn.getAttribute('data-recipe'));
+        });
+    }
+    const formulaSearchEl = document.getElementById('formulaSearch');
+    if (formulaSearchEl) formulaSearchEl.addEventListener('input', renderRecipeNav);
+
+    function onFormulaMountEvent(e) {
+        const mount = e.target.closest('#pdFormulaMount, #recipeDetail');
+        if (!mount) return false;
+        return mount;
+    }
+    document.addEventListener('input', function (e) {
+        if (!onFormulaMountEvent(e) || !e.target.closest('[data-field]')) return;
         readFormulaFromDom();
     });
-    document.getElementById('recipeDetail').addEventListener('change', function (e) {
+    document.addEventListener('change', function (e) {
+        if (!onFormulaMountEvent(e)) return;
         if (e.target.getAttribute('data-field') !== 'plantId') return;
         const row = e.target.closest('[data-line]');
         const mat = plantById(e.target.value);
         if (row && mat && mat.unit) row.querySelector('[data-field="unit"]').value = mat.unit;
         readFormulaFromDom();
     });
-    document.getElementById('recipeDetail').addEventListener('click', function (e) {
+    document.addEventListener('click', function (e) {
+        if (!onFormulaMountEvent(e)) return;
         if (e.target.closest('#formulaAddBtn')) {
+            if (!canEditFormulas()) return;
             readFormulaFromDom();
             const f = formulas[currentRecipe];
             const used = {};
@@ -2624,16 +2806,19 @@
             return;
         }
         if (e.target.closest('#formulaSaveBtn')) {
+            if (!canEditFormulas()) return;
             readFormulaFromDom();
             saveFormulas();
             formulaDirty = false;
             updateRecipeKpi();
             openRecipe(currentRecipe, true);
             fillProdProducts();
+            if (typeof renderProductHubList === 'function') renderProductHubList();
             return;
         }
         const rm = e.target.closest('[data-remove-line]');
         if (rm) {
+            if (!canEditFormulas()) return;
             readFormulaFromDom();
             const idx = Number(rm.getAttribute('data-remove-line'));
             formulas[currentRecipe].items.splice(idx, 1);
@@ -2641,24 +2826,305 @@
             openRecipe(currentRecipe, true);
         }
     });
+
+    /* —— Hub Productos —— */
+    let productsFamilyFilter = 'all';
+
+    function hubCatalog() {
+        const bySlug = {};
+        const presentations = data.presentations || [];
+        const recipesBySlug = {};
+        recipes.forEach(function (r) { recipesBySlug[r.product] = r; });
+        (data.products || []).forEach(function (p) {
+            bySlug[p.slug] = {
+                slug: p.slug,
+                name: p.name,
+                code: p.code || '',
+                family: p.family || '',
+                status: p.status || '',
+                image: p.image || '',
+                hasFicha: true,
+                hasRecipe: !!recipesBySlug[p.slug],
+                presentations: []
+            };
+        });
+        recipes.forEach(function (r) {
+            if (!bySlug[r.product]) {
+                bySlug[r.product] = {
+                    slug: r.product,
+                    name: r.name,
+                    code: r.code || '',
+                    family: r.family || '',
+                    status: '',
+                    image: r.image || '',
+                    hasFicha: false,
+                    hasRecipe: true,
+                    presentations: []
+                };
+            } else {
+                bySlug[r.product].hasRecipe = true;
+                if (!bySlug[r.product].code && r.code) bySlug[r.product].code = r.code;
+                if (!bySlug[r.product].family && r.family) bySlug[r.product].family = r.family;
+            }
+        });
+        presentations.forEach(function (pres) {
+            const slug = pres.productSlug;
+            if (!bySlug[slug]) {
+                bySlug[slug] = {
+                    slug: slug,
+                    name: pres.listName || slug,
+                    code: pres.code || '',
+                    family: pres.category || '',
+                    status: '',
+                    image: '',
+                    hasFicha: false,
+                    hasRecipe: !!recipesBySlug[slug],
+                    presentations: []
+                };
+            }
+            bySlug[slug].presentations.push(pres);
+            if (!bySlug[slug].code && pres.code && !pres.parentId) bySlug[slug].code = pres.code;
+        });
+        return Object.keys(bySlug).map(function (k) { return bySlug[k]; }).sort(function (a, b) {
+            return String(a.name || '').localeCompare(String(b.name || ''), 'es');
+        });
+    }
+
+    function hubFamilies() {
+        const set = {};
+        hubCatalog().forEach(function (p) { if (p.family) set[p.family] = true; });
+        return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, 'es'); });
+    }
+
+    function familyDotHtml(family) {
+        if (window.S35PosModule && window.S35PosModule.familyDot) return window.S35PosModule.familyDot(family);
+        return '';
+    }
+
+    function renderProductHubChips() {
+        const chips = document.getElementById('productsFamilyChips');
+        if (!chips) return;
+        const list = ['all'].concat(hubFamilies());
+        chips.innerHTML = list.map(function (f) {
+            const label = f === 'all' ? 'Todas' : f;
+            return '<button type="button" class="chip' + (f === productsFamilyFilter ? ' active' : '') + '" data-fam="' + esc(f) + '">' +
+                familyDotHtml(f) + esc(label) + '</button>';
+        }).join('');
+    }
+
+    function filteredHubProducts() {
+        const q = ((document.getElementById('productsSearch') || {}).value || '').toLowerCase().trim();
+        return hubCatalog().filter(function (p) {
+            const famOk = productsFamilyFilter === 'all' || p.family === productsFamilyFilter;
+            const qOk = !q || [p.name, p.code, p.family, p.slug].some(function (v) {
+                return String(v || '').toLowerCase().includes(q);
+            });
+            return famOk && qOk;
+        });
+    }
+
+    function renderProductHubList() {
+        const tbody = document.getElementById('productsListBody');
+        if (!tbody) return;
+        const list = filteredHubProducts();
+        if (!list.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin resultados</td></tr>';
+            return;
+        }
+        tbody.innerHTML = list.map(function (p) {
+            const presLabels = (p.presentations || []).map(function (x) { return x.label || x.id; }).join(', ') || '—';
+            const recipeBadge = p.hasRecipe
+                ? (formulaComplete(formulas[p.slug]) ? '<span class="badge b-success">Lista</span>' : '<span class="badge b-warning">Pendiente</span>')
+                : '<span class="muted">—</span>';
+            return '<tr data-open-product="' + esc(p.slug) + '">' +
+                '<td class="muted">' + esc(p.code || '—') + '</td>' +
+                '<td>' + (p.family ? '<span class="fam">' + familyDotHtml(p.family) + '</span> ' : '') + esc(p.name) + '</td>' +
+                '<td class="muted">' + esc(p.family || '—') + '</td>' +
+                '<td class="muted">' + esc(presLabels) + '</td>' +
+                '<td>' + recipeBadge + '</td>' +
+                '<td><button type="button" class="btn ghost" data-open-product="' + esc(p.slug) + '">Abrir</button></td></tr>';
+        }).join('');
+    }
+
+    function setProductTab(tab) {
+        hubProductTab = tab || 'resumen';
+        if (hubProductTab === 'formula' && !canEditFormulas() && currentRole === 'ventas') {
+            /* ventas puede ver fórmula en solo lectura si el tab está visible; ocultamos el tab abajo */
+        }
+        document.querySelectorAll('#pdTabs [data-pd-tab]').forEach(function (btn) {
+            const on = btn.getAttribute('data-pd-tab') === hubProductTab;
+            btn.classList.toggle('active', on);
+            btn.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        document.querySelectorAll('[data-pd-panel]').forEach(function (panel) {
+            panel.hidden = panel.getAttribute('data-pd-panel') !== hubProductTab;
+        });
+        if (hubProductTab === 'precios') renderProductPricesTab();
+        if (hubProductTab === 'formula') openRecipe(hubProductSlug, true);
+        syncPanelHash();
+    }
+
+    function renderProductPricesTab() {
+        const mount = document.getElementById('pdPricesMount');
+        if (!mount || !hubProductSlug) return;
+        if (window.S35PosModule && window.S35PosModule.priceEditorHtml) {
+            mount.innerHTML = window.S35PosModule.priceEditorHtml(hubProductSlug);
+        } else {
+            mount.innerHTML = '<div class="empty">Cargando precios…</div>';
+        }
+    }
+
+    function showProductList(opts) {
+        opts = opts || {};
+        hubProductSlug = null;
+        hubProductTab = 'resumen';
+        const listView = document.getElementById('productsListView');
+        const detailView = document.getElementById('productsDetailView');
+        if (listView) listView.hidden = false;
+        if (detailView) detailView.hidden = true;
+        renderProductHubChips();
+        renderProductHubList();
+        if (!opts.skipHash) syncPanelHash();
+    }
+
+    function openProductHub(slug, opts) {
+        opts = opts || {};
+        const item = hubCatalog().filter(function (p) { return p.slug === slug; })[0];
+        if (!item) {
+            showProductList(opts);
+            return;
+        }
+        hubProductSlug = slug;
+        const listView = document.getElementById('productsListView');
+        const detailView = document.getElementById('productsDetailView');
+        if (listView) listView.hidden = true;
+        if (detailView) detailView.hidden = false;
+
+        document.getElementById('pdName').textContent = item.name;
+        document.getElementById('pdMeta').innerHTML =
+            '<span>' + esc(item.code || 'Sin código FT') + '</span>' +
+            '<span>' + esc(item.family || 'Sin familia') + '</span>' +
+            (item.hasFicha ? '<span class="badge b-success">Ficha</span>' : '<span class="badge">Sin ficha</span>');
+
+        const pub = document.getElementById('pdPublicLink');
+        if (pub) {
+            if (item.hasFicha) {
+                pub.href = '/productos/' + encodeURIComponent(slug);
+                pub.style.display = '';
+            } else {
+                pub.href = '/productos';
+                pub.style.display = 'none';
+            }
+        }
+
+        const fin = finishedStock[slug] || { stock: 0 };
+        const pres = item.presentations || [];
+        document.getElementById('pdSummaryGrid').innerHTML =
+            '<div class="pd-stat"><div class="label">Código FT</div><div class="val">' + esc(item.code || '—') + '</div></div>' +
+            '<div class="pd-stat"><div class="label">Familia</div><div class="val">' + esc(item.family || '—') + '</div></div>' +
+            '<div class="pd-stat"><div class="label">Presentaciones</div><div class="val">' + esc(String(pres.length)) + '</div></div>' +
+            '<div class="pd-stat"><div class="label">Stock terminado</div><div class="val">' + esc(String(fin.stock || 0)) + '</div></div>' +
+            '<div class="pd-stat"><div class="label">Formulación</div><div class="val">' +
+            (item.hasRecipe ? (formulaComplete(formulas[slug]) ? 'Lista' : 'Pendiente') : 'N/A') + '</div></div>';
+
+        document.getElementById('pdPresentationsList').innerHTML = pres.length
+            ? ('<div class="pd-pres-chips">' + pres.map(function (x) {
+                return '<span class="pd-pres-chip">' + esc(x.label || x.id) + ' · ' + esc(x.code || '') +
+                    (x.size != null ? ' · ' + x.size + (x.unit === 'L' ? ' L' : ' kg') : '') + '</span>';
+            }).join('') + '</div>')
+            : '<span class="muted">Sin presentaciones en commerce.js</span>';
+
+        const formulaBtn = document.getElementById('pdTabFormulaBtn');
+        if (formulaBtn) {
+            /* Admin edita; ventas no ve el tab de formulación (mismo criterio que antes). */
+            formulaBtn.hidden = !canEditFormulas();
+        }
+
+        let tab = opts.tab || 'resumen';
+        if (tab === 'formula' && !canEditFormulas()) tab = 'resumen';
+        if (tab === 'formula' && !item.hasRecipe) tab = 'resumen';
+        setProductTab(tab);
+        if (!opts.skipHash) syncPanelHash();
+    }
+
+    function bindProductHub() {
+        const chips = document.getElementById('productsFamilyChips');
+        if (chips) {
+            chips.addEventListener('click', function (e) {
+                const btn = e.target.closest('.chip');
+                if (!btn) return;
+                productsFamilyFilter = btn.getAttribute('data-fam') || 'all';
+                renderProductHubChips();
+                renderProductHubList();
+            });
+        }
+        const search = document.getElementById('productsSearch');
+        if (search) search.addEventListener('input', renderProductHubList);
+        const body = document.getElementById('productsListBody');
+        if (body) {
+            body.addEventListener('click', function (e) {
+                const row = e.target.closest('[data-open-product]');
+                if (!row) return;
+                openProductHub(row.getAttribute('data-open-product'));
+            });
+        }
+        const back = document.getElementById('productsBackBtn');
+        if (back) back.addEventListener('click', function () { showProductList(); });
+        const tabs = document.getElementById('pdTabs');
+        if (tabs) {
+            tabs.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-pd-tab]');
+                if (!btn || btn.hidden) return;
+                setProductTab(btn.getAttribute('data-pd-tab'));
+            });
+        }
+        const pricesMount = document.getElementById('pdPricesMount');
+        if (pricesMount) {
+            pricesMount.addEventListener('change', function (e) {
+                const input = e.target.closest('[data-price-id]');
+                if (!input || !window.S35PosModule) return;
+                window.S35PosModule.setTierPrice(
+                    input.getAttribute('data-price-id'),
+                    input.getAttribute('data-tier'),
+                    input.value
+                );
+            });
+        }
+        const resetBtn = document.getElementById('productsResetPricesBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                if (!window.S35PosModule || !window.S35PosModule.resetPricesToDefaults) return;
+                if (!confirm('¿Restablecer precios por defecto (lista mayorista)?')) return;
+                window.S35PosModule.resetPricesToDefaults();
+                if (hubProductSlug && hubProductTab === 'precios') renderProductPricesTab();
+            });
+        }
+    }
+
+    bindProductHub();
+    renderRecipeNav();
+
     window.addEventListener('hashchange', function () {
         const parsed = parseHash();
-        showSection(parsed.section, { skipHash: true });
-        if (parsed.section === 'formulas') {
-            const slug = parsed.recipe && recipes.some(function (r) { return r.product === parsed.recipe; })
-                ? parsed.recipe
-                : currentRecipe;
-            if (slug) openRecipe(slug, true);
+        if (parsed.section === 'products') {
+            if (parsed.recipe) {
+                showSection('products', { skipHash: true, slug: parsed.recipe, tab: parsed.tab || 'resumen' });
+            } else {
+                hubProductSlug = null;
+                showSection('products', { skipHash: true });
+                showProductList({ skipHash: true });
+            }
+            return;
         }
+        showSection(parsed.section, { skipHash: true, recipe: parsed.recipe, tab: parsed.tab });
     });
-    renderRecipeNav();
+
     const panelHash = parseHash();
-    showSection(panelHash.section, { skipHash: true });
-    if (panelHash.section === 'formulas') {
-        const slug = panelHash.recipe && recipes.some(function (r) { return r.product === panelHash.recipe; })
-            ? panelHash.recipe
-            : currentRecipe;
-        if (slug) openRecipe(slug, true);
+    if (panelHash.section === 'products' && panelHash.recipe) {
+        showSection('products', { skipHash: true, slug: panelHash.recipe, tab: panelHash.tab || 'resumen' });
+    } else {
+        showSection(panelHash.section, { skipHash: true, recipe: panelHash.recipe, tab: panelHash.tab });
+        if (panelHash.section === 'products') showProductList({ skipHash: true });
     }
 
     function fillProdProducts() {
@@ -2695,7 +3161,7 @@
             return;
         }
         if (!formulaComplete(f)) {
-            box.innerHTML = 'Esta receta todavía no tiene todas las dosis. Complétala en Formulaciones.';
+            box.innerHTML = 'Esta receta todavía no tiene todas las dosis. Complétala en Productos → Formulación.';
             return;
         }
         const lines = productionNeeds(slug, qty);
@@ -2733,7 +3199,7 @@
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         const f = formulas[slug];
         if (!r || !formulaComplete(f)) {
-            alert('Completa la receta en Formulaciones antes de producir.');
+            alert('Completa la receta en Productos → Formulación antes de producir.');
             return;
         }
         const lines = productionNeeds(slug, qty);
@@ -2798,7 +3264,14 @@
             if (typeof refreshStockViews === 'function') refreshStockViews();
             else {
                 if (typeof renderFinished === 'function') renderFinished();
-                if (typeof renderCatalog === 'function') renderCatalog(data.products);
+                if (typeof renderProductHubList === 'function') renderProductHubList();
+            }
+        },
+        onPosReady: function () {
+            if (typeof renderProductHubChips === 'function') renderProductHubChips();
+            if (typeof renderProductHubList === 'function') renderProductHubList();
+            if (hubProductSlug && hubProductTab === 'precios' && typeof renderProductPricesTab === 'function') {
+                renderProductPricesTab();
             }
         },
         role: currentRole,

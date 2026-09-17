@@ -1490,13 +1490,7 @@
         if (resetPrices) {
             resetPrices.addEventListener('click', function () {
                 if (!confirm('¿Restablecer precios por defecto (lista mayorista convertida)?')) return;
-                prices = seedPrices();
-                savePrices();
-                renderPrices();
-                applyCartTierPrices();
-                renderProducts();
-                renderCart();
-                toast('Precios restablecidos');
+                resetPricesToDefaults();
             });
         }
 
@@ -1560,6 +1554,83 @@
         });
     }
 
+    function presentationsForSlug(slug) {
+        const data = window.S35_PANEL_DATA || {};
+        return (data.presentations || []).filter(function (p) {
+            return p.productSlug === slug;
+        });
+    }
+
+    function setTierPrice(id, tier, value) {
+        if (!id) return;
+        const t = Number(tier);
+        if (!isFinite(t) || t < 0 || t > 5) return;
+        if (!prices[id]) {
+            prices[id] = { presentationKg: presentationKgFor(id), tiers: sixTiers(0) };
+        }
+        if (!prices[id].tiers) prices[id].tiers = sixTiers(0);
+        prices[id].tiers[t] = Math.max(0, roundMoney(value));
+        savePrices();
+        applyCartTierPrices();
+        renderProducts();
+        renderCart();
+    }
+
+    function resetPricesToDefaults() {
+        prices = seedPrices();
+        savePrices();
+        applyCartTierPrices();
+        renderProducts();
+        renderCart();
+        renderPrices();
+        toast('Precios restablecidos');
+    }
+
+    function priceEditorHtml(slug) {
+        const rows = presentationsForSlug(slug);
+        const list = rows.length
+            ? rows
+            : pricedCatalog().filter(function (p) {
+                return p.id === slug || (p.recipe && p.recipe.product === slug);
+            }).map(function (p) {
+                return {
+                    id: p.id,
+                    code: p.code,
+                    label: p.unitLabel || unitFor(p),
+                    size: p.presentationKg,
+                    kind: p.kind,
+                    listName: p.listName || p.name,
+                    unitLabel: p.unitLabel
+                };
+            });
+        if (!list.length) {
+            return '<div class="empty">Sin presentaciones de venta para este producto.</div>';
+        }
+        return '<div class="pd-price-blocks">' + list.map(function (pres) {
+            const id = pres.id;
+            const entry = prices[id] || { presentationKg: pres.size, tiers: sixTiers(400) };
+            const kg = entry.presentationKg != null ? entry.presentationKg : (pres.size != null ? pres.size : '—');
+            const unit = (pres.kind === 'liquido' || pres.unit === 'L')
+                ? liquidUnitLabel(kg === '—' ? null : kg, pres.label || pres.unitLabel)
+                : (pres.label || (kg !== '—' ? ('Saco ' + kg + ' kg') : 'Saco'));
+            const tierRows = TIER_LABELS.map(function (label, i) {
+                const val = entry.tiers && entry.tiers[i] != null ? entry.tiers[i] : 0;
+                return '<label class="pd-tier-row">' +
+                    '<span class="muted">' + esc(label) + '</span>' +
+                    '<input class="price-input num" type="number" min="0" step="0.01" ' +
+                    'data-price-id="' + esc(id) + '" data-tier="' + i + '" value="' + esc(String(val)) + '">' +
+                    '</label>';
+            }).join('');
+            return '<div class="pd-price-card" data-pres-id="' + esc(id) + '">' +
+                '<div class="pd-price-card-head">' +
+                '<strong>' + esc(unit) + '</strong>' +
+                '<span class="muted">' + esc(pres.code || id) +
+                (kg !== '—' ? ' · ' + esc(String(kg)) + (pres.kind === 'liquido' || pres.unit === 'L' ? ' L' : ' kg') : '') +
+                '</span></div>' +
+                '<div class="pd-tier-grid">' + tierRows + '</div></div>';
+        }).join('') + '</div>';
+    }
+
     function onSectionShow(id) {
         if (id === 'venta') {
             renderChips();
@@ -1574,7 +1645,7 @@
             renderHistory();
         } else if (id === 'cortes') {
             renderCortes();
-        } else if (id === 'prices') {
+        } else if (id === 'prices' || id === 'products') {
             renderPriceChips();
             renderPrices();
         }
@@ -1598,7 +1669,24 @@
         renderPriceChips();
         renderPrices();
         updatePosKpis();
-        window.S35PosModule = { onSectionShow: onSectionShow, refreshProducts: renderProducts };
+        window.S35PosModule = {
+            onSectionShow: onSectionShow,
+            refreshProducts: renderProducts,
+            money: money,
+            familyDot: familyDot,
+            familyColors: FAMILY_COLORS,
+            tierLabels: TIER_LABELS,
+            presentationsForSlug: presentationsForSlug,
+            getPriceEntry: function (id) { return prices[id] || null; },
+            setTierPrice: setTierPrice,
+            resetPricesToDefaults: resetPricesToDefaults,
+            priceEditorHtml: priceEditorHtml,
+            baseUnitPrice: baseUnitPrice,
+            unitFor: unitFor
+        };
+        if (window.S35PanelAPI && typeof window.S35PanelAPI.onPosReady === 'function') {
+            window.S35PanelAPI.onPosReady();
+        }
     }
 
     if (document.readyState === 'loading') {
