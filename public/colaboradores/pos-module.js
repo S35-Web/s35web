@@ -89,7 +89,32 @@
     function saleClientLabel(sale) {
         if (!sale) return 'Mostrador';
         if (sale.client) return clientDisplay(sale.client);
-        return sale.customer || 'Mostrador';
+        if (sale.clientId) {
+            const live = clientById(sale.clientId);
+            if (live) return clientDisplay(live);
+        }
+        const named = String(sale.customer || '').trim();
+        return named || 'Mostrador';
+    }
+
+    function saleItemsPreview(sale) {
+        const items = (sale && sale.items) || [];
+        if (!items.length) return 'Sin ítems';
+        const n = items.length;
+        const first = String(items[0].name || 'Producto').trim() || 'Producto';
+        if (n === 1) {
+            const qty = Number(items[0].qty) || 0;
+            return qty > 1 ? (qty + '× ' + first) : first;
+        }
+        return n + ' ítems · ' + first;
+    }
+
+    function openSaleNoteById(id) {
+        const sale = saleById(id);
+        if (!sale) return;
+        ensureSaleNote(sale);
+        saveSales();
+        openSaleNoteModal(sale);
     }
 
     function phoneDigits(raw) {
@@ -1383,9 +1408,10 @@
                 });
                 listHost.innerHTML = sorted.map(function (s) {
                     const d = new Date(s.createdAt);
-                    const clientLabel = s.client ? clientDisplay(s.client) : (s.customer || 'Mostrador');
+                    const clientLabel = saleClientLabel(s);
+                    const itemsPreview = saleItemsPreview(s);
                     const billOk = s.billing === 'facturado';
-                    return '<div class="cortes-invoice-row">' +
+                    return '<div class="cortes-invoice-row" role="button" tabindex="0" data-open-note="' + esc(s.id) + '" title="Ver nota de venta">' +
                         '<div class="cortes-invoice-date">' +
                             '<div class="d">' + esc(formatInvoiceDate(d)) + '</div>' +
                             '<div class="sub">' + esc(relativeSaleSub(d)) + (s.folio ? ' · ' + esc(s.folio) : '') + '</div>' +
@@ -1394,7 +1420,10 @@
                             '<span class="cortes-pill">' + esc(payLabel(s.paymentMethod)) + '</span>' +
                             '<span class="cortes-pill' + (billOk ? ' ok' : '') + '">' + esc(billLabel(s.billing)) + '</span>' +
                         '</div>' +
-                        '<div class="cortes-invoice-client">' + esc(clientLabel) + '</div>' +
+                        '<div class="cortes-invoice-client">' +
+                            '<div class="name">' + esc(clientLabel) + '</div>' +
+                            '<div class="items">' + esc(itemsPreview) + '</div>' +
+                        '</div>' +
                         '<div class="cortes-invoice-amt">' + money(s.total) + '</div>' +
                         '</div>';
                 }).join('');
@@ -1432,7 +1461,7 @@
             const d = new Date(s.createdAt);
             const dateStr = isNaN(d) ? '' : d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
             const itemsN = (s.items || []).reduce(function (n, it) { return n + it.qty; }, 0);
-            const clientLabel = s.client ? clientDisplay(s.client) : (s.customer || 'Mostrador');
+            const clientLabel = saleClientLabel(s);
             return '<tr>' +
                 '<td class="muted">' + esc(dateStr) + '</td>' +
                 '<td>' + esc(s.folio) + '</td>' +
@@ -1648,11 +1677,22 @@
             histBody.addEventListener('click', function (e) {
                 const btn = e.target.closest('[data-open-note]');
                 if (!btn) return;
-                const sale = saleById(btn.getAttribute('data-open-note'));
-                if (!sale) return;
-                ensureSaleNote(sale);
-                saveSales();
-                openSaleNoteModal(sale);
+                openSaleNoteById(btn.getAttribute('data-open-note'));
+            });
+        }
+        const cortesSalesBody = document.getElementById('cortesSalesBody');
+        if (cortesSalesBody) {
+            cortesSalesBody.addEventListener('click', function (e) {
+                const row = e.target.closest('[data-open-note]');
+                if (!row) return;
+                openSaleNoteById(row.getAttribute('data-open-note'));
+            });
+            cortesSalesBody.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                const row = e.target.closest('[data-open-note]');
+                if (!row || e.target !== row) return;
+                e.preventDefault();
+                openSaleNoteById(row.getAttribute('data-open-note'));
             });
         }
         const clearHist = document.getElementById('posClearHistoryBtn');

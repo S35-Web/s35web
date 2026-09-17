@@ -1608,8 +1608,18 @@
             padding: 16px 18px;
             border-top: 1px solid var(--border);
             min-height: 64px;
+            cursor: pointer;
+            transition: background 0.12s ease;
         }
         .cortes-invoice-row:first-child { border-top: 1px solid var(--border); }
+        .cortes-invoice-row:hover {
+            background: var(--bg-soft);
+        }
+        .cortes-invoice-row:focus-visible {
+            outline: 2px solid var(--accent, #2563eb);
+            outline-offset: -2px;
+            background: var(--bg-soft);
+        }
         .cortes-invoice-date .d {
             font-size: 13px;
             font-weight: 600;
@@ -1645,12 +1655,24 @@
             color: var(--success);
         }
         .cortes-invoice-client {
+            min-width: 0;
+            overflow: hidden;
+        }
+        .cortes-invoice-client .name {
             font-size: 13px;
+            font-weight: 500;
             color: var(--text);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            min-width: 0;
+        }
+        .cortes-invoice-client .items {
+            margin-top: 2px;
+            font-size: 12px;
+            color: var(--muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .cortes-invoice-amt {
             font-size: 13px;
