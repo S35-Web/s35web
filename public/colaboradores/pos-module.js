@@ -206,7 +206,7 @@
             const stock = finishedQty(r.product);
             const img = r.image
                 ? '<div class="thumb"><img src="' + esc(r.image) + '" alt="' + esc(r.imageAlt || r.name) + '" loading="lazy" decoding="async"></div>'
-                : '<div class="thumb"><span class="thumb-fallback">S-35</span></div>';
+                : '<div class="thumb"><span class="thumb-fallback">S35</span></div>';
             return '<button type="button" class="product-card" data-add="' + esc(r.product) + '">' +
                 img +
                 '<div class="fam">' + esc(r.family || '—') + '</div>' +
