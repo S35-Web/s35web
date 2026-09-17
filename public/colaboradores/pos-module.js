@@ -189,7 +189,7 @@
         for (let h = 7; h <= 19; h++) {
             buckets.push({
                 key: h,
-                label: (h < 10 ? '0' : '') + h + ':00',
+                label: h + ':00',
                 amount: 0
             });
         }
@@ -354,7 +354,7 @@
         for (let i = 0; i < n; i++) {
             const showLabel = i === 0 || i === n - 1 || (i % labelEvery === 0);
             if (!showLabel) continue;
-            const lab = period === 'day' ? String(cur.buckets[i].key) : cur.buckets[i].label;
+            const lab = cur.buckets[i].label;
             xLabels += '<text class="axis-label" x="' + ptX(i).toFixed(1) + '" y="' + (H - 8) +
                 '" text-anchor="middle">' + esc(lab) + '</text>';
         }
@@ -368,7 +368,7 @@
 
         const emptyNote = hasData ? '' : '<div class="cortes-chart-empty">Sin ventas en este ritmo</div>';
         host.innerHTML = emptyNote +
-            '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true" style="color:var(--text)">' +
+            '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
             defs + grid + yLabels +
             (hasData ? '<path class="area-hatch" d="' + areaPath + '"/>' : '') +
             '<path class="line-prev" d="' + prevLine + '"/>' +
