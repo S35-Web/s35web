@@ -28,6 +28,10 @@ function safeEqual(a, b) {
   return crypto.timingSafeEqual(aPad, bPad) && left.length === right.length;
 }
 
+function matchUser(username, password, expectedUser, expectedPass) {
+  return safeEqual(username, expectedUser) && safeEqual(password, expectedPass);
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ ok: false, error: 'Method Not Allowed' });
@@ -39,6 +43,8 @@ module.exports = async function handler(req, res) {
   const password = String(body.password || '');
   const adminUser = String(process.env.ADMIN_USERNAME || 'admin').trim().toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD || 'villa2012';
+  const ventasUser = String(process.env.VENTAS_USERNAME || 'ventas').trim().toLowerCase();
+  const ventasPassword = process.env.VENTAS_PASSWORD || 'ventas123';
   const jwtSecret = process.env.JWT_SECRET || 'dev-secret';
 
   if (!username || !password) {
@@ -46,11 +52,19 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (!safeEqual(username, adminUser) || !safeEqual(password, adminPassword)) {
+  let role = null;
+  let sub = null;
+  if (matchUser(username, password, adminUser, adminPassword)) {
+    role = 'admin';
+    sub = adminUser;
+  } else if (matchUser(username, password, ventasUser, ventasPassword)) {
+    role = 'ventas';
+    sub = ventasUser;
+  } else {
     res.status(401).json({ ok: false, error: 'Credenciales inválidas' });
     return;
   }
 
-  const token = jwt.sign({ role: 'admin', sub: adminUser }, jwtSecret, { expiresIn: '8h' });
-  res.status(200).json({ ok: true, token, user: { username: adminUser, role: 'admin' } });
+  const token = jwt.sign({ role: role, sub: sub }, jwtSecret, { expiresIn: '8h' });
+  res.status(200).json({ ok: true, token, user: { username: sub, role: role } });
 };

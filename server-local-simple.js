@@ -133,7 +133,17 @@ const server = http.createServer((req, res) => {
                 const password = String(parsed.password || '');
                 const adminUser = String(process.env.ADMIN_USERNAME || 'admin').trim().toLowerCase();
                 const adminPass = process.env.ADMIN_PASSWORD || 'villa2012';
-                if (!username || !password || username !== adminUser || password !== adminPass) {
+                const ventasUser = String(process.env.VENTAS_USERNAME || 'ventas').trim().toLowerCase();
+                const ventasPass = process.env.VENTAS_PASSWORD || 'ventas123';
+                let role = null;
+                let sub = null;
+                if (username && password && username === adminUser && password === adminPass) {
+                    role = 'admin';
+                    sub = adminUser;
+                } else if (username && password && username === ventasUser && password === ventasPass) {
+                    role = 'ventas';
+                    sub = ventasUser;
+                } else {
                     res.writeHead(401, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({ ok: false, error: 'Credenciales inválidas' }));
                     return;
@@ -141,8 +151,8 @@ const server = http.createServer((req, res) => {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({
                     ok: true,
-                    token: 'local-dev-token',
-                    user: { username: adminUser, role: 'admin' }
+                    token: 'local-dev-token-' + role,
+                    user: { username: sub, role: role }
                 }));
             } catch (e) {
                 res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -178,11 +188,13 @@ const server = http.createServer((req, res) => {
         return;
     }
     if (pathname === '/pos' || pathname === '/pos/') {
-        serveStaticFile(req, res, path.join(__dirname, 'public', 'pos', 'index.html'));
+        res.writeHead(302, { Location: '/colaboradores' });
+        res.end();
         return;
     }
     if (pathname === '/pos/app' || pathname === '/pos/app/') {
-        serveStaticFile(req, res, path.join(__dirname, 'public', 'pos', 'app.html'));
+        res.writeHead(302, { Location: '/colaboradores/panel#venta' });
+        res.end();
         return;
     }
 

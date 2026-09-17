@@ -650,6 +650,111 @@
             .kpi { border-right: none !important; border-bottom: 1px solid var(--border); }
             .kpi:last-child { border-bottom: none; }
         }
+
+        /* —— POS / Venta —— */
+        .pos-layout {
+            display: grid;
+            grid-template-columns: 1fr min(340px, 36%);
+            gap: 16px;
+            align-items: start;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .product-card {
+            border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 14px; background: var(--panel);
+            display: grid; gap: 8px; text-align: left;
+            cursor: pointer; transition: background .12s, border-color .12s;
+            width: 100%; font: inherit; color: inherit;
+        }
+        .product-card:hover { background: var(--hover); border-color: var(--border-strong); }
+        .product-card .name { font-weight: 500; font-size: 14px; letter-spacing: -0.01em; }
+        .product-card .meta { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+        .product-card .price { font-weight: 500; font-variant-numeric: tabular-nums; }
+        .product-card .unit { color: var(--muted); font-size: 12px; }
+        .product-card .fam { font-size: 11px; color: var(--muted); }
+        .pos-cart {
+            border: 1px solid var(--border); border-radius: var(--radius);
+            background: var(--panel); display: flex; flex-direction: column;
+            position: sticky; top: calc(var(--topbar-h) + 16px); max-height: calc(100vh - var(--topbar-h) - 32px);
+        }
+        .pos-cart-head {
+            padding: 14px 16px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .pos-cart-head h3 { margin: 0; font-size: 14px; font-weight: 500; }
+        .pos-cart-body { flex: 1; overflow: auto; padding: 8px 12px; min-height: 120px; }
+        .pos-cart-foot {
+            border-top: 1px solid var(--border); padding: 14px 16px;
+            display: grid; gap: 12px;
+        }
+        .cart-item {
+            display: grid; grid-template-columns: 1fr auto;
+            gap: 4px 8px; padding: 12px 4px; border-bottom: 1px solid var(--border);
+        }
+        .cart-item:last-child { border-bottom: none; }
+        .cart-item .ci-name { font-size: 13px; font-weight: 500; }
+        .cart-item .ci-meta { font-size: 12px; color: var(--muted); }
+        .cart-item .ci-line { font-variant-numeric: tabular-nums; font-weight: 500; text-align: right; }
+        .qty-row { display: flex; align-items: center; gap: 6px; grid-column: 1 / -1; }
+        .qty-btn {
+            width: 28px; height: 28px; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); background: transparent;
+            cursor: pointer; color: var(--text); display: grid; place-items: center;
+        }
+        .qty-btn:hover { background: var(--hover); }
+        .qty-val { min-width: 24px; text-align: center; font-variant-numeric: tabular-nums; }
+        .cart-total { display: flex; justify-content: space-between; align-items: baseline; }
+        .cart-total .label { color: var(--muted); font-size: 13px; }
+        .cart-total .amount {
+            font-size: 22px; font-weight: 500; letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+        }
+        .checkout-fields { display: grid; gap: 10px; }
+        .field-label {
+            font-size: 11px; font-weight: 500; letter-spacing: .04em;
+            text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+        }
+        .seg {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;
+        }
+        .seg.two { grid-template-columns: 1fr 1fr; }
+        .seg label {
+            display: grid; place-items: center; padding: 8px 6px;
+            font-size: 12px; cursor: pointer; border-right: 1px solid var(--border);
+            background: var(--bg); color: var(--muted); text-align: center;
+        }
+        .seg label:last-child { border-right: none; }
+        .seg input { position: absolute; opacity: 0; pointer-events: none; }
+        .seg label:has(input:checked) {
+            background: var(--active); color: var(--text); font-weight: 500;
+        }
+        .customer-input, .price-input {
+            width: 100%; height: 34px; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); background: var(--bg);
+            padding: 0 10px; outline: none; color: var(--text);
+        }
+        .price-input { width: 110px; }
+        .customer-input:focus, .price-input:focus { border-color: var(--border-strong); }
+        .btn.block { width: 100%; justify-content: center; height: 42px; font-weight: 500; }
+        .btn.ghost { border-color: transparent; }
+        .btn.primary:disabled { opacity: .45; cursor: not-allowed; }
+        .nav a[data-section][hidden] { display: none !important; }
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--text); color: var(--bg); padding: 10px 16px;
+            border-radius: var(--radius-sm); font-size: 13px; z-index: 100;
+            opacity: 0; pointer-events: none; transition: opacity .2s;
+        }
+        .toast.show { opacity: 1; }
+        @media (max-width: 980px) {
+            .pos-layout { grid-template-columns: 1fr; }
+            .pos-cart { position: static; max-height: none; }
+        }
     </style>
 </head>
 <body>
@@ -660,6 +765,10 @@
             </a>
             <nav class="nav">
                 <a data-section="dashboard" class="active" title="Inicio"><i class="fa-solid fa-border-all"></i></a>
+                <a data-section="venta" title="Venta"><i class="fa-solid fa-cash-register"></i></a>
+                <a data-section="clients" title="Clientes"><i class="fa-solid fa-user-group"></i></a>
+                <a data-section="salesHistory" title="Historial de ventas"><i class="fa-solid fa-receipt"></i></a>
+                <a data-section="prices" title="Precios"><i class="fa-solid fa-tags"></i></a>
                 <a data-section="messages" title="Mensajes"><i class="fa-regular fa-envelope"></i></a>
                 <a data-section="catalog" title="Catálogo"><i class="fa-solid fa-box"></i></a>
                 <a data-section="materials" title="Materias primas"><i class="fa-solid fa-cubes"></i></a>
@@ -694,6 +803,7 @@
                         <p class="dash-status" id="dashStatus">Panel interno de operación S-35.</p>
                     </div>
                     <div class="quick-actions">
+                        <button type="button" class="qa-btn" id="goVenta"><i class="fa-solid fa-cash-register"></i> Venta</button>
                         <button type="button" class="qa-btn" id="goFormulas"><i class="fa-solid fa-flask"></i> Formulaciones</button>
                         <button type="button" class="qa-btn" id="goProduction"><i class="fa-solid fa-industry"></i> Registrar producción</button>
                         <button type="button" class="qa-btn" id="goMaterials"><i class="fa-solid fa-cubes"></i> Inventario</button>
@@ -863,6 +973,130 @@
                     </div>
                 </section>
 
+
+                <section id="venta" class="section">
+                    <h1 class="page-title">Venta</h1>
+                    <p class="page-sub">Punto de venta con productos de formulaciones.</p>
+                    <div class="kpis" style="margin-bottom:16px">
+                        <div class="kpi"><div class="label">Productos</div><div class="val" id="posKpiProducts">0</div><div class="hint">Formulaciones</div></div>
+                        <div class="kpi"><div class="label">Hoy</div><div class="val" id="posKpiToday">$0</div><div class="hint" id="posKpiTodayHint">0 ventas</div></div>
+                        <div class="kpi"><div class="label">Ticket</div><div class="val" id="posKpiCart">$0</div><div class="hint" id="posKpiCartHint">0 ítems</div></div>
+                    </div>
+                    <div class="pos-layout">
+                        <div>
+                            <div class="toolbar">
+                                <input id="posProductSearch" class="search" type="search" placeholder="Buscar por nombre, código o familia">
+                            </div>
+                            <div class="chips" id="posFamilyChips"></div>
+                            <div class="product-grid" id="posProductGrid"></div>
+                        </div>
+                        <aside class="pos-cart">
+                            <div class="pos-cart-head">
+                                <h3>Ticket</h3>
+                                <button type="button" class="btn ghost" id="posClearCartBtn">Vaciar</button>
+                            </div>
+                            <div class="pos-cart-body" id="posCartBody">
+                                <div class="empty">Agrega productos del catálogo.</div>
+                            </div>
+                            <div class="pos-cart-foot">
+                                <div class="checkout-fields">
+                                    <div>
+                                        <div class="field-label">Cliente</div>
+                                        <select class="customer-input" id="posClientSelect">
+                                            <option value="">Sin cliente (mostrador)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <div class="field-label">Método de pago</div>
+                                        <div class="seg">
+                                            <label><input type="radio" name="payMethod" value="efectivo" checked> Efectivo</label>
+                                            <label><input type="radio" name="payMethod" value="tarjeta"> Tarjeta</label>
+                                            <label><input type="radio" name="payMethod" value="transferencia"> Transfer.</label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="field-label">Facturación</div>
+                                        <div class="seg two">
+                                            <label><input type="radio" name="billing" value="sin_facturar" checked> Sin facturar</label>
+                                            <label><input type="radio" name="billing" value="facturado"> Facturado</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="cart-total">
+                                    <span class="label">Total</span>
+                                    <span class="amount" id="posCartTotal">$0.00</span>
+                                </div>
+                                <button type="button" class="btn primary block" id="posCheckoutBtn" disabled>Cobrar</button>
+                            </div>
+                        </aside>
+                    </div>
+                </section>
+
+                <section id="clients" class="section">
+                    <h1 class="page-title">Clientes</h1>
+                    <p class="page-sub">Agenda de clientes para vincular ventas.</p>
+                    <div class="card">
+                        <div class="toolbar">
+                            <input id="posClientSearch" class="search" type="search" placeholder="Buscar nombre, teléfono, email o RFC">
+                            <button type="button" class="btn primary" id="posClientAddBtn"><i class="fa-solid fa-plus"></i> Alta</button>
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>RFC</th><th></th></tr></thead>
+                                <tbody id="posClientsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="salesHistory" class="section">
+                    <h1 class="page-title">Historial de ventas</h1>
+                    <p class="page-sub">Tickets guardados en este navegador.</p>
+                    <div class="card">
+                        <div class="toolbar">
+                            <input id="posHistorySearch" class="search" type="search" placeholder="Buscar folio, cliente o producto">
+                            <select id="posHistoryClientFilter" class="customer-input" style="max-width:220px;flex:0 0 auto">
+                                <option value="all">Todos los clientes</option>
+                            </select>
+                            <button type="button" class="btn" id="posClearHistoryBtn">Vaciar historial</button>
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Folio</th>
+                                        <th>Cliente</th>
+                                        <th>Pago</th>
+                                        <th>Facturación</th>
+                                        <th>Ítems</th>
+                                        <th>Total</th>
+                                        <th>Usuario</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="posHistoryBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="prices" class="section">
+                    <h1 class="page-title">Precios</h1>
+                    <p class="page-sub">Lista de precios del POS. Se guarda en este navegador.</p>
+                    <div class="card">
+                        <div class="toolbar">
+                            <input id="posPriceSearch" class="search" type="search" placeholder="Buscar producto">
+                            <button type="button" class="btn" id="posResetPricesBtn">Restablecer defaults</button>
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead><tr><th>Código</th><th>Producto</th><th>Unidad</th><th>Precio (MXN)</th></tr></thead>
+                                <tbody id="posPricesBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="site" class="section">
                     <h1 class="page-title">Sitio</h1>
                     <p class="page-sub">Enlaces internos de operación.</p>
@@ -879,7 +1113,7 @@
                         <div class="card span-6">
                             <h3>Operación</h3>
                             <div class="shortcuts">
-                                <a class="shortcut" href="/pos" target="_blank">Punto de venta <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
+                                <a class="shortcut" href="#venta" id="goVentaSite">Punto de venta</a>
                                 <a class="shortcut" href="/laboratorio/materials" target="_blank">Índice de materiales</a>
                                 <a class="shortcut" href="/laboratorio/methodology" target="_blank">Metodología</a>
                                 <a class="shortcut" href="/laboratorio/about" target="_blank">Acerca de</a>
@@ -891,6 +1125,40 @@
             </main>
         </div>
     </div>
+
+
+    <div id="clientModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="clientModalTitle" style="max-width:480px">
+            <div class="modal-head">
+                <strong id="clientModalTitle">Cliente</strong>
+                <button id="clientModalClose" class="btn" type="button">Cerrar</button>
+            </div>
+            <form id="clientForm" class="modal-body">
+                <div class="form-grid">
+                    <label>Nombre
+                        <input id="clientName" type="text" required autocomplete="off">
+                    </label>
+                    <label>Teléfono
+                        <input id="clientPhone" type="tel" autocomplete="off">
+                    </label>
+                    <label>Email
+                        <input id="clientEmail" type="email" autocomplete="off">
+                    </label>
+                    <label>Empresa
+                        <input id="clientCompany" type="text" autocomplete="off">
+                    </label>
+                    <label>RFC (opcional)
+                        <input id="clientRfc" type="text" autocomplete="off">
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="clientModalCancel">Cancelar</button>
+                    <button type="submit" class="btn primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
 
     <div id="plantModal" class="modal-backdrop" aria-hidden="true">
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="plantModalTitle" style="max-width:480px">
@@ -1123,7 +1391,7 @@
         sidebar.classList.toggle('open');
     });
 
-    const SECTION_IDS = ['dashboard', 'messages', 'catalog', 'materials', 'formulas', 'production', 'site'];
+    const SECTION_IDS = ['dashboard', 'venta', 'clients', 'salesHistory', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production', 'site'];
 
     function parseHash() {
         const raw = (location.hash || '').replace(/^#/, '').trim();
@@ -1146,10 +1414,15 @@
     function showSection(id, opts) {
         opts = opts || {};
         if (SECTION_IDS.indexOf(id) < 0) id = 'dashboard';
+        if (typeof canAccess === 'function' && !canAccess(id)) {
+            const fallback = SECTION_IDS.filter(function (s) { return canAccess(s); })[0] || 'dashboard';
+            id = fallback;
+        }
         document.querySelectorAll('.section').forEach(function (el) { el.classList.toggle('active', el.id === id); });
         document.querySelectorAll('.nav a').forEach(function (el) { el.classList.toggle('active', el.getAttribute('data-section') === id); });
         sidebar.classList.remove('open');
         if (!opts.skipHash) syncPanelHash();
+        if (window.S35PosModule && window.S35PosModule.onSectionShow) window.S35PosModule.onSectionShow(id);
     }
     document.querySelectorAll('.nav a').forEach(function (a) {
         a.addEventListener('click', function () { showSection(a.getAttribute('data-section')); });
@@ -1846,6 +2119,73 @@
     renderFinished();
 
     loadMessages();
+
+    /* —— Roles / permisos —— */
+    const ROLE_PERMS = {
+        admin: ['*'],
+        ventas: ['dashboard', 'venta', 'clients', 'salesHistory', 'prices', 'materials']
+    };
+    let currentRole = 'admin';
+    try {
+        const u = JSON.parse(localStorage.getItem('s35_admin_user') || '{}');
+        if (u.role) currentRole = String(u.role);
+    } catch (_) {}
+    const override = localStorage.getItem('s35_role_override');
+    if (override && ROLE_PERMS[override]) currentRole = override;
+
+    function canAccess(section) {
+        const perms = ROLE_PERMS[currentRole] || ROLE_PERMS.admin;
+        return perms.indexOf('*') >= 0 || perms.indexOf(section) >= 0;
+    }
+    function applyNavPermissions() {
+        document.querySelectorAll('.nav a[data-section]').forEach(function (a) {
+            const id = a.getAttribute('data-section');
+            if (canAccess(id)) a.removeAttribute('hidden');
+            else a.setAttribute('hidden', '');
+        });
+        document.querySelectorAll('.section').forEach(function (el) {
+            if (!canAccess(el.id)) el.classList.remove('active');
+        });
+    }
+    applyNavPermissions();
+    (function enforceRoleLanding() {
+        const parsed = parseHash();
+        if (!canAccess(parsed.section)) {
+            showSection(canAccess('venta') && currentRole === 'ventas' ? 'venta' : (SECTION_IDS.filter(canAccess)[0] || 'dashboard'));
+        } else if (!location.hash && currentRole === 'ventas' && canAccess('venta')) {
+            showSection('venta');
+        } else if (window.S35PosModule && window.S35PosModule.onSectionShow) {
+            window.S35PosModule.onSectionShow(parsed.section || 'dashboard');
+        }
+    })();
+
+    window.S35PanelAPI = {
+        getFinishedQty: function (slug) {
+            const fin = finishedStock[slug];
+            return fin ? (Number(fin.stock) || 0) : 0;
+        },
+        deductFinished: function (slug, qty) {
+            if (!finishedStock[slug]) finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
+            finishedStock[slug].stock = Math.max(0, (Number(finishedStock[slug].stock) || 0) - qty);
+            saveFinished();
+        },
+        refreshStockViews: function () {
+            if (typeof refreshStockViews === 'function') refreshStockViews();
+            else {
+                if (typeof renderFinished === 'function') renderFinished();
+                if (typeof renderCatalog === 'function') renderCatalog(data.products);
+            }
+        },
+        role: currentRole,
+        canAccess: canAccess
+    };
+
+    const goVenta = document.getElementById('goVenta');
+    if (goVenta) goVenta.addEventListener('click', function (e) { e.preventDefault(); showSection('venta'); });
+    const goVentaSite = document.getElementById('goVentaSite');
+    if (goVentaSite) goVentaSite.addEventListener('click', function (e) { e.preventDefault(); showSection('venta'); });
+
     </script>
+    <script src="/colaboradores/pos-module.js"></script>
 </body>
 </html>

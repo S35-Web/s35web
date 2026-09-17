@@ -6,6 +6,8 @@
     { "source": "/laboratorio/:path*", "destination": "/materialab/:path*" }
   ],
   "redirects": [
+    { "source": "/pos", "destination": "/colaboradores", "permanent": false },
+    { "source": "/pos/app", "destination": "/colaboradores/panel", "permanent": false },
     { "source": "/laboratorio", "destination": "/laboratorio/materials", "permanent": true },
     { "source": "/materialab", "destination": "/laboratorio/materials", "permanent": true },
     { "source": "/materialab/about", "destination": "/laboratorio/about", "permanent": true },
