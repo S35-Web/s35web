@@ -796,9 +796,26 @@
             font-size: 12px; color: var(--muted); padding: 0 14px 8px;
             border-bottom: 1px solid var(--border);
         }
-        .price-input { width: 88px; }
-        .prices-table th, .prices-table td { white-space: nowrap; }
-        .prices-table th.tier { font-size: 11px; font-weight: 500; color: var(--muted); }
+        .prices-table { table-layout: auto; width: 100%; }
+        .prices-table th, .prices-table td {
+            white-space: nowrap;
+            padding: 8px 6px;
+        }
+        .prices-table th.tier {
+            font-size: 9.5px;
+            font-weight: 500;
+            color: var(--muted);
+            letter-spacing: 0;
+            padding: 8px 3px;
+            text-align: center;
+            white-space: normal;
+            line-height: 1.2;
+            max-width: 68px;
+        }
+        .prices-table td:has(.price-input) {
+            padding: 6px 3px;
+            width: 1%;
+        }
         .cart-total { display: flex; justify-content: space-between; align-items: baseline; }
         .cart-total .label { color: var(--muted); font-size: 13px; }
         .cart-total .amount {
@@ -830,7 +847,23 @@
             border-radius: var(--radius-sm); background: var(--bg);
             padding: 0 10px; outline: none; color: var(--text);
         }
-        .price-input { width: 88px; height: 30px; padding: 0 6px; font-size: 12px; }
+        .price-input {
+            width: 62px;
+            min-width: 62px;
+            max-width: 62px;
+            height: 28px;
+            padding: 0 4px;
+            font-size: 12px;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+            box-sizing: border-box;
+            -moz-appearance: textfield;
+        }
+        .price-input::-webkit-outer-spin-button,
+        .price-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
         .customer-input:focus, .price-input:focus { border-color: var(--border-strong); }
         .btn.block { width: 100%; justify-content: center; height: 42px; font-weight: 500; }
         .btn.ghost { border-color: transparent; }
