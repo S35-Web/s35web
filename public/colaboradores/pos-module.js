@@ -281,20 +281,55 @@
                 return 'M' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1) +
                     ' L' + pts[1].x.toFixed(1) + ' ' + pts[1].y.toFixed(1);
             }
-            // Catmull-Rom → cubic Bézier (centripetal-ish, tension 1)
-            let d = 'M' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1);
-            for (let i = 0; i < pts.length - 1; i++) {
-                const p0 = pts[i === 0 ? 0 : i - 1];
-                const p1 = pts[i];
-                const p2 = pts[i + 1];
-                const p3 = pts[i + 2 < pts.length ? i + 2 : i + 1];
-                const c1x = p1.x + (p2.x - p0.x) / 6;
-                const c1y = p1.y + (p2.y - p0.y) / 6;
-                const c2x = p2.x - (p3.x - p1.x) / 6;
-                const c2y = p2.y - (p3.y - p1.y) / 6;
+            // Monotone cubic Hermite (Fritsch–Carlson) → Bézier: smooth, no overshoot under y=0
+            const nPts = pts.length;
+            const dx = [];
+            const dy = [];
+            const delta = [];
+            for (let i = 0; i < nPts - 1; i++) {
+                dx[i] = pts[i + 1].x - pts[i].x;
+                dy[i] = pts[i + 1].y - pts[i].y;
+                delta[i] = dx[i] !== 0 ? dy[i] / dx[i] : 0;
+            }
+            const m = new Array(nPts);
+            m[0] = delta[0];
+            m[nPts - 1] = delta[nPts - 2];
+            for (let i = 1; i < nPts - 1; i++) {
+                if (delta[i - 1] * delta[i] <= 0) {
+                    m[i] = 0;
+                } else {
+                    m[i] = (delta[i - 1] + delta[i]) / 2;
+                }
+            }
+            for (let i = 0; i < nPts - 1; i++) {
+                if (Math.abs(delta[i]) < 1e-12) {
+                    m[i] = 0;
+                    m[i + 1] = 0;
+                } else {
+                    const a = m[i] / delta[i];
+                    const b = m[i + 1] / delta[i];
+                    const s = a * a + b * b;
+                    if (s > 9) {
+                        const t = 3 / Math.sqrt(s);
+                        m[i] = t * a * delta[i];
+                        m[i + 1] = t * b * delta[i];
+                    }
+                }
+            }
+            // SVG y grows downward: data ≥ 0 ⇒ curve y must stay ≤ baseY (zero baseline)
+            function clampY(y) {
+                return Math.min(y, baseY);
+            }
+            let d = 'M' + pts[0].x.toFixed(1) + ' ' + clampY(pts[0].y).toFixed(1);
+            for (let i = 0; i < nPts - 1; i++) {
+                const h = dx[i];
+                const c1x = pts[i].x + h / 3;
+                const c1y = clampY(pts[i].y + (m[i] * h) / 3);
+                const c2x = pts[i + 1].x - h / 3;
+                const c2y = clampY(pts[i + 1].y - (m[i + 1] * h) / 3);
                 d += ' C' + c1x.toFixed(1) + ' ' + c1y.toFixed(1) +
                     ', ' + c2x.toFixed(1) + ' ' + c2y.toFixed(1) +
-                    ', ' + p2.x.toFixed(1) + ' ' + p2.y.toFixed(1);
+                    ', ' + pts[i + 1].x.toFixed(1) + ' ' + clampY(pts[i + 1].y).toFixed(1);
             }
             return d;
         }
