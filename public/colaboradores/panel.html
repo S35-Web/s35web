@@ -2170,10 +2170,10 @@
                                 <div class="cortes-chart-legend prod-formula-chart-legend" aria-hidden="true">
                                     <span class="leg"><span class="swatch need"></span> Requerido (lote)</span>
                                     <span class="leg"><span class="swatch stock"></span> En inventario</span>
-                                    <span class="leg"><span class="swatch min"></span> Mínimo</span>
+                                    <span class="leg"><span class="swatch min"></span> Margen hasta mínimo</span>
                                 </div>
                             </div>
-                            <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Gráfica de inventario de materia prima por ingrediente"></div>
+                            <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Gráfica de requerido vs inventario y margen hasta mínimo por materia prima"></div>
                         </div>
                         <div class="card span-7">
                             <h3>Emitir ticket de lote</h3>
@@ -4728,7 +4728,9 @@
             const unit = (it && it.unit) || (mat && mat.unit) || 'Kg';
             const need = (Number(it && it.amount) || 0) * lots;
             const have = mat ? Number(mat.stock) || 0 : 0;
-            const min = mat ? Number(mat.minStock) || 0 : 0;
+            const minStock = mat ? Number(mat.minStock) || 0 : 0;
+            // Capacidad usable antes de tocar el mínimo: inventario − minStock
+            const buffer = Math.max(0, have - minStock);
             const fullName = mat ? (mat.name || id) : id;
             return {
                 plantId: id,
@@ -4737,15 +4739,16 @@
                 unit: unit,
                 need: need,
                 have: have,
-                min: min,
+                minStock: minStock,
+                buffer: buffer,
                 ok: !!mat && have >= need,
                 missing: !mat
             };
         });
         const stockVals = rows.map(function (row) { return row.have; });
         const needVals = rows.map(function (row) { return row.need; });
-        const minVals = rows.map(function (row) { return row.min; });
-        const yMax = Math.max(1, Math.max.apply(null, stockVals.concat(needVals, minVals)) * 1.15);
+        const bufferVals = rows.map(function (row) { return row.buffer; });
+        const yMax = Math.max(1, Math.max.apply(null, stockVals.concat(needVals, bufferVals)) * 1.15);
         const W = 960;
         const H = 280;
         const padL = 48;
@@ -4766,10 +4769,10 @@
         }
         const stockPts = ptsFrom(stockVals);
         const needPts = ptsFrom(needVals);
-        const minPts = ptsFrom(minVals);
+        const bufferPts = ptsFrom(bufferVals);
         const stockLine = buildMonotonePath(stockPts, baseY);
         const needLine = buildMonotonePath(needPts, baseY);
-        const minLine = buildMonotonePath(minPts, baseY);
+        const minLine = buildMonotonePath(bufferPts, baseY);
         const areaPath = stockLine +
             ' L' + ptX(n - 1).toFixed(1) + ' ' + baseY.toFixed(1) +
             ' L' + ptX(0).toFixed(1) + ' ' + baseY.toFixed(1) + ' Z';
@@ -4803,17 +4806,20 @@
         // Puntos + tooltips (requerido = serie principal)
         let marks = '';
         rows.forEach(function (row, i) {
-            const tip =
+            let tip =
                 esc(row.fullName) +
                 ' — requiere: ' + esc(fmtQty(row.need)) + ' ' + esc(row.unit) +
                 ' · inventario: ' + esc(fmtQty(row.have)) + ' ' + esc(row.unit) +
-                ' · mínimo: ' + esc(fmtQty(row.min)) + ' ' + esc(row.unit) +
-                (row.missing ? ' · sin MP en planta' : (row.ok ? '' : ' · insuficiente'));
+                ' · margen hasta mín.: ' + esc(fmtQty(row.buffer)) + ' ' + esc(row.unit) +
+                ' (mín. ' + esc(fmtQty(row.minStock)) + ')';
+            if (row.missing) tip += ' · sin MP en planta';
+            else if (row.need >= row.buffer) tip += ' · toca/cruza mínimo';
+            if (!row.missing && !row.ok) tip += ' · insuficiente';
             const sp = stockPts[i];
-            const mp = minPts[i];
+            const bp = bufferPts[i];
             const np = needPts[i];
             marks +=
-                '<circle cx="' + mp.x.toFixed(1) + '" cy="' + mp.y.toFixed(1) +
+                '<circle cx="' + bp.x.toFixed(1) + '" cy="' + bp.y.toFixed(1) +
                 '" r="2.2" fill="var(--prod-line-min)" stroke="var(--panel)" stroke-width="1">' +
                 '<title>' + tip + '</title></circle>' +
                 '<circle cx="' + sp.x.toFixed(1) + '" cy="' + sp.y.toFixed(1) +
@@ -4838,9 +4844,11 @@
             '</svg>';
         if (subEl) {
             const shortCount = rows.filter(function (row) { return !row.ok; }).length;
+            const atMinCount = rows.filter(function (row) { return !row.missing && row.need >= row.buffer; }).length;
             subEl.textContent = (active ? active.name + (active.label ? ' — ' + active.label : '') : 'Versión') +
-                ' · kg en inventario' +
+                ' · margen = inventario − mínimo' +
                 (lots > 1 ? ' · vs ×' + lots + ' lotes' : ' · vs 1 lote') +
+                (atMinCount ? ' · ' + atMinCount + ' tocan mínimo' : '') +
                 (shortCount ? ' · ' + shortCount + ' con falta' : '');
         }
     }
