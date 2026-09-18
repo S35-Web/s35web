@@ -296,10 +296,6 @@
         }
     }
 
-    function requestOpenProductFamiliesModal() {
-        document.dispatchEvent(new CustomEvent('s35:open-product-families'));
-    }
-
     const TIER_IDS = ['t1', 't2', 't3', 't4', 't5', 't6'];
     const TIER_LABELS = ['1 a 100', '100 a 500', '500 a 999', '1000 a 2000', '2000 a 3000', '3000 a 5000'];
 
@@ -1579,17 +1575,13 @@
         if (!chips) return;
         const list = ['all'].concat(families());
         if (hasUncategorizedProducts()) list.push(PRODUCT_UNCATEGORIZED_ID);
-        const addId = containerId === 'posPriceFamilyChips' ? 'posPriceFamilyChipAdd' : 'posFamilyChipAdd';
         chips.innerHTML = list.map(function (f) {
             const label = f === 'all'
                 ? 'Todas'
                 : (f === PRODUCT_UNCATEGORIZED_ID ? PRODUCT_UNCATEGORIZED_LABEL : f);
             return '<button type="button" class="chip' + (f === activeFilter ? ' active' : '') + '" data-fam="' + esc(f) + '">' +
                 familyDot(f) + esc(label) + '</button>';
-        }).join('') +
-            '<button type="button" class="chip" id="' + addId +
-            '" data-manage-families="1" title="Gestionar familias" aria-label="Gestionar familias">' +
-            '<i class="fa-solid fa-plus"></i></button>';
+        }).join('');
     }
 
     function renderChips() {
@@ -2268,10 +2260,6 @@
         const chips = document.getElementById('posFamilyChips');
         if (chips) {
             chips.addEventListener('click', function (e) {
-                if (e.target.closest('[data-manage-families]')) {
-                    requestOpenProductFamiliesModal();
-                    return;
-                }
                 const btn = e.target.closest('.chip[data-fam]');
                 if (!btn) return;
                 familyFilter = btn.getAttribute('data-fam');
@@ -2489,10 +2477,6 @@
         const priceChips = document.getElementById('posPriceFamilyChips');
         if (priceChips) {
             priceChips.addEventListener('click', function (e) {
-                if (e.target.closest('[data-manage-families]')) {
-                    requestOpenProductFamiliesModal();
-                    return;
-                }
                 const btn = e.target.closest('.chip[data-fam]');
                 if (!btn) return;
                 priceFamilyFilter = btn.getAttribute('data-fam');
@@ -3132,7 +3116,6 @@
             productUncategorizedId: PRODUCT_UNCATEGORIZED_ID,
             productUncategorizedLabel: PRODUCT_UNCATEGORIZED_LABEL,
             refreshProductFamilyUi: refreshProductFamilyUi,
-            openProductFamiliesModal: requestOpenProductFamiliesModal,
             tierLabels: TIER_LABELS,
             presentationsForSlug: presentationsForSlug,
             getPriceEntry: function (id) { return prices[id] || null; },
