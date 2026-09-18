@@ -518,6 +518,9 @@
         }
         .search:focus { border-color: var(--border-strong); }
 
+        /* Author display: rules otherwise beat the UA [hidden] stylesheet */
+        [hidden] { display: none !important; }
+
         .btn {
             height: 34px;
             padding: 0 12px;
@@ -1413,6 +1416,13 @@
             flex-wrap: wrap;
             gap: 8px;
             margin-top: 14px;
+        }
+        /* Vista previa LT (sin emitir): solo Confirmar / Cancelar de emisión */
+        #lotTicketModal.is-pending #lotConfirmFields,
+        #lotTicketModal.is-pending #lotTicketPrint,
+        #lotTicketModal.is-pending #lotTicketConfirmBtn,
+        #lotTicketModal.is-pending #lotTicketCancelBtn {
+            display: none !important;
         }
         .lot-confirm-fields {
             display: grid;
@@ -5709,28 +5719,17 @@
         const cancelBtn = document.getElementById('lotTicketCancelBtn');
         const fields = document.getElementById('lotConfirmFields');
         if (modal) modal.classList.toggle('is-pending', pending);
-        if (issueConfirm) {
-            if (pending) issueConfirm.removeAttribute('hidden');
-            else issueConfirm.setAttribute('hidden', '');
-        }
-        if (issueCancel) {
-            if (pending) issueCancel.removeAttribute('hidden');
-            else issueCancel.setAttribute('hidden', '');
-        }
+        // Emisión (preview): solo Confirmar / Cancelar
+        if (issueConfirm) issueConfirm.hidden = !pending;
+        if (issueCancel) issueCancel.hidden = !pending;
+        // Imprimir solo con ticket ya emitido al sistema
         if (printBtn) {
-            // Solo tras emitir al sistema (ya no es vista previa)
-            if (issued) {
-                printBtn.removeAttribute('hidden');
-                printBtn.classList.add('primary');
-                printBtn.removeAttribute('disabled');
-                printBtn.setAttribute('aria-disabled', 'false');
-            } else {
-                printBtn.setAttribute('hidden', '');
-                printBtn.classList.remove('primary');
-                printBtn.setAttribute('disabled', '');
-                printBtn.setAttribute('aria-disabled', 'true');
-            }
+            printBtn.hidden = !issued;
+            printBtn.classList.toggle('primary', issued);
+            printBtn.disabled = !issued;
+            printBtn.setAttribute('aria-disabled', issued ? 'false' : 'true');
         }
+        // Fase 2 (lote open emitido): ingreso PT + cancelar lote + sacos reales
         if (confirmBtn) confirmBtn.hidden = !open;
         if (cancelBtn) cancelBtn.hidden = !open;
         if (fields) fields.hidden = !open;
@@ -6234,6 +6233,14 @@
         }
         window.print();
     });
+    window.addEventListener('keydown', function (e) {
+        if (!currentLotTicketPending) return;
+        if (!(e.ctrlKey || e.metaKey)) return;
+        if (e.key !== 'p' && e.key !== 'P') return;
+        e.preventDefault();
+        e.stopPropagation();
+        panelToast('Confirma el ticket antes de imprimir');
+    }, true);
     window.addEventListener('beforeprint', function () {
         if (!currentLotTicketPending) return;
         panelToast('Confirma el ticket antes de imprimir');
