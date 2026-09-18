@@ -4100,9 +4100,15 @@
     }
     function formatRecipeNote(note) {
         return esc(note).replace(
-            /(\d+(?:\.\d+)?\s*kg\s*(?:→|->|—|–|-)\s*~?\d+\s*sacos)/gi,
+            /(\d+(?:\.\d+)?\s*kg\s*(?:→|->|—|–|-)\s*~?\d+(?:\.\d+)?\s*sacos)/gi,
             '<span class="note-dose">$1</span>'
         );
+    }
+    function plantLotDoseNoteHtml(totalKg, theo) {
+        const kg = Math.round(Number(totalKg) * 1000) / 1000;
+        const bags = Number(theo) || 0;
+        const dose = esc(String(kg)) + ' kg → ~' + esc(String(bags)) + ' sacos';
+        return 'Dosificación de planta por lote (<span class="note-dose">' + dose + '</span>).';
     }
     function formatRelativeDate(isoOrDate) {
         const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
@@ -5253,7 +5259,8 @@
     function updateFormulaTotalsDom() {
         const f = formulas[currentRecipe];
         const el = document.getElementById('formulaTotals');
-        if (!f || !el) return;
+        const doseNote = document.getElementById('formulaDoseNote');
+        if (!f || (!el && !doseNote)) return;
         if (syncFormulaPackagingAmounts(f)) {
             persistRootToActiveVersion(f);
             formulaDirty = true;
@@ -5262,11 +5269,14 @@
         const totalKg = recipeTotalKg(f);
         const theo = theoreticalBags(f);
         if (!isPlantLot(f)) {
-            el.textContent = '';
+            if (el) el.textContent = '';
             return;
         }
-        el.innerHTML = 'Total <strong>' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg</strong> · ' +
-            esc(String(theo)) + ' sacos teóricos';
+        if (doseNote) doseNote.innerHTML = plantLotDoseNoteHtml(totalKg, theo);
+        if (el) {
+            el.innerHTML = 'Total <strong>' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg</strong> · ' +
+                esc(String(theo)) + ' sacos teóricos';
+        }
     }
     function readFormulaFromDom() {
         const f = formulas[currentRecipe];
@@ -5532,7 +5542,9 @@
             '<div class="muted">' + esc(r.code) + ' · ' + esc(r.family) +
             (lotMode ? ' · <span class="badge b-success">Lote planta</span>' : '') + '</div></div>' +
             recipeStatus(f) + '</div>' +
-            (r.note ? '<div class="note-box">' + formatRecipeNote(r.note) + '</div>' : '') +
+            (lotMode
+                ? ('<div class="note-box" id="formulaDoseNote">' + plantLotDoseNoteHtml(totalKg, theo) + '</div>')
+                : (r.note ? '<div class="note-box">' + formatRecipeNote(r.note) + '</div>' : '')) +
             versionBar +
             lotSummary +
             meta +
