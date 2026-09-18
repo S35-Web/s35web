@@ -968,11 +968,39 @@
         try { localStorage.removeItem(PRICE_KEY_LEGACY_V2); } catch (_) {}
     }
 
+    /** % vs precio de lista (positivo = sobreprecio, negativo = descuento). */
+    function priceDeltaPct(edited, base) {
+        const b = Number(base) || 0;
+        const e = Number(edited) || 0;
+        if (b <= 0) return null;
+        if (Math.abs(e - b) < 0.005) return 0;
+        return Math.round(((e - b) / b) * 1000) / 10;
+    }
+
+    function formatPriceDeltaBadge(pct) {
+        if (pct == null || Math.abs(pct) < 0.05) return '';
+        const sign = pct > 0 ? '+' : '−';
+        const abs = Math.abs(pct);
+        const label = Math.abs(abs - Math.round(abs)) < 0.05
+            ? String(Math.round(abs))
+            : abs.toFixed(1);
+        return sign + label + '%';
+    }
+
     function applyCartTierPrices() {
         const units = cartQty();
         cart.forEach(function (it) {
-            it.price = unitPrice(it.product, units);
+            const list = unitPrice(it.product, units);
+            it.basePrice = list;
             it.tierIndex = tierIndexForQty(units);
+            if (it.priceOverride != null && isFinite(Number(it.priceOverride))) {
+                it.price = roundMoney(it.priceOverride);
+                it.priceOverridePct = priceDeltaPct(it.price, list);
+            } else {
+                it.price = list;
+                it.priceOverride = null;
+                it.priceOverridePct = null;
+            }
         });
     }
 
@@ -1065,6 +1093,8 @@
     let priceFamilyFilter = 'all';
     let historyClientFilter = 'all';
     let editingClientId = null;
+    /** Índice de línea del carrito cuyo precio unitario se está editando (staff). */
+    let editingPriceIdx = null;
 
     function cartQty() {
         return cart.reduce(function (s, it) { return s + it.qty; }, 0);
@@ -1179,6 +1209,60 @@
         if (current && clientById(current)) sel.value = current;
     }
 
+    function beginEditCartPrice(idx) {
+        if (!cart[idx]) return;
+        editingPriceIdx = idx;
+        renderCart();
+        requestAnimationFrame(function () {
+            const input = document.querySelector('.ci-price-input[data-price-idx="' + idx + '"]');
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        });
+    }
+
+    function setCartUnitPrice(idx, nextPrice) {
+        if (!cart[idx]) return false;
+        const list = unitPrice(cart[idx].product, cartQty());
+        const n = roundMoney(nextPrice);
+        if (!isFinite(n) || n < 0) return false;
+        if (Math.abs(n - list) < 0.005) {
+            cart[idx].priceOverride = null;
+        } else {
+            cart[idx].priceOverride = n;
+        }
+        editingPriceIdx = null;
+        applyCartTierPrices();
+        renderCart();
+        renderProducts();
+        return true;
+    }
+
+    function commitCartPriceInput(input) {
+        if (!input) return;
+        const idx = Number(input.getAttribute('data-price-idx'));
+        if (!cart[idx]) {
+            editingPriceIdx = null;
+            return;
+        }
+        const prev = cart[idx].price;
+        const raw = String(input.value || '').trim();
+        if (raw === '') {
+            editingPriceIdx = null;
+            renderCart();
+            return;
+        }
+        const n = Number(raw);
+        if (!isFinite(n) || n < 0) {
+            input.value = String(prev);
+            editingPriceIdx = null;
+            renderCart();
+            return;
+        }
+        setCartUnitPrice(idx, n);
+    }
+
     function renderCart() {
         const body = document.getElementById('posCartBody');
         const btn = document.getElementById('posCheckoutBtn');
@@ -1186,6 +1270,7 @@
         const tierHint = document.getElementById('posCartTierHint');
         if (!body) return;
         applyCartTierPrices();
+        if (editingPriceIdx != null && !cart[editingPriceIdx]) editingPriceIdx = null;
         const units = cartQty();
         if (tierHint) {
             if (selectedClientIsDistributor()) {
@@ -1203,10 +1288,34 @@
             if (btn) btn.disabled = true;
         } else {
             body.innerHTML = cart.map(function (it, idx) {
-                return '<div class="cart-item">' +
+                const base = it.basePrice != null ? it.basePrice : it.price;
+                const pct = it.priceOverride != null ? priceDeltaPct(it.price, base) : null;
+                const badgeHtml = (pct != null && Math.abs(pct) >= 0.05)
+                    ? '<span class="ci-price-badge" title="Ajuste interno (no se muestra al cliente)">' +
+                        esc(formatPriceDeltaBadge(pct)) + '</span>'
+                    : '';
+                const editing = editingPriceIdx === idx;
+                const metaHtml = editing
+                    ? ('<div class="ci-meta ci-meta-editing">' +
+                        '<input class="ci-price-input" type="number" inputmode="decimal" min="0" step="0.01" ' +
+                        'data-price-idx="' + idx + '" value="' + esc(String(it.price)) + '" ' +
+                        'aria-label="Precio unitario" title="Precio unitario">' +
+                        '<span class="ci-price-unit">/ ' + esc(it.unit) + '</span>' +
+                        badgeHtml +
+                        '</div>')
+                    : ('<div class="ci-meta">' +
+                        '<button type="button" class="ci-unit-price" data-edit-price="' + idx + '" ' +
+                        'title="Editar precio unitario">' + money(it.price) + ' / ' + esc(it.unit) + '</button>' +
+                        badgeHtml +
+                        '<button type="button" class="ci-price-pencil" data-edit-price="' + idx + '" ' +
+                        'aria-label="Editar precio" title="Editar precio unitario">' +
+                        '<i class="fa-solid fa-pen" aria-hidden="true"></i></button>' +
+                        '</div>');
+                return '<div class="cart-item' + (it.priceOverride != null ? ' has-price-override' : '') + '">' +
                     '<div class="ci-name">' + esc(it.name) + '</div>' +
-                    '<div class="ci-line">' + money(it.qty * it.price) + '</div>' +
-                    '<div class="ci-meta">' + money(it.price) + ' / ' + esc(it.unit) + '</div>' +
+                    '<div class="ci-line" data-edit-price="' + idx + '" title="Editar precio unitario">' +
+                    money(it.qty * it.price) + '</div>' +
+                    metaHtml +
                     '<div></div>' +
                     '<div class="qty-row">' +
                     '<button type="button" class="qty-btn" data-dec="' + idx + '" aria-label="Menos">−</button>' +
@@ -1279,6 +1388,9 @@
                 code: r.code || '',
                 unit: unitFor(r),
                 price: unitPrice(r.product, cartQty() + 1),
+                basePrice: unitPrice(r.product, cartQty() + 1),
+                priceOverride: null,
+                priceOverridePct: null,
                 qty: 1
             });
         }
@@ -1332,7 +1444,7 @@
             paymentMethod: paymentMethod,
             billing: billing,
             items: cart.map(function (it) {
-                return {
+                const row = {
                     product: it.product,
                     name: it.name,
                     code: it.code,
@@ -1341,6 +1453,13 @@
                     qty: it.qty,
                     lineTotal: it.qty * it.price
                 };
+                /* Auditoría interna (localStorage). No se incluye en nota/WA/print al cliente. */
+                if (it.priceOverride != null) {
+                    row.basePrice = it.basePrice;
+                    row.priceOverride = it.priceOverride;
+                    row.priceOverridePct = it.priceOverridePct;
+                }
+                return row;
             }),
             total: cartTotal(),
             user: userName
@@ -1364,6 +1483,7 @@
         sales.unshift(ticket);
         saveSales();
         cart = [];
+        editingPriceIdx = null;
         const payE = document.querySelector('#venta input[name="payMethod"][value="efectivo"]');
         const billS = document.querySelector('#venta input[name="billing"][value="sin_facturar"]');
         if (payE) payE.checked = true;
@@ -1709,6 +1829,12 @@
         const cartBody = document.getElementById('posCartBody');
         if (cartBody) {
             cartBody.addEventListener('click', function (e) {
+                const editPrice = e.target.closest('[data-edit-price]');
+                if (editPrice) {
+                    e.preventDefault();
+                    beginEditCartPrice(Number(editPrice.getAttribute('data-edit-price')));
+                    return;
+                }
                 const inc = e.target.closest('[data-inc]');
                 const dec = e.target.closest('[data-dec]');
                 const rm = e.target.closest('[data-rm]');
@@ -1720,6 +1846,7 @@
                     if (cart[i]) {
                         if (cart[i].qty <= 1) {
                             cart.splice(i, 1);
+                            editingPriceIdx = null;
                             applyCartTierPrices();
                             renderCart();
                             renderProducts();
@@ -1729,27 +1856,54 @@
                     }
                 } else if (rm) {
                     cart.splice(Number(rm.getAttribute('data-rm')), 1);
+                    editingPriceIdx = null;
                     applyCartTierPrices();
                     renderCart();
                     renderProducts();
                 }
             });
             cartBody.addEventListener('change', function (e) {
-                const input = e.target.closest('.qty-input');
-                if (input) commitQtyInput(input);
+                const qtyInput = e.target.closest('.qty-input');
+                if (qtyInput) {
+                    commitQtyInput(qtyInput);
+                    return;
+                }
+                const priceInput = e.target.closest('.ci-price-input');
+                if (priceInput) commitCartPriceInput(priceInput);
             });
             cartBody.addEventListener('keydown', function (e) {
-                const input = e.target.closest('.qty-input');
-                if (!input) return;
+                const qtyInput = e.target.closest('.qty-input');
+                if (qtyInput) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        commitQtyInput(qtyInput);
+                        qtyInput.blur();
+                    }
+                    return;
+                }
+                const priceInput = e.target.closest('.ci-price-input');
+                if (!priceInput) return;
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    commitQtyInput(input);
-                    input.blur();
+                    commitCartPriceInput(priceInput);
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    editingPriceIdx = null;
+                    renderCart();
                 }
             });
             cartBody.addEventListener('focusout', function (e) {
-                const input = e.target.closest('.qty-input');
-                if (input) commitQtyInput(input);
+                const qtyInput = e.target.closest('.qty-input');
+                if (qtyInput) {
+                    commitQtyInput(qtyInput);
+                    return;
+                }
+                const priceInput = e.target.closest('.ci-price-input');
+                if (!priceInput) return;
+                /* Evitar commit si el foco queda dentro del mismo meta (p. ej. click en badge). */
+                const next = e.relatedTarget;
+                if (next && priceInput.closest('.ci-meta') && priceInput.closest('.ci-meta').contains(next)) return;
+                commitCartPriceInput(priceInput);
             });
         }
 
@@ -1759,6 +1913,7 @@
                 if (!cart.length) return;
                 if (!confirm('¿Vaciar el ticket?')) return;
                 cart = [];
+                editingPriceIdx = null;
                 renderCart();
                 renderProducts();
             });
