@@ -271,6 +271,97 @@
             font-weight: 600;
         }
 
+        /* Lotes de planta: input + slider sincronizados */
+        #prodLotsWrap.prod-lots-wrap {
+            gap: 8px;
+        }
+        .prod-lots-controls {
+            display: grid;
+            grid-template-columns: 72px 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+        .prod-lots-controls input[type="number"] {
+            width: 100%;
+            min-width: 0;
+            transition: border-color .18s ease, background .18s ease, color .18s ease;
+        }
+        .prod-lots-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 999px;
+            background: var(--border);
+            outline: none;
+            cursor: pointer;
+            transition: background .18s ease;
+        }
+        .prod-lots-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 2px solid var(--panel);
+            box-shadow: 0 0 0 1px var(--border-strong);
+            cursor: pointer;
+            transition: background .18s ease, box-shadow .18s ease, transform .18s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .prod-lots-slider:hover::-webkit-slider-thumb,
+        .prod-lots-slider:focus::-webkit-slider-thumb {
+            transform: scale(1.12);
+        }
+        .prod-lots-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 2px solid var(--panel);
+            box-shadow: 0 0 0 1px var(--border-strong);
+            cursor: pointer;
+        }
+        .prod-lots-status {
+            font-size: 11px;
+            line-height: 1.35;
+            color: var(--muted);
+            min-height: 1.35em;
+            transition: color .18s ease;
+        }
+        #prodLotsWrap.is-ok .prod-lots-controls input[type="number"] {
+            border-color: var(--border);
+        }
+        #prodLotsWrap.is-warning .prod-lots-controls input[type="number"] {
+            border-color: var(--warning);
+            background: var(--warning-bg);
+            color: var(--warning);
+        }
+        #prodLotsWrap.is-danger .prod-lots-controls input[type="number"] {
+            border-color: var(--danger);
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+        #prodLotsWrap.is-warning .prod-lots-slider {
+            background: color-mix(in srgb, var(--warning) 35%, var(--border));
+        }
+        #prodLotsWrap.is-danger .prod-lots-slider {
+            background: color-mix(in srgb, var(--danger) 35%, var(--border));
+        }
+        #prodLotsWrap.is-warning .prod-lots-slider::-webkit-slider-thumb,
+        #prodLotsWrap.is-warning .prod-lots-slider::-moz-range-thumb {
+            background: var(--warning);
+            box-shadow: 0 0 0 1px var(--warning);
+        }
+        #prodLotsWrap.is-danger .prod-lots-slider::-webkit-slider-thumb,
+        #prodLotsWrap.is-danger .prod-lots-slider::-moz-range-thumb {
+            background: var(--danger);
+            box-shadow: 0 0 0 1px var(--danger);
+        }
+        #prodLotsWrap.is-warning .prod-lots-status { color: var(--warning); }
+        #prodLotsWrap.is-danger .prod-lots-status { color: var(--danger); }
+        #prodLotsWrap.is-ok .prod-lots-status { color: var(--muted); }
+
         /* Dashboard greeting */
         .dash-hero { margin-bottom: 28px; max-width: 640px; }
         .dash-greet {
@@ -568,7 +659,7 @@
 
         .form-grid { display: grid; gap: 12px; }
         .form-grid label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
-        .form-grid input,
+        .form-grid input:not([type="range"]),
         .form-grid select,
         .formula-meta input,
         .formula-meta select,
@@ -582,7 +673,7 @@
             padding: 0 10px;
             outline: none;
         }
-        .form-grid input:focus,
+        .form-grid input:not([type="range"]):focus,
         .form-grid select:focus,
         .formula-meta input:focus,
         .formula-meta select:focus,
@@ -2195,8 +2286,12 @@
                                 <label>Producto
                                     <select id="prodProduct"></select>
                                 </label>
-                                <label id="prodLotsWrap">Lotes de planta
-                                    <input id="prodQty" type="number" min="1" step="1" value="1">
+                                <label id="prodLotsWrap" class="prod-lots-wrap is-ok">Lotes de planta
+                                    <div class="prod-lots-controls">
+                                        <input id="prodQty" type="number" min="1" step="1" value="1" inputmode="numeric" aria-describedby="prodLotsStatus">
+                                        <input id="prodQtyRange" class="prod-lots-slider" type="range" min="1" max="10" value="1" aria-label="Lotes de planta (deslizador)">
+                                    </div>
+                                    <span id="prodLotsStatus" class="prod-lots-status">Dentro de margen</span>
                                 </label>
                             </div>
                             <div class="formula-version-bar" id="prodVersionBar" style="margin-top:0">
@@ -4439,35 +4534,144 @@
         return 1;
     }
     /**
+     * Capacidad y alerta MP para N lotes (misma lógica que gráfica / KPIs).
+     * - margen = inventario − minStock
+     * - requerido = dosis × lotes
+     * - warning: requerido > margen (toca mínimos)
+     * - danger: requerido > inventario
+     * - maxLotsInv: min floor(inventario / dosis)
+     * - maxLotsMargin: min floor(margen / dosis)
+     */
+    function analyzeProdMpCapacity(slug, lots) {
+        const empty = {
+            rows: [],
+            maxLotsInv: null,
+            maxLotsMargin: null,
+            mpCrit: null,
+            mpCritMargin: null,
+            alert: 'ok',
+            alertMp: null
+        };
+        const f = formulas[slug];
+        if (!f) return empty;
+        ensureVersions(f);
+        syncActiveVersionToRoot(f);
+        const nLots = Math.max(1, Number(lots) || 1);
+        const items = formulaVersionItems(f, f.activeVersionId).filter(function (it) {
+            return (it.unit || '') !== 'Pza' && (it.role || '') !== 'Empaque';
+        });
+        const order = [];
+        const seen = {};
+        items.forEach(function (it) {
+            if (!it.plantId || seen[it.plantId]) return;
+            seen[it.plantId] = true;
+            order.push(it.plantId);
+        });
+        let bestLots = Infinity;
+        let bestRatio = Infinity;
+        let bestName = null;
+        let bestMarginLots = Infinity;
+        let bestMarginName = null;
+        let alert = 'ok';
+        let alertMp = null;
+        const rows = order.map(function (id) {
+            const mat = plantById(id);
+            const it = items.filter(function (x) { return x.plantId === id; })[0];
+            const unit = (it && it.unit) || (mat && mat.unit) || 'Kg';
+            const dose = Number(it && it.amount) || 0;
+            const need = dose * nLots;
+            const have = mat ? Number(mat.stock) || 0 : 0;
+            const minStock = mat ? Number(mat.minStock) || 0 : 0;
+            const buffer = Math.max(0, have - minStock);
+            const fullName = mat ? (mat.name || id) : id;
+            const missing = !mat;
+            const rowAlert = missing ? 'danger' : (need > have ? 'danger' : (need > buffer ? 'warning' : null));
+            if (dose > 0) {
+                const invLots = Math.floor(Math.max(0, have) / dose);
+                const invRatio = Math.max(0, have) / dose;
+                if (invLots < bestLots || (invLots === bestLots && invRatio < bestRatio)) {
+                    bestLots = invLots;
+                    bestRatio = invRatio;
+                    bestName = fullName;
+                }
+                const marginLots = Math.floor(buffer / dose);
+                if (marginLots < bestMarginLots) {
+                    bestMarginLots = marginLots;
+                    bestMarginName = fullName;
+                }
+            }
+            if (rowAlert === 'danger' && alert !== 'danger') {
+                alert = 'danger';
+                alertMp = fullName;
+            } else if (rowAlert === 'warning' && alert === 'ok') {
+                alert = 'warning';
+                alertMp = fullName;
+            }
+            return {
+                plantId: id,
+                labelLines: wrapIngLabel(fullName),
+                fullName: fullName,
+                unit: unit,
+                dose: dose,
+                need: need,
+                have: have,
+                minStock: minStock,
+                buffer: buffer,
+                ok: !!mat && have >= need,
+                alert: rowAlert,
+                missing: missing
+            };
+        });
+        return {
+            rows: rows,
+            maxLotsInv: isFinite(bestLots) ? bestLots : null,
+            maxLotsMargin: isFinite(bestMarginLots) ? bestMarginLots : null,
+            mpCrit: bestName,
+            mpCritMargin: bestMarginName,
+            alert: alert,
+            alertMp: alertMp
+        };
+    }
+    /**
      * Máx. lotes / MPCrit: por cada MP, floor(inventario / dosis_por_lote).
      * Capacidad hasta agotar stock (cuando el requerido/negro alcanza el inventario),
      * no el margen hasta mínimo (línea roja). MPCrit = la MP con menor capacidad (argmin).
      */
     function computeProdMaxLotsByInventory(slug) {
-        const f = formulas[slug];
-        if (!f) return { maxLots: null, mpCrit: null };
-        syncActiveVersionToRoot(f);
-        const items = (f.items || []).filter(function (it) {
-            return (it.unit || '') !== 'Pza' && (it.role || '') !== 'Empaque';
-        });
-        let bestLots = Infinity;
-        let bestRatio = Infinity;
-        let bestName = null;
-        items.forEach(function (it) {
-            const dose = Number(it.amount) || 0;
-            if (dose <= 0) return;
-            const mat = plantById(it.plantId);
-            const have = Math.max(0, mat ? Number(mat.stock) || 0 : 0);
-            const lots = Math.floor(have / dose);
-            const ratio = have / dose;
-            if (lots < bestLots || (lots === bestLots && ratio < bestRatio)) {
-                bestLots = lots;
-                bestRatio = ratio;
-                bestName = mat ? (mat.name || it.plantId) : (it.plantId || '—');
-            }
-        });
-        if (!isFinite(bestLots)) return { maxLots: null, mpCrit: null };
-        return { maxLots: bestLots, mpCrit: bestName };
+        const a = analyzeProdMpCapacity(slug, 1);
+        return { maxLots: a.maxLotsInv, mpCrit: a.mpCrit };
+    }
+    function syncProdLotsUi() {
+        const wrap = document.getElementById('prodLotsWrap');
+        const qtyEl = document.getElementById('prodQty');
+        const rangeEl = document.getElementById('prodQtyRange');
+        const statusEl = document.getElementById('prodLotsStatus');
+        if (!wrap || !qtyEl || !rangeEl) return;
+        const lots = Math.max(1, Math.floor(Number(qtyEl.value) || 1));
+        if (String(qtyEl.value) !== String(lots)) qtyEl.value = lots;
+        const slug = (document.getElementById('prodProduct') || {}).value;
+        const a = analyzeProdMpCapacity(slug, lots);
+        const maxInv = a.maxLotsInv != null ? a.maxLotsInv : 0;
+        // Cabeza sobre inventario para poder “pasar” stock y ver alerta roja
+        const sliderMax = Math.max(maxInv + 5, Math.ceil(Math.max(maxInv, 1) * 1.5), lots, 1);
+        rangeEl.min = '1';
+        rangeEl.max = String(sliderMax);
+        rangeEl.value = String(lots);
+        wrap.classList.remove('is-ok', 'is-warning', 'is-danger');
+        let statusText = 'Dentro de margen';
+        let stateClass = 'is-ok';
+        if (!slug || !a.rows.length) {
+            statusText = 'Elige producto con fórmula';
+            stateClass = 'is-ok';
+        } else if (a.alert === 'danger') {
+            statusText = 'Supera inventario' + (a.alertMp ? ' (' + a.alertMp + ')' : '');
+            stateClass = 'is-danger';
+            } else if (a.alert === 'warning') {
+            statusText = 'Toca mínimos' + (a.alertMp ? ' (' + a.alertMp + ')' : '');
+            stateClass = 'is-warning';
+        }
+        wrap.classList.add(stateClass);
+        if (statusEl) statusEl.textContent = statusText;
     }
     function updateProdPageSub() {
         const el = document.getElementById('prodPageSub');
@@ -4543,6 +4747,7 @@
     function updateProdPreview() {
         const slug = document.getElementById('prodProduct').value;
         const f = formulas[slug];
+        syncProdLotsUi();
         renderProdVersionChips();
         updateProdPageSub();
         if (f) syncActiveVersionToRoot(f);
@@ -4753,52 +4958,18 @@
         ensureVersions(f);
         syncActiveVersionToRoot(f);
         const active = activeVersion(f);
-        // Solo MP de la versión activa (excluye empaque / Pza)
-        const activeItems = formulaVersionItems(f, f.activeVersionId).filter(function (it) {
-            return (it.unit || '') !== 'Pza' && (it.role || '') !== 'Empaque';
-        });
-        if (!activeItems.length) {
+        const analysis = analyzeProdMpCapacity(slug, lots);
+        const rows = analysis.rows;
+        if (!rows.length) {
             host.innerHTML = '<div class="cortes-chart-empty">Sin dosis en esta versión</div>';
             if (subEl) subEl.textContent = (active && active.name ? active.name + ' · ' : '') + 'Sin ingredientes';
             return;
         }
-        const order = [];
-        const seen = {};
-        activeItems.forEach(function (it) {
-            if (!it.plantId || seen[it.plantId]) return;
-            seen[it.plantId] = true;
-            order.push(it.plantId);
-        });
         function fmtQty(v) {
             const n = Number(v) || 0;
             if (Math.abs(n) >= 100) return String(Math.round(n));
             return String(Math.round(n * 1000) / 1000);
         }
-        const rows = order.map(function (id) {
-            const mat = plantById(id);
-            const it = activeItems.filter(function (x) { return x.plantId === id; })[0];
-            const unit = (it && it.unit) || (mat && mat.unit) || 'Kg';
-            const need = (Number(it && it.amount) || 0) * lots;
-            const have = mat ? Number(mat.stock) || 0 : 0;
-            const minStock = mat ? Number(mat.minStock) || 0 : 0;
-            // Capacidad usable antes de tocar el mínimo: inventario − minStock
-            const buffer = Math.max(0, have - minStock);
-            const fullName = mat ? (mat.name || id) : id;
-            return {
-                plantId: id,
-                labelLines: wrapIngLabel(fullName),
-                fullName: fullName,
-                unit: unit,
-                need: need,
-                have: have,
-                minStock: minStock,
-                buffer: buffer,
-                ok: !!mat && have >= need,
-                // Alerta en etiqueta kg: rojo si falta inventario; naranja si toca el margen (inv − mín)
-                alert: !mat ? 'danger' : (need > have ? 'danger' : (need > buffer ? 'warning' : null)),
-                missing: !mat
-            };
-        });
         const stockVals = rows.map(function (row) { return row.have; });
         const needVals = rows.map(function (row) { return row.need; });
         const bufferVals = rows.map(function (row) { return row.buffer; });
@@ -4921,6 +5092,14 @@
 
     document.getElementById('prodProduct').addEventListener('change', updateProdPreview);
     document.getElementById('prodQty').addEventListener('input', updateProdPreview);
+    const prodQtyRangeEl = document.getElementById('prodQtyRange');
+    if (prodQtyRangeEl) {
+        prodQtyRangeEl.addEventListener('input', function () {
+            const qtyEl = document.getElementById('prodQty');
+            if (qtyEl) qtyEl.value = String(Math.max(1, Math.floor(Number(prodQtyRangeEl.value) || 1)));
+            updateProdPreview();
+        });
+    }
     const prodVersionChipsEl = document.getElementById('prodVersionChips');
     if (prodVersionChipsEl) {
         prodVersionChipsEl.addEventListener('click', function (e) {
