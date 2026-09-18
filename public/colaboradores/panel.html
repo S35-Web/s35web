@@ -1463,6 +1463,27 @@
             border-top: 1px solid var(--border);
         }
         .prod-side-block h3 { margin: 0 0 4px; }
+        .lot-history-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin: 12px 0 8px;
+        }
+        .lot-history-toolbar .search {
+            flex: 1 1 220px;
+            min-width: 0;
+            margin: 0;
+        }
+        .lot-history-toolbar .chips {
+            margin: 0;
+            flex: 0 1 auto;
+        }
+        .lot-history-rows {
+            max-height: min(420px, 55vh);
+            overflow: auto;
+            padding-right: 2px;
+        }
         .prod-side-block .panel-sub {
             margin: 0 0 10px;
             font-size: 12px;
@@ -2226,7 +2247,6 @@
                 <a href="#messages" data-section="messages" title="Mensajes"><i class="fa-regular fa-envelope"></i></a>
                 <a href="#materials" data-section="materials" title="Materias primas"><i class="fa-solid fa-cubes"></i></a>
                 <a href="#production" data-section="production" title="Producción"><i class="fa-solid fa-industry"></i></a>
-                <a href="#site" data-section="site" title="Sitio"><i class="fa-solid fa-globe"></i></a>
             </nav>
             <div class="sidebar-foot">
                 <button class="iconbtn" id="themeBtn" type="button" title="Tema"><i class="fa-solid fa-moon"></i></button>
@@ -2406,15 +2426,28 @@
                         </div>
                         <div class="card span-5">
                             <div class="prod-side-block">
-                                <h3>Lotes abiertos / recientes</h3>
-                                <p class="panel-sub">Producción en planta · descuenta MP al emitir</p>
-                                <div id="lotTicketsList" class="lot-rows muted">Sin tickets aún.</div>
+                                <h3>Lotes abiertos</h3>
+                                <p class="panel-sub">En planta · descuenta MP al emitir</p>
+                                <div id="lotTicketsList" class="lot-rows muted">Sin tickets abiertos.</div>
                             </div>
                             <div class="prod-side-block">
                                 <h3>Tickets de compra</h3>
                                 <p class="panel-sub">Referencia para compras · se archiva solo con Guardar · no descuenta MP</p>
                                 <div id="purchaseTicketsList" class="lot-rows muted">Sin tickets de compra.</div>
                             </div>
+                        </div>
+                        <div class="card span-12">
+                            <h3 style="margin:0 0 4px">Historial de lotes</h3>
+                            <p class="panel-sub" style="margin:0">Confirmados y cancelados · busca por código LT, producto, versión, estado o fecha</p>
+                            <div class="lot-history-toolbar">
+                                <input id="lotHistorySearch" class="search" type="search" placeholder="Buscar LT-, producto, versión, estado, fecha…">
+                                <div class="chips" id="lotHistoryStatusChips" role="group" aria-label="Filtrar por estado">
+                                    <button type="button" class="chip active" data-lot-hist="all">Todos</button>
+                                    <button type="button" class="chip" data-lot-hist="confirmed">Confirmados</button>
+                                    <button type="button" class="chip" data-lot-hist="cancelled">Cancelados</button>
+                                </div>
+                            </div>
+                            <div id="lotHistoryList" class="lot-rows muted lot-history-rows">Sin historial aún.</div>
                         </div>
                     </div>
                 </section>
@@ -2679,31 +2712,6 @@
                     <div id="recipeNav" hidden></div>
                 </section>
 
-                <section id="site" class="section">
-                    <h1 class="page-title">Sitio</h1>
-                    <p class="page-sub">Enlaces internos de operación.</p>
-                    <div class="grid">
-                        <div class="card span-6">
-                            <h3>Público</h3>
-                            <div class="shortcuts">
-                                <a class="shortcut" href="/" target="_blank">Inicio</a>
-                                <a class="shortcut" href="/productos" target="_blank">Catálogo</a>
-                                <a class="shortcut" href="/productos" target="_blank">Índice de fichas</a>
-                                <a class="shortcut" href="/#contacto" target="_blank">Formulario de contacto</a>
-                            </div>
-                        </div>
-                        <div class="card span-6">
-                            <h3>Operación</h3>
-                            <div class="shortcuts">
-                                <a class="shortcut" href="#venta" id="goVentaSite">Punto de venta</a>
-                                <a class="shortcut" href="/laboratorio/materials" target="_blank">Índice de materiales</a>
-                                <a class="shortcut" href="/laboratorio/methodology" target="_blank">Metodología</a>
-                                <a class="shortcut" href="/laboratorio/about" target="_blank">Acerca de</a>
-                                <a class="shortcut" href="/laboratorio/research" target="_blank">Investigación</a>
-                            </div>
-                        </div>
-                    </div>
-                </section>
             </main>
         </div>
     </div>
@@ -3159,7 +3167,7 @@
         sidebar.classList.toggle('open');
     });
 
-    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'clients', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production', 'site'];
+    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'clients', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
     const LEGACY_TO_PRODUCTS = { prices: true, catalog: true, formulas: true };
 
     /* Roles / permisos — deben existir ANTES de showSection (evita TDZ en ROLE_PERMS). */
@@ -5243,27 +5251,83 @@
         if (f) syncActiveVersionToRoot(f);
         renderProdFormulaChart();
     }
+    function isLotTicketOpen(t) {
+        const s = String((t && t.status) || 'open');
+        return s === 'open';
+    }
+    function isLotTicketHistoric(t) {
+        const s = String((t && t.status) || '');
+        return s === 'confirmed' || s === 'cancelled' || s === 'completed' || s === 'closed';
+    }
+    function lotTicketRowHtml(t) {
+        let sub;
+        if (t.status === 'confirmed') {
+            sub = (t.bagsOut != null ? t.bagsOut + ' u. · ' : '') + formatLotWhen(t.confirmedAt || t.issuedAt);
+        } else if (t.status === 'cancelled') {
+            sub = 'Cancelado · ' + formatLotWhen(t.cancelledAt || t.issuedAt);
+        } else {
+            sub = 'En planta · ' + formatLotWhen(t.issuedAt);
+        }
+        const formulaBit = t.formulaVersionName ? (' · ' + t.formulaVersionName) : '';
+        return '<button type="button" class="lot-row" data-lot-id="' + esc(t.id) + '">' +
+            '<div class="lot-row-top">' +
+            '<div><div class="lot-code">' + esc(t.id) + '</div>' +
+            '<div>' + esc(t.name) + '</div>' +
+            '<div class="muted">' + esc(t.code) + esc(formulaBit) + ' · ' + esc(sub) + '</div></div>' +
+            lotStatusBadge(t.status) +
+            '</div></button>';
+    }
     function renderLotTicketsList() {
         const box = document.getElementById('lotTicketsList');
         if (!box) return;
-        const list = loadLotTickets();
-        if (!list.length) {
-            box.innerHTML = '<div class="empty">Sin tickets aún. Emite uno para mandarlo a planta.</div>';
+        const open = loadLotTickets().filter(isLotTicketOpen);
+        if (!open.length) {
+            box.innerHTML = '<div class="empty">Sin lotes abiertos en planta.</div>';
             return;
         }
-        box.innerHTML = list.slice(0, 40).map(function (t) {
-            const sub = t.status === 'confirmed'
-                ? (t.bagsOut + ' u. · ' + formatLotWhen(t.confirmedAt || t.issuedAt))
-                : ('En planta · ' + formatLotWhen(t.issuedAt));
-            const formulaBit = t.formulaVersionName ? (' · ' + t.formulaVersionName) : '';
-            return '<button type="button" class="lot-row" data-lot-id="' + esc(t.id) + '">' +
-                '<div class="lot-row-top">' +
-                '<div><div class="lot-code">' + esc(t.id) + '</div>' +
-                '<div>' + esc(t.name) + '</div>' +
-                '<div class="muted">' + esc(t.code) + esc(formulaBit) + ' · ' + esc(sub) + '</div></div>' +
-                lotStatusBadge(t.status) +
-                '</div></button>';
-        }).join('');
+        box.innerHTML = open.slice(0, 40).map(lotTicketRowHtml).join('');
+    }
+    let lotHistoryStatusFilter = 'all';
+    function lotHistoryHaystack(t) {
+        const statusLabel = t.status === 'confirmed' ? 'confirmado'
+            : t.status === 'cancelled' ? 'cancelado'
+            : t.status === 'completed' ? 'completado'
+            : t.status === 'closed' ? 'cerrado'
+            : String(t.status || '');
+        return [
+            t.id, t.name, t.code, t.product, t.formulaVersionName, t.notes,
+            statusLabel, t.status,
+            formatLotWhen(t.issuedAt),
+            formatLotWhen(t.confirmedAt),
+            formatLotWhen(t.cancelledAt)
+        ].map(function (x) { return String(x || '').toLowerCase(); }).join(' ');
+    }
+    function renderLotHistoryList() {
+        const box = document.getElementById('lotHistoryList');
+        if (!box) return;
+        const q = String((document.getElementById('lotHistorySearch') || {}).value || '').trim().toLowerCase();
+        let list = loadLotTickets().filter(isLotTicketHistoric);
+        if (lotHistoryStatusFilter === 'confirmed') {
+            list = list.filter(function (t) {
+                return t.status === 'confirmed' || t.status === 'completed' || t.status === 'closed';
+            });
+        } else if (lotHistoryStatusFilter === 'cancelled') {
+            list = list.filter(function (t) { return t.status === 'cancelled'; });
+        }
+        if (q) {
+            list = list.filter(function (t) { return lotHistoryHaystack(t).indexOf(q) !== -1; });
+        }
+        if (!list.length) {
+            box.innerHTML = q || lotHistoryStatusFilter !== 'all'
+                ? '<div class="empty">Sin resultados para este filtro.</div>'
+                : '<div class="empty">Sin historial aún. Los lotes confirmados o cancelados aparecerán aquí.</div>';
+            return;
+        }
+        box.innerHTML = list.slice(0, 80).map(lotTicketRowHtml).join('');
+    }
+    function refreshLotTicketLists() {
+        renderLotTicketsList();
+        renderLotHistoryList();
     }
     function canDeletePurchaseTickets() {
         return currentRole === 'admin' || (ROLE_PERMS[currentRole] || []).indexOf('*') >= 0;
@@ -5878,7 +5942,7 @@
         renderFinished();
         updateProdPreview();
         renderProdFormulaChart();
-        renderLotTicketsList();
+        refreshLotTicketLists();
     }
 
     document.getElementById('prodProduct').addEventListener('change', updateProdPreview);
@@ -6020,6 +6084,29 @@
         const btn = e.target.closest('[data-lot-id]');
         if (btn) openLotTicketModal(btn.getAttribute('data-lot-id'));
     });
+    const lotHistoryListEl = document.getElementById('lotHistoryList');
+    if (lotHistoryListEl) {
+        lotHistoryListEl.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-lot-id]');
+            if (btn) openLotTicketModal(btn.getAttribute('data-lot-id'));
+        });
+    }
+    const lotHistorySearchEl = document.getElementById('lotHistorySearch');
+    if (lotHistorySearchEl) {
+        lotHistorySearchEl.addEventListener('input', function () { renderLotHistoryList(); });
+    }
+    const lotHistoryChipsEl = document.getElementById('lotHistoryStatusChips');
+    if (lotHistoryChipsEl) {
+        lotHistoryChipsEl.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-lot-hist]');
+            if (!btn) return;
+            lotHistoryStatusFilter = btn.getAttribute('data-lot-hist') || 'all';
+            lotHistoryChipsEl.querySelectorAll('[data-lot-hist]').forEach(function (el) {
+                el.classList.toggle('active', el === btn);
+            });
+            renderLotHistoryList();
+        });
+    }
     const purchaseTicketsListEl = document.getElementById('purchaseTicketsList');
     if (purchaseTicketsListEl) {
         purchaseTicketsListEl.addEventListener('click', function (e) {
@@ -6118,6 +6205,7 @@
     fillProdProducts();
     renderFinished();
     renderLotTicketsList();
+    renderLotHistoryList();
     renderPurchaseTicketsList();
 
     loadMessages();
@@ -6181,8 +6269,6 @@
     if (goVenta) goVenta.addEventListener('click', function (e) { e.preventDefault(); showSection('venta'); });
     const goCortes = document.getElementById('goCortes');
     if (goCortes) goCortes.addEventListener('click', function (e) { e.preventDefault(); showSection('cortes'); });
-    const goVentaSite = document.getElementById('goVentaSite');
-    if (goVentaSite) goVentaSite.addEventListener('click', function (e) { e.preventDefault(); showSection('venta'); });
 
     </script>
     <script src="/colaboradores/pos-module.js"></script>
