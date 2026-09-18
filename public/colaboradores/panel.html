@@ -1308,6 +1308,12 @@
             #purchaseTicketModal .modal-body { padding: 0 !important; overflow: visible !important; }
             .sale-note-doc,
             .lot-ticket-doc { color: #0a0a0a !important; }
+            /* Vista previa LT sin confirmar: no imprimible (Ctrl/Cmd+P tampoco) */
+            #lotTicketModal.is-pending,
+            #lotTicketModal.is-pending * {
+                display: none !important;
+                visibility: hidden !important;
+            }
         }
 
         .lot-ticket-doc {
@@ -5615,7 +5621,9 @@
             panelToast('No se pudo copiar');
         }
     }
-    function lotTicketDocHtml(t) {
+    function lotTicketDocHtml(t, opts) {
+        const options = opts || {};
+        const pending = !!options.pending;
         const allLines = t.mpLines || [];
         const hasVisFlags = allLines.some(function (ln) { return typeof ln.hidden === 'boolean'; });
         const visibleLines = hasVisFlags
@@ -5645,18 +5653,27 @@
                 '<span class="chem-kg">' + esc(String(chem.totalKg)) + ' kg</span>' +
                 '</div></div>')
             : '';
-        const fill = t.status === 'confirmed'
-            ? ('<div class="lot-ticket-fill"><strong>Sacos reales confirmados:</strong> ' +
+        // Sacos solo tras producción (fase 2). Preview y ticket abierto: sin proyección teórico/esperado.
+        let fill = '';
+        if (t.status === 'confirmed') {
+            fill = '<div class="lot-ticket-fill"><strong>Sacos reales confirmados:</strong> ' +
                 esc(String(t.bagsOut)) +
                 (t.mermaKg != null ? ' · merma ≈ ' + esc(String(Math.round(t.mermaKg * 10) / 10)) + ' kg' : '') +
                 (t.notes ? '<div class="muted" style="margin-top:6px">' + esc(t.notes) + '</div>' : '') +
-                '</div>')
-            : ('<div class="lot-ticket-fill">' +
+                '</div>';
+        } else if (!pending && t.status !== 'cancelled') {
+            fill = '<div class="lot-ticket-fill">' +
                 '<div class="muted">Completar en planta al terminar el envasado</div>' +
                 '<div class="blank">Sacos / unidades reales: ____________</div>' +
-                '<div class="muted" style="margin-top:8px">Esperado ' +
-                esc(String(t.yieldMin || '—')) + '–' + esc(String(t.yieldMax || '—')) +
-                ' · teórico ~' + esc(String(t.yieldTheoretical || '—')) + '</div></div>');
+                '</div>';
+        }
+        const statusLabel = pending
+            ? 'Vista previa (sin emitir)'
+            : (t.status === 'confirmed' ? 'Confirmado'
+                : t.status === 'cancelled' ? 'Cancelado' : 'En planta');
+        const footerNote = pending
+            ? '<p class="muted" style="margin-top:16px;font-size:12px">Confirma para emitir al sistema. Hasta entonces no se puede imprimir ni enviar a planta.</p>'
+            : '<p class="muted" style="margin-top:16px;font-size:12px">Anexar a la tarima. Este código identifica el lote de producto terminado.</p>';
         return '<div class="lot-ticket-brand">' +
             '<div class="mark"><span>S-35</span> Ticket de lote de producción</div>' +
             '<div class="folio"><span>Lote</span>' + esc(t.id) + '</div></div>' +
@@ -5667,29 +5684,31 @@
                 ? '<div class="row"><span class="k">Fórmula</span><span class="v">' + esc(t.formulaVersionName) +
                     (t.formulaVersionLabel ? ' — ' + esc(t.formulaVersionLabel) : '') + '</span></div>'
                 : '') +
-            '<div class="row"><span class="k">Emitido</span><span class="v">' + esc(formatLotWhen(t.issuedAt)) + '</span></div>' +
+            '<div class="row"><span class="k">' + (pending ? 'Borrador' : 'Emitido') + '</span><span class="v">' +
+            esc(formatLotWhen(t.issuedAt)) + '</span></div>' +
             '<div class="row"><span class="k">Lotes de planta</span><span class="v">' + esc(String(t.lots || 1)) + '</span></div>' +
             (t.totalKg ? '<div class="row"><span class="k">MP total</span><span class="v">' + esc(String(t.totalKg)) + ' kg</span></div>' : '') +
-            '<div class="row"><span class="k">Estado</span><span class="v">' +
-            (t.status === 'confirmed' ? 'Confirmado' : t.status === 'cancelled' ? 'Cancelado' : 'En planta') +
-            '</span></div></div>' +
+            '<div class="row"><span class="k">Estado</span><span class="v">' + statusLabel + '</span></div></div>' +
             '<table class="lot-ticket-lines"><thead><tr><th>Materia prima</th><th class="num">Cantidad</th></tr></thead><tbody>' +
             (lines || '<tr><td colspan="2" class="muted">Sin MP visible para planta</td></tr>') +
             '</tbody></table>' +
             chemistryBlock +
             fill +
             '<div class="lot-ticket-sign"><div class="sig">Autorizó / emitió</div><div class="sig">Producción / envasado</div></div>' +
-            '<p class="muted" style="margin-top:16px;font-size:12px">Anexar a la tarima. Este código identifica el lote de producto terminado.</p>';
+            footerNote;
     }
     function syncLotTicketActionButtons() {
         const pending = !!currentLotTicketPending;
         const open = !!(currentLotTicket && currentLotTicket.status === 'open' && !pending);
+        const issued = !!(currentLotTicket && !pending);
+        const modal = document.getElementById('lotTicketModal');
         const issueConfirm = document.getElementById('lotTicketIssueConfirmBtn');
         const issueCancel = document.getElementById('lotTicketIssueCancelBtn');
         const printBtn = document.getElementById('lotTicketPrint');
         const confirmBtn = document.getElementById('lotTicketConfirmBtn');
         const cancelBtn = document.getElementById('lotTicketCancelBtn');
         const fields = document.getElementById('lotConfirmFields');
+        if (modal) modal.classList.toggle('is-pending', pending);
         if (issueConfirm) {
             if (pending) issueConfirm.removeAttribute('hidden');
             else issueConfirm.setAttribute('hidden', '');
@@ -5699,12 +5718,17 @@
             else issueCancel.setAttribute('hidden', '');
         }
         if (printBtn) {
-            if (pending) {
-                printBtn.setAttribute('hidden', '');
-                printBtn.classList.remove('primary');
-            } else {
+            // Solo tras emitir al sistema (ya no es vista previa)
+            if (issued) {
                 printBtn.removeAttribute('hidden');
                 printBtn.classList.add('primary');
+                printBtn.removeAttribute('disabled');
+                printBtn.setAttribute('aria-disabled', 'false');
+            } else {
+                printBtn.setAttribute('hidden', '');
+                printBtn.classList.remove('primary');
+                printBtn.setAttribute('disabled', '');
+                printBtn.setAttribute('aria-disabled', 'true');
             }
         }
         if (confirmBtn) confirmBtn.hidden = !open;
@@ -5811,7 +5835,7 @@
         const title = document.getElementById('lotTicketModalTitle');
         const bags = document.getElementById('lotConfirmBags');
         const notes = document.getElementById('lotConfirmNotes');
-        if (doc) doc.innerHTML = lotTicketDocHtml(t);
+        if (doc) doc.innerHTML = lotTicketDocHtml(t, { pending: pending });
         if (title) {
             title.textContent = pending
                 ? ('Vista previa · ' + t.id)
@@ -5834,6 +5858,7 @@
         const modal = document.getElementById('lotTicketModal');
         if (modal) {
             modal.classList.remove('show');
+            modal.classList.remove('is-pending');
             modal.setAttribute('aria-hidden', 'true');
         }
         currentLotTicketId = null;
@@ -6203,8 +6228,15 @@
         }
     });
     document.getElementById('lotTicketPrint').addEventListener('click', function () {
-        if (currentLotTicketPending) return;
+        if (currentLotTicketPending || !currentLotTicket) {
+            panelToast('Confirma el ticket antes de imprimir');
+            return;
+        }
         window.print();
+    });
+    window.addEventListener('beforeprint', function () {
+        if (!currentLotTicketPending) return;
+        panelToast('Confirma el ticket antes de imprimir');
     });
     const lotIssueConfirm = document.getElementById('lotTicketIssueConfirmBtn');
     if (lotIssueConfirm) lotIssueConfirm.addEventListener('click', commitPendingLotTicket);
