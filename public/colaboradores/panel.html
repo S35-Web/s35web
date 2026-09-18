@@ -807,6 +807,46 @@
             border-color: var(--primary);
             color: var(--primary-fg);
         }
+        .formula-version-chips .formula-ver-chip-wrap {
+            display: inline-flex;
+            align-items: stretch;
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--panel);
+        }
+        .formula-version-chips .formula-ver-chip-wrap.is-active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--primary-fg);
+        }
+        .formula-version-chips .formula-ver-chip-wrap > button {
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            color: inherit;
+        }
+        .formula-version-chips .formula-ver-chip-wrap > button:hover {
+            background: rgba(0, 0, 0, 0.06);
+        }
+        .formula-version-chips .formula-ver-chip-wrap.is-active > button:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+        .formula-version-chips .formula-ver-chip-wrap > [data-formula-version] {
+            padding: 6px 12px;
+        }
+        .formula-version-chips .formula-ver-chip-wrap.is-active > [data-formula-version] {
+            padding-right: 6px;
+        }
+        .formula-version-chips .formula-ver-del {
+            padding: 6px 10px 6px 4px;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1;
+            opacity: 0.78;
+            min-width: 28px;
+        }
+        .formula-version-chips .formula-ver-del:hover { opacity: 1; }
         .formula-version-meta {
             font-size: 12px;
             color: var(--muted);
@@ -4049,6 +4089,80 @@
         });
         return 'v' + (max + 1);
     }
+    /** Renombra a V1…Vn (ids v1…vn). No toca tickets LT ya emitidos (guardan snapshot). */
+    function renumberFormulaVersions(f, keepActiveIndex) {
+        ensureVersions(f);
+        const idx = keepActiveIndex != null
+            ? keepActiveIndex
+            : Math.max(0, f.versions.findIndex(function (v) { return v.id === f.activeVersionId; }));
+        f.versions.forEach(function (v, i) {
+            v.id = 'v' + (i + 1);
+            v.name = 'V' + (i + 1);
+        });
+        const safe = Math.min(Math.max(0, idx), f.versions.length - 1);
+        f.activeVersionId = f.versions[safe].id;
+    }
+    function formulaVersionChipHtml(v, f, editable) {
+        const isActive = v.id === f.activeVersionId;
+        const canDel = editable && isActive && (f.versions || []).length > 1;
+        if (!canDel) {
+            return '<button type="button" data-formula-version="' + esc(v.id) + '" class="' +
+                (isActive ? 'active' : '') + '">' + esc(v.name || v.id) + '</button>';
+        }
+        return '<span class="formula-ver-chip-wrap is-active">' +
+            '<button type="button" data-formula-version="' + esc(v.id) + '" class="active">' +
+            esc(v.name || v.id) + '</button>' +
+            '<button type="button" class="formula-ver-del" data-delete-formula-version="' + esc(v.id) +
+            '" title="Eliminar versión" aria-label="Eliminar versión">×</button>' +
+            '</span>';
+    }
+    function syncFormulaVersionChipDeletes(mount, f) {
+        if (!mount || !f) return;
+        const chips = mount.querySelector('.formula-version-chips');
+        if (!chips) return;
+        const editable = canEditFormulas();
+        const addBtn = chips.querySelector('#formulaAddVersionBtn');
+        const addHtml = addBtn ? addBtn.outerHTML : '';
+        chips.innerHTML = (f.versions || []).map(function (v) {
+            return formulaVersionChipHtml(v, f, editable);
+        }).join('') + addHtml;
+    }
+    function deleteFormulaVersion(versionId) {
+        if (!canEditFormulas()) return;
+        const f = formulas[currentRecipe];
+        if (!f) return;
+        ensureVersions(f);
+        if ((f.versions || []).length <= 1) {
+            alert('Debe quedar al menos una versión.');
+            return;
+        }
+        const idx = f.versions.findIndex(function (v) { return v.id === versionId; });
+        if (idx < 0) return;
+        const ver = f.versions[idx];
+        const label = (ver.name || ver.id) + (ver.label ? ' — ' + ver.label : '');
+        if (!confirm(
+            '¿Eliminar la versión ' + label + '?\n' +
+            'Las versiones restantes se renumeran (V1…Vn). Los tickets de producción ya emitidos no se modifican.'
+        )) return;
+        readFormulaFromDom();
+        persistRootToActiveVersion(f);
+        const wasActive = f.activeVersionId === versionId;
+        f.versions.splice(idx, 1);
+        let nextIdx = wasActive ? Math.max(0, idx - 1) : f.versions.findIndex(function (v) {
+            return v.id === f.activeVersionId;
+        });
+        if (nextIdx < 0) nextIdx = 0;
+        renumberFormulaVersions(f, nextIdx);
+        syncActiveVersionToRoot(f);
+        formulaDirty = true;
+        saveFormulas();
+        formulaDirty = false;
+        openRecipe(currentRecipe, true);
+        if (typeof renderProdVersionChips === 'function') renderProdVersionChips();
+        if (typeof updateProdPreview === 'function') {
+            try { updateProdPreview(); } catch (_) {}
+        }
+    }
     function sliderMaxFor(amount, unit) {
         const a = Number(amount) || 0;
         if ((unit || 'Kg') === 'Pza') return Math.max(100, Math.ceil(a * 2) || 50);
@@ -4396,15 +4510,15 @@
             // Update chips active state without full remount of lines first
             const mount = formulaMountEl();
             if (mount) {
-                mount.querySelectorAll('[data-formula-version]').forEach(function (btn) {
-                    btn.classList.toggle('active', btn.getAttribute('data-formula-version') === versionId);
-                });
+                syncFormulaVersionChipDeletes(mount, f);
                 const meta = mount.querySelector('.formula-version-meta');
                 if (meta) meta.textContent = (next.name || '') + (next.label ? ' — ' + next.label : '');
                 const yMin = mount.querySelector('[data-field="yieldMin"]');
                 const yMax = mount.querySelector('[data-field="yieldMax"]');
                 if (yMin) yMin.value = String(f.yieldMin || 0);
                 if (yMax) yMax.value = String(f.yieldMax || 0);
+                const delBtn = mount.querySelector('#formulaDeleteVersionBtn');
+                if (delBtn) delBtn.hidden = (f.versions || []).length <= 1;
             }
             animateFormulaToVersion(fromItems, toItems, function () {
                 persistRootToActiveVersion(f);
@@ -4443,8 +4557,7 @@
         const versionBar = '<div class="formula-version-bar">' +
             '<div class="formula-version-chips">' +
             (f.versions || []).map(function (v) {
-                return '<button type="button" data-formula-version="' + esc(v.id) + '" class="' +
-                    (v.id === f.activeVersionId ? 'active' : '') + '">' + esc(v.name || v.id) + '</button>';
+                return formulaVersionChipHtml(v, f, editable);
             }).join('') +
             (editable ? '<button type="button" class="btn" id="formulaAddVersionBtn" title="Nueva versión" style="border-radius:999px;padding:6px 10px"><i class="fa-solid fa-plus"></i></button>' : '') +
             '</div>' +
@@ -4490,6 +4603,7 @@
         const lotSummary = lotMode
             ? ('<div class="note-box" style="margin-bottom:12px">' +
                 '<strong>Lote de planta</strong> · Usa sliders para ajustar dosis. Guarda versiones (V1, V2…) cuando cambies ingredientes. ' +
+                'Puedes eliminar una versión con × en el chip activo (debe quedar al menos una). ' +
                 'Cada ticket de producción registra qué versión se usó.' +
                 '</div>')
             : '';
@@ -4497,6 +4611,9 @@
             ? ('<div class="formula-actions">' +
                 '<button type="button" class="btn" id="formulaAddBtn"><i class="fa-solid fa-plus"></i> Agregar materia</button>' +
                 '<button type="button" class="btn" id="formulaSaveVersionAsBtn"><i class="fa-solid fa-copy"></i> Guardar como nueva versión</button>' +
+                '<button type="button" class="btn" id="formulaDeleteVersionBtn"' +
+                ((f.versions || []).length <= 1 ? ' hidden' : '') +
+                ' title="Eliminar la versión activa"><i class="fa-solid fa-trash-can"></i> Eliminar versión</button>' +
                 '<button type="button" class="btn primary" id="formulaSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>' +
                 '</div>')
             : '<div class="muted" style="margin-top:10px">Solo lectura (rol ventas).</div>';
@@ -4564,6 +4681,22 @@
     });
     document.addEventListener('click', function (e) {
         if (!onFormulaMountEvent(e)) return;
+        const delVer = e.target.closest('[data-delete-formula-version]');
+        if (delVer) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!canEditFormulas()) return;
+            deleteFormulaVersion(delVer.getAttribute('data-delete-formula-version'));
+            return;
+        }
+        if (e.target.closest('#formulaDeleteVersionBtn')) {
+            if (!canEditFormulas()) return;
+            const f = formulas[currentRecipe];
+            if (!f) return;
+            ensureVersions(f);
+            deleteFormulaVersion(f.activeVersionId);
+            return;
+        }
         const verBtn = e.target.closest('[data-formula-version]');
         if (verBtn) {
             switchFormulaVersion(verBtn.getAttribute('data-formula-version'), true);
