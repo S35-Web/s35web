@@ -1867,7 +1867,7 @@
 
                 <section id="production" class="section">
                     <h1 class="page-title">Producción</h1>
-                    <p class="page-sub">Registra un lote: se descuentan materias primas y se suma producto terminado.</p>
+                    <p class="page-sub">Lote de planta: se descuentan las MP de la receta y se da de alta el producto terminado con los sacos reales envasados.</p>
                     <div class="grid">
                         <div class="card span-7">
                             <h3>Registrar lote</h3>
@@ -1875,8 +1875,11 @@
                                 <label>Producto
                                     <select id="prodProduct"></select>
                                 </label>
-                                <label>Cantidad de lotes
+                                <label id="prodLotsWrap">Lotes de planta
                                     <input id="prodQty" type="number" min="1" step="1" value="1">
+                                </label>
+                                <label id="prodBagsWrap">Sacos / unidades reales
+                                    <input id="prodBagsOut" type="number" min="1" step="1" value="30">
                                 </label>
                             </div>
                             <div id="prodPreview" class="prod-preview muted">Elige un producto con receta para ver el consumo.</div>
@@ -2409,6 +2412,7 @@
     }
     let persistNormalized = false;
     function loadInventory() {
+        const seed = seedInventory();
         try {
             const raw = JSON.parse(localStorage.getItem(PLANT_KEY) || 'null');
             if (raw && Array.isArray(raw.items) && raw.items.length) {
@@ -2417,10 +2421,19 @@
                         || normalizeUnit(m.unit) !== (m.unit || '')
                         || normalizeCategory(m.category) !== (m.category || 'mineral');
                 });
-                return raw.items.map(normalizeItem);
+                const saved = raw.items.map(normalizeItem);
+                const byId = {};
+                saved.forEach(function (m) { byId[m.id] = m; });
+                seed.forEach(function (m) {
+                    if (!byId[m.id]) {
+                        saved.push(m);
+                        persistNormalized = true;
+                    }
+                });
+                return saved;
             }
         } catch (_) {}
-        return seedInventory();
+        return seed;
     }
     function saveInventory(list) {
         localStorage.setItem(PLANT_KEY, JSON.stringify({ items: list, updatedAt: new Date().toISOString() }));
@@ -2922,7 +2935,7 @@
     renderMaterials();
 
     const recipes = data.recipes || [];
-    const FORMULA_KEY = 's35_plant_formulas';
+    const FORMULA_KEY = 's35_plant_formulas_v2';
     function parseFirstNumber(text) {
         const m = String(text || '').match(/(\d+(?:[.,]\d+)?)/);
         return m ? Number(m[1].replace(',', '.')) : 0;
@@ -2935,14 +2948,60 @@
         if (String(recipe.product || '').indexOf('waxtard') === 0) return 'saco-rafia-waxtard';
         return 'saco-rafia-general';
     }
+    function recipeTotalKg(f) {
+        return (f.items || []).reduce(function (sum, it) {
+            return sum + ((it.unit || 'Kg') === 'Kg' ? (Number(it.amount) || 0) : 0);
+        }, 0);
+    }
+    function isPlantLot(f) {
+        return !!(f && f.mode === 'plant-lot');
+    }
+    function theoreticalBags(f) {
+        const pack = Number(f.packSizeKg) || 25;
+        const total = recipeTotalKg(f);
+        return pack > 0 ? Math.round((total / pack) * 100) / 100 : 0;
+    }
     function seedFormula(recipe) {
+        const dose = recipe.batchDose;
+        if (dose && dose.mode === 'plant-lot') {
+            const items = (dose.items || []).map(function (it) {
+                const mat = plantById(it.plantId);
+                return {
+                    plantId: it.plantId,
+                    amount: Number(it.amount) || 0,
+                    unit: normalizeUnit(it.unit || (mat && mat.unit) || 'Kg') || 'Kg',
+                    role: it.role || ''
+                };
+            }).filter(function (it) { return it.plantId && plantById(it.plantId); });
+            const totalKg = items.reduce(function (s, it) {
+                return s + ((it.unit || 'Kg') === 'Kg' ? it.amount : 0);
+            }, 0);
+            return {
+                product: recipe.product,
+                mode: 'plant-lot',
+                batchSize: totalKg || Number(dose.totalKg) || 0,
+                batchUnit: 'Kg',
+                batchLabel: 'lote',
+                packSizeKg: Number(dose.packSizeKg) || 25,
+                yieldMin: Number(dose.yieldMin) || 0,
+                yieldMax: Number(dose.yieldMax) || 0,
+                packagingPlantId: dose.packagingPlantId || packagingId(recipe),
+                water: parseFirstNumber(recipe.water),
+                items: items
+            };
+        }
         const liquid = recipe.kind === 'liquido';
         const sack = String(recipe.water || '').match(/saco\s+(\d+)/i);
         const f = {
             product: recipe.product,
+            mode: 'unit',
             batchSize: liquid ? 19 : (sack ? Number(sack[1]) : 25),
             batchUnit: liquid ? 'L' : 'Kg',
             batchLabel: liquid ? 'cubeta' : 'saco',
+            packSizeKg: liquid ? 0 : (sack ? Number(sack[1]) : 25),
+            yieldMin: 0,
+            yieldMax: 0,
+            packagingPlantId: packagingId(recipe),
             water: parseFirstNumber(recipe.water),
             items: []
         };
@@ -2953,7 +3012,7 @@
             const mat = plantById(s.plantId);
             f.items.push({
                 plantId: s.plantId,
-                amount: 0,
+                amount: Number(s.amount) || 0,
                 unit: (mat && mat.unit) || s.unit || 'Kg',
                 role: s.role || ''
             });
@@ -2975,11 +3034,19 @@
                 Object.keys(items).forEach(function (slug) {
                     if (!map[slug] || !items[slug]) return;
                     const saved = items[slug];
+                    const seeded = map[slug];
+                    // Si hay dosificación canónica de lote, priorizar seed salvo que el admin ya guardó mode plant-lot.
+                    if (seeded.mode === 'plant-lot' && saved.mode !== 'plant-lot') return;
+                    map[slug].mode = saved.mode || seeded.mode || 'unit';
                     map[slug].batchSize = Number(saved.batchSize) || map[slug].batchSize;
                     map[slug].batchUnit = normalizeUnit(saved.batchUnit || map[slug].batchUnit) || map[slug].batchUnit;
                     map[slug].batchLabel = saved.batchLabel || map[slug].batchLabel;
+                    map[slug].packSizeKg = Number(saved.packSizeKg) || map[slug].packSizeKg || 25;
+                    map[slug].yieldMin = Number(saved.yieldMin) || map[slug].yieldMin || 0;
+                    map[slug].yieldMax = Number(saved.yieldMax) || map[slug].yieldMax || 0;
+                    map[slug].packagingPlantId = saved.packagingPlantId || map[slug].packagingPlantId || '';
                     map[slug].water = Number(saved.water) || 0;
-                    if (Array.isArray(saved.items)) {
+                    if (Array.isArray(saved.items) && saved.items.length) {
                         map[slug].items = saved.items.map(function (it) {
                             const mat = plantById(it.plantId);
                             return {
@@ -3055,10 +3122,16 @@
         const batchUnit = detail.querySelector('[data-field="batchUnit"]');
         const batchLabel = detail.querySelector('[data-field="batchLabel"]');
         const water = detail.querySelector('[data-field="water"]');
+        const packSize = detail.querySelector('[data-field="packSizeKg"]');
+        const yieldMin = detail.querySelector('[data-field="yieldMin"]');
+        const yieldMax = detail.querySelector('[data-field="yieldMax"]');
         if (batchSize) f.batchSize = Math.max(0, Number(batchSize.value) || 0);
         if (batchUnit) f.batchUnit = normalizeUnit(batchUnit.value) || 'Kg';
-        if (batchLabel) f.batchLabel = String(batchLabel.value || '').trim() || 'saco';
+        if (batchLabel) f.batchLabel = String(batchLabel.value || '').trim() || (isPlantLot(f) ? 'lote' : 'saco');
         if (water) f.water = Math.max(0, Number(water.value) || 0);
+        if (packSize) f.packSizeKg = Math.max(0, Number(packSize.value) || 0);
+        if (yieldMin) f.yieldMin = Math.max(0, Number(yieldMin.value) || 0);
+        if (yieldMax) f.yieldMax = Math.max(0, Number(yieldMax.value) || 0);
         const rows = detail.querySelectorAll('[data-line]');
         f.items = [];
         rows.forEach(function (row) {
@@ -3069,6 +3142,7 @@
                 role: ''
             });
         });
+        if (isPlantLot(f)) f.batchSize = recipeTotalKg(f);
         formulaDirty = true;
     }
     function openRecipe(slug, force) {
@@ -3089,6 +3163,9 @@
         const f = formulas[slug];
         renderRecipeNav();
         const editable = canEditFormulas();
+        const lotMode = isPlantLot(f);
+        const totalKg = recipeTotalKg(f);
+        const theo = theoreticalBags(f);
         const lines = (f.items || []).map(function (it, idx) {
             if (!editable) {
                 const mat = plantById(it.plantId);
@@ -3106,13 +3183,31 @@
         }).join('') || '<div class="empty">Agrega materias primas a esta receta.</div>';
         const meta = editable
             ? ('<div class="formula-meta">' +
-                '<label>Tamaño de lote<input data-field="batchSize" type="number" min="0" step="any" value="' + esc(String(f.batchSize)) + '"></label>' +
-                '<label>Unidad del lote<select data-field="batchUnit">' + unitOptions(f.batchUnit) + '</select></label>' +
-                '<label>Lote (saco, cubeta)<input data-field="batchLabel" type="text" value="' + esc(f.batchLabel) + '"></label>' +
-                '<label>Agua (L)<input data-field="water" type="number" min="0" step="any" value="' + esc(String(f.water)) + '"></label>' +
+                (lotMode
+                    ? ('<label>Empaque (kg/saco)<input data-field="packSizeKg" type="number" min="0" step="any" value="' + esc(String(f.packSizeKg || 25)) + '"></label>' +
+                        '<label>Rendimiento mín.<input data-field="yieldMin" type="number" min="0" step="1" value="' + esc(String(f.yieldMin || 0)) + '"></label>' +
+                        '<label>Rendimiento máx.<input data-field="yieldMax" type="number" min="0" step="1" value="' + esc(String(f.yieldMax || 0)) + '"></label>' +
+                        '<label>Agua (L / saco)<input data-field="water" type="number" min="0" step="any" value="' + esc(String(f.water)) + '"></label>')
+                    : ('<label>Tamaño de lote<input data-field="batchSize" type="number" min="0" step="any" value="' + esc(String(f.batchSize)) + '"></label>' +
+                        '<label>Unidad del lote<select data-field="batchUnit">' + unitOptions(f.batchUnit) + '</select></label>' +
+                        '<label>Lote (saco, cubeta)<input data-field="batchLabel" type="text" value="' + esc(f.batchLabel) + '"></label>' +
+                        '<label>Agua (L)<input data-field="water" type="number" min="0" step="any" value="' + esc(String(f.water)) + '"></label>')) +
                 '</div>')
-            : ('<div class="muted" style="margin-bottom:10px">Lote: ' + esc(String(f.batchSize)) + ' ' + esc(f.batchUnit) +
-                ' · ' + esc(f.batchLabel) + (f.water ? ' · agua ' + esc(String(f.water)) + ' L' : '') + '</div>');
+            : ('<div class="muted" style="margin-bottom:10px">' +
+                (lotMode
+                    ? ('Lote de planta · ' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg · teórico ' + esc(String(theo)) +
+                        ' sacos · rango ' + esc(String(f.yieldMin)) + '–' + esc(String(f.yieldMax)))
+                    : ('Lote: ' + esc(String(f.batchSize)) + ' ' + esc(f.batchUnit) +
+                        ' · ' + esc(f.batchLabel) + (f.water ? ' · agua ' + esc(String(f.water)) + ' L' : ''))) +
+                '</div>');
+        const lotSummary = lotMode
+            ? ('<div class="note-box" style="margin-bottom:12px">' +
+                '<strong>Lote de planta</strong> · Total MP ' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg · ' +
+                'Teórico ' + esc(String(theo)) + ' sacos de ' + esc(String(f.packSizeKg || 25)) + ' kg · ' +
+                'Real esperado ' + esc(String(f.yieldMin || '—')) + '–' + esc(String(f.yieldMax || '—')) + ' sacos. ' +
+                'Al producir se descuenta el lote completo y se da de alta solo lo envasado.' +
+                '</div>')
+            : '';
         const actions = editable
             ? ('<div class="formula-actions">' +
                 '<button type="button" class="btn" id="formulaAddBtn"><i class="fa-solid fa-plus"></i> Agregar materia</button>' +
@@ -3122,12 +3217,23 @@
         mount.innerHTML =
             '<div class="recipe-head"><div class="recipe-meta">' +
             '<h3 style="margin:0">' + esc(r.name) + '</h3>' +
-            '<div class="muted">' + esc(r.code) + ' · ' + esc(r.family) + '</div></div>' +
+            '<div class="muted">' + esc(r.code) + ' · ' + esc(r.family) +
+            (lotMode ? ' · <span class="badge b-success">Lote planta</span>' : '') + '</div></div>' +
             recipeStatus(f) + '</div>' +
             (r.note ? '<div class="note-box">' + esc(r.note) + '</div>' : '') +
+            lotSummary +
             meta +
-            '<div class="muted" style="margin-bottom:8px">Dosis por un ' + esc(f.batchLabel) + '</div>' +
+            '<div class="muted" style="margin-bottom:8px">' +
+            (lotMode ? 'Dosis por lote de producción (kg)' : ('Dosis por un ' + esc(f.batchLabel))) +
+            '</div>' +
             '<div id="formulaLines">' + lines + '</div>' +
+            (lotMode && totalKg
+                ? '<div class="muted" style="margin-top:10px;text-align:right">Total <strong>' +
+                    esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg</strong> · ' +
+                    esc(String(theo)) + ' sacos teóricos · ' +
+                    esc(String(Math.round((theo || 0) * 100) / 100)) + ' ≈ ' +
+                    esc(String(f.yieldMin)) + '–' + esc(String(f.yieldMax)) + ' reales</div>'
+                : '') +
             actions;
         if (document.getElementById('products') && document.getElementById('products').classList.contains('active')) syncPanelHash();
     }
@@ -3571,30 +3677,73 @@
 
     function fillProdProducts() {
         const sel = document.getElementById('prodProduct');
+        if (!sel) return;
         sel.innerHTML = recipes.map(function (r) {
             const ready = formulaComplete(formulas[r.product]);
-            return '<option value="' + esc(r.product) + '">' + esc(r.name) + (ready ? '' : ' — falta dosis') + '</option>';
+            const lot = isPlantLot(formulas[r.product]);
+            return '<option value="' + esc(r.product) + '">' + esc(r.name) +
+                (lot ? ' · lote planta' : '') +
+                (ready ? '' : ' — falta dosis') + '</option>';
         }).join('');
         updateProdPreview();
     }
-    function productionNeeds(slug, qty) {
+    function productionNeeds(slug, lots, bagsOut) {
         const f = formulas[slug];
         if (!f) return [];
-        return (f.items || []).map(function (it) {
+        const lotMode = isPlantLot(f);
+        const lotCount = Math.max(1, Number(lots) || 1);
+        const bags = Math.max(0, Number(bagsOut) || 0);
+        const lines = (f.items || []).map(function (it) {
             const mat = plantById(it.plantId);
+            const isPack = (it.unit || '') === 'Pza' || (it.role || '') === 'Empaque';
+            const need = lotMode
+                ? (isPack ? bags : (Number(it.amount) || 0) * lotCount)
+                : (Number(it.amount) || 0) * lotCount;
             return {
                 plantId: it.plantId,
                 name: mat ? displayName(mat) : it.plantId,
                 unit: it.unit || (mat && mat.unit) || '',
-                need: (Number(it.amount) || 0) * qty,
+                need: need,
                 have: mat ? Number(mat.stock) || 0 : 0,
-                missing: !mat
+                missing: !mat,
+                kind: isPack ? 'pack' : 'mp'
             };
         });
+        if (lotMode && f.packagingPlantId && plantById(f.packagingPlantId)) {
+            const already = lines.some(function (ln) { return ln.plantId === f.packagingPlantId; });
+            if (!already && bags > 0) {
+                const mat = plantById(f.packagingPlantId);
+                lines.push({
+                    plantId: f.packagingPlantId,
+                    name: mat ? displayName(mat) : f.packagingPlantId,
+                    unit: (mat && mat.unit) || 'Pza',
+                    need: bags,
+                    have: mat ? Number(mat.stock) || 0 : 0,
+                    missing: !mat,
+                    kind: 'pack'
+                });
+            }
+        }
+        return lines;
+    }
+    function syncProdBagsDefault() {
+        const slug = (document.getElementById('prodProduct') || {}).value;
+        const f = formulas[slug];
+        const bagsEl = document.getElementById('prodBagsOut');
+        if (!bagsEl || !f) return;
+        if (isPlantLot(f)) {
+            const mid = f.yieldMin && f.yieldMax
+                ? Math.round((Number(f.yieldMin) + Number(f.yieldMax)) / 2)
+                : Math.round(theoreticalBags(f));
+            if (!bagsEl.dataset.touched) bagsEl.value = String(mid || 30);
+        }
     }
     function updateProdPreview() {
         const slug = document.getElementById('prodProduct').value;
-        const qty = Math.max(1, Number(document.getElementById('prodQty').value) || 1);
+        const lots = Math.max(1, Number(document.getElementById('prodQty').value) || 1);
+        const bagsEl = document.getElementById('prodBagsOut');
+        const bagsWrap = document.getElementById('prodBagsWrap');
+        const lotsWrap = document.getElementById('prodLotsWrap');
         const box = document.getElementById('prodPreview');
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         const f = formulas[slug];
@@ -3602,19 +3751,48 @@
             box.innerHTML = 'Elige un producto con receta para ver el consumo.';
             return;
         }
+        const lotMode = isPlantLot(f);
+        if (bagsWrap) bagsWrap.style.display = lotMode ? '' : 'none';
+        if (lotsWrap) {
+            const lab = lotsWrap.querySelector('label') || lotsWrap;
+            // label text is in the label element itself
+        }
+        if (lotMode) syncProdBagsDefault();
+        const bagsOut = lotMode
+            ? Math.max(1, Math.floor(Number(bagsEl && bagsEl.value) || 1))
+            : lots;
         if (!formulaComplete(f)) {
             box.innerHTML = 'Esta receta todavía no tiene todas las dosis. Complétala en Productos → Formulación.';
             return;
         }
-        const lines = productionNeeds(slug, qty);
+        const lines = productionNeeds(slug, lots, bagsOut);
         const shortages = lines.filter(function (ln) { return ln.missing || ln.have < ln.need; });
-        box.innerHTML = '<strong>' + esc(qty + ' ' + (qty === 1 ? f.batchLabel : f.batchLabel + 's') + ' de ' + r.name) + '</strong>' +
+        const totalKg = recipeTotalKg(f) * lots;
+        const theo = theoreticalBags(f) * lots;
+        const mermaKg = lotMode ? Math.max(0, totalKg - bagsOut * (Number(f.packSizeKg) || 25)) : 0;
+        const rangeWarn = lotMode && f.yieldMin && f.yieldMax && (bagsOut < f.yieldMin * lots || bagsOut > f.yieldMax * lots);
+        box.innerHTML = '<strong>' + (lotMode
+            ? (lots + ' lote' + (lots === 1 ? '' : 's') + ' · ' + bagsOut + ' sacos reales de ' + r.name)
+            : (lots + ' ' + (lots === 1 ? f.batchLabel : f.batchLabel + 's') + ' de ' + r.name)) + '</strong>' +
+            (lotMode
+                ? ('<div class="muted" style="margin:6px 0">MP del lote: ' + esc(String(Math.round(totalKg * 1000) / 1000)) +
+                    ' kg · teórico ' + esc(String(Math.round(theo * 100) / 100)) + ' sacos · merma implícita ≈ ' +
+                    esc(String(Math.round(mermaKg * 10) / 10)) + ' kg</div>')
+                : '') +
+            (rangeWarn
+                ? '<div class="stock-low">Aviso: ' + bagsOut + ' sacos está fuera del rango esperado ' +
+                    (f.yieldMin * lots) + '–' + (f.yieldMax * lots) + '.</div>'
+                : '') +
             '<ul>' + lines.map(function (ln) {
                 const ok = !ln.missing && ln.have >= ln.need;
                 return '<li class="' + (ok ? '' : 'stock-low') + '">' + esc(ln.name) + ': −' + esc(String(ln.need)) +
-                    (ln.unit ? ' ' + esc(ln.unit) : '') + ' <span class="muted">(hay ' + esc(String(ln.have)) + ')</span></li>';
+                    (ln.unit ? ' ' + esc(ln.unit) : '') +
+                    (ln.kind === 'pack' ? ' <span class="muted">(empaque)</span>' : '') +
+                    ' <span class="muted">(hay ' + esc(String(ln.have)) + ')</span></li>';
             }).join('') + '</ul>' +
-            (shortages.length ? '<div class="stock-low">Falta existencia en ' + shortages.length + ' materia(s). Carga inventario antes de registrar.</div>' : '<div>Se sumará ' + esc(String(qty)) + ' al producto terminado.</div>');
+            (shortages.length
+                ? '<div class="stock-low">Falta existencia en ' + shortages.length + ' materia(s). Carga inventario antes de registrar.</div>'
+                : '<div>Se sumará <strong>' + esc(String(bagsOut)) + '</strong> al producto terminado.</div>');
     }
     function renderFinished() {
         const tbody = document.getElementById('finishedBody');
@@ -3633,18 +3811,41 @@
         renderFinished();
         updateProdPreview();
     }
-    document.getElementById('prodProduct').addEventListener('change', updateProdPreview);
+    document.getElementById('prodProduct').addEventListener('change', function () {
+        const bagsEl = document.getElementById('prodBagsOut');
+        if (bagsEl) delete bagsEl.dataset.touched;
+        updateProdPreview();
+    });
     document.getElementById('prodQty').addEventListener('input', updateProdPreview);
+    const prodBagsOutEl = document.getElementById('prodBagsOut');
+    if (prodBagsOutEl) {
+        prodBagsOutEl.addEventListener('input', function () {
+            prodBagsOutEl.dataset.touched = '1';
+            updateProdPreview();
+        });
+    }
     document.getElementById('prodRegisterBtn').addEventListener('click', function () {
         const slug = document.getElementById('prodProduct').value;
-        const qty = Math.max(1, Math.floor(Number(document.getElementById('prodQty').value) || 1));
+        const lots = Math.max(1, Math.floor(Number(document.getElementById('prodQty').value) || 1));
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         const f = formulas[slug];
         if (!r || !formulaComplete(f)) {
             alert('Completa la receta en Productos → Formulación antes de producir.');
             return;
         }
-        const lines = productionNeeds(slug, qty);
+        const lotMode = isPlantLot(f);
+        const bagsOut = lotMode
+            ? Math.max(1, Math.floor(Number(document.getElementById('prodBagsOut').value) || 1))
+            : lots;
+        if (lotMode && f.yieldMin && f.yieldMax) {
+            const min = f.yieldMin * lots;
+            const max = f.yieldMax * lots;
+            if ((bagsOut < min || bagsOut > max) &&
+                !confirm('Los sacos reales (' + bagsOut + ') están fuera del rango ' + min + '–' + max + '. ¿Registrar de todos modos?')) {
+                return;
+            }
+        }
+        const lines = productionNeeds(slug, lots, bagsOut);
         const shortages = lines.filter(function (ln) { return ln.missing || ln.have < ln.need; });
         if (shortages.length) {
             alert('No hay existencia suficiente:\n' + shortages.map(function (ln) {
@@ -3652,16 +3853,38 @@
             }).join('\n'));
             return;
         }
-        if (!confirm('¿Registrar ' + qty + ' ' + (qty === 1 ? f.batchLabel : f.batchLabel + 's') + ' de ' + r.name + '?')) return;
+        const msg = lotMode
+            ? ('¿Registrar ' + lots + ' lote' + (lots === 1 ? '' : 's') + ' de ' + r.name +
+                ' con ' + bagsOut + ' sacos reales?\nSe descontarán las MP del lote y el empaque de los sacos.')
+            : ('¿Registrar ' + lots + ' ' + (lots === 1 ? f.batchLabel : f.batchLabel + 's') + ' de ' + r.name + '?');
+        if (!confirm(msg)) return;
         lines.forEach(function (ln) {
             const mat = plantById(ln.plantId);
             if (mat) mat.stock = Math.max(0, (Number(mat.stock) || 0) - ln.need);
         });
         saveInventory(inventory);
         if (!finishedStock[slug]) finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
-        finishedStock[slug].stock = (Number(finishedStock[slug].stock) || 0) + qty;
+        finishedStock[slug].stock = (Number(finishedStock[slug].stock) || 0) + bagsOut;
         saveFinished();
+        try {
+            const logKey = 's35_production_log';
+            const log = JSON.parse(localStorage.getItem(logKey) || '[]');
+            const totalKg = recipeTotalKg(f) * lots;
+            log.unshift({
+                id: 'PRD-' + Date.now(),
+                product: slug,
+                code: r.code,
+                at: new Date().toISOString(),
+                lots: lots,
+                bagsOut: bagsOut,
+                totalKg: totalKg,
+                mermaKg: lotMode ? Math.max(0, totalKg - bagsOut * (Number(f.packSizeKg) || 25)) : 0,
+                mode: lotMode ? 'plant-lot' : 'unit'
+            });
+            localStorage.setItem(logKey, JSON.stringify(log.slice(0, 200)));
+        } catch (_) {}
         refreshStockViews();
+        alert('Producción registrada: +' + bagsOut + ' en producto terminado.');
     });
     fillProdProducts();
     renderFinished();

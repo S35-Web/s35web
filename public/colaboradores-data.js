@@ -1053,6 +1053,14 @@ window.S35_PANEL_DATA = {
       "labSlug": "celulosa-hpmc"
     },
     {
+      "id": "walocell",
+      "name": "Walocell",
+      "unit": "Kg",
+      "minStock": 20,
+      "category": "cellulose",
+      "labSlug": "celulosa-hpmc"
+    },
+    {
       "id": "marmolina-gruesa",
       "name": "Marmolina gruesa",
       "unit": "Kg",
@@ -1181,8 +1189,8 @@ window.S35_PANEL_DATA = {
       "family": "Estucos premium",
       "kind": "seco",
       "water": "6.0–7.0 L / saco 25 kg",
-      "status": "mapa-funcional",
-      "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "status": "lote-planta",
+      "note": "Dosificación de planta por lote (755.5 kg → ~30 sacos). Ver batch-doses.js / panel Formulación.",
       "image": "/Assets/productos_thumbs/WAXTARD-blanco-perla.jpg",
       "imageAlt": "Saco de 25 kg de Waxtard Blanco Perla",
       "items": [
@@ -1243,26 +1251,148 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "yieldMin": 29,
+        "yieldMax": 31,
+        "yieldTheoretical": 30.22,
+        "totalKg": 755.5,
+        "packagingPlantId": "saco-rafia-waxtard",
+        "note": "Lote de planta FT-PR-001. Teórico ≈ 30.22 sacos (755.5 kg ÷ 25). Real típico 29–31.",
+        "items": [
+          {
+            "plantId": "marmolina-gruesa",
+            "amount": 250,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "marmolina-fina",
+            "amount": 100,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "marmolina-talco-100",
+            "amount": 200,
+            "unit": "Kg",
+            "role": "Carga"
+          },
+          {
+            "plantId": "cemento-portland-gris",
+            "amount": 50,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "mortero",
+            "amount": 50,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "calidra",
+            "amount": 100,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "resina-rdp740h",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Polímero"
+          },
+          {
+            "plantId": "resina-semitski",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Polímero"
+          },
+          {
+            "plantId": "walocell",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Celulosa"
+          },
+          {
+            "plantId": "estearato",
+            "amount": 2.5,
+            "unit": "Kg",
+            "role": "Aditivo"
+          }
+        ]
+      },
       "suggested": [
+        {
+          "plantId": "marmolina-gruesa",
+          "unit": "Kg",
+          "role": "Agregado",
+          "amount": 250
+        },
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado",
+          "amount": 100
+        },
+        {
+          "plantId": "marmolina-talco-100",
+          "unit": "Kg",
+          "role": "Carga",
+          "amount": 200
+        },
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 50
+        },
+        {
+          "plantId": "mortero",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 50
+        },
+        {
+          "plantId": "calidra",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 100
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero",
+          "amount": 1
+        },
+        {
+          "plantId": "resina-semitski",
+          "unit": "Kg",
+          "role": "Polímero",
+          "amount": 1
+        },
+        {
+          "plantId": "walocell",
+          "unit": "Kg",
+          "role": "Celulosa",
+          "amount": 1
+        },
+        {
+          "plantId": "estearato",
+          "unit": "Kg",
+          "role": "Aditivo",
+          "amount": 2.5
+        },
         {
           "plantId": "cemento-portland-blanco",
           "unit": "Kg",
           "role": "Cementante"
         },
         {
-          "plantId": "marmolina-fina",
-          "unit": "Kg",
-          "role": "Agregado"
-        },
-        {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "resina-rdp740h",
-          "unit": "Kg",
-          "role": "Polímero redispersable"
         },
         {
           "plantId": "kimacell",
@@ -1340,6 +1470,7 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-blanco",
@@ -1437,6 +1568,7 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -1550,6 +1682,7 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-blanco",
@@ -1668,6 +1801,7 @@ window.S35_PANEL_DATA = {
           "note": "Tono Dolphin Fin: el gris pulido sale del cemento y la carga, no de un colorante de recubrimiento."
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -1765,6 +1899,7 @@ window.S35_PANEL_DATA = {
           "note": "Microfibras de refuerzo: aún no hay ficha de fibra en Laboratorio."
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -1875,6 +2010,7 @@ window.S35_PANEL_DATA = {
           "note": "Microfibras de refuerzo: aún no hay ficha de fibra en Laboratorio."
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-blanco",
@@ -1977,6 +2113,7 @@ window.S35_PANEL_DATA = {
           "note": "Microfibras para recubrimiento de EPS: ficha de fibra pendiente."
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -2063,6 +2200,7 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -2152,6 +2290,7 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -2249,6 +2388,7 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -2338,6 +2478,7 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -2427,6 +2568,7 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -2532,6 +2674,7 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
+      "batchDose": null,
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -2572,6 +2715,7 @@ window.S35_PANEL_DATA = {
       "image": "/Assets/productos_thumbs/nanotech-hidrofobico.jpg",
       "imageAlt": "Envase de 1 L de Nanotech Sellador hidrofóbico S-35",
       "items": [],
+      "batchDose": null,
       "suggested": []
     },
     {
@@ -2586,6 +2730,7 @@ window.S35_PANEL_DATA = {
       "image": "/Assets/productos_thumbs/sellador-premium-pintura.jpg",
       "imageAlt": "Envase de 1 L de Sellador premium adhesivo s-35",
       "items": [],
+      "batchDose": null,
       "suggested": []
     },
     {
@@ -2600,6 +2745,7 @@ window.S35_PANEL_DATA = {
       "image": "/Assets/productos_thumbs/adhesivo-darawell.jpg",
       "imageAlt": "Envase de 1 L de Adhesivo Darawell S-35",
       "items": [],
+      "batchDose": null,
       "suggested": []
     },
     {
@@ -2614,6 +2760,7 @@ window.S35_PANEL_DATA = {
       "image": "/Assets/productos_thumbs/adhesivo-heavy-duty.jpg",
       "imageAlt": "Envase de 1 L de Adhesivo Heavy Duty S-35",
       "items": [],
+      "batchDose": null,
       "suggested": []
     }
   ],

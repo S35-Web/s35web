@@ -21,6 +21,7 @@ module.exports = [
   { id: "formol", name: "Formol", unit: "", minStock: 0, category: "chemical", labSlug: null },
   { id: "fibra-de-polipropileno", name: "Fibra de polipropileno", unit: "Kg", minStock: 20, category: "fiber", labSlug: null },
   { id: "kimacell", name: "Kimacell", unit: "Kg", minStock: 60, category: "cellulose", labSlug: "celulosa-hpmc" },
+  { id: "walocell", name: "Walocell", unit: "Kg", minStock: 20, category: "cellulose", labSlug: "celulosa-hpmc" },
   { id: "marmolina-gruesa", name: "Marmolina gruesa", unit: "Kg", minStock: 1000, category: "mineral", labSlug: "marmolina-fina" },
   { id: "marmolina-talco-100", name: "Marmolina en talco malla 100", unit: "Kg", minStock: 1000, category: "mineral", labSlug: "carbonato-de-calcio" },
   { id: "marmolina-talco-200", name: "Marmolina en talco malla 200", unit: "Kg", minStock: 4000, category: "mineral", labSlug: "carbonato-de-calcio" },

@@ -9,6 +9,7 @@ const research = require('../content/research');
 const formulations = require('../content/panel/formulations');
 const plantMaterials = require('../content/panel/plant-materials');
 const priceList = require('../content/panel/price-list');
+const batchDoses = require('../content/panel/batch-doses');
 
 const FAM = {};
 catalog.taxonomy.FAMILIES.forEach(function (f) { FAM[f.id] = f.name; });
@@ -245,8 +246,51 @@ function pickPlant(labSlug) {
 }
 
 recipes.forEach(function (r) {
+  const dose = batchDoses[r.product] || null;
+  if (dose) {
+    const totalKg = (dose.items || []).reduce(function (sum, it) {
+      return sum + ((it.unit || 'Kg') === 'Kg' ? (Number(it.amount) || 0) : 0);
+    }, 0);
+    const pack = Number(dose.packSizeKg) || 25;
+    r.batchDose = {
+      mode: dose.mode || 'plant-lot',
+      packSizeKg: pack,
+      yieldMin: Number(dose.yieldMin) || 0,
+      yieldMax: Number(dose.yieldMax) || 0,
+      yieldTheoretical: pack > 0 ? Math.round((totalKg / pack) * 100) / 100 : 0,
+      totalKg: Math.round(totalKg * 1000) / 1000,
+      packagingPlantId: dose.packagingPlantId || null,
+      note: dose.note || '',
+      items: (dose.items || []).map(function (it) {
+        if (!plantById[it.plantId]) {
+          throw new Error('batch-doses ' + r.product + ': plantId desconocido ' + it.plantId);
+        }
+        return {
+          plantId: it.plantId,
+          amount: Number(it.amount) || 0,
+          unit: normalizeUnit(it.unit || 'Kg') || 'Kg',
+          role: it.role || '',
+        };
+      }),
+    };
+  } else {
+    r.batchDose = null;
+  }
+
   const seen = {};
   r.suggested = [];
+  if (r.batchDose && r.batchDose.items.length) {
+    r.batchDose.items.forEach(function (it) {
+      if (seen[it.plantId]) return;
+      seen[it.plantId] = true;
+      r.suggested.push({
+        plantId: it.plantId,
+        unit: it.unit,
+        role: it.role || '',
+        amount: it.amount,
+      });
+    });
+  }
   (r.items || []).forEach(function (it) {
     if (!it.slug) return;
     const plantId = pickPlant(it.slug);
