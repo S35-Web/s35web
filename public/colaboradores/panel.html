@@ -3536,7 +3536,7 @@
                         <tbody id="familiesBody"></tbody>
                     </table>
                 </div>
-                <p class="muted" style="margin:10px 0 0;font-size:12px">El ojo (<i class="fa-solid fa-eye"></i> / <i class="fa-solid fa-eye-slash"></i>) muestra u oculta la familia en el ticket LT: lo oculto va al bloque «Química» (TAG + kg). Al quitar una familia con materiales, se mueven a Sin familia.</p>
+                <p class="muted" style="margin:10px 0 0;font-size:12px">El ojo (<i class="fa-solid fa-eye"></i> / <i class="fa-solid fa-eye-slash"></i>) muestra u oculta la familia en el ticket LT: lo oculto va al bloque «Química» (TAG + kg). La familia «Empaque» es fija y no se puede eliminar. Al quitar otra familia con materiales, se mueven a Sin familia.</p>
             </div>
         </div>
     </div>
@@ -3627,6 +3627,8 @@
     const FAMILIES_KEY = 's35_plant_families';
     const UNCATEGORIZED_ID = 'none';
     const UNCATEGORIZED_LABEL = 'Sin familia';
+    const PACKAGING_FAMILY_ID = 'packaging';
+    const PACKAGING_FAMILY_LABEL = 'Empaque';
     const DEFAULT_FAMILIES = [
         { id: 'mineral', label: 'Minerales', hidden: false },
         { id: 'aglutinante', label: 'Aglutinantes', hidden: false },
@@ -3634,9 +3636,12 @@
         { id: 'cellulose', label: 'Celulosa', hidden: false },
         { id: 'fiber', label: 'Fibras', hidden: false },
         { id: 'chemical', label: 'Químicos', hidden: true },
-        { id: 'packaging', label: 'Empaque', hidden: false }
+        { id: PACKAGING_FAMILY_ID, label: PACKAGING_FAMILY_LABEL, hidden: false }
     ];
     const LEGACY_BINDER_CATS = { cement: true, lime: true, gypsum: true };
+    function isLockedPlantFamily(id) {
+        return String(id || '') === PACKAGING_FAMILY_ID;
+    }
     function normalizeFamilyItem(f) {
         const id = String((f && f.id) || '').trim();
         const label = String((f && f.label) || '').trim();
@@ -3645,6 +3650,25 @@
         if (f && typeof f.hidden === 'boolean') hidden = f.hidden;
         else hidden = id === 'chemical';
         return { id: id, label: label, hidden: !!hidden };
+    }
+    function ensurePackagingFamily(list) {
+        const out = (list || []).slice();
+        let found = null;
+        for (let i = 0; i < out.length; i++) {
+            if (out[i] && out[i].id === PACKAGING_FAMILY_ID) {
+                found = out[i];
+                break;
+            }
+        }
+        if (!found) {
+            out.push({ id: PACKAGING_FAMILY_ID, label: PACKAGING_FAMILY_LABEL, hidden: false });
+            return { list: out, changed: true };
+        }
+        if (found.label !== PACKAGING_FAMILY_LABEL) {
+            found.label = PACKAGING_FAMILY_LABEL;
+            return { list: out, changed: true };
+        }
+        return { list: out, changed: false };
     }
     function loadFamilies() {
         try {
@@ -3661,13 +3685,16 @@
                     list.push(item);
                 });
                 if (list.length) {
-                    loadFamilies._migrate = migrate;
-                    return list;
+                    const ensured = ensurePackagingFamily(list);
+                    loadFamilies._migrate = migrate || ensured.changed;
+                    return ensured.list;
                 }
             }
         } catch (_) {}
         loadFamilies._migrate = true;
-        return DEFAULT_FAMILIES.map(function (f) { return normalizeFamilyItem(f); }).filter(Boolean);
+        return ensurePackagingFamily(
+            DEFAULT_FAMILIES.map(function (f) { return normalizeFamilyItem(f); }).filter(Boolean)
+        ).list;
     }
     function saveFamilies(list) {
         localStorage.setItem(FAMILIES_KEY, JSON.stringify({
@@ -4407,12 +4434,18 @@
                 return normalizeCategory(m.category) === f.id;
             }).length;
             const hidden = !!f.hidden;
+            const locked = isLockedPlantFamily(f.id);
             const eyeIcon = hidden ? 'fa-eye-slash' : 'fa-eye';
             const eyeTitle = hidden
                 ? 'Oculta en ticket de planta (clic para mostrar)'
                 : 'Visible en ticket de planta (clic para ocultar)';
+            const delBtn = locked
+                ? ''
+                : ('<button type="button" class="icon-action danger" data-del-fam="' + esc(f.id) +
+                    '" title="Quitar familia" aria-label="Quitar familia"><i class="fa-solid fa-trash-can"></i></button>');
             return '<tr data-fam="' + esc(f.id) + '">' +
                 '<td>' + esc(f.label) +
+                (locked ? '<div class="muted" style="font-size:11px">Fija (no se elimina)</div>' : '') +
                 (count ? '<div class="muted" style="font-size:12px">' + count + ' material' + (count === 1 ? '' : 'es') + '</div>' : '') +
                 (hidden ? '<div class="muted" style="font-size:11px">Oculta en planta</div>' : '') +
                 '</td>' +
@@ -4420,7 +4453,7 @@
                 '<button type="button" class="icon-action' + (hidden ? ' is-off' : '') + '" data-toggle-fam-vis="' + esc(f.id) +
                 '" title="' + esc(eyeTitle) + '" aria-label="' + esc(eyeTitle) + '" aria-pressed="' + (hidden ? 'true' : 'false') +
                 '"><i class="fa-solid ' + eyeIcon + '"></i></button>' +
-                '<button type="button" class="icon-action danger" data-del-fam="' + esc(f.id) + '" title="Quitar familia" aria-label="Quitar familia"><i class="fa-solid fa-trash-can"></i></button>' +
+                delBtn +
                 '</div></td></tr>';
         }).join('') || '<tr><td colspan="2" class="empty">Sin familias</td></tr>';
     }
@@ -4460,6 +4493,10 @@
     }
     function removePlantFamily(id) {
         if (!id || id === 'all' || id === UNCATEGORIZED_ID) return;
+        if (isLockedPlantFamily(id)) {
+            panelToast('La familia «' + PACKAGING_FAMILY_LABEL + '» es fija y no se puede eliminar');
+            return;
+        }
         if (!hasFamilyId(id)) return;
         const label = familyLabel(id);
         const using = inventory.filter(function (m) {
@@ -5191,8 +5228,25 @@
             return '<option value="' + u + '"' + (u === selected ? ' selected' : '') + '>' + u + '</option>';
         }).join('');
     }
-    function plantOptions(selected) {
-        return inventory.map(function (m) {
+    function isPackagingFamilyMaterial(mat) {
+        if (!mat) return false;
+        const cat = normalizeCategory(mat.category);
+        if (cat === PACKAGING_FAMILY_ID) return true;
+        if (mat.isPackaging === true) return true;
+        const fam = String(familyLabel(cat) || '');
+        return /empaque/i.test(cat) || /empaque/i.test(fam);
+    }
+    function plantOptions(selected, opts) {
+        opts = opts || {};
+        let list = inventory;
+        if (opts.packagingOnly) {
+            list = inventory.filter(isPackagingFamilyMaterial);
+            if (selected && !list.some(function (m) { return m.id === selected; })) {
+                const orphan = plantById(selected);
+                if (orphan) list = list.concat([orphan]);
+            }
+        }
+        return list.map(function (m) {
             return '<option value="' + esc(m.id) + '"' + (m.id === selected ? ' selected' : '') + '>' + esc(displayName(m)) + '</option>';
         }).join('');
     }
@@ -5401,7 +5455,7 @@
             const unitDis = isPack ? ' disabled' : '';
             if (isPack) {
                 return '<div class="formula-line formula-line-pack" data-line="' + idx + '"' + packAttr + '>' +
-                    '<select data-field="plantId">' + plantOptions(it.plantId) + '</select>' +
+                    '<select data-field="plantId">' + plantOptions(it.plantId, { packagingOnly: true }) + '</select>' +
                     '<input data-field="amount" type="number" min="0" step="any" value="' + esc(String(it.amount)) + '"' + amountRo +
                     ' title="Cantidad auto (Pza / sacos teóricos)">' +
                     '<select data-field="unit"' + unitDis + '>' + unitOptions(it.unit || 'Kg') + '</select>' +
