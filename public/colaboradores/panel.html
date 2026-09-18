@@ -691,15 +691,6 @@
             width: 100%;
         }
         .formula-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-        .prod-preview {
-            background: var(--bg-soft);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 12px 14px;
-            font-size: 13px;
-            margin: 12px 0;
-        }
-        .prod-preview li { margin: 4px 0; }
 
         .empty {
             padding: 32px 16px;
@@ -2212,7 +2203,6 @@
                                 <div class="formula-version-chips" id="prodVersionChips"></div>
                                 <div class="formula-version-meta" id="prodVersionMeta"></div>
                             </div>
-                            <div id="prodPreview" class="prod-preview muted">Elige un producto con receta para ver el consumo de MP.</div>
                             <div class="formula-actions">
                                 <button type="button" class="btn primary" id="prodIssueBtn"><i class="fa-solid fa-ticket"></i> Emitir ticket a planta</button>
                                 <button type="button" class="btn" id="prodEditFormulaBtn"><i class="fa-solid fa-sliders"></i> Editar dosis / versiones</button>
@@ -4552,56 +4542,10 @@
     }
     function updateProdPreview() {
         const slug = document.getElementById('prodProduct').value;
-        const lots = Math.max(1, Number(document.getElementById('prodQty').value) || 1);
-        const box = document.getElementById('prodPreview');
-        const r = recipes.filter(function (x) { return x.product === slug; })[0];
         const f = formulas[slug];
         renderProdVersionChips();
         updateProdPageSub();
-        if (!box) {
-            renderProdFormulaChart();
-            return;
-        }
-        if (!r || !f) {
-            box.innerHTML = 'Elige un producto con receta para ver el consumo de MP.';
-            renderProdFormulaChart();
-            return;
-        }
-        syncActiveVersionToRoot(f);
-        const ver = activeVersion(f);
-        if (!formulaComplete(f)) {
-            box.innerHTML = 'Esta receta todavía no tiene todas las dosis. Complétala en Productos → Formulación.';
-            renderProdFormulaChart();
-            return;
-        }
-        const lotMode = isPlantLot(f);
-        const lines = productionMpNeeds(slug, lots);
-        const shortages = lines.filter(function (ln) { return ln.missing || ln.have < ln.need; });
-        const totalKg = recipeTotalKg(f) * lots;
-        const theo = theoreticalBags(f) * lots;
-        const expected = lotMode && f.yieldMin && f.yieldMax
-            ? Math.round((Number(f.yieldMin) + Number(f.yieldMax)) / 2) * lots
-            : (lotMode ? Math.round(theo) : lots);
-        box.innerHTML = '<strong>Al emitir el ticket</strong> se descuenta MP' +
-            (lotMode ? (' de ' + lots + ' lote' + (lots === 1 ? '' : 's') + ' · ' + r.name) : (' · ' + lots + ' ' + f.batchLabel + '(s) · ' + r.name)) +
-            (ver ? (' · <strong>' + esc(ver.name) + '</strong>' + (ver.label ? ' <span class="muted">(' + esc(ver.label) + ')</span>' : '')) : '') +
-            '<div class="muted" style="margin:6px 0">' +
-            (lotMode
-                ? ('MP: ' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg · teórico ~' +
-                    esc(String(Math.round(theo * 100) / 100)) + ' sacos · esperado ' +
-                    esc(String(f.yieldMin * lots)) + '–' + esc(String(f.yieldMax * lots)) +
-                    ' (ref. ' + esc(String(expected)) + '). El PT se ingresa al confirmar sacos reales.')
-                : 'El producto terminado se confirma después con las unidades reales.') +
-            '</div>' +
-            '<ul>' + lines.map(function (ln) {
-                const ok = !ln.missing && ln.have >= ln.need;
-                return '<li class="' + (ok ? '' : 'stock-low') + '">' + esc(ln.name) + ': −' + esc(String(ln.need)) +
-                    (ln.unit ? ' ' + esc(ln.unit) : '') +
-                    ' <span class="muted">(hay ' + esc(String(ln.have)) + ')</span></li>';
-            }).join('') + '</ul>' +
-            (shortages.length
-                ? '<div class="stock-low">Falta existencia en ' + shortages.length + ' materia(s).</div>'
-                : '<div>Empaque y PT se mueven al <strong>confirmar</strong> el ticket.</div>');
+        if (f) syncActiveVersionToRoot(f);
         renderProdFormulaChart();
     }
     function renderLotTicketsList() {
