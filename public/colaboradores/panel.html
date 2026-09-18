@@ -1152,37 +1152,49 @@
         .cart-item.is-promo .ci-name {
             display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
         }
-        #posPromoModal .promo-pick-list {
-            max-height: 220px; overflow: auto; border: 1px solid var(--border);
-            border-radius: var(--radius-sm); background: var(--bg);
+        .cart-item.is-promo-auto {
+            opacity: 0.92;
+            border-left: 2px solid var(--border-strong);
+            padding-left: 8px;
         }
-        #posPromoModal .promo-pick-item {
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 10px; width: 100%; padding: 10px 12px; border: none;
-            border-bottom: 1px solid var(--border); background: transparent;
-            color: var(--text); text-align: left; cursor: pointer; font: inherit;
+        .cart-item .qty-locked {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 36px; height: 28px; padding: 0 8px;
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            font-variant-numeric: tabular-nums; font-size: 13px;
+            background: var(--bg); color: var(--muted);
         }
-        #posPromoModal .promo-pick-item:last-child { border-bottom: none; }
-        #posPromoModal .promo-pick-item:hover { background: var(--hover); }
-        #posPromoModal .promo-pick-item.active { background: var(--hover); }
-        #posPromoModal .promo-pick-item .pname { font-size: 13px; font-weight: 500; }
-        #posPromoModal .promo-pick-item .pmeta { font-size: 11px; color: var(--muted); }
-        #posPromoModal .promo-selected {
-            font-size: 13px; padding: 8px 10px; border-radius: var(--radius-sm);
-            border: 1px solid var(--border); background: var(--panel);
+        #posCartPromoBanner {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            padding: 8px 10px; margin: 0 0 8px;
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            background: var(--hover); font-size: 12px;
         }
-        #posPromoModal .promo-fields {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-        }
-        #posPromoModal .promo-fields label {
-            display: grid; gap: 4px; font-size: 12px; color: var(--muted);
-        }
-        #posPromoModal .promo-fields input {
-            height: 34px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-            background: var(--bg); color: var(--text); padding: 0 10px; outline: none;
+        #posCartPromoBanner[hidden] { display: none !important; }
+        .pos-promo-code-badge {
+            font-weight: 600; letter-spacing: 0.04em;
             font-variant-numeric: tabular-nums;
         }
-        #posPromoModal .promo-fields input:focus { border-color: var(--border-strong); }
+        .pos-promo-code-detail { color: var(--muted); }
+        #posPromoModal .promo-code-field {
+            display: grid; gap: 6px; font-size: 12px; color: var(--muted);
+        }
+        #posPromoModal .promo-code-field input {
+            height: 40px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+            background: var(--bg); color: var(--text); padding: 0 12px; outline: none;
+            font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase;
+            font-variant-numeric: tabular-nums;
+        }
+        #posPromoModal .promo-code-field input:focus { border-color: var(--border-strong); }
+        #posPromoAppliedHint {
+            font-size: 12px; padding: 8px 10px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border); background: var(--panel);
+        }
+        #promoAdminLevels {
+            min-height: 110px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 12px; line-height: 1.4;
+        }
+        #promoAdminEligible { min-height: 120px; }
         .cart-item .ci-price-input {
             box-sizing: border-box; width: 72px; height: 26px;
             border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
@@ -2922,6 +2934,7 @@
                 <a href="#clients" data-section="clients" title="Clientes"><i class="fa-solid fa-user-group"></i></a>
                 <a href="#salesHistory" data-section="salesHistory" title="Historial de ventas"><i class="fa-solid fa-receipt"></i></a>
                 <a href="#products" data-section="products" title="Productos"><i class="fa-solid fa-box"></i></a>
+                <a href="#promos" data-section="promos" title="Códigos de promo"><i class="fa-solid fa-percent"></i></a>
                 <a href="#messages" data-section="messages" title="Mensajes"><i class="fa-regular fa-envelope"></i></a>
                 <a href="#materials" data-section="materials" title="Materias primas"><i class="fa-solid fa-cubes"></i></a>
                 <a href="#production" data-section="production" title="Producción"><i class="fa-solid fa-industry"></i></a>
@@ -3142,8 +3155,8 @@
                         <div>
                             <div class="toolbar">
                                 <input id="posProductSearch" class="search" type="search" placeholder="Buscar por nombre, código o familia">
-                                <button type="button" class="btn" id="posPromoBtn" title="Agregar producto promo (precio $0 por defecto)">
-                                    <i class="fa-solid fa-tags" aria-hidden="true"></i> Promo
+                                <button type="button" class="btn" id="posPromoBtn" title="Aplicar código de promoción">
+                                    <i class="fa-solid fa-percent" aria-hidden="true"></i> Código
                                 </button>
                             </div>
                             <div class="chips" id="posFamilyChips"></div>
@@ -3153,13 +3166,14 @@
                             <div class="pos-cart-head">
                                 <h3>Ticket</h3>
                                 <div style="display:flex;gap:8px;align-items:center">
-                                    <button type="button" class="btn ghost" id="posPromoCartBtn" title="Agregar producto promo">
-                                        <i class="fa-solid fa-percent" aria-hidden="true"></i> Promo
+                                    <button type="button" class="btn ghost" id="posPromoCartBtn" title="Aplicar código de promoción">
+                                        <i class="fa-solid fa-percent" aria-hidden="true"></i>
                                     </button>
                                     <button type="button" class="btn ghost" id="posClearCartBtn">Vaciar</button>
                                 </div>
                             </div>
                             <div class="pos-cart-tier" id="posCartTierHint">Volumen de compra: el escalón depende de las unidades totales del ticket</div>
+                            <div id="posCartPromoBanner" hidden></div>
                             <div class="pos-cart-body" id="posCartBody">
                                 <div class="empty">Agrega productos del catálogo.</div>
                             </div>
@@ -3225,6 +3239,32 @@
                             <table>
                                 <thead><tr><th>Nombre</th><th>Tipo</th><th>Teléfono</th><th>Email</th><th>RFC</th><th></th></tr></thead>
                                 <tbody id="posClientsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="promos" class="section">
+                    <h1 class="page-title">Códigos de promo</h1>
+                    <p class="page-sub">Genera y gestiona códigos. La bonificación por tarimas entrega producto de regalo (no descuento en precio).</p>
+                    <div class="card">
+                        <div class="toolbar">
+                            <span class="muted" style="font-size:12px">Seed: <strong>80MAS5</strong> · programa distribuidores multi-nivel</span>
+                            <button type="button" class="btn primary" id="promoAdminAddBtn"><i class="fa-solid fa-plus"></i> Nuevo código</button>
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nombre</th>
+                                        <th>Tipo</th>
+                                        <th>Productos</th>
+                                        <th>Estado</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="promosTableBody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -3422,31 +3462,94 @@
 
 
     <div id="posPromoModal" class="modal-backdrop" aria-hidden="true">
-        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="posPromoModalTitle" style="max-width:440px">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="posPromoModalTitle" style="max-width:400px">
             <div class="modal-head">
-                <strong id="posPromoModalTitle">Producto promo</strong>
+                <strong id="posPromoModalTitle">Código de promoción</strong>
                 <button id="posPromoModalClose" class="btn" type="button">Cerrar</button>
             </div>
             <form id="posPromoForm" class="modal-body">
-                <p class="muted" style="margin:0;font-size:12px">Se agrega al ticket con precio unitario $0 (editable). Descuenta inventario al cobrar. El cliente ve el precio, no el % interno.</p>
-                <label style="display:grid;gap:4px;font-size:12px;color:var(--muted)">Buscar producto
-                    <input id="posPromoSearch" class="search" type="search" placeholder="Nombre, código o familia" autocomplete="off" style="width:100%;min-width:0">
+                <p class="muted" style="margin:0;font-size:12px">Ingresa un código válido. El carrito calcula solo las líneas de regalo; no se pueden dar de alta sacos gratis a mano.</p>
+                <label class="promo-code-field">Código
+                    <input id="posPromoCodeInput" type="text" inputmode="text" autocomplete="off"
+                        placeholder="Ej. 80MAS5" spellcheck="false" required>
                 </label>
-                <div class="promo-pick-list" id="posPromoPickList" role="listbox" aria-label="Productos"></div>
-                <div class="promo-selected" id="posPromoSelected" hidden>Sin producto seleccionado</div>
-                <div class="promo-fields">
-                    <label>Cantidad
-                        <input id="posPromoQty" type="number" inputmode="numeric" min="1" step="1" value="1" required>
+                <div id="posPromoAppliedHint" hidden></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn ghost danger" id="posPromoClearBtn">Quitar código</button>
+                    <button type="button" class="btn" id="posPromoCancel">Cancelar</button>
+                    <button type="submit" class="btn primary" id="posPromoConfirm">
+                        <i class="fa-solid fa-percent" aria-hidden="true"></i> Aplicar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="promoAdminModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="promoAdminModalTitle" style="max-width:560px">
+            <div class="modal-head">
+                <strong id="promoAdminModalTitle">Código</strong>
+                <button id="promoAdminModalClose" class="btn" type="button">Cerrar</button>
+            </div>
+            <form id="promoAdminForm" class="modal-body">
+                <div class="form-grid">
+                    <label>Código
+                        <input id="promoAdminCode" type="text" required autocomplete="off" spellcheck="false"
+                            placeholder="80MAS5" style="text-transform:uppercase;letter-spacing:.06em">
                     </label>
-                    <label>Precio unitario
-                        <input id="posPromoPrice" type="number" inputmode="decimal" min="0" step="0.01" value="0" required>
+                    <label>Nombre
+                        <input id="promoAdminLabel" type="text" required autocomplete="off" placeholder="Bonificación distribuidores">
+                    </label>
+                    <label>Tipo
+                        <select id="promoAdminType">
+                            <option value="pallet_bonus">Bonificación por tarimas</option>
+                            <option value="percent">Descuento % (estructura)</option>
+                            <option value="fixed">Descuento fijo (estructura)</option>
+                        </select>
+                    </label>
+                    <div class="field-block" style="display:flex;flex-direction:column;gap:8px;justify-content:center">
+                        <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+                            <input id="promoAdminActive" type="checkbox" checked> Activo
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+                            <input id="promoAdminDistributorOnly" type="checkbox" checked> Solo distribuidores
+                        </label>
+                    </div>
+                    <div id="promoAdminPalletFields" style="grid-column:1/-1;display:grid;gap:10px">
+                        <label>Tamaño de tarima (sacos)
+                            <input id="promoAdminPalletSize" type="number" min="1" step="1" value="80">
+                        </label>
+                        <label>Niveles (una por línea: min-max|regaloPorTarima · o 5000+|especial)
+                            <textarea id="promoAdminLevels" rows="6" spellcheck="false"></textarea>
+                        </label>
+                    </div>
+                    <div id="promoAdminPercentFields" hidden style="grid-column:1/-1">
+                        <label>% de descuento (aún no se aplica en carrito)
+                            <input id="promoAdminPercent" type="number" min="0" max="100" step="0.1" placeholder="10">
+                        </label>
+                    </div>
+                    <div id="promoAdminFixedFields" hidden style="grid-column:1/-1">
+                        <label>Monto fijo MXN (aún no se aplica en carrito)
+                            <input id="promoAdminFixed" type="number" min="0" step="0.01" placeholder="50">
+                        </label>
+                    </div>
+                    <div style="grid-column:1/-1;display:grid;gap:8px">
+                        <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+                            <input id="promoAdminAllProducts" type="checkbox" checked> Todos los productos elegibles
+                        </label>
+                        <div id="promoAdminEligibleWrap" hidden>
+                            <label>Productos elegibles (Cmd/Ctrl + clic)
+                                <select id="promoAdminEligible" multiple></select>
+                            </label>
+                        </div>
+                    </div>
+                    <label style="grid-column:1/-1">Notas
+                        <textarea id="promoAdminNotes" rows="2" placeholder="Documentación interna"></textarea>
                     </label>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn" id="posPromoCancel">Cancelar</button>
-                    <button type="submit" class="btn primary" id="posPromoConfirm" disabled>
-                        <i class="fa-solid fa-tags" aria-hidden="true"></i> Agregar promo
-                    </button>
+                    <button type="button" class="btn" id="promoAdminCancel">Cancelar</button>
+                    <button type="submit" class="btn primary">Guardar</button>
                 </div>
             </form>
         </div>
@@ -4024,7 +4127,7 @@
         sidebar.classList.toggle('open');
     });
 
-    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'clients', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
+    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'clients', 'promos', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
     const LEGACY_TO_PRODUCTS = { prices: true, catalog: true, formulas: true };
 
     /* Roles / permisos — deben existir ANTES de showSection (evita TDZ en ROLE_PERMS). */
