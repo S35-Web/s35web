@@ -2794,6 +2794,8 @@
                     </label>
                 </div>
                 <div class="lot-ticket-actions">
+                    <button type="button" class="btn primary" id="lotTicketIssueConfirmBtn" hidden><i class="fa-solid fa-check"></i> Confirmar</button>
+                    <button type="button" class="btn" id="lotTicketIssueCancelBtn" hidden><i class="fa-solid fa-xmark"></i> Cancelar</button>
                     <button type="button" class="btn primary" id="lotTicketPrint"><i class="fa-solid fa-print"></i> Imprimir / tarima</button>
                     <button type="button" class="btn" id="lotTicketConfirmBtn" hidden><i class="fa-solid fa-check"></i> Confirmar ingreso PT</button>
                     <button type="button" class="btn danger" id="lotTicketCancelBtn" hidden><i class="fa-solid fa-ban"></i> Cancelar lote</button>
@@ -4841,6 +4843,8 @@
     const LOT_TICKETS_KEY = 's35_production_lots';
     const PURCHASE_TICKETS_KEY = 's35_compra_tickets';
     let currentLotTicketId = null;
+    let currentLotTicket = null;
+    let currentLotTicketPending = false;
     let currentPurchaseTicketId = null;
     let currentPurchaseTicket = null;
     let currentPurchaseTicketSaved = false;
@@ -4900,11 +4904,13 @@
         const prefix = 'LT-' + lotCodePrefix(code) + '-' + yymd + '-';
         const list = loadLotTickets();
         let max = 0;
-        list.forEach(function (t) {
-            if (String(t.id || '').indexOf(prefix) !== 0) return;
-            const n = Number(String(t.id).slice(prefix.length)) || 0;
+        function consider(id) {
+            if (String(id || '').indexOf(prefix) !== 0) return;
+            const n = Number(String(id).slice(prefix.length)) || 0;
             if (n > max) max = n;
-        });
+        }
+        list.forEach(function (t) { consider(t.id); });
+        if (currentLotTicket) consider(currentLotTicket.id);
         return prefix + String(max + 1).padStart(3, '0');
     }
     function nextPurchaseTicketId(code) {
@@ -5675,37 +5681,165 @@
             '<div class="lot-ticket-sign"><div class="sig">Autorizó / emitió</div><div class="sig">Producción / envasado</div></div>' +
             '<p class="muted" style="margin-top:16px;font-size:12px">Anexar a la tarima. Este código identifica el lote de producto terminado.</p>';
     }
-    function openLotTicketModal(id) {
-        const t = loadLotTickets().filter(function (x) { return x.id === id; })[0];
-        if (!t) return;
-        currentLotTicketId = id;
-        const modal = document.getElementById('lotTicketModal');
-        const doc = document.getElementById('lotTicketDoc');
-        const fields = document.getElementById('lotConfirmFields');
+    function syncLotTicketActionButtons() {
+        const pending = !!currentLotTicketPending;
+        const open = !!(currentLotTicket && currentLotTicket.status === 'open' && !pending);
+        const issueConfirm = document.getElementById('lotTicketIssueConfirmBtn');
+        const issueCancel = document.getElementById('lotTicketIssueCancelBtn');
+        const printBtn = document.getElementById('lotTicketPrint');
         const confirmBtn = document.getElementById('lotTicketConfirmBtn');
         const cancelBtn = document.getElementById('lotTicketCancelBtn');
+        const fields = document.getElementById('lotConfirmFields');
+        if (issueConfirm) {
+            if (pending) issueConfirm.removeAttribute('hidden');
+            else issueConfirm.setAttribute('hidden', '');
+        }
+        if (issueCancel) {
+            if (pending) issueCancel.removeAttribute('hidden');
+            else issueCancel.setAttribute('hidden', '');
+        }
+        if (printBtn) {
+            if (pending) {
+                printBtn.setAttribute('hidden', '');
+                printBtn.classList.remove('primary');
+            } else {
+                printBtn.removeAttribute('hidden');
+                printBtn.classList.add('primary');
+            }
+        }
+        if (confirmBtn) confirmBtn.hidden = !open;
+        if (cancelBtn) cancelBtn.hidden = !open;
+        if (fields) fields.hidden = !open;
+    }
+    function buildLotTicket(slug, lots, r, f, ver) {
+        const lotMode = isPlantLot(f);
+        const mpLines = productionMpNeeds(slug, lots);
+        const totalKg = Math.round(recipeTotalKg(f) * lots * 1000) / 1000;
+        const theo = Math.round(theoreticalBags(f) * lots * 100) / 100;
+        const snapLines = mpLines.map(function (ln) {
+            const mat = plantById(ln.plantId);
+            const cat = mat ? normalizeCategory(mat.category) : UNCATEGORIZED_ID;
+            const hidden = isFamilyHidden(cat);
+            return {
+                plantId: ln.plantId,
+                name: ln.name,
+                amount: ln.need,
+                unit: ln.unit,
+                category: cat,
+                hidden: hidden
+            };
+        });
+        let chemKg = 0;
+        snapLines.forEach(function (ln) {
+            if (ln.hidden) chemKg += Number(ln.amount) || 0;
+        });
+        chemKg = Math.round(chemKg * 1000) / 1000;
+        return {
+            id: nextLotTicketId(r.code),
+            product: slug,
+            code: r.code,
+            name: r.name,
+            status: 'open',
+            issuedAt: new Date().toISOString(),
+            confirmedAt: null,
+            lots: lots,
+            mode: lotMode ? 'plant-lot' : 'unit',
+            formulaVersionId: ver ? ver.id : null,
+            formulaVersionName: ver ? ver.name : null,
+            formulaVersionLabel: ver ? (ver.label || '') : '',
+            totalKg: lotMode ? totalKg : null,
+            packSizeKg: Number(f.packSizeKg) || 25,
+            yieldTheoretical: lotMode ? theo : lots,
+            yieldMin: lotMode ? (Number(f.yieldMin) || 0) * lots : lots,
+            yieldMax: lotMode ? (Number(f.yieldMax) || 0) * lots : lots,
+            bagsExpected: lotMode && f.yieldMin && f.yieldMax
+                ? Math.round((Number(f.yieldMin) + Number(f.yieldMax)) / 2) * lots
+                : (lotMode ? Math.round(theo) : lots),
+            bagsOut: null,
+            mermaKg: null,
+            notes: '',
+            packagingPlantId: f.packagingPlantId || packagingId(r),
+            mpLines: snapLines,
+            chemistry: chemKg > 0
+                ? { tag: r.code, totalKg: chemKg }
+                : null
+        };
+    }
+    function commitPendingLotTicket() {
+        const t = currentLotTicket;
+        if (!t || !currentLotTicketPending) return;
+        (t.mpLines || []).forEach(function (ln) {
+            const mat = plantById(ln.plantId);
+            if (mat) mat.stock = Math.max(0, (Number(mat.stock) || 0) - (Number(ln.amount) || 0));
+        });
+        saveInventory(inventory);
+        const list = loadLotTickets();
+        if (list.some(function (x) { return x.id === t.id; })) {
+            panelToast('Ya existe un lote con ese folio');
+            return;
+        }
+        t.issuedAt = new Date().toISOString();
+        list.unshift(t);
+        saveLotTickets(list);
+        currentLotTicketPending = false;
+        refreshStockViews();
+        openLotTicketModal(t, { pending: false });
+        panelToast('Lote ' + t.id + ' emitido a planta');
+    }
+    function discardPendingLotTicket() {
+        const wasPending = !!currentLotTicketPending;
+        closeLotTicketModal();
+        if (wasPending) panelToast('Emisión cancelada · sin cambios');
+    }
+    function openLotTicketModal(idOrTicket, opts) {
+        const options = opts || {};
+        let t = null;
+        let pending = false;
+        if (idOrTicket && typeof idOrTicket === 'object') {
+            t = idOrTicket;
+            pending = !!options.pending;
+        } else {
+            t = loadLotTickets().filter(function (x) { return x.id === idOrTicket; })[0];
+            pending = false;
+        }
+        if (!t) return;
+        currentLotTicket = t;
+        currentLotTicketId = t.id;
+        currentLotTicketPending = pending;
+        const modal = document.getElementById('lotTicketModal');
+        const doc = document.getElementById('lotTicketDoc');
+        const title = document.getElementById('lotTicketModalTitle');
         const bags = document.getElementById('lotConfirmBags');
         const notes = document.getElementById('lotConfirmNotes');
-        doc.innerHTML = lotTicketDocHtml(t);
-        const open = t.status === 'open';
-        fields.hidden = !open;
-        confirmBtn.hidden = !open;
-        cancelBtn.hidden = !open;
-        if (open) {
+        if (doc) doc.innerHTML = lotTicketDocHtml(t);
+        if (title) {
+            title.textContent = pending
+                ? ('Vista previa · ' + t.id)
+                : ('Ticket de lote · ' + t.id);
+        }
+        const open = t.status === 'open' && !pending;
+        if (open && bags && notes) {
             const mid = t.bagsExpected || (t.yieldMin && t.yieldMax
                 ? Math.round((Number(t.yieldMin) + Number(t.yieldMax)) / 2)
                 : Math.round(Number(t.yieldTheoretical) || 30));
             bags.value = String(mid);
             notes.value = '';
         }
+        syncLotTicketActionButtons();
+        if (!modal) return;
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
     }
     function closeLotTicketModal() {
         const modal = document.getElementById('lotTicketModal');
-        modal.classList.remove('show');
-        modal.setAttribute('aria-hidden', 'true');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+        }
         currentLotTicketId = null;
+        currentLotTicket = null;
+        currentLotTicketPending = false;
+        syncLotTicketActionButtons();
     }
     function renderFinished() {
         // Solo KPI de dashboard; la tabla de PT salió de Producción (gráfica de composición).
@@ -5996,7 +6130,6 @@
         }
         syncActiveVersionToRoot(f);
         const ver = activeVersion(f);
-        const lotMode = isPlantLot(f);
         const analysis = analyzeProdMpCapacity(slug, lots);
         const verHint = ver ? ('\nFórmula: ' + ver.name + (ver.label ? ' — ' + ver.label : '')) : '';
 
@@ -6019,71 +6152,10 @@
             return;
         }
 
-        const mpLines = productionMpNeeds(slug, lots);
-        if (!confirm('¿Emitir ticket de lote a planta?' + verHint + '\nSe descontarán las materias primas ahora. El producto terminado se ingresa al confirmar sacos reales.')) return;
-
-        mpLines.forEach(function (ln) {
-            const mat = plantById(ln.plantId);
-            if (mat) mat.stock = Math.max(0, (Number(mat.stock) || 0) - ln.need);
-        });
-        saveInventory(inventory);
-
-        const totalKg = Math.round(recipeTotalKg(f) * lots * 1000) / 1000;
-        const theo = Math.round(theoreticalBags(f) * lots * 100) / 100;
-        const snapLines = mpLines.map(function (ln) {
-            const mat = plantById(ln.plantId);
-            const cat = mat ? normalizeCategory(mat.category) : UNCATEGORIZED_ID;
-            const hidden = isFamilyHidden(cat);
-            return {
-                plantId: ln.plantId,
-                name: ln.name,
-                amount: ln.need,
-                unit: ln.unit,
-                category: cat,
-                hidden: hidden
-            };
-        });
-        let chemKg = 0;
-        snapLines.forEach(function (ln) {
-            if (ln.hidden) chemKg += Number(ln.amount) || 0;
-        });
-        chemKg = Math.round(chemKg * 1000) / 1000;
-        const ticket = {
-            id: nextLotTicketId(r.code),
-            product: slug,
-            code: r.code,
-            name: r.name,
-            status: 'open',
-            issuedAt: new Date().toISOString(),
-            confirmedAt: null,
-            lots: lots,
-            mode: lotMode ? 'plant-lot' : 'unit',
-            formulaVersionId: ver ? ver.id : null,
-            formulaVersionName: ver ? ver.name : null,
-            formulaVersionLabel: ver ? (ver.label || '') : '',
-            totalKg: lotMode ? totalKg : null,
-            packSizeKg: Number(f.packSizeKg) || 25,
-            yieldTheoretical: lotMode ? theo : lots,
-            yieldMin: lotMode ? (Number(f.yieldMin) || 0) * lots : lots,
-            yieldMax: lotMode ? (Number(f.yieldMax) || 0) * lots : lots,
-            bagsExpected: lotMode && f.yieldMin && f.yieldMax
-                ? Math.round((Number(f.yieldMin) + Number(f.yieldMax)) / 2) * lots
-                : (lotMode ? Math.round(theo) : lots),
-            bagsOut: null,
-            mermaKg: null,
-            notes: '',
-            packagingPlantId: f.packagingPlantId || packagingId(r),
-            mpLines: snapLines,
-            chemistry: chemKg > 0
-                ? { tag: r.code, totalKg: chemKg }
-                : null
-        };
-        const list = loadLotTickets();
-        list.unshift(ticket);
-        saveLotTickets(list);
-        refreshStockViews();
-        openLotTicketModal(ticket.id);
-        panelToast('Lote ' + ticket.id + ' emitido a planta');
+        // Stock OK o solo warning de mínimos → vista previa LT (sin persistir aún)
+        const ticket = buildLotTicket(slug, lots, r, f, ver);
+        openLotTicketModal(ticket, { pending: true });
+        panelToast('Vista previa ' + ticket.id + ' · confirma para emitir');
     });
 
     document.getElementById('lotTicketsList').addEventListener('click', function (e) {
@@ -6120,13 +6192,24 @@
             if (btn) openPurchaseTicketModal(btn.getAttribute('data-purchase-id'));
         });
     }
-    document.getElementById('lotTicketModalClose').addEventListener('click', closeLotTicketModal);
+    document.getElementById('lotTicketModalClose').addEventListener('click', function () {
+        if (currentLotTicketPending) discardPendingLotTicket();
+        else closeLotTicketModal();
+    });
     document.getElementById('lotTicketModal').addEventListener('click', function (e) {
-        if (e.target === document.getElementById('lotTicketModal')) closeLotTicketModal();
+        if (e.target === document.getElementById('lotTicketModal')) {
+            if (currentLotTicketPending) discardPendingLotTicket();
+            else closeLotTicketModal();
+        }
     });
     document.getElementById('lotTicketPrint').addEventListener('click', function () {
+        if (currentLotTicketPending) return;
         window.print();
     });
+    const lotIssueConfirm = document.getElementById('lotTicketIssueConfirmBtn');
+    if (lotIssueConfirm) lotIssueConfirm.addEventListener('click', commitPendingLotTicket);
+    const lotIssueCancel = document.getElementById('lotTicketIssueCancelBtn');
+    if (lotIssueCancel) lotIssueCancel.addEventListener('click', discardPendingLotTicket);
     const purchaseModalClose = document.getElementById('purchaseTicketModalClose');
     if (purchaseModalClose) purchaseModalClose.addEventListener('click', closePurchaseTicketModal);
     const purchaseModal = document.getElementById('purchaseTicketModal');
@@ -6148,7 +6231,7 @@
     const purchaseDelete = document.getElementById('purchaseTicketDelete');
     if (purchaseDelete) purchaseDelete.addEventListener('click', deleteCurrentPurchaseTicket);
     document.getElementById('lotTicketConfirmBtn').addEventListener('click', function () {
-        if (!currentLotTicketId) return;
+        if (!currentLotTicket || currentLotTicketPending || !currentLotTicketId) return;
         const list = loadLotTickets();
         const idx = list.findIndex(function (t) { return t.id === currentLotTicketId; });
         if (idx < 0) return;
@@ -6188,7 +6271,7 @@
         alert('Lote ' + t.id + ' confirmado: +' + bagsOut + ' en producto terminado.\nImprime el ticket y anexalo a la tarima.');
     });
     document.getElementById('lotTicketCancelBtn').addEventListener('click', function () {
-        if (!currentLotTicketId) return;
+        if (!currentLotTicket || currentLotTicketPending || !currentLotTicketId) return;
         const list = loadLotTickets();
         const idx = list.findIndex(function (t) { return t.id === currentLotTicketId; });
         if (idx < 0) return;
