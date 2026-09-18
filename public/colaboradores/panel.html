@@ -2878,7 +2878,7 @@
 
                 <section id="clients" class="section">
                     <h1 class="page-title">Clientes</h1>
-                    <p class="page-sub">Agenda de clientes para vincular ventas.</p>
+                    <p class="page-sub">Agenda de clientes y distribuidores para vincular ventas.</p>
                     <div class="card">
                         <div class="toolbar">
                             <input id="posClientSearch" class="search" type="search" placeholder="Buscar nombre, teléfono, email o RFC">
@@ -2886,7 +2886,7 @@
                         </div>
                         <div class="table-card">
                             <table>
-                                <thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>RFC</th><th></th></tr></thead>
+                                <thead><tr><th>Nombre</th><th>Tipo</th><th>Teléfono</th><th>Email</th><th>RFC</th><th></th></tr></thead>
                                 <tbody id="posClientsBody"></tbody>
                             </table>
                         </div>
@@ -3091,6 +3091,12 @@
             </div>
             <form id="clientForm" class="modal-body">
                 <div class="form-grid">
+                    <label>Tipo
+                        <div class="seg-control" id="clientTypeSeg" role="tablist" aria-label="Tipo de cliente" style="margin-top:2px">
+                            <button type="button" role="tab" data-client-type="client" class="active" aria-selected="true">Cliente</button>
+                            <button type="button" role="tab" data-client-type="distributor" aria-selected="false">Distribuidor</button>
+                        </div>
+                    </label>
                     <label>Nombre
                         <input id="clientName" type="text" required autocomplete="off">
                     </label>

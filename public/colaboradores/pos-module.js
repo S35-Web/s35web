@@ -88,10 +88,11 @@
 
     function saleClientLabel(sale) {
         if (!sale) return 'Mostrador';
-        if (sale.client) return clientDisplay(sale.client);
-        if (sale.clientId) {
-            const live = clientById(sale.clientId);
-            if (live) return clientDisplay(live);
+        let c = sale.client || null;
+        if (!c && sale.clientId) c = clientById(sale.clientId);
+        if (c) {
+            const base = clientDisplay(c);
+            return isDistributorClient(c) ? base + ' · Distribuidor' : base;
         }
         const named = String(sale.customer || '').trim();
         return named || 'Mostrador';
@@ -843,6 +844,10 @@
     function unitPrice(id, cartUnits) {
         const entry = prices[id];
         if (!entry || !entry.tiers) return 0;
+        if (selectedClientIsDistributor()) {
+            const dist = getDistributorPrice(id);
+            if (dist != null) return dist;
+        }
         const idx = tierIndexForQty(cartUnits);
         return roundMoney(entry.tiers[idx] != null ? entry.tiers[idx] : entry.tiers[0]);
     }
@@ -986,10 +991,29 @@
 
     // —— Clients ——
     let clients = [];
+    /** `client` (normal) | `distributor`. Default: client. */
+    function normalizeClientType(t) {
+        const v = String(t || '').toLowerCase().trim();
+        if (v === 'distributor' || v === 'distribuidor') return 'distributor';
+        return 'client';
+    }
+    function isDistributorClient(c) {
+        return !!(c && normalizeClientType(c.type || c.kind) === 'distributor');
+    }
+    function clientTypeLabel(c) {
+        return isDistributorClient(c) ? 'Distribuidor' : 'Cliente';
+    }
+    function selectedClientIsDistributor() {
+        return isDistributorClient(clientById(selectedClientId()));
+    }
     function loadClients() {
         try {
             const raw = JSON.parse(localStorage.getItem(CLIENTS_KEY) || 'null');
-            if (raw && Array.isArray(raw.items)) return raw.items;
+            if (raw && Array.isArray(raw.items)) {
+                return raw.items.map(function (c) {
+                    return Object.assign({}, c, { type: normalizeClientType(c.type || c.kind) });
+                });
+            }
         } catch (_) {}
         return [];
     }
@@ -1106,23 +1130,31 @@
             return;
         }
         const cartUnits = cartQty();
+        const distMode = selectedClientIsDistributor();
         grid.innerHTML = list.map(function (r) {
             const base = baseUnitPrice(r.product);
+            const dist = getDistributorPrice(r.product);
             const live = unitPrice(r.product, cartUnits || 1);
+            const shown = distMode && dist != null ? dist : base;
             const stock = finishedQty(r.product);
             const unit = unitFor(r);
             const img = r.image
                 ? '<div class="thumb"><img src="' + esc(r.image) + '" alt="' + esc(r.imageAlt || r.name) + '" loading="lazy" decoding="async"></div>'
                 : '<div class="thumb"><span class="thumb-fallback">S35</span></div>';
-            const priceNote = cartUnits >= 100 && live !== base
-                ? '<span class="muted" style="font-size:11px">Escalón ' + esc(tierLabelForQty(cartUnits)) + '</span>'
-                : '';
+            let priceNote = '';
+            if (distMode) {
+                priceNote = dist != null
+                    ? '<span class="muted" style="font-size:11px">Precio distribuidores</span>'
+                    : '<span class="muted" style="font-size:11px">Sin precio dist. · tramos</span>';
+            } else if (cartUnits >= 100 && live !== base) {
+                priceNote = '<span class="muted" style="font-size:11px">Escalón ' + esc(tierLabelForQty(cartUnits)) + '</span>';
+            }
             return '<button type="button" class="product-card" data-add="' + esc(r.product) + '">' +
                 img +
                 '<div class="fam">' + (r.family ? familyDot(r.family) : '') + esc(r.family || '—') + '</div>' +
                 '<div class="name">' + esc(r.name) + '</div>' +
                 '<div class="meta">' +
-                '<span class="price">' + money(base) + '</span>' +
+                '<span class="price">' + money(shown) + '</span>' +
                 '<span class="unit">' + esc(unit) + (stock ? ' · stock ' + stock : '') + '</span>' +
                 '</div>' +
                 priceNote +
@@ -1139,7 +1171,10 @@
             clients.slice().sort(function (a, b) {
                 return String(a.name).localeCompare(String(b.name), 'es');
             }).map(function (c) {
-                return '<option value="' + esc(c.id) + '">' + esc(clientDisplay(c)) + '</option>';
+                const label = isDistributorClient(c)
+                    ? clientDisplay(c) + ' · Distribuidor'
+                    : clientDisplay(c);
+                return '<option value="' + esc(c.id) + '">' + esc(label) + '</option>';
             }).join('');
         if (current && clientById(current)) sel.value = current;
     }
@@ -1153,9 +1188,15 @@
         applyCartTierPrices();
         const units = cartQty();
         if (tierHint) {
-            tierHint.textContent = units
-                ? ('Volumen ticket: ' + units + ' u · escalón «' + tierLabelForQty(units) + '»')
-                : 'Volumen de compra: el escalón depende de las unidades totales del ticket';
+            if (selectedClientIsDistributor()) {
+                tierHint.textContent = units
+                    ? ('Distribuidor · ' + units + ' u · precio fijo distribuidores')
+                    : 'Cliente distribuidor: se aplica el precio distribuidores de cada producto';
+            } else {
+                tierHint.textContent = units
+                    ? ('Volumen ticket: ' + units + ' u · escalón «' + tierLabelForQty(units) + '»')
+                    : 'Volumen de compra: el escalón depende de las unidades totales del ticket';
+            }
         }
         if (!cart.length) {
             body.innerHTML = '<div class="empty">Agrega productos del catálogo.</div>';
@@ -1271,7 +1312,8 @@
             phone: client.phone || '',
             email: client.email || '',
             company: client.company || '',
-            rfc: client.rfc || ''
+            rfc: client.rfc || '',
+            type: normalizeClientType(client.type || client.kind)
         } : null;
 
         let userName = 'admin';
@@ -1587,13 +1629,15 @@
             return String(a.name).localeCompare(String(b.name), 'es');
         });
         if (!list.length) {
-            tbody.innerHTML = '<tr><td colspan="5" class="empty">Sin clientes. Agrega el primero.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin clientes. Agrega el primero.</td></tr>';
             return;
         }
         tbody.innerHTML = list.map(function (c) {
+            const dist = isDistributorClient(c);
             return '<tr>' +
                 '<td><strong>' + esc(c.name) + '</strong>' +
                 (c.company ? '<div class="muted">' + esc(c.company) + '</div>' : '') + '</td>' +
+                '<td><span class="badge' + (dist ? ' b-primary' : '') + '">' + esc(clientTypeLabel(c)) + '</span></td>' +
                 '<td>' + esc(c.phone || '—') + '</td>' +
                 '<td>' + esc(c.email || '—') + '</td>' +
                 '<td class="muted">' + esc(c.rfc || '—') + '</td>' +
@@ -1604,6 +1648,21 @@
         }).join('');
     }
 
+    function setClientTypeForm(type) {
+        const t = normalizeClientType(type);
+        const seg = document.getElementById('clientTypeSeg');
+        if (!seg) return;
+        seg.querySelectorAll('button[data-client-type]').forEach(function (btn) {
+            const on = btn.getAttribute('data-client-type') === t;
+            btn.classList.toggle('active', on);
+            btn.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+    }
+    function clientTypeFromForm() {
+        const active = document.querySelector('#clientTypeSeg button.active');
+        return normalizeClientType(active && active.getAttribute('data-client-type'));
+    }
+
     function openClientModal(client) {
         editingClientId = client ? client.id : null;
         document.getElementById('clientModalTitle').textContent = client ? 'Editar cliente' : 'Nuevo cliente';
@@ -1612,6 +1671,7 @@
         document.getElementById('clientEmail').value = client ? (client.email || '') : '';
         document.getElementById('clientCompany').value = client ? (client.company || '') : '';
         document.getElementById('clientRfc').value = client ? (client.rfc || '') : '';
+        setClientTypeForm(client ? (client.type || client.kind) : 'client');
         const modal = document.getElementById('clientModal');
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
@@ -1866,6 +1926,9 @@
                     renderClients();
                     fillClientSelect();
                     fillHistoryClientFilter();
+                    applyCartTierPrices();
+                    renderProducts();
+                    renderCart();
                 }
             });
         }
@@ -1883,6 +1946,7 @@
                     email: (document.getElementById('clientEmail').value || '').trim(),
                     company: (document.getElementById('clientCompany').value || '').trim(),
                     rfc: (document.getElementById('clientRfc').value || '').trim(),
+                    type: clientTypeFromForm(),
                     updatedAt: new Date().toISOString()
                 };
                 const idx = clients.findIndex(function (c) { return c.id === next.id; });
@@ -1896,7 +1960,27 @@
                 renderClients();
                 fillClientSelect();
                 fillHistoryClientFilter();
+                applyCartTierPrices();
+                renderProducts();
+                renderCart();
                 toast(editingClientId ? 'Cliente actualizado' : 'Cliente creado');
+            });
+        }
+        const clientTypeSeg = document.getElementById('clientTypeSeg');
+        if (clientTypeSeg) {
+            clientTypeSeg.addEventListener('click', function (e) {
+                const btn = e.target.closest('button[data-client-type]');
+                if (!btn) return;
+                e.preventDefault();
+                setClientTypeForm(btn.getAttribute('data-client-type'));
+            });
+        }
+        const clientSelect = document.getElementById('posClientSelect');
+        if (clientSelect) {
+            clientSelect.addEventListener('change', function () {
+                applyCartTierPrices();
+                renderProducts();
+                renderCart();
             });
         }
         ['clientModalClose', 'clientModalCancel'].forEach(function (id) {
@@ -1944,6 +2028,9 @@
         const raw = String(value == null ? '' : value).trim();
         prices[id].distributorPrice = raw === '' ? null : Math.max(0, roundMoney(raw));
         savePrices();
+        applyCartTierPrices();
+        renderProducts();
+        renderCart();
     }
 
     function getDistributorPrice(id) {
