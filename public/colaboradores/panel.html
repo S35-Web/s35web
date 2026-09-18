@@ -5813,9 +5813,7 @@
         host.appendChild(img);
     }
     function lotTicketSheetHtml(t) {
-        const formula = t.formulaVersionName
-            ? (esc(t.formulaVersionName) + (t.formulaVersionLabel ? ' — ' + esc(t.formulaVersionLabel) : ''))
-            : '—';
+        const formula = t.formulaVersionName ? esc(t.formulaVersionName) : '—';
         let handoffBody;
         if (t.status === 'confirmed') {
             handoffBody =
@@ -5899,8 +5897,7 @@
             '<div class="row"><span class="k">Producto</span><span class="v">' + esc(t.name) + '</span></div>' +
             '<div class="row"><span class="k">Código</span><span class="v">' + esc(t.code) + '</span></div>' +
             (t.formulaVersionName
-                ? '<div class="row"><span class="k">Fórmula</span><span class="v">' + esc(t.formulaVersionName) +
-                    (t.formulaVersionLabel ? ' — ' + esc(t.formulaVersionLabel) : '') + '</span></div>'
+                ? '<div class="row"><span class="k">Fórmula</span><span class="v">' + esc(t.formulaVersionName) + '</span></div>'
                 : '') +
             '<div class="row"><span class="k">Borrador</span><span class="v">' +
             esc(formatLotWhen(t.issuedAt)) + '</span></div>' +
