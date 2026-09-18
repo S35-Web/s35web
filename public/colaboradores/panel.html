@@ -338,6 +338,7 @@
             grid-template-columns: repeat(12, 1fr);
             gap: 16px;
         }
+        .span-12 { grid-column: span 12; }
         .span-8 { grid-column: span 8; }
         .span-7 { grid-column: span 7; }
         .span-6 { grid-column: span 6; }
@@ -735,7 +736,7 @@
             .kpi:nth-child(n+4) { border-bottom: 1px solid var(--border); }
             .kpi:nth-child(n+5) { border-bottom: none; }
             .grid { grid-template-columns: 1fr; }
-            .span-8, .span-7, .span-6, .span-5, .span-4 { grid-column: auto; }
+            .span-12, .span-8, .span-7, .span-6, .span-5, .span-4 { grid-column: auto; }
             .field { grid-template-columns: 1fr; }
             .split { grid-template-columns: 1fr; }
             .recipe-nav { max-height: none; }
@@ -1685,13 +1686,13 @@
         }
         .prod-formula-chart {
             position: relative;
-            min-height: 220px;
+            min-height: 240px;
             width: 100%;
         }
         .prod-formula-chart svg {
             width: 100%;
             height: auto;
-            aspect-ratio: 480 / 240;
+            aspect-ratio: 960 / 260;
             display: block;
         }
         .prod-formula-chart .axis-label {
@@ -2112,6 +2113,19 @@
                     <h1 class="page-title">Producción</h1>
                     <p class="page-sub">Elige producto y versión de fórmula, emite el ticket a planta y confirma sacos reales. Para editar dosis con sliders o crear V3… ve a <strong>Productos → Formulación</strong>.</p>
                     <div class="grid">
+                        <div class="card span-12">
+                            <div class="cortes-chart-head" style="margin-bottom:8px">
+                                <div>
+                                    <h3 style="margin:0">Composición del lote</h3>
+                                    <div class="panel-sub" id="prodFormulaChartSub">Ingredientes · kg por lote</div>
+                                </div>
+                                <div class="cortes-chart-legend" aria-hidden="true">
+                                    <span class="leg"><span class="swatch"></span> Versión activa</span>
+                                    <span class="leg"><span class="swatch prev"></span> Otra versión</span>
+                                </div>
+                            </div>
+                            <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Gráfica de composición de ingredientes"></div>
+                        </div>
                         <div class="card span-7">
                             <h3>Emitir ticket de lote</h3>
                             <div class="form-grid" style="margin-bottom:12px">
@@ -2131,21 +2145,10 @@
                                 <button type="button" class="btn primary" id="prodIssueBtn"><i class="fa-solid fa-ticket"></i> Emitir ticket a planta</button>
                                 <button type="button" class="btn" id="prodEditFormulaBtn"><i class="fa-solid fa-sliders"></i> Editar dosis / versiones</button>
                             </div>
-                            <h3 style="margin-top:28px">Lotes abiertos / recientes</h3>
-                            <div id="lotTicketsList" class="lot-rows muted">Sin tickets aún.</div>
                         </div>
                         <div class="card span-5">
-                            <div class="cortes-chart-head" style="margin-bottom:8px">
-                                <div>
-                                    <h3 style="margin:0">Composición del lote</h3>
-                                    <div class="panel-sub" id="prodFormulaChartSub">Ingredientes · kg por lote</div>
-                                </div>
-                                <div class="cortes-chart-legend" aria-hidden="true">
-                                    <span class="leg"><span class="swatch"></span> Versión activa</span>
-                                    <span class="leg"><span class="swatch prev"></span> Otra versión</span>
-                                </div>
-                            </div>
-                            <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Gráfica de composición de ingredientes"></div>
+                            <h3>Lotes abiertos / recientes</h3>
+                            <div id="lotTicketsList" class="lot-rows muted">Sin tickets aún.</div>
                         </div>
                     </div>
                 </section>
@@ -4398,15 +4401,20 @@
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         const f = formulas[slug];
         renderProdVersionChips();
-        if (!box) return;
+        if (!box) {
+            renderProdFormulaChart();
+            return;
+        }
         if (!r || !f) {
             box.innerHTML = 'Elige un producto con receta para ver el consumo de MP.';
+            renderProdFormulaChart();
             return;
         }
         syncActiveVersionToRoot(f);
         const ver = activeVersion(f);
         if (!formulaComplete(f)) {
             box.innerHTML = 'Esta receta todavía no tiene todas las dosis. Complétala en Productos → Formulación.';
+            renderProdFormulaChart();
             return;
         }
         const lotMode = isPlantLot(f);
@@ -4437,6 +4445,7 @@
             (shortages.length
                 ? '<div class="stock-low">Falta existencia en ' + shortages.length + ' materia(s).</div>'
                 : '<div>Empaque y PT se mueven al <strong>confirmar</strong> el ticket.</div>');
+        renderProdFormulaChart();
     }
     function renderLotTicketsList() {
         const box = document.getElementById('lotTicketsList');
@@ -4658,12 +4667,12 @@
         const curVals = order.map(function (id) { return curMap[id] || 0; });
         const prevVals = order.map(function (id) { return prevMap[id] || 0; });
         const yMax = Math.max(1, Math.max.apply(null, curVals.concat(prevVals)) * 1.15);
-        const W = 480;
-        const H = 240;
-        const padL = 42;
-        const padR = 12;
-        const padT = 16;
-        const padB = 36;
+        const W = 960;
+        const H = 260;
+        const padL = 48;
+        const padR = 16;
+        const padT = 18;
+        const padB = 40;
         const baseY = H - padB;
         const n = order.length;
         function ptX(i) {
