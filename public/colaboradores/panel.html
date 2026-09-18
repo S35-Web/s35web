@@ -719,6 +719,7 @@
         .form-grid select,
         .formula-meta input,
         .formula-meta select,
+        .formula-pack-fill input,
         .formula-line input,
         .formula-line select {
             height: 36px;
@@ -733,6 +734,7 @@
         .form-grid select:focus,
         .formula-meta input:focus,
         .formula-meta select:focus,
+        .formula-pack-fill input:focus,
         .formula-line input:focus,
         .formula-line select:focus { border-color: var(--border-strong); }
         .form-grid select option,
@@ -747,16 +749,17 @@
             gap: 10px;
             margin-bottom: 14px;
         }
-        .formula-meta.formula-meta--lot {
-            grid-template-columns: minmax(140px, 220px);
-        }
-        .formula-meta label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
+        .formula-meta label,
+        .formula-pack-fill label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
         .formula-line {
             display: grid;
             grid-template-columns: minmax(140px, 1.1fr) 1fr 72px 64px 36px;
             gap: 8px;
             align-items: center;
             margin-bottom: 10px;
+        }
+        .formula-line.formula-line-pack {
+            grid-template-columns: minmax(140px, 1.1fr) 72px 64px 36px;
         }
         .formula-packaging-block,
         .formula-pack-section {
@@ -773,13 +776,13 @@
             letter-spacing: 0.02em;
             text-transform: uppercase;
         }
-        .formula-line.formula-line-pack input[data-field="amount"],
-        .formula-line.formula-line-pack .formula-slider {
+        .formula-pack-fill {
+            margin-bottom: 10px;
+            max-width: 220px;
+        }
+        .formula-line.formula-line-pack input[data-field="amount"] {
             opacity: 0.78;
             cursor: default;
-        }
-        .formula-line.formula-line-pack .formula-slider {
-            pointer-events: none;
         }
         .formula-line .formula-slider {
             -webkit-appearance: none;
@@ -968,8 +971,8 @@
             .split { grid-template-columns: 1fr; }
             .recipe-nav { max-height: none; }
             .formula-meta { grid-template-columns: 1fr 1fr; }
-            .formula-meta.formula-meta--lot { grid-template-columns: minmax(140px, 220px); }
             .formula-line { grid-template-columns: 1fr 1fr; }
+            .formula-line.formula-line-pack { grid-template-columns: 1fr auto auto auto; }
             .formula-line .formula-slider { grid-column: 1 / -1; }
             .content { padding: 20px 16px 40px; }
         }
@@ -5395,15 +5398,22 @@
             }
             const packAttr = isPack ? ' data-packaging="1"' : '';
             const amountRo = isPack ? ' readonly' : '';
-            const sliderDis = isPack ? ' disabled' : '';
             const unitDis = isPack ? ' disabled' : '';
-            return '<div class="formula-line' + (isPack ? ' formula-line-pack' : '') +
-                '" data-line="' + idx + '"' + packAttr + '>' +
+            if (isPack) {
+                return '<div class="formula-line formula-line-pack" data-line="' + idx + '"' + packAttr + '>' +
+                    '<select data-field="plantId">' + plantOptions(it.plantId) + '</select>' +
+                    '<input data-field="amount" type="number" min="0" step="any" value="' + esc(String(it.amount)) + '"' + amountRo +
+                    ' title="Cantidad auto (Pza / sacos teóricos)">' +
+                    '<select data-field="unit"' + unitDis + '>' + unitOptions(it.unit || 'Kg') + '</select>' +
+                    '<button type="button" class="icon-action danger" data-remove-line="' + idx + '" title="Quitar" aria-label="Quitar"><i class="fa-solid fa-trash-can"></i></button>' +
+                    '</div>';
+            }
+            return '<div class="formula-line" data-line="' + idx + '">' +
                 '<select data-field="plantId">' + plantOptions(it.plantId) + '</select>' +
                 '<input data-field="slider" class="formula-slider" type="range" min="0" max="' + esc(String(max)) +
-                '" step="' + (Number(it.amount) % 1 ? '0.1' : '1') + '" value="' + esc(String(it.amount)) + '"' + sliderDis + '>' +
-                '<input data-field="amount" type="number" min="0" step="any" value="' + esc(String(it.amount)) + '"' + amountRo + '>' +
-                '<select data-field="unit"' + unitDis + '>' + unitOptions(it.unit || 'Kg') + '</select>' +
+                '" step="' + (Number(it.amount) % 1 ? '0.1' : '1') + '" value="' + esc(String(it.amount)) + '">' +
+                '<input data-field="amount" type="number" min="0" step="any" value="' + esc(String(it.amount)) + '">' +
+                '<select data-field="unit">' + unitOptions(it.unit || 'Kg') + '</select>' +
                 '<button type="button" class="icon-action danger" data-remove-line="' + idx + '" title="Quitar" aria-label="Quitar"><i class="fa-solid fa-trash-can"></i></button>' +
                 '</div>';
         }
@@ -5416,9 +5426,13 @@
         let lines = materialEntries.map(function (e) {
             return formulaLineHtml(e.it, e.idx, false);
         }).join('');
-        if (packEntries.length) {
+        if (packEntries.length || (lotMode && editable)) {
             lines += '<div class="formula-packaging-block formula-pack-section">' +
                 '<div class="formula-pack-label">Empaque</div>' +
+                (lotMode && editable
+                    ? ('<div class="formula-pack-fill"><label>Llenado (kg/saco)<input data-field="packSizeKg" type="number" min="0" step="any" value="' +
+                        esc(String(f.packSizeKg || 25)) + '" title="Kg a los que se llena cada saco/cubeta"></label></div>')
+                    : '') +
                 packEntries.map(function (e) {
                     return formulaLineHtml(e.it, e.idx, true);
                 }).join('') +
@@ -5426,14 +5440,14 @@
         }
         if (!lines) lines = '<div class="empty">Agrega materias primas a esta receta.</div>';
         const meta = editable
-            ? ('<div class="formula-meta' + (lotMode ? ' formula-meta--lot' : '') + '">' +
-                (lotMode
-                    ? ('<label>Llenado (kg/saco)<input data-field="packSizeKg" type="number" min="0" step="any" value="' + esc(String(f.packSizeKg || 25)) + '" title="Kg a los que se llena cada saco/cubeta"></label>')
-                    : ('<label>Tamaño de lote<input data-field="batchSize" type="number" min="0" step="any" value="' + esc(String(f.batchSize)) + '"></label>' +
-                        '<label>Unidad del lote<select data-field="batchUnit">' + unitOptions(f.batchUnit) + '</select></label>' +
-                        '<label>Lote (saco, cubeta)<input data-field="batchLabel" type="text" value="' + esc(f.batchLabel) + '"></label>' +
-                        '<label>Agua (L)<input data-field="water" type="number" min="0" step="any" value="' + esc(String(f.water)) + '"></label>')) +
-                '</div>')
+            ? (lotMode
+                ? ''
+                : ('<div class="formula-meta">' +
+                    '<label>Tamaño de lote<input data-field="batchSize" type="number" min="0" step="any" value="' + esc(String(f.batchSize)) + '"></label>' +
+                    '<label>Unidad del lote<select data-field="batchUnit">' + unitOptions(f.batchUnit) + '</select></label>' +
+                    '<label>Lote (saco, cubeta)<input data-field="batchLabel" type="text" value="' + esc(f.batchLabel) + '"></label>' +
+                    '<label>Agua (L)<input data-field="water" type="number" min="0" step="any" value="' + esc(String(f.water)) + '"></label>' +
+                    '</div>'))
             : ('<div class="muted" style="margin-bottom:10px">' +
                 (lotMode
                     ? ('Lote de planta · ' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg · teórico ' +
