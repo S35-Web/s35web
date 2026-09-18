@@ -1392,6 +1392,21 @@
             font-size: 12px;
             color: var(--muted);
         }
+        .lot-rows .lot-row-item {
+            display: flex;
+            align-items: stretch;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .lot-rows .lot-row-item button.lot-row {
+            margin-bottom: 0;
+            flex: 1;
+            min-width: 0;
+        }
+        .lot-rows .lot-row-item .icon-action {
+            flex-shrink: 0;
+            align-self: center;
+        }
         .lot-rows button.lot-row {
             width: 100%;
             text-align: left;
@@ -2368,7 +2383,7 @@
                             </div>
                             <div class="prod-side-block">
                                 <h3>Tickets de compra</h3>
-                                <p class="panel-sub">Referencia para compras · no descuenta inventario ni abre lote</p>
+                                <p class="panel-sub">Referencia para compras · se archiva solo con Guardar · no descuenta MP</p>
                                 <div id="purchaseTicketsList" class="lot-rows muted">Sin tickets de compra.</div>
                             </div>
                         </div>
@@ -2771,7 +2786,9 @@
                     <button type="button" class="btn wa" id="purchaseTicketWhatsApp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
                     <button type="button" class="btn" id="purchaseTicketEmailBtn"><i class="fa-solid fa-envelope"></i> Correo</button>
                     <button type="button" class="btn" id="purchaseTicketCopy"><i class="fa-solid fa-copy"></i> Copiar</button>
-                    <button type="button" class="btn primary" id="purchaseTicketPrint"><i class="fa-solid fa-print"></i> Imprimir</button>
+                    <button type="button" class="btn" id="purchaseTicketPrint"><i class="fa-solid fa-print"></i> Imprimir</button>
+                    <button type="button" class="btn primary" id="purchaseTicketSave"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                    <button type="button" class="btn danger" id="purchaseTicketDelete" hidden><i class="fa-solid fa-trash-can"></i> Eliminar</button>
                 </div>
             </div>
         </div>
@@ -4529,6 +4546,8 @@
     const PURCHASE_TICKETS_KEY = 's35_compra_tickets';
     let currentLotTicketId = null;
     let currentPurchaseTicketId = null;
+    let currentPurchaseTicket = null;
+    let currentPurchaseTicketSaved = false;
 
     function panelToast(msg) {
         const el = document.getElementById('toast');
@@ -4600,11 +4619,13 @@
         const prefix = 'TC-' + lotCodePrefix(code) + '-' + yymd + '-';
         const list = loadPurchaseTickets();
         let max = 0;
-        list.forEach(function (t) {
-            if (String(t.id || '').indexOf(prefix) !== 0) return;
-            const n = Number(String(t.id).slice(prefix.length)) || 0;
+        function consider(id) {
+            if (String(id || '').indexOf(prefix) !== 0) return;
+            const n = Number(String(id).slice(prefix.length)) || 0;
             if (n > max) max = n;
-        });
+        }
+        list.forEach(function (t) { consider(t.id); });
+        if (currentPurchaseTicket) consider(currentPurchaseTicket.id);
         return prefix + String(max + 1).padStart(3, '0');
     }
     function formatLotWhen(iso) {
@@ -4962,26 +4983,60 @@
                 '</div></button>';
         }).join('');
     }
+    function canDeletePurchaseTickets() {
+        return currentRole === 'admin' || (ROLE_PERMS[currentRole] || []).indexOf('*') >= 0;
+    }
+    function syncPurchaseTicketActionButtons() {
+        const saveBtn = document.getElementById('purchaseTicketSave');
+        const delBtn = document.getElementById('purchaseTicketDelete');
+        const printBtn = document.getElementById('purchaseTicketPrint');
+        if (saveBtn) {
+            if (currentPurchaseTicket && !currentPurchaseTicketSaved) {
+                saveBtn.removeAttribute('hidden');
+                saveBtn.classList.add('primary');
+            } else {
+                saveBtn.setAttribute('hidden', '');
+                saveBtn.classList.remove('primary');
+            }
+        }
+        if (printBtn) {
+            if (currentPurchaseTicket && !currentPurchaseTicketSaved) printBtn.classList.remove('primary');
+            else printBtn.classList.add('primary');
+        }
+        if (delBtn) {
+            if (currentPurchaseTicket && currentPurchaseTicketSaved && canDeletePurchaseTickets()) {
+                delBtn.removeAttribute('hidden');
+            } else {
+                delBtn.setAttribute('hidden', '');
+            }
+        }
+    }
     function renderPurchaseTicketsList() {
         const box = document.getElementById('purchaseTicketsList');
         if (!box) return;
         const list = loadPurchaseTickets();
         if (!list.length) {
-            box.innerHTML = '<div class="empty">Sin tickets de compra. Se generan al emitir con MP insuficiente.</div>';
+            box.innerHTML = '<div class="empty">Sin tickets de compra. Al emitir con MP insuficiente puedes Guardar el preview aquí.</div>';
             return;
         }
+        const allowDel = canDeletePurchaseTickets();
         box.innerHTML = list.slice(0, 40).map(function (t) {
             const n = (t.deficitLines || []).length;
             const sub = n + (n === 1 ? ' MP a comprar' : ' MP a comprar') +
                 ' · ×' + (t.lots || 1) + ' lotes · ' + formatLotWhen(t.issuedAt);
             const formulaBit = t.formulaVersionName ? (' · ' + t.formulaVersionName) : '';
-            return '<button type="button" class="lot-row" data-purchase-id="' + esc(t.id) + '">' +
+            const rowBtn = '<button type="button" class="lot-row" data-purchase-id="' + esc(t.id) + '">' +
                 '<div class="lot-row-top">' +
                 '<div><div class="lot-code">' + esc(t.id) + '</div>' +
                 '<div>' + esc(t.name) + '</div>' +
                 '<div class="muted">' + esc(t.code) + esc(formulaBit) + ' · ' + esc(sub) + '</div></div>' +
                 purchaseStatusBadge() +
                 '</div></button>';
+            if (!allowDel) return rowBtn;
+            return '<div class="lot-row-item">' + rowBtn +
+                '<button type="button" class="icon-action danger" data-purchase-del="' + esc(t.id) +
+                '" title="Eliminar" aria-label="Eliminar ticket de compra"><i class="fa-solid fa-trash-can"></i></button>' +
+                '</div>';
         }).join('');
     }
     function purchaseTicketDocHtml(t) {
@@ -5055,19 +5110,35 @@
         lines.push('No abre lote de planta ni descuenta inventario.');
         return lines.join('\n');
     }
-    function openPurchaseTicketModal(id) {
-        const t = loadPurchaseTickets().filter(function (x) { return x.id === id; })[0];
+    function openPurchaseTicketModal(idOrTicket, opts) {
+        const options = opts || {};
+        let t = null;
+        let saved = false;
+        if (idOrTicket && typeof idOrTicket === 'object') {
+            t = idOrTicket;
+            saved = !!options.saved;
+        } else {
+            t = loadPurchaseTickets().filter(function (x) { return x.id === idOrTicket; })[0];
+            saved = true;
+        }
         if (!t) return;
-        currentPurchaseTicketId = id;
+        currentPurchaseTicket = t;
+        currentPurchaseTicketId = t.id;
+        currentPurchaseTicketSaved = saved;
         const modal = document.getElementById('purchaseTicketModal');
         const doc = document.getElementById('purchaseTicketDoc');
         const title = document.getElementById('purchaseTicketModalTitle');
         const phoneEl = document.getElementById('purchaseTicketPhone');
         const emailEl = document.getElementById('purchaseTicketEmail');
         if (doc) doc.innerHTML = purchaseTicketDocHtml(t);
-        if (title) title.textContent = 'Ticket de compra · ' + t.id;
+        if (title) {
+            title.textContent = saved
+                ? ('Ticket de compra · ' + t.id)
+                : ('Vista previa · ' + t.id);
+        }
         if (phoneEl) phoneEl.value = t.sharePhone || '';
         if (emailEl) emailEl.value = t.shareEmail || '';
+        syncPurchaseTicketActionButtons();
         if (!modal) return;
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
@@ -5078,6 +5149,9 @@
         modal.classList.remove('show');
         modal.setAttribute('aria-hidden', 'true');
         currentPurchaseTicketId = null;
+        currentPurchaseTicket = null;
+        currentPurchaseTicketSaved = false;
+        syncPurchaseTicketActionButtons();
     }
     function persistPurchaseShareContacts(t) {
         if (!t) return;
@@ -5085,6 +5159,7 @@
         const emailEl = document.getElementById('purchaseTicketEmail');
         t.sharePhone = phoneEl ? (phoneEl.value || '').trim() : '';
         t.shareEmail = emailEl ? (emailEl.value || '').trim() : '';
+        if (!currentPurchaseTicketSaved) return;
         const list = loadPurchaseTickets();
         const idx = list.findIndex(function (x) { return x.id === t.id; });
         if (idx >= 0) {
@@ -5092,8 +5167,48 @@
             savePurchaseTickets(list);
         }
     }
+    function saveCurrentPurchaseTicket() {
+        const t = currentPurchaseTicket;
+        if (!t) return;
+        if (currentPurchaseTicketSaved) {
+            panelToast('Este ticket ya está guardado');
+            return;
+        }
+        persistPurchaseShareContacts(t);
+        const list = loadPurchaseTickets();
+        if (list.some(function (x) { return x.id === t.id; })) {
+            panelToast('Ya existe un ticket con ese folio');
+            return;
+        }
+        list.unshift(t);
+        savePurchaseTickets(list);
+        currentPurchaseTicketSaved = true;
+        renderPurchaseTicketsList();
+        const title = document.getElementById('purchaseTicketModalTitle');
+        if (title) title.textContent = 'Ticket de compra · ' + t.id;
+        syncPurchaseTicketActionButtons();
+        panelToast('Ticket ' + t.id + ' guardado');
+    }
+    function deletePurchaseTicketById(id) {
+        if (!canDeletePurchaseTickets()) {
+            panelToast('Solo admin puede eliminar tickets de compra');
+            return false;
+        }
+        if (!id) return false;
+        if (!confirm('¿Eliminar el ticket de compra ' + id + '?\nNo se puede deshacer.')) return false;
+        const list = loadPurchaseTickets().filter(function (x) { return x.id !== id; });
+        savePurchaseTickets(list);
+        renderPurchaseTicketsList();
+        if (currentPurchaseTicketId === id) closePurchaseTicketModal();
+        panelToast('Ticket ' + id + ' eliminado');
+        return true;
+    }
+    function deleteCurrentPurchaseTicket() {
+        if (!currentPurchaseTicket || !currentPurchaseTicketSaved) return;
+        deletePurchaseTicketById(currentPurchaseTicket.id);
+    }
     function sharePurchaseWhatsApp() {
-        const t = loadPurchaseTickets().filter(function (x) { return x.id === currentPurchaseTicketId; })[0];
+        const t = currentPurchaseTicket;
         if (!t) return;
         const phoneEl = document.getElementById('purchaseTicketPhone');
         const raw = phoneEl ? phoneEl.value : '';
@@ -5112,7 +5227,7 @@
         panelToast(digits ? 'Abriendo WhatsApp…' : 'WhatsApp sin número · elige el chat');
     }
     function sharePurchaseEmail() {
-        const t = loadPurchaseTickets().filter(function (x) { return x.id === currentPurchaseTicketId; })[0];
+        const t = currentPurchaseTicket;
         if (!t) return;
         const emailEl = document.getElementById('purchaseTicketEmail');
         const to = emailEl ? (emailEl.value || '').trim() : '';
@@ -5123,7 +5238,7 @@
         panelToast(to ? 'Abriendo correo…' : 'Correo sin destinatario · completa el para');
     }
     function copyPurchaseTicketText() {
-        const t = loadPurchaseTickets().filter(function (x) { return x.id === currentPurchaseTicketId; })[0];
+        const t = currentPurchaseTicket;
         if (!t) return;
         const text = purchaseTicketPlainText(t);
         const done = function () { panelToast('Ticket de compra copiado'); };
@@ -5520,17 +5635,14 @@
             }).join('\n');
             if (!confirm(
                 'No hay inventario suficiente de MP.' + verHint +
-                '\n\nSe generará un ticket de compra (TC) para el área de compras.' +
-                '\nNo se abrirá lote ni se descontará materia prima.\n\n' + deficitHint +
+                '\n\nSe abrirá un ticket de compra (TC) para el área de compras.' +
+                '\nNo se abrirá lote ni se descontará materia prima.' +
+                '\nPuedes imprimir o enviar sin guardar; solo se archiva al pulsar Guardar.\n\n' + deficitHint +
                 '\n\n¿Continuar?'
             )) return;
             const purchase = createPurchaseTicket(slug, lots, r, f, ver, analysis);
-            const pList = loadPurchaseTickets();
-            pList.unshift(purchase);
-            savePurchaseTickets(pList);
-            renderPurchaseTicketsList();
-            openPurchaseTicketModal(purchase.id);
-            panelToast('Ticket de compra ' + purchase.id + ' · sin descontar MP');
+            openPurchaseTicketModal(purchase, { saved: false });
+            panelToast('Vista previa ' + purchase.id + ' · sin guardar · sin descontar MP');
             return;
         }
 
@@ -5589,6 +5701,13 @@
     const purchaseTicketsListEl = document.getElementById('purchaseTicketsList');
     if (purchaseTicketsListEl) {
         purchaseTicketsListEl.addEventListener('click', function (e) {
+            const delBtn = e.target.closest('[data-purchase-del]');
+            if (delBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                deletePurchaseTicketById(delBtn.getAttribute('data-purchase-del'));
+                return;
+            }
             const btn = e.target.closest('[data-purchase-id]');
             if (btn) openPurchaseTicketModal(btn.getAttribute('data-purchase-id'));
         });
@@ -5616,6 +5735,10 @@
     if (purchaseMail) purchaseMail.addEventListener('click', sharePurchaseEmail);
     const purchaseCopy = document.getElementById('purchaseTicketCopy');
     if (purchaseCopy) purchaseCopy.addEventListener('click', copyPurchaseTicketText);
+    const purchaseSave = document.getElementById('purchaseTicketSave');
+    if (purchaseSave) purchaseSave.addEventListener('click', saveCurrentPurchaseTicket);
+    const purchaseDelete = document.getElementById('purchaseTicketDelete');
+    if (purchaseDelete) purchaseDelete.addEventListener('click', deleteCurrentPurchaseTicket);
     document.getElementById('lotTicketConfirmBtn').addEventListener('click', function () {
         if (!currentLotTicketId) return;
         const list = loadLotTickets();
