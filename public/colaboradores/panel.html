@@ -1001,9 +1001,16 @@
             letter-spacing: .04em;
         }
         .product-card .name { font-weight: 500; font-size: 14px; letter-spacing: -0.01em; }
-        .product-card .meta { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-        .product-card .price { font-weight: 500; font-variant-numeric: tabular-nums; }
+        .product-card .meta { display: flex; align-items: center; gap: 8px; }
         .product-card .unit { color: var(--muted); font-size: 12px; }
+        .product-card .product-code {
+            display: inline-flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0 6px;
+            font-size: 12px;
+        }
+        .product-card .product-code .pack { color: var(--muted); }
         .product-card .fam {
             font-size: 11px;
             color: var(--muted);

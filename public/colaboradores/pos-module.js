@@ -776,6 +776,19 @@
         return 'Saco';
     }
 
+    /** Peso/empaque corto para mostrar junto al código (sin “Saco”). */
+    function packSizeLabel(entryOrRecipe) {
+        const r = entryOrRecipe && entryOrRecipe.recipe ? entryOrRecipe.recipe : entryOrRecipe;
+        const id = entryOrRecipe && entryOrRecipe.id ? entryOrRecipe.id : (r && r.product);
+        const size = presentationKgFor(id);
+        if (size == null || size === '') return '';
+        const kind = (entryOrRecipe && entryOrRecipe.kind) || (r && r.kind);
+        if (kind === 'liquido' || (r && r.kind === 'liquido')) {
+            return Number(size) === 1 ? '1 L' : (size + ' L');
+        }
+        return size + ' kg';
+    }
+
     function presentationKgFor(id) {
         const entry = prices[id];
         if (entry && entry.presentationKg != null) return entry.presentationKg;
@@ -1165,9 +1178,9 @@
             const base = baseUnitPrice(r.product);
             const dist = getDistributorPrice(r.product);
             const live = unitPrice(r.product, cartUnits || 1);
-            const shown = distMode && dist != null ? dist : base;
             const stock = finishedQty(r.product);
-            const unit = unitFor(r);
+            const pack = packSizeLabel(r);
+            const code = r.code || r.product;
             const img = r.image
                 ? '<div class="thumb"><img src="' + esc(r.image) + '" alt="' + esc(r.imageAlt || r.name) + '" loading="lazy" decoding="async"></div>'
                 : '<div class="thumb"><span class="thumb-fallback">S35</span></div>';
@@ -1184,11 +1197,13 @@
                 '<div class="fam">' + (r.family ? familyDot(r.family) : '') + esc(r.family || '—') + '</div>' +
                 '<div class="name">' + esc(r.name) + '</div>' +
                 '<div class="meta">' +
-                '<span class="price">' + money(shown) + '</span>' +
-                '<span class="unit">' + esc(unit) + (stock ? ' · stock ' + stock : '') + '</span>' +
+                '<span class="unit">stock ' + stock + '</span>' +
                 '</div>' +
                 priceNote +
-                '<div class="muted">' + esc(r.code || r.product) + '</div>' +
+                '<div class="muted product-code">' +
+                '<span class="code">' + esc(code) + '</span>' +
+                (pack ? '<span class="pack">' + esc(pack) + '</span>' : '') +
+                '</div>' +
                 '</button>';
         }).join('');
     }
