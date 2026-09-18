@@ -2167,6 +2167,17 @@
             width: 100%;
             box-sizing: border-box;
         }
+        .pd-distributor-block {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            max-width: 220px;
+        }
+        .pd-distributor-head {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
 
         .cortes-chart-panel {
             border: 1px solid var(--border);
@@ -3043,7 +3054,7 @@
                         </div>
                         <div class="pd-tab-panel" id="pdPanelPrecios" data-pd-panel="precios" hidden>
                             <div class="card">
-                                <p class="page-sub" style="margin-top:0">Tramos mayoristas (MXN). El escalón del POS depende del volumen del ticket.</p>
+                                <p class="page-sub" style="margin-top:0">Tramos mayoristas (MXN). El escalón del POS depende del volumen del ticket. Precio distribuidores es fijo por unidad, aparte de los tramos.</p>
                                 <div id="pdPricesMount"></div>
                             </div>
                         </div>
@@ -5348,8 +5359,15 @@
             pricesMount.addEventListener('change', function (e) {
                 const input = e.target.closest('[data-price-id]');
                 if (!input || !window.S35PosModule) return;
+                const id = input.getAttribute('data-price-id');
+                if (input.getAttribute('data-price-field') === 'distributor') {
+                    if (window.S35PosModule.setDistributorPrice) {
+                        window.S35PosModule.setDistributorPrice(id, input.value);
+                    }
+                    return;
+                }
                 window.S35PosModule.setTierPrice(
-                    input.getAttribute('data-price-id'),
+                    id,
                     input.getAttribute('data-tier'),
                     input.value
                 );

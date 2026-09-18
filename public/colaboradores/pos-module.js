@@ -797,19 +797,28 @@
         return Math.round((Number(n) || 0) * 100) / 100;
     }
 
+    function readDistributorPrice(raw) {
+        if (!raw || typeof raw !== 'object') return null;
+        if (raw.distributorPrice == null || raw.distributorPrice === '') return null;
+        return Math.max(0, roundMoney(raw.distributorPrice));
+    }
+
     function normalizeEntry(raw, fallbackTiers, presentationKg) {
+        const distributorPrice = readDistributorPrice(raw);
         if (raw && typeof raw === 'object' && Array.isArray(raw.tiers) && raw.tiers.length >= 6) {
             return {
                 presentationKg: raw.presentationKg != null ? raw.presentationKg : presentationKg,
-                tiers: raw.tiers.slice(0, 6).map(roundMoney)
+                tiers: raw.tiers.slice(0, 6).map(roundMoney),
+                distributorPrice: distributorPrice
             };
         }
         if (typeof raw === 'number') {
-            return { presentationKg: presentationKg, tiers: sixTiers(raw) };
+            return { presentationKg: presentationKg, tiers: sixTiers(raw), distributorPrice: null };
         }
         return {
             presentationKg: presentationKg,
-            tiers: (fallbackTiers || sixTiers(400)).slice(0, 6).map(roundMoney)
+            tiers: (fallbackTiers || sixTiers(400)).slice(0, 6).map(roundMoney),
+            distributorPrice: distributorPrice
         };
     }
 
@@ -852,7 +861,8 @@
             const key = it.recipeSlug || it.id;
             map[key] = {
                 presentationKg: it.presentationKg,
-                tiers: (it.tiers || []).slice(0, 6).map(roundMoney)
+                tiers: (it.tiers || []).slice(0, 6).map(roundMoney),
+                distributorPrice: null
             };
             if (it.recipeSlug && it.recipeSlug !== it.id) {
                 map[it.id] = map[key];
@@ -863,7 +873,8 @@
             const kg = r.kind === 'liquido' ? null : 25;
             map[r.product] = {
                 presentationKg: kg,
-                tiers: sixTiers(flatDefaultFor(r))
+                tiers: sixTiers(flatDefaultFor(r)),
+                distributorPrice: null
             };
         });
         return map;
@@ -1901,19 +1912,44 @@
         });
     }
 
+    function ensurePriceEntry(id, presentationKg) {
+        if (!prices[id]) {
+            prices[id] = {
+                presentationKg: presentationKg != null ? presentationKg : presentationKgFor(id),
+                tiers: sixTiers(0),
+                distributorPrice: null
+            };
+        }
+        if (!prices[id].tiers) prices[id].tiers = sixTiers(0);
+        if (prices[id].distributorPrice === undefined) prices[id].distributorPrice = null;
+        return prices[id];
+    }
+
     function setTierPrice(id, tier, value) {
         if (!id) return;
         const t = Number(tier);
         if (!isFinite(t) || t < 0 || t > 5) return;
-        if (!prices[id]) {
-            prices[id] = { presentationKg: presentationKgFor(id), tiers: sixTiers(0) };
-        }
-        if (!prices[id].tiers) prices[id].tiers = sixTiers(0);
+        ensurePriceEntry(id);
         prices[id].tiers[t] = Math.max(0, roundMoney(value));
         savePrices();
         applyCartTierPrices();
         renderProducts();
         renderCart();
+    }
+
+    /** Precio fijo para distribuidores (aparte de tramos por volumen). */
+    function setDistributorPrice(id, value) {
+        if (!id) return;
+        ensurePriceEntry(id);
+        const raw = String(value == null ? '' : value).trim();
+        prices[id].distributorPrice = raw === '' ? null : Math.max(0, roundMoney(raw));
+        savePrices();
+    }
+
+    function getDistributorPrice(id) {
+        const entry = prices[id];
+        if (!entry || entry.distributorPrice == null || entry.distributorPrice === '') return null;
+        return roundMoney(entry.distributorPrice);
     }
 
     function resetPricesToDefaults() {
@@ -1948,7 +1984,7 @@
         }
         return '<div class="pd-price-blocks">' + list.map(function (pres) {
             const id = pres.id;
-            const entry = prices[id] || { presentationKg: pres.size, tiers: sixTiers(400) };
+            const entry = prices[id] || { presentationKg: pres.size, tiers: sixTiers(400), distributorPrice: null };
             const kg = entry.presentationKg != null ? entry.presentationKg : (pres.size != null ? pres.size : '—');
             const unit = (pres.kind === 'liquido' || pres.unit === 'L')
                 ? liquidUnitLabel(kg === '—' ? null : kg, pres.label || pres.unitLabel)
@@ -1961,13 +1997,26 @@
                     'data-price-id="' + esc(id) + '" data-tier="' + i + '" value="' + esc(String(val)) + '">' +
                     '</label>';
             }).join('');
+            const distVal = entry.distributorPrice != null && entry.distributorPrice !== ''
+                ? String(entry.distributorPrice)
+                : '';
+            const distBlock =
+                '<div class="pd-distributor-block">' +
+                '<div class="pd-distributor-head">Distribuidores</div>' +
+                '<label class="pd-tier-row">' +
+                '<span class="muted">Precio distribuidores</span>' +
+                '<input class="price-input num" type="number" min="0" step="0.01" ' +
+                'data-price-id="' + esc(id) + '" data-price-field="distributor" ' +
+                'placeholder="—" value="' + esc(distVal) + '">' +
+                '</label></div>';
             return '<div class="pd-price-card" data-pres-id="' + esc(id) + '">' +
                 '<div class="pd-price-card-head">' +
                 '<strong>' + esc(unit) + '</strong>' +
                 '<span class="muted">' + esc(pres.code || id) +
                 (kg !== '—' ? ' · ' + esc(String(kg)) + (pres.kind === 'liquido' || pres.unit === 'L' ? ' L' : ' kg') : '') +
                 '</span></div>' +
-                '<div class="pd-tier-grid">' + tierRows + '</div></div>';
+                '<div class="pd-tier-grid">' + tierRows + '</div>' +
+                distBlock + '</div>';
         }).join('') + '</div>';
     }
 
@@ -2283,7 +2332,9 @@
             tierLabels: TIER_LABELS,
             presentationsForSlug: presentationsForSlug,
             getPriceEntry: function (id) { return prices[id] || null; },
+            getDistributorPrice: getDistributorPrice,
             setTierPrice: setTierPrice,
+            setDistributorPrice: setDistributorPrice,
             resetPricesToDefaults: resetPricesToDefaults,
             priceEditorHtml: priceEditorHtml,
             renderProductSalesAnalytics: renderProductSalesAnalytics,
