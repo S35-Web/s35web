@@ -2116,15 +2116,15 @@
                         <div class="card span-12">
                             <div class="cortes-chart-head" style="margin-bottom:8px">
                                 <div>
-                                    <h3 style="margin:0">Composición del lote</h3>
-                                    <div class="panel-sub" id="prodFormulaChartSub">Ingredientes · kg por lote</div>
+                                    <h3 style="margin:0">Inventario de materia prima</h3>
+                                    <div class="panel-sub" id="prodFormulaChartSub">Ingredientes · kg en inventario</div>
                                 </div>
                                 <div class="cortes-chart-legend" aria-hidden="true">
-                                    <span class="leg"><span class="swatch"></span> Versión activa</span>
-                                    <span class="leg"><span class="swatch prev"></span> Otra versión</span>
+                                    <span class="leg"><span class="swatch"></span> En inventario</span>
+                                    <span class="leg"><span class="swatch prev"></span> Requerido (lote)</span>
                                 </div>
                             </div>
-                            <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Gráfica de composición de ingredientes"></div>
+                            <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Gráfica de inventario de materia prima por ingrediente"></div>
                         </div>
                         <div class="card span-7">
                             <h3>Emitir ticket de lote</h3>
@@ -4623,58 +4623,63 @@
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         if (!f || !r) {
             host.innerHTML = '<div class="cortes-chart-empty">Elige un producto</div>';
-            if (subEl) subEl.textContent = 'Ingredientes · kg por lote';
+            if (subEl) subEl.textContent = 'Ingredientes · kg en inventario';
             return;
         }
         ensureVersions(f);
         syncActiveVersionToRoot(f);
         const active = activeVersion(f);
-        const activeItems = formulaVersionItems(f, f.activeVersionId);
+        // Solo MP de la versión activa (excluye empaque / Pza)
+        const activeItems = formulaVersionItems(f, f.activeVersionId).filter(function (it) {
+            return (it.unit || '') !== 'Pza' && (it.role || '') !== 'Empaque';
+        });
         if (!activeItems.length) {
             host.innerHTML = '<div class="cortes-chart-empty">Sin dosis en esta versión</div>';
             if (subEl) subEl.textContent = (active && active.name ? active.name + ' · ' : '') + 'Sin ingredientes';
             return;
         }
-        // Eje X = unión de plantIds (activa primero, luego otras versiones)
         const order = [];
         const seen = {};
         activeItems.forEach(function (it) {
-            if (seen[it.plantId]) return;
+            if (!it.plantId || seen[it.plantId]) return;
             seen[it.plantId] = true;
             order.push(it.plantId);
         });
-        const compareVer = (f.versions || []).filter(function (v) { return v.id !== f.activeVersionId; })[0] || null;
-        if (compareVer) {
-            formulaVersionItems(f, compareVer.id).forEach(function (it) {
-                if (seen[it.plantId]) return;
-                seen[it.plantId] = true;
-                order.push(it.plantId);
-            });
+        function fmtQty(v) {
+            const n = Number(v) || 0;
+            if (Math.abs(n) >= 100) return String(Math.round(n));
+            return String(Math.round(n * 1000) / 1000);
         }
-        function amountMap(items) {
-            const m = {};
-            (items || []).forEach(function (it) {
-                m[it.plantId] = (Number(it.amount) || 0) * lots;
-            });
-            return m;
-        }
-        const curMap = amountMap(activeItems);
-        const prevMap = compareVer ? amountMap(formulaVersionItems(f, compareVer.id)) : {};
-        const labels = order.map(function (id) {
+        const rows = order.map(function (id) {
             const mat = plantById(id);
-            return shortIngLabel(mat ? displayName(mat) : id);
+            const it = activeItems.filter(function (x) { return x.plantId === id; })[0];
+            const unit = (it && it.unit) || (mat && mat.unit) || 'Kg';
+            const need = (Number(it && it.amount) || 0) * lots;
+            const have = mat ? Number(mat.stock) || 0 : 0;
+            const fullName = mat ? displayName(mat) : id;
+            return {
+                plantId: id,
+                label: shortIngLabel(fullName),
+                fullName: fullName,
+                unit: unit,
+                need: need,
+                have: have,
+                ok: !!mat && have >= need,
+                missing: !mat
+            };
         });
-        const curVals = order.map(function (id) { return curMap[id] || 0; });
-        const prevVals = order.map(function (id) { return prevMap[id] || 0; });
-        const yMax = Math.max(1, Math.max.apply(null, curVals.concat(prevVals)) * 1.15);
+        const labels = rows.map(function (row) { return row.label; });
+        const stockVals = rows.map(function (row) { return row.have; });
+        const needVals = rows.map(function (row) { return row.need; });
+        const yMax = Math.max(1, Math.max.apply(null, stockVals.concat(needVals)) * 1.15);
         const W = 960;
         const H = 260;
         const padL = 48;
         const padR = 16;
-        const padT = 18;
+        const padT = 28;
         const padB = 40;
         const baseY = H - padB;
-        const n = order.length;
+        const n = rows.length;
         function ptX(i) {
             if (n <= 1) return (padL + W - padR) / 2;
             return padL + (i / (n - 1)) * (W - padL - padR);
@@ -4685,11 +4690,11 @@
         function ptsFrom(vals) {
             return vals.map(function (v, i) { return { x: ptX(i), y: ptY(v) }; });
         }
-        const curPts = ptsFrom(curVals);
-        const prevPts = ptsFrom(prevVals);
-        const curLine = buildMonotonePath(curPts, baseY);
-        const prevLine = compareVer ? buildMonotonePath(prevPts, baseY) : '';
-        const areaPath = curLine +
+        const stockPts = ptsFrom(stockVals);
+        const needPts = ptsFrom(needVals);
+        const stockLine = buildMonotonePath(stockPts, baseY);
+        const needLine = buildMonotonePath(needPts, baseY);
+        const areaPath = stockLine +
             ' L' + ptX(n - 1).toFixed(1) + ' ' + baseY.toFixed(1) +
             ' L' + ptX(0).toFixed(1) + ' ' + baseY.toFixed(1) + ' Z';
         let grid = '';
@@ -4712,23 +4717,45 @@
             '<line x1="0" y1="0" x2="0" y2="7" stroke="currentColor" stroke-width="1" opacity="0.35"/>' +
             '</pattern>' +
             '</defs>';
-        const dots = curPts.map(function (p, i) {
+        // Etiquetas de inventario encima de cada punto (serie principal)
+        let valueLabels = '';
+        stockPts.forEach(function (p, i) {
+            const row = rows[i];
+            const tip =
+                esc(row.fullName) +
+                ' — inventario: ' + esc(fmtQty(row.have)) + ' ' + esc(row.unit) +
+                ' · requiere: ' + esc(fmtQty(row.need)) + ' ' + esc(row.unit) +
+                (row.missing ? ' · sin MP en planta' : (row.ok ? '' : ' · insuficiente'));
+            const fill = row.ok ? 'var(--primary)' : 'var(--danger)';
+            valueLabels +=
+                '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) +
+                '" r="3.4" fill="' + fill + '" stroke="var(--panel)" stroke-width="1.5">' +
+                '<title>' + tip + '</title></circle>' +
+                '<text class="y-label" x="' + p.x.toFixed(1) + '" y="' + (p.y - 8).toFixed(1) +
+                '" text-anchor="middle" style="fill:' + (row.ok ? 'var(--text)' : 'var(--danger)') +
+                ';font-size:9px">' + esc(fmtQty(row.have)) + '</text>';
+        });
+        const needDots = needPts.map(function (p, i) {
+            const row = rows[i];
             return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) +
-                '" r="3.2" fill="var(--primary)" stroke="var(--panel)" stroke-width="1.5">' +
-                '<title>' + esc(labels[i]) + ': ' + esc(String(curVals[i])) + ' kg</title></circle>';
+                '" r="2.4" fill="none" stroke="#a3a3a3" stroke-width="1.25">' +
+                '<title>' + esc(row.fullName) + ' — requiere: ' + esc(fmtQty(row.need)) +
+                ' ' + esc(row.unit) + '</title></circle>';
         }).join('');
         host.innerHTML =
             '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
             defs + grid + yLabels +
             '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + hatchId + ')"/>' +
-            (prevLine ? '<path class="line-prev" d="' + prevLine + '" fill="none"/>' : '') +
-            '<path class="line-cur" d="' + curLine + '" fill="none"/>' +
-            dots + xLabels +
+            '<path class="line-prev" d="' + needLine + '" fill="none"/>' +
+            '<path class="line-cur" d="' + stockLine + '" fill="none"/>' +
+            needDots + valueLabels + xLabels +
             '</svg>';
         if (subEl) {
+            const shortCount = rows.filter(function (row) { return !row.ok; }).length;
             subEl.textContent = (active ? active.name + (active.label ? ' — ' + active.label : '') : 'Versión') +
-                (lots > 1 ? ' · ×' + lots + ' lotes' : ' · kg por lote') +
-                (compareVer ? ' · vs ' + compareVer.name : '');
+                ' · kg en inventario' +
+                (lots > 1 ? ' · vs ×' + lots + ' lotes' : ' · vs 1 lote') +
+                (shortCount ? ' · ' + shortCount + ' con falta' : '');
         }
     }
     function refreshStockViews() {
