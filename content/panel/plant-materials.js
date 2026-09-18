@@ -23,6 +23,7 @@ module.exports = [
   { id: "kimacell", name: "Kimacell", unit: "Kg", minStock: 60, category: "cellulose", labSlug: "celulosa-hpmc" },
   { id: "walocell", name: "Walocell", unit: "Kg", minStock: 20, category: "cellulose", labSlug: "celulosa-hpmc" },
   { id: "marmolina-gruesa", name: "Marmolina gruesa", unit: "Kg", minStock: 1000, category: "mineral", labSlug: "marmolina-fina" },
+  { id: "marmolina-estandar", name: "Marmolina estandar", unit: "Kg", minStock: 1000, category: "mineral", labSlug: "marmolina-fina" },
   { id: "marmolina-talco-100", name: "Marmolina en talco malla 100", unit: "Kg", minStock: 1000, category: "mineral", labSlug: "carbonato-de-calcio" },
   { id: "marmolina-talco-200", name: "Marmolina en talco malla 200", unit: "Kg", minStock: 4000, category: "mineral", labSlug: "carbonato-de-calcio" },
   { id: "marmolina-talco-300", name: "Marmolina en talco malla 300", unit: "Kg", minStock: 2000, category: "mineral", labSlug: "carbonato-de-calcio" },

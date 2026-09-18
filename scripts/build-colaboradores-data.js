@@ -248,20 +248,9 @@ function pickPlant(labSlug) {
 recipes.forEach(function (r) {
   const dose = batchDoses[r.product] || null;
   if (dose) {
-    const totalKg = (dose.items || []).reduce(function (sum, it) {
-      return sum + ((it.unit || 'Kg') === 'Kg' ? (Number(it.amount) || 0) : 0);
-    }, 0);
     const pack = Number(dose.packSizeKg) || 25;
-    r.batchDose = {
-      mode: dose.mode || 'plant-lot',
-      packSizeKg: pack,
-      yieldMin: Number(dose.yieldMin) || 0,
-      yieldMax: Number(dose.yieldMax) || 0,
-      yieldTheoretical: pack > 0 ? Math.round((totalKg / pack) * 100) / 100 : 0,
-      totalKg: Math.round(totalKg * 1000) / 1000,
-      packagingPlantId: dose.packagingPlantId || null,
-      note: dose.note || '',
-      items: (dose.items || []).map(function (it) {
+    function mapItems(list) {
+      return (list || []).map(function (it) {
         if (!plantById[it.plantId]) {
           throw new Error('batch-doses ' + r.product + ': plantId desconocido ' + it.plantId);
         }
@@ -271,7 +260,52 @@ recipes.forEach(function (r) {
           unit: normalizeUnit(it.unit || 'Kg') || 'Kg',
           role: it.role || '',
         };
-      }),
+      });
+    }
+    function versionMeta(items, ver) {
+      const totalKg = items.reduce(function (sum, it) {
+        return sum + ((it.unit || 'Kg') === 'Kg' ? (Number(it.amount) || 0) : 0);
+      }, 0);
+      return {
+        id: ver.id,
+        name: ver.name || ver.id,
+        label: ver.label || '',
+        yieldMin: Number(ver.yieldMin != null ? ver.yieldMin : dose.yieldMin) || 0,
+        yieldMax: Number(ver.yieldMax != null ? ver.yieldMax : dose.yieldMax) || 0,
+        yieldTheoretical: pack > 0 ? Math.round((totalKg / pack) * 100) / 100 : 0,
+        totalKg: Math.round(totalKg * 1000) / 1000,
+        items: items,
+      };
+    }
+    let versions = [];
+    if (Array.isArray(dose.versions) && dose.versions.length) {
+      versions = dose.versions.map(function (ver) {
+        return versionMeta(mapItems(ver.items), ver);
+      });
+    } else {
+      versions = [versionMeta(mapItems(dose.items), {
+        id: 'v1',
+        name: 'V1',
+        label: 'Estándar',
+        yieldMin: dose.yieldMin,
+        yieldMax: dose.yieldMax,
+      })];
+    }
+    const defaultId = dose.defaultVersionId || (versions[0] && versions[0].id) || 'v1';
+    const active = versions.filter(function (v) { return v.id === defaultId; })[0] || versions[0];
+    r.batchDose = {
+      mode: dose.mode || 'plant-lot',
+      packSizeKg: pack,
+      packagingPlantId: dose.packagingPlantId || null,
+      note: dose.note || '',
+      defaultVersionId: defaultId,
+      versions: versions,
+      // Compat: campos del default para seeds antiguos / suggested
+      yieldMin: active.yieldMin,
+      yieldMax: active.yieldMax,
+      yieldTheoretical: active.yieldTheoretical,
+      totalKg: active.totalKg,
+      items: active.items,
     };
   } else {
     r.batchDose = null;
@@ -279,15 +313,17 @@ recipes.forEach(function (r) {
 
   const seen = {};
   r.suggested = [];
-  if (r.batchDose && r.batchDose.items.length) {
-    r.batchDose.items.forEach(function (it) {
-      if (seen[it.plantId]) return;
-      seen[it.plantId] = true;
-      r.suggested.push({
-        plantId: it.plantId,
-        unit: it.unit,
-        role: it.role || '',
-        amount: it.amount,
+  if (r.batchDose) {
+    (r.batchDose.versions || []).forEach(function (ver) {
+      (ver.items || []).forEach(function (it) {
+        if (seen[it.plantId]) return;
+        seen[it.plantId] = true;
+        r.suggested.push({
+          plantId: it.plantId,
+          unit: it.unit,
+          role: it.role || '',
+          amount: it.amount,
+        });
       });
     });
   }

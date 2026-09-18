@@ -579,10 +579,92 @@
         .formula-meta label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
         .formula-line {
             display: grid;
-            grid-template-columns: 1fr 88px 72px 36px;
+            grid-template-columns: minmax(140px, 1.1fr) 1fr 72px 64px 36px;
             gap: 8px;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .formula-line .formula-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 999px;
+            background: var(--border);
+            outline: none;
+            cursor: pointer;
+        }
+        .formula-line .formula-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 2px solid var(--panel);
+            box-shadow: 0 0 0 1px var(--border-strong);
+            cursor: pointer;
+            transition: transform .18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow .18s ease;
+        }
+        .formula-line .formula-slider:hover::-webkit-slider-thumb,
+        .formula-line .formula-slider:focus::-webkit-slider-thumb {
+            transform: scale(1.12);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+        .formula-line .formula-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 2px solid var(--panel);
+            box-shadow: 0 0 0 1px var(--border-strong);
+            cursor: pointer;
+        }
+        .formula-line .formula-slider.animating::-webkit-slider-thumb {
+            transform: scale(1.08);
+        }
+        .formula-line input[data-field="amount"] {
+            width: 100%;
+            transition: color .2s ease, border-color .2s ease;
+        }
+        .formula-line.formula-line-flash input[data-field="amount"] {
+            border-color: var(--border-strong);
+            background: var(--hover);
+        }
+        .formula-version-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .formula-version-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            flex: 1;
+        }
+        .formula-version-chips button {
+            border: 1px solid var(--border);
+            background: var(--panel);
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .18s cubic-bezier(0.22, 1, 0.36, 1),
+                border-color .18s ease, color .18s ease, transform .18s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .formula-version-chips button:hover { background: var(--hover); }
+        .formula-version-chips button.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--primary-fg);
+        }
+        .formula-version-meta {
+            font-size: 12px;
+            color: var(--muted);
+            width: 100%;
         }
         .formula-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
         .prod-preview {
@@ -658,7 +740,8 @@
             .split { grid-template-columns: 1fr; }
             .recipe-nav { max-height: none; }
             .formula-meta { grid-template-columns: 1fr 1fr; }
-            .formula-line { grid-template-columns: 1fr 1fr 72px 36px; }
+            .formula-line { grid-template-columns: 1fr 1fr; }
+            .formula-line .formula-slider { grid-column: 1 / -1; }
             .content { padding: 20px 16px 40px; }
         }
         @media (max-width: 760px) {
@@ -3105,7 +3188,7 @@
     renderMaterials();
 
     const recipes = data.recipes || [];
-    const FORMULA_KEY = 's35_plant_formulas_v2';
+    const FORMULA_KEY = 's35_plant_formulas_v3';
     function parseFirstNumber(text) {
         const m = String(text || '').match(/(\d+(?:[.,]\d+)?)/);
         return m ? Number(m[1].replace(',', '.')) : 0;
@@ -3117,6 +3200,27 @@
         if (recipe.kind === 'liquido') return 'cubeta-19l';
         if (String(recipe.product || '').indexOf('waxtard') === 0) return 'saco-rafia-waxtard';
         return 'saco-rafia-general';
+    }
+    function mapDoseItems(list) {
+        return (list || []).map(function (it) {
+            const mat = plantById(it.plantId);
+            return {
+                plantId: it.plantId,
+                amount: Number(it.amount) || 0,
+                unit: normalizeUnit(it.unit || (mat && mat.unit) || 'Kg') || 'Kg',
+                role: it.role || ''
+            };
+        }).filter(function (it) { return it.plantId && plantById(it.plantId); });
+    }
+    function cloneItems(items) {
+        return (items || []).map(function (it) {
+            return {
+                plantId: it.plantId,
+                amount: Number(it.amount) || 0,
+                unit: normalizeUnit(it.unit || 'Kg') || 'Kg',
+                role: it.role || ''
+            };
+        });
     }
     function recipeTotalKg(f) {
         return (f.items || []).reduce(function (sum, it) {
@@ -3131,56 +3235,127 @@
         const total = recipeTotalKg(f);
         return pack > 0 ? Math.round((total / pack) * 100) / 100 : 0;
     }
+    function activeVersion(f) {
+        if (!f) return null;
+        ensureVersions(f);
+        const id = f.activeVersionId || (f.versions[0] && f.versions[0].id);
+        return f.versions.filter(function (v) { return v.id === id; })[0] || f.versions[0] || null;
+    }
+    function syncActiveVersionToRoot(f) {
+        const ver = activeVersion(f);
+        if (!ver) return f;
+        f.items = cloneItems(ver.items);
+        f.yieldMin = Number(ver.yieldMin) || 0;
+        f.yieldMax = Number(ver.yieldMax) || 0;
+        f.water = Number(ver.water) || 0;
+        if (ver.packSizeKg) f.packSizeKg = Number(ver.packSizeKg) || f.packSizeKg;
+        if (isPlantLot(f)) f.batchSize = recipeTotalKg(f);
+        return f;
+    }
+    function persistRootToActiveVersion(f) {
+        ensureVersions(f);
+        const ver = activeVersion(f);
+        if (!ver) return;
+        ver.items = cloneItems(f.items);
+        ver.yieldMin = Number(f.yieldMin) || 0;
+        ver.yieldMax = Number(f.yieldMax) || 0;
+        ver.water = Number(f.water) || 0;
+        ver.packSizeKg = Number(f.packSizeKg) || 25;
+        ver.totalKg = recipeTotalKg(f);
+        ver.yieldTheoretical = theoreticalBags(f);
+    }
+    function ensureVersions(f) {
+        if (!f) return f;
+        if (Array.isArray(f.versions) && f.versions.length) {
+            if (!f.activeVersionId) f.activeVersionId = f.versions[0].id;
+            return f;
+        }
+        f.versions = [{
+            id: 'v1',
+            name: 'V1',
+            label: 'Estándar',
+            yieldMin: Number(f.yieldMin) || 0,
+            yieldMax: Number(f.yieldMax) || 0,
+            water: Number(f.water) || 0,
+            packSizeKg: Number(f.packSizeKg) || 25,
+            items: cloneItems(f.items)
+        }];
+        f.activeVersionId = 'v1';
+        return f;
+    }
+    function nextVersionId(f) {
+        ensureVersions(f);
+        let max = 0;
+        f.versions.forEach(function (v) {
+            const m = String(v.id || '').match(/^v(\d+)$/i);
+            if (m) max = Math.max(max, Number(m[1]));
+        });
+        return 'v' + (max + 1);
+    }
+    function sliderMaxFor(amount, unit) {
+        const a = Number(amount) || 0;
+        if ((unit || 'Kg') === 'Pza') return Math.max(100, Math.ceil(a * 2) || 50);
+        if (a <= 10) return Math.max(20, Math.ceil(a * 4) || 20);
+        if (a <= 100) return Math.max(200, Math.ceil(a * 2 / 10) * 10);
+        return Math.max(600, Math.ceil(a * 2 / 50) * 50);
+    }
     function seedFormula(recipe) {
         const dose = recipe.batchDose;
         if (dose && dose.mode === 'plant-lot') {
-            const items = (dose.items || []).map(function (it) {
-                const mat = plantById(it.plantId);
+            const versionsSrc = (dose.versions && dose.versions.length)
+                ? dose.versions
+                : [{
+                    id: dose.defaultVersionId || 'v1',
+                    name: 'V1',
+                    label: 'Estándar',
+                    yieldMin: dose.yieldMin,
+                    yieldMax: dose.yieldMax,
+                    items: dose.items
+                }];
+            const versions = versionsSrc.map(function (ver) {
+                const items = mapDoseItems(ver.items);
+                const totalKg = items.reduce(function (s, it) {
+                    return s + ((it.unit || 'Kg') === 'Kg' ? it.amount : 0);
+                }, 0);
                 return {
-                    plantId: it.plantId,
-                    amount: Number(it.amount) || 0,
-                    unit: normalizeUnit(it.unit || (mat && mat.unit) || 'Kg') || 'Kg',
-                    role: it.role || ''
+                    id: ver.id || 'v1',
+                    name: ver.name || ver.id || 'V1',
+                    label: ver.label || '',
+                    yieldMin: Number(ver.yieldMin != null ? ver.yieldMin : dose.yieldMin) || 0,
+                    yieldMax: Number(ver.yieldMax != null ? ver.yieldMax : dose.yieldMax) || 0,
+                    water: parseFirstNumber(recipe.water),
+                    packSizeKg: Number(dose.packSizeKg) || 25,
+                    totalKg: Math.round(totalKg * 1000) / 1000,
+                    items: items
                 };
-            }).filter(function (it) { return it.plantId && plantById(it.plantId); });
-            const totalKg = items.reduce(function (s, it) {
-                return s + ((it.unit || 'Kg') === 'Kg' ? it.amount : 0);
-            }, 0);
-            return {
+            });
+            const activeId = dose.defaultVersionId || (versions[0] && versions[0].id) || 'v1';
+            const f = {
                 product: recipe.product,
                 mode: 'plant-lot',
-                batchSize: totalKg || Number(dose.totalKg) || 0,
                 batchUnit: 'Kg',
                 batchLabel: 'lote',
                 packSizeKg: Number(dose.packSizeKg) || 25,
-                yieldMin: Number(dose.yieldMin) || 0,
-                yieldMax: Number(dose.yieldMax) || 0,
                 packagingPlantId: dose.packagingPlantId || packagingId(recipe),
-                water: parseFirstNumber(recipe.water),
-                items: items
+                activeVersionId: activeId,
+                versions: versions,
+                items: [],
+                water: 0,
+                yieldMin: 0,
+                yieldMax: 0,
+                batchSize: 0
             };
+            return syncActiveVersionToRoot(f);
         }
         const liquid = recipe.kind === 'liquido';
         const sack = String(recipe.water || '').match(/saco\s+(\d+)/i);
-        const f = {
-            product: recipe.product,
-            mode: 'unit',
-            batchSize: liquid ? 19 : (sack ? Number(sack[1]) : 25),
-            batchUnit: liquid ? 'L' : 'Kg',
-            batchLabel: liquid ? 'cubeta' : 'saco',
-            packSizeKg: liquid ? 0 : (sack ? Number(sack[1]) : 25),
-            yieldMin: 0,
-            yieldMax: 0,
-            packagingPlantId: packagingId(recipe),
-            water: parseFirstNumber(recipe.water),
-            items: []
-        };
+        const items = [];
         const seen = {};
         (recipe.suggested || []).forEach(function (s) {
             if (!s.plantId || seen[s.plantId] || !plantById(s.plantId)) return;
             seen[s.plantId] = true;
             const mat = plantById(s.plantId);
-            f.items.push({
+            items.push({
                 plantId: s.plantId,
                 amount: Number(s.amount) || 0,
                 unit: (mat && mat.unit) || s.unit || 'Kg',
@@ -3190,9 +3365,33 @@
         const pack = packagingId(recipe);
         if (pack && !seen[pack] && plantById(pack)) {
             const mat = plantById(pack);
-            f.items.push({ plantId: pack, amount: 1, unit: (mat && mat.unit) || 'Pza', role: 'Empaque' });
+            items.push({ plantId: pack, amount: 1, unit: (mat && mat.unit) || 'Pza', role: 'Empaque' });
         }
-        return f;
+        const f = {
+            product: recipe.product,
+            mode: 'unit',
+            batchSize: liquid ? 19 : (sack ? Number(sack[1]) : 25),
+            batchUnit: liquid ? 'L' : 'Kg',
+            batchLabel: liquid ? 'cubeta' : 'saco',
+            packSizeKg: liquid ? 0 : (sack ? Number(sack[1]) : 25),
+            packagingPlantId: packagingId(recipe),
+            activeVersionId: 'v1',
+            versions: [{
+                id: 'v1',
+                name: 'V1',
+                label: 'Estándar',
+                yieldMin: 0,
+                yieldMax: 0,
+                water: parseFirstNumber(recipe.water),
+                packSizeKg: liquid ? 0 : (sack ? Number(sack[1]) : 25),
+                items: items
+            }],
+            items: items,
+            water: parseFirstNumber(recipe.water),
+            yieldMin: 0,
+            yieldMax: 0
+        };
+        return syncActiveVersionToRoot(f);
     }
     function loadFormulas() {
         const map = {};
@@ -3205,46 +3404,72 @@
                     if (!map[slug] || !items[slug]) return;
                     const saved = items[slug];
                     const seeded = map[slug];
-                    // Si hay dosificación canónica de lote, priorizar seed salvo que el admin ya guardó mode plant-lot.
                     if (seeded.mode === 'plant-lot' && saved.mode !== 'plant-lot') return;
-                    map[slug].mode = saved.mode || seeded.mode || 'unit';
-                    map[slug].batchSize = Number(saved.batchSize) || map[slug].batchSize;
-                    map[slug].batchUnit = normalizeUnit(saved.batchUnit || map[slug].batchUnit) || map[slug].batchUnit;
-                    map[slug].batchLabel = saved.batchLabel || map[slug].batchLabel;
-                    map[slug].packSizeKg = Number(saved.packSizeKg) || map[slug].packSizeKg || 25;
-                    map[slug].yieldMin = Number(saved.yieldMin) || map[slug].yieldMin || 0;
-                    map[slug].yieldMax = Number(saved.yieldMax) || map[slug].yieldMax || 0;
-                    map[slug].packagingPlantId = saved.packagingPlantId || map[slug].packagingPlantId || '';
-                    map[slug].water = Number(saved.water) || 0;
-                    if (Array.isArray(saved.items) && saved.items.length) {
-                        map[slug].items = saved.items.map(function (it) {
-                            const mat = plantById(it.plantId);
+                    if (Array.isArray(saved.versions) && saved.versions.length) {
+                        map[slug].mode = saved.mode || seeded.mode;
+                        map[slug].packagingPlantId = saved.packagingPlantId || seeded.packagingPlantId;
+                        map[slug].packSizeKg = Number(saved.packSizeKg) || seeded.packSizeKg;
+                        map[slug].batchLabel = saved.batchLabel || seeded.batchLabel;
+                        map[slug].batchUnit = normalizeUnit(saved.batchUnit || seeded.batchUnit) || seeded.batchUnit;
+                        map[slug].versions = saved.versions.map(function (ver) {
                             return {
-                                plantId: it.plantId,
-                                amount: Number(it.amount) || 0,
-                                unit: normalizeUnit(it.unit || (mat && mat.unit) || 'Kg'),
-                                role: it.role || ''
+                                id: ver.id || 'v1',
+                                name: ver.name || ver.id || 'V1',
+                                label: ver.label || '',
+                                yieldMin: Number(ver.yieldMin) || 0,
+                                yieldMax: Number(ver.yieldMax) || 0,
+                                water: Number(ver.water) || 0,
+                                packSizeKg: Number(ver.packSizeKg) || map[slug].packSizeKg || 25,
+                                items: mapDoseItems(ver.items)
                             };
-                        }).filter(function (it) { return it.plantId; });
+                        });
+                        map[slug].activeVersionId = saved.activeVersionId || map[slug].versions[0].id;
+                        syncActiveVersionToRoot(map[slug]);
+                        return;
+                    }
+                    // Migración flat → V1
+                    if (Array.isArray(saved.items) && saved.items.length) {
+                        map[slug].mode = saved.mode || seeded.mode;
+                        map[slug].versions = [{
+                            id: 'v1',
+                            name: 'V1',
+                            label: 'Estándar',
+                            yieldMin: Number(saved.yieldMin) || 0,
+                            yieldMax: Number(saved.yieldMax) || 0,
+                            water: Number(saved.water) || 0,
+                            packSizeKg: Number(saved.packSizeKg) || seeded.packSizeKg || 25,
+                            items: mapDoseItems(saved.items)
+                        }];
+                        map[slug].activeVersionId = 'v1';
+                        map[slug].packagingPlantId = saved.packagingPlantId || seeded.packagingPlantId;
+                        syncActiveVersionToRoot(map[slug]);
                     }
                 });
             }
         } catch (_) {}
+        Object.keys(map).forEach(function (slug) { ensureVersions(map[slug]); syncActiveVersionToRoot(map[slug]); });
         return map;
     }
     function saveFormulas() {
+        Object.keys(formulas).forEach(function (slug) {
+            persistRootToActiveVersion(formulas[slug]);
+        });
         localStorage.setItem(FORMULA_KEY, JSON.stringify({ items: formulas, updatedAt: new Date().toISOString() }));
     }
     let formulas = loadFormulas();
     let formulaDirty = false;
     let currentRecipe = recipes[0] ? recipes[0].product : '';
+    let formulaAnimToken = 0;
 
     function formulaComplete(f) {
+        syncActiveVersionToRoot(f);
         return !!(f && f.items && f.items.length && f.items.every(function (it) { return Number(it.amount) > 0; }));
     }
     function updateRecipeKpi() {
+        const el = document.getElementById('kpiRecipes');
+        if (!el) return;
         const ready = recipes.filter(function (r) { return formulaComplete(formulas[r.product]); }).length;
-        document.getElementById('kpiRecipes').textContent = ready + '/' + recipes.length;
+        el.textContent = ready + '/' + recipes.length;
     }
     updateRecipeKpi();
 
@@ -3255,7 +3480,9 @@
         });
     }
     function recipeStatus(f) {
-        if (formulaComplete(f)) return '<span class="badge b-success">Receta lista</span>';
+        const ver = activeVersion(f);
+        const verLabel = ver ? ver.name : '';
+        if (formulaComplete(f)) return '<span class="badge b-success">Receta lista' + (verLabel ? ' · ' + esc(verLabel) : '') + '</span>';
         if (f && f.items && f.items.length) return '<span class="badge b-warning">Falta dosis</span>';
         return '<span class="badge b-primary">Sin receta</span>';
     }
@@ -3269,8 +3496,10 @@
         nav.innerHTML = list.map(function (r) {
             const f = formulas[r.product];
             const n = f && f.items ? f.items.length : 0;
+            const ver = activeVersion(f);
             return '<button type="button" data-recipe="' + esc(r.product) + '" class="' + (r.product === currentRecipe ? 'active' : '') + '">' +
-                '<div>' + esc(r.name) + '</div><div class="muted">' + esc(r.code) + ' · ' + n + ' materias</div></button>';
+                '<div>' + esc(r.name) + '</div><div class="muted">' + esc(r.code) + ' · ' +
+                (ver ? esc(ver.name) + ' · ' : '') + n + ' materias</div></button>';
         }).join('') || '<div class="empty">Sin resultados</div>';
     }
     function unitOptions(selected) {
@@ -3283,11 +3512,25 @@
             return '<option value="' + esc(m.id) + '"' + (m.id === selected ? ' selected' : '') + '>' + esc(displayName(m)) + '</option>';
         }).join('');
     }
+    function updateFormulaTotalsDom() {
+        const f = formulas[currentRecipe];
+        const el = document.getElementById('formulaTotals');
+        if (!f || !el) return;
+        const totalKg = recipeTotalKg(f);
+        const theo = theoreticalBags(f);
+        if (!isPlantLot(f)) {
+            el.textContent = '';
+            return;
+        }
+        el.innerHTML = 'Total <strong>' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg</strong> · ' +
+            esc(String(theo)) + ' sacos teóricos · rango ' + esc(String(f.yieldMin)) + '–' + esc(String(f.yieldMax));
+    }
     function readFormulaFromDom() {
         const f = formulas[currentRecipe];
         if (!f) return;
         const detail = formulaMountEl();
         if (!detail) return;
+        ensureVersions(f);
         const batchSize = detail.querySelector('[data-field="batchSize"]');
         const batchUnit = detail.querySelector('[data-field="batchUnit"]');
         const batchLabel = detail.querySelector('[data-field="batchLabel"]');
@@ -3305,15 +3548,116 @@
         const rows = detail.querySelectorAll('[data-line]');
         f.items = [];
         rows.forEach(function (row) {
+            const amountEl = row.querySelector('[data-field="amount"]');
+            const slider = row.querySelector('[data-field="slider"]');
+            const amount = Math.max(0, Number(amountEl && amountEl.value) || 0);
             f.items.push({
                 plantId: row.querySelector('[data-field="plantId"]').value,
-                amount: Math.max(0, Number(row.querySelector('[data-field="amount"]').value) || 0),
+                amount: amount,
                 unit: normalizeUnit(row.querySelector('[data-field="unit"]').value) || 'Kg',
                 role: ''
             });
+            if (slider && !slider.classList.contains('animating')) {
+                const max = sliderMaxFor(amount, row.querySelector('[data-field="unit"]').value);
+                if (Number(slider.max) < amount) slider.max = String(max);
+                slider.value = String(amount);
+            }
         });
         if (isPlantLot(f)) f.batchSize = recipeTotalKg(f);
+        persistRootToActiveVersion(f);
         formulaDirty = true;
+        updateFormulaTotalsDom();
+    }
+    function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+    }
+    function animateFormulaToVersion(fromItems, toItems, done) {
+        const detail = formulaMountEl();
+        if (!detail) { if (done) done(); return; }
+        const token = ++formulaAnimToken;
+        const duration = 320;
+        const start = performance.now();
+        const rows = Array.prototype.slice.call(detail.querySelectorAll('[data-line]'));
+        const fromByPlant = {};
+        (fromItems || []).forEach(function (it) { fromByPlant[it.plantId] = Number(it.amount) || 0; });
+        rows.forEach(function (row) {
+            const slider = row.querySelector('[data-field="slider"]');
+            if (slider) slider.classList.add('animating');
+            row.classList.add('formula-line-flash');
+        });
+        function frame(now) {
+            if (token !== formulaAnimToken) return;
+            const t = Math.min(1, (now - start) / duration);
+            const e = easeOutCubic(t);
+            rows.forEach(function (row, idx) {
+                const plantId = row.querySelector('[data-field="plantId"]').value;
+                const target = toItems[idx] ? Number(toItems[idx].amount) || 0 : 0;
+                const from = fromByPlant[plantId] != null ? fromByPlant[plantId] :
+                    (toItems[idx] ? 0 : 0);
+                // Prefer index match when plant lists differ
+                const fromAmt = (fromItems[idx] && fromItems[idx].plantId === plantId)
+                    ? (Number(fromItems[idx].amount) || 0)
+                    : (fromByPlant[plantId] != null ? fromByPlant[plantId] : 0);
+                const val = fromAmt + (target - fromAmt) * e;
+                const amountEl = row.querySelector('[data-field="amount"]');
+                const slider = row.querySelector('[data-field="slider"]');
+                const rounded = Math.round(val * 1000) / 1000;
+                if (amountEl) amountEl.value = String(rounded);
+                if (slider) {
+                    const max = Math.max(Number(slider.max) || 0, sliderMaxFor(target, row.querySelector('[data-field="unit"]').value));
+                    slider.max = String(max);
+                    slider.value = String(rounded);
+                }
+            });
+            if (t < 1) {
+                requestAnimationFrame(frame);
+            } else {
+                rows.forEach(function (row) {
+                    const slider = row.querySelector('[data-field="slider"]');
+                    if (slider) slider.classList.remove('animating');
+                    row.classList.remove('formula-line-flash');
+                });
+                if (done) done();
+            }
+        }
+        requestAnimationFrame(frame);
+    }
+    function switchFormulaVersion(versionId, animate) {
+        const f = formulas[currentRecipe];
+        if (!f) return;
+        ensureVersions(f);
+        const next = f.versions.filter(function (v) { return v.id === versionId; })[0];
+        if (!next) return;
+        readFormulaFromDom();
+        const fromItems = cloneItems(f.items);
+        f.activeVersionId = versionId;
+        syncActiveVersionToRoot(f);
+        const toItems = cloneItems(f.items);
+        const sameStructure = fromItems.length === toItems.length &&
+            fromItems.every(function (it, i) { return it.plantId === toItems[i].plantId; });
+        if (animate && sameStructure) {
+            // Update chips active state without full remount of lines first
+            const mount = formulaMountEl();
+            if (mount) {
+                mount.querySelectorAll('[data-formula-version]').forEach(function (btn) {
+                    btn.classList.toggle('active', btn.getAttribute('data-formula-version') === versionId);
+                });
+                const meta = mount.querySelector('.formula-version-meta');
+                if (meta) meta.textContent = (next.name || '') + (next.label ? ' — ' + next.label : '');
+                const yMin = mount.querySelector('[data-field="yieldMin"]');
+                const yMax = mount.querySelector('[data-field="yieldMax"]');
+                if (yMin) yMin.value = String(f.yieldMin || 0);
+                if (yMax) yMax.value = String(f.yieldMax || 0);
+            }
+            animateFormulaToVersion(fromItems, toItems, function () {
+                persistRootToActiveVersion(f);
+                formulaDirty = true;
+                updateFormulaTotalsDom();
+                renderRecipeNav();
+            });
+        } else {
+            openRecipe(currentRecipe, true);
+        }
     }
     function openRecipe(slug, force) {
         if (!force && formulaDirty && slug !== currentRecipe) {
@@ -3330,15 +3674,29 @@
         }
         currentRecipe = slug;
         if (!formulas[slug]) formulas[slug] = seedFormula(r);
+        ensureVersions(formulas[slug]);
+        syncActiveVersionToRoot(formulas[slug]);
         const f = formulas[slug];
+        const ver = activeVersion(f);
         renderRecipeNav();
         const editable = canEditFormulas();
         const lotMode = isPlantLot(f);
         const totalKg = recipeTotalKg(f);
         const theo = theoreticalBags(f);
+        const versionBar = '<div class="formula-version-bar">' +
+            '<div class="formula-version-chips">' +
+            (f.versions || []).map(function (v) {
+                return '<button type="button" data-formula-version="' + esc(v.id) + '" class="' +
+                    (v.id === f.activeVersionId ? 'active' : '') + '">' + esc(v.name || v.id) + '</button>';
+            }).join('') +
+            (editable ? '<button type="button" class="btn" id="formulaAddVersionBtn" title="Nueva versión" style="border-radius:999px;padding:6px 10px"><i class="fa-solid fa-plus"></i></button>' : '') +
+            '</div>' +
+            '<div class="formula-version-meta">' + esc((ver && ver.name) || '') +
+            (ver && ver.label ? ' — ' + esc(ver.label) : '') + '</div></div>';
         const lines = (f.items || []).map(function (it, idx) {
+            const mat = plantById(it.plantId);
+            const max = sliderMaxFor(it.amount, it.unit);
             if (!editable) {
-                const mat = plantById(it.plantId);
                 return '<div class="formula-line" style="grid-template-columns:1fr auto auto">' +
                     '<div>' + esc(mat ? displayName(mat) : it.plantId) + '</div>' +
                     '<div class="num">' + esc(String(it.amount)) + '</div>' +
@@ -3346,6 +3704,8 @@
             }
             return '<div class="formula-line" data-line="' + idx + '">' +
                 '<select data-field="plantId">' + plantOptions(it.plantId) + '</select>' +
+                '<input data-field="slider" class="formula-slider" type="range" min="0" max="' + esc(String(max)) +
+                '" step="' + (Number(it.amount) % 1 ? '0.1' : '1') + '" value="' + esc(String(it.amount)) + '">' +
                 '<input data-field="amount" type="number" min="0" step="any" value="' + esc(String(it.amount)) + '">' +
                 '<select data-field="unit">' + unitOptions(it.unit || 'Kg') + '</select>' +
                 '<button type="button" class="icon-action danger" data-remove-line="' + idx + '" title="Quitar" aria-label="Quitar"><i class="fa-solid fa-trash-can"></i></button>' +
@@ -3372,16 +3732,15 @@
                 '</div>');
         const lotSummary = lotMode
             ? ('<div class="note-box" style="margin-bottom:12px">' +
-                '<strong>Lote de planta</strong> · Total MP ' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg · ' +
-                'Teórico ' + esc(String(theo)) + ' sacos de ' + esc(String(f.packSizeKg || 25)) + ' kg · ' +
-                'Real esperado ' + esc(String(f.yieldMin || '—')) + '–' + esc(String(f.yieldMax || '—')) + ' sacos. ' +
-                'Al producir se descuenta el lote completo y se da de alta solo lo envasado.' +
+                '<strong>Lote de planta</strong> · Usa sliders para ajustar dosis. Guarda versiones (V1, V2…) cuando cambies ingredientes. ' +
+                'Cada ticket de producción registra qué versión se usó.' +
                 '</div>')
             : '';
         const actions = editable
             ? ('<div class="formula-actions">' +
                 '<button type="button" class="btn" id="formulaAddBtn"><i class="fa-solid fa-plus"></i> Agregar materia</button>' +
-                '<button type="button" class="btn primary" id="formulaSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Guardar receta</button>' +
+                '<button type="button" class="btn" id="formulaSaveVersionAsBtn"><i class="fa-solid fa-copy"></i> Guardar como nueva versión</button>' +
+                '<button type="button" class="btn primary" id="formulaSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>' +
                 '</div>')
             : '<div class="muted" style="margin-top:10px">Solo lectura (rol ventas).</div>';
         mount.innerHTML =
@@ -3391,20 +3750,16 @@
             (lotMode ? ' · <span class="badge b-success">Lote planta</span>' : '') + '</div></div>' +
             recipeStatus(f) + '</div>' +
             (r.note ? '<div class="note-box">' + esc(r.note) + '</div>' : '') +
+            versionBar +
             lotSummary +
             meta +
             '<div class="muted" style="margin-bottom:8px">' +
             (lotMode ? 'Dosis por lote de producción (kg)' : ('Dosis por un ' + esc(f.batchLabel))) +
             '</div>' +
             '<div id="formulaLines">' + lines + '</div>' +
-            (lotMode && totalKg
-                ? '<div class="muted" style="margin-top:10px;text-align:right">Total <strong>' +
-                    esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg</strong> · ' +
-                    esc(String(theo)) + ' sacos teóricos · ' +
-                    esc(String(Math.round((theo || 0) * 100) / 100)) + ' ≈ ' +
-                    esc(String(f.yieldMin)) + '–' + esc(String(f.yieldMax)) + ' reales</div>'
-                : '') +
+            '<div class="muted" id="formulaTotals" style="margin-top:10px;text-align:right"></div>' +
             actions;
+        updateFormulaTotalsDom();
         if (document.getElementById('products') && document.getElementById('products').classList.contains('active')) syncPanelHash();
     }
     const recipeNavEl = document.getElementById('recipeNav');
@@ -3424,6 +3779,22 @@
     }
     document.addEventListener('input', function (e) {
         if (!onFormulaMountEvent(e) || !e.target.closest('[data-field]')) return;
+        const field = e.target.getAttribute('data-field');
+        if (field === 'slider') {
+            const row = e.target.closest('[data-line]');
+            const amountEl = row && row.querySelector('[data-field="amount"]');
+            if (amountEl) amountEl.value = e.target.value;
+        } else if (field === 'amount') {
+            const row = e.target.closest('[data-line]');
+            const slider = row && row.querySelector('[data-field="slider"]');
+            if (slider && !slider.classList.contains('animating')) {
+                const val = Math.max(0, Number(e.target.value) || 0);
+                const unit = row.querySelector('[data-field="unit"]').value;
+                const max = sliderMaxFor(val, unit);
+                if (Number(slider.max) < val) slider.max = String(max);
+                slider.value = String(val);
+            }
+        }
         readFormulaFromDom();
     });
     document.addEventListener('change', function (e) {
@@ -3436,6 +3807,38 @@
     });
     document.addEventListener('click', function (e) {
         if (!onFormulaMountEvent(e)) return;
+        const verBtn = e.target.closest('[data-formula-version]');
+        if (verBtn) {
+            switchFormulaVersion(verBtn.getAttribute('data-formula-version'), true);
+            return;
+        }
+        if (e.target.closest('#formulaAddVersionBtn') || e.target.closest('#formulaSaveVersionAsBtn')) {
+            if (!canEditFormulas()) return;
+            readFormulaFromDom();
+            const f = formulas[currentRecipe];
+            ensureVersions(f);
+            persistRootToActiveVersion(f);
+            const id = nextVersionId(f);
+            const name = id.toUpperCase();
+            const label = window.prompt('Nombre corto de la versión (ej. Marmolina estándar)', name) || name;
+            f.versions.push({
+                id: id,
+                name: name,
+                label: label === name ? '' : label,
+                yieldMin: Number(f.yieldMin) || 0,
+                yieldMax: Number(f.yieldMax) || 0,
+                water: Number(f.water) || 0,
+                packSizeKg: Number(f.packSizeKg) || 25,
+                items: cloneItems(f.items)
+            });
+            f.activeVersionId = id;
+            syncActiveVersionToRoot(f);
+            formulaDirty = true;
+            saveFormulas();
+            formulaDirty = false;
+            openRecipe(currentRecipe, true);
+            return;
+        }
         if (e.target.closest('#formulaAddBtn')) {
             if (!canEditFormulas()) return;
             readFormulaFromDom();
@@ -3445,6 +3848,7 @@
             const next = inventory.filter(function (m) { return !used[m.id]; })[0] || inventory[0];
             if (!next) return;
             f.items.push({ plantId: next.id, amount: 0, unit: next.unit || 'Kg', role: '' });
+            persistRootToActiveVersion(f);
             formulaDirty = true;
             openRecipe(currentRecipe, true);
             return;
@@ -3466,6 +3870,7 @@
             readFormulaFromDom();
             const idx = Number(rm.getAttribute('data-remove-line'));
             formulas[currentRecipe].items.splice(idx, 1);
+            persistRootToActiveVersion(formulas[currentRecipe]);
             formulaDirty = true;
             openRecipe(currentRecipe, true);
         }
@@ -3991,11 +4396,12 @@
             const sub = t.status === 'confirmed'
                 ? (t.bagsOut + ' u. · ' + formatLotWhen(t.confirmedAt || t.issuedAt))
                 : ('En planta · ' + formatLotWhen(t.issuedAt));
+            const formulaBit = t.formulaVersionName ? (' · ' + t.formulaVersionName) : '';
             return '<button type="button" class="lot-row" data-lot-id="' + esc(t.id) + '">' +
                 '<div class="lot-row-top">' +
                 '<div><div class="lot-code">' + esc(t.id) + '</div>' +
                 '<div>' + esc(t.name) + '</div>' +
-                '<div class="muted">' + esc(t.code) + ' · ' + esc(sub) + '</div></div>' +
+                '<div class="muted">' + esc(t.code) + esc(formulaBit) + ' · ' + esc(sub) + '</div></div>' +
                 lotStatusBadge(t.status) +
                 '</div></button>';
         }).join('');
@@ -4023,6 +4429,10 @@
             '<div class="lot-ticket-meta">' +
             '<div class="row"><span class="k">Producto</span><span class="v">' + esc(t.name) + '</span></div>' +
             '<div class="row"><span class="k">Código</span><span class="v">' + esc(t.code) + '</span></div>' +
+            (t.formulaVersionName
+                ? '<div class="row"><span class="k">Fórmula</span><span class="v">' + esc(t.formulaVersionName) +
+                    (t.formulaVersionLabel ? ' — ' + esc(t.formulaVersionLabel) : '') + '</span></div>'
+                : '') +
             '<div class="row"><span class="k">Emitido</span><span class="v">' + esc(formatLotWhen(t.issuedAt)) + '</span></div>' +
             '<div class="row"><span class="k">Lotes de planta</span><span class="v">' + esc(String(t.lots || 1)) + '</span></div>' +
             (t.totalKg ? '<div class="row"><span class="k">MP total</span><span class="v">' + esc(String(t.totalKg)) + ' kg</span></div>' : '') +
@@ -4099,6 +4509,8 @@
             alert('Completa la receta en Productos → Formulación antes de emitir.');
             return;
         }
+        syncActiveVersionToRoot(f);
+        const ver = activeVersion(f);
         const lotMode = isPlantLot(f);
         const mpLines = productionMpNeeds(slug, lots);
         const shortages = mpLines.filter(function (ln) { return ln.missing || ln.have < ln.need; });
@@ -4108,7 +4520,8 @@
             }).join('\n'));
             return;
         }
-        if (!confirm('¿Emitir ticket de lote a planta?\nSe descontarán las materias primas ahora. El producto terminado se ingresa al confirmar sacos reales.')) return;
+        const verHint = ver ? ('\nFórmula: ' + ver.name + (ver.label ? ' — ' + ver.label : '')) : '';
+        if (!confirm('¿Emitir ticket de lote a planta?' + verHint + '\nSe descontarán las materias primas ahora. El producto terminado se ingresa al confirmar sacos reales.')) return;
 
         mpLines.forEach(function (ln) {
             const mat = plantById(ln.plantId);
@@ -4128,6 +4541,9 @@
             confirmedAt: null,
             lots: lots,
             mode: lotMode ? 'plant-lot' : 'unit',
+            formulaVersionId: ver ? ver.id : null,
+            formulaVersionName: ver ? ver.name : null,
+            formulaVersionLabel: ver ? (ver.label || '') : '',
             totalKg: lotMode ? totalKg : null,
             packSizeKg: Number(f.packSizeKg) || 25,
             yieldTheoretical: lotMode ? theo : lots,
