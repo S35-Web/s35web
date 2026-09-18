@@ -1038,17 +1038,25 @@
             #saleNoteModal .modal-card,
             #saleNoteModal .modal-body,
             #saleNoteDoc,
-            #saleNoteDoc * {
+            #saleNoteDoc *,
+            #lotTicketModal,
+            #lotTicketModal.show,
+            #lotTicketModal .modal-card,
+            #lotTicketModal .modal-body,
+            #lotTicketDoc,
+            #lotTicketDoc * {
                 visibility: visible !important;
             }
-            #saleNoteModal {
+            #saleNoteModal,
+            #lotTicketModal {
                 position: static !important;
                 display: block !important;
                 background: none !important;
                 padding: 0 !important;
                 inset: auto !important;
             }
-            #saleNoteModal .modal-card {
+            #saleNoteModal .modal-card,
+            #lotTicketModal .modal-card {
                 max-width: none !important;
                 max-height: none !important;
                 border: none !important;
@@ -1058,11 +1066,149 @@
             #saleNoteModal .modal-head,
             #saleNoteModal .sale-note-hint,
             #saleNoteModal .sale-note-share-fields,
-            #saleNoteModal .sale-note-actions {
+            #saleNoteModal .sale-note-actions,
+            #lotTicketModal .modal-head,
+            #lotTicketModal .lot-ticket-actions,
+            #lotTicketModal .lot-confirm-fields {
                 display: none !important;
             }
-            #saleNoteModal .modal-body { padding: 0 !important; overflow: visible !important; }
-            .sale-note-doc { color: #0a0a0a !important; }
+            #saleNoteModal .modal-body,
+            #lotTicketModal .modal-body { padding: 0 !important; overflow: visible !important; }
+            .sale-note-doc,
+            .lot-ticket-doc { color: #0a0a0a !important; }
+        }
+
+        .lot-ticket-doc {
+            font-size: 14px;
+            line-height: 1.45;
+            color: var(--text);
+        }
+        .lot-ticket-brand {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .lot-ticket-brand .mark {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .lot-ticket-brand .folio {
+            text-align: right;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .lot-ticket-brand .folio span {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--muted);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .lot-ticket-meta {
+            display: grid;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .lot-ticket-meta .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .lot-ticket-meta .k { color: var(--muted); }
+        .lot-ticket-meta .v { text-align: right; font-weight: 500; }
+        .lot-ticket-lines {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+        }
+        .lot-ticket-lines th {
+            text-align: left;
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+            padding: 6px 0;
+        }
+        .lot-ticket-lines td {
+            padding: 7px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .lot-ticket-lines td.num,
+        .lot-ticket-lines th.num { text-align: right; }
+        .lot-ticket-fill {
+            margin-top: 16px;
+            padding: 12px;
+            border: 1px dashed var(--border-strong);
+            border-radius: 8px;
+        }
+        .lot-ticket-fill .blank {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .lot-ticket-sign {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 28px;
+        }
+        .lot-ticket-sign .sig {
+            border-top: 1px solid var(--border-strong);
+            padding-top: 8px;
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+        }
+        .lot-ticket-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .lot-confirm-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .lot-confirm-fields label {
+            display: grid;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .lot-rows button.lot-row {
+            width: 100%;
+            text-align: left;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .lot-rows button.lot-row:hover { background: var(--hover); }
+        .lot-rows .lot-row-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: baseline;
+        }
+        .lot-rows .lot-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-weight: 600;
+            font-size: 13px;
         }
 
         /* —— Cortes (Midday-style reports) —— */
@@ -1867,10 +2013,10 @@
 
                 <section id="production" class="section">
                     <h1 class="page-title">Producción</h1>
-                    <p class="page-sub">Lote de planta: se descuentan las MP de la receta y se da de alta el producto terminado con los sacos reales envasados.</p>
+                    <p class="page-sub">Emite un ticket de lote a planta (descuenta MP). Al regresar los sacos reales, confirmas el ingreso de producto terminado y lotificas la tarima.</p>
                     <div class="grid">
                         <div class="card span-7">
-                            <h3>Registrar lote</h3>
+                            <h3>Emitir ticket de lote</h3>
                             <div class="form-grid" style="margin-bottom:12px">
                                 <label>Producto
                                     <select id="prodProduct"></select>
@@ -1878,14 +2024,13 @@
                                 <label id="prodLotsWrap">Lotes de planta
                                     <input id="prodQty" type="number" min="1" step="1" value="1">
                                 </label>
-                                <label id="prodBagsWrap">Sacos / unidades reales
-                                    <input id="prodBagsOut" type="number" min="1" step="1" value="30">
-                                </label>
                             </div>
-                            <div id="prodPreview" class="prod-preview muted">Elige un producto con receta para ver el consumo.</div>
+                            <div id="prodPreview" class="prod-preview muted">Elige un producto con receta para ver el consumo de MP.</div>
                             <div class="formula-actions">
-                                <button type="button" class="btn primary" id="prodRegisterBtn"><i class="fa-solid fa-industry"></i> Registrar producción</button>
+                                <button type="button" class="btn primary" id="prodIssueBtn"><i class="fa-solid fa-ticket"></i> Emitir ticket a planta</button>
                             </div>
+                            <h3 style="margin-top:28px">Lotes abiertos / recientes</h3>
+                            <div id="lotTicketsList" class="lot-rows muted">Sin tickets aún.</div>
                         </div>
                         <div class="card span-5">
                             <h3>Producto terminado</h3>
@@ -2244,6 +2389,31 @@
                     <button type="button" class="btn" id="saleNoteCopy"><i class="fa-solid fa-copy"></i> Copiar</button>
                     <button type="button" class="btn primary" id="saleNotePrint"><i class="fa-solid fa-print"></i> Imprimir</button>
                     <button type="button" class="btn danger" id="saleNoteDelete" hidden><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="lotTicketModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="lotTicketModalTitle" style="max-width:560px">
+            <div class="modal-head">
+                <strong id="lotTicketModalTitle">Ticket de lote</strong>
+                <button id="lotTicketModalClose" class="btn" type="button">Cerrar</button>
+            </div>
+            <div class="modal-body">
+                <div id="lotTicketDoc" class="lot-ticket-doc"></div>
+                <div class="lot-confirm-fields" id="lotConfirmFields" hidden>
+                    <label>Sacos / unidades reales
+                        <input id="lotConfirmBags" class="customer-input" type="number" min="1" step="1" value="30">
+                    </label>
+                    <label>Notas (opcional)
+                        <input id="lotConfirmNotes" class="customer-input" type="text" placeholder="Merma, turno, etc." autocomplete="off">
+                    </label>
+                </div>
+                <div class="lot-ticket-actions">
+                    <button type="button" class="btn primary" id="lotTicketPrint"><i class="fa-solid fa-print"></i> Imprimir / tarima</button>
+                    <button type="button" class="btn" id="lotTicketConfirmBtn" hidden><i class="fa-solid fa-check"></i> Confirmar ingreso PT</button>
+                    <button type="button" class="btn danger" id="lotTicketCancelBtn" hidden><i class="fa-solid fa-ban"></i> Cancelar lote</button>
                 </div>
             </div>
         </div>
@@ -3675,6 +3845,54 @@
         if (panelHash.section === 'products') showProductList({ skipHash: true });
     }
 
+    const LOT_TICKETS_KEY = 's35_production_lots';
+    let currentLotTicketId = null;
+
+    function loadLotTickets() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(LOT_TICKETS_KEY) || '[]');
+            return Array.isArray(raw) ? raw : [];
+        } catch (_) {
+            return [];
+        }
+    }
+    function saveLotTickets(list) {
+        localStorage.setItem(LOT_TICKETS_KEY, JSON.stringify((list || []).slice(0, 300)));
+    }
+    function lotCodePrefix(code) {
+        return String(code || 'XX-000').replace(/^FT-/, '').replace(/[^A-Z0-9]/gi, '');
+    }
+    function nextLotTicketId(code) {
+        const d = new Date();
+        const yymd = String(d.getFullYear()).slice(2) +
+            String(d.getMonth() + 1).padStart(2, '0') +
+            String(d.getDate()).padStart(2, '0');
+        const prefix = 'LT-' + lotCodePrefix(code) + '-' + yymd + '-';
+        const list = loadLotTickets();
+        let max = 0;
+        list.forEach(function (t) {
+            if (String(t.id || '').indexOf(prefix) !== 0) return;
+            const n = Number(String(t.id).slice(prefix.length)) || 0;
+            if (n > max) max = n;
+        });
+        return prefix + String(max + 1).padStart(3, '0');
+    }
+    function formatLotWhen(iso) {
+        try {
+            return new Date(iso).toLocaleString('es-MX', {
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        } catch (_) {
+            return iso || '';
+        }
+    }
+    function lotStatusBadge(status) {
+        if (status === 'confirmed') return '<span class="badge b-success">Confirmado</span>';
+        if (status === 'cancelled') return '<span class="badge b-warning">Cancelado</span>';
+        return '<span class="badge b-primary">En planta</span>';
+    }
+
     function fillProdProducts() {
         const sel = document.getElementById('prodProduct');
         if (!sel) return;
@@ -3687,115 +3905,171 @@
         }).join('');
         updateProdPreview();
     }
-    function productionNeeds(slug, lots, bagsOut) {
+    function productionMpNeeds(slug, lots) {
         const f = formulas[slug];
         if (!f) return [];
-        const lotMode = isPlantLot(f);
         const lotCount = Math.max(1, Number(lots) || 1);
-        const bags = Math.max(0, Number(bagsOut) || 0);
-        const lines = (f.items || []).map(function (it) {
+        return (f.items || []).filter(function (it) {
+            return (it.unit || '') !== 'Pza' && (it.role || '') !== 'Empaque';
+        }).map(function (it) {
             const mat = plantById(it.plantId);
-            const isPack = (it.unit || '') === 'Pza' || (it.role || '') === 'Empaque';
-            const need = lotMode
-                ? (isPack ? bags : (Number(it.amount) || 0) * lotCount)
-                : (Number(it.amount) || 0) * lotCount;
             return {
                 plantId: it.plantId,
                 name: mat ? displayName(mat) : it.plantId,
-                unit: it.unit || (mat && mat.unit) || '',
-                need: need,
+                unit: it.unit || (mat && mat.unit) || 'Kg',
+                need: (Number(it.amount) || 0) * lotCount,
                 have: mat ? Number(mat.stock) || 0 : 0,
-                missing: !mat,
-                kind: isPack ? 'pack' : 'mp'
+                missing: !mat
             };
         });
-        if (lotMode && f.packagingPlantId && plantById(f.packagingPlantId)) {
-            const already = lines.some(function (ln) { return ln.plantId === f.packagingPlantId; });
-            if (!already && bags > 0) {
-                const mat = plantById(f.packagingPlantId);
-                lines.push({
-                    plantId: f.packagingPlantId,
-                    name: mat ? displayName(mat) : f.packagingPlantId,
-                    unit: (mat && mat.unit) || 'Pza',
-                    need: bags,
-                    have: mat ? Number(mat.stock) || 0 : 0,
-                    missing: !mat,
-                    kind: 'pack'
-                });
-            }
-        }
-        return lines;
     }
-    function syncProdBagsDefault() {
-        const slug = (document.getElementById('prodProduct') || {}).value;
-        const f = formulas[slug];
-        const bagsEl = document.getElementById('prodBagsOut');
-        if (!bagsEl || !f) return;
-        if (isPlantLot(f)) {
-            const mid = f.yieldMin && f.yieldMax
-                ? Math.round((Number(f.yieldMin) + Number(f.yieldMax)) / 2)
-                : Math.round(theoreticalBags(f));
-            if (!bagsEl.dataset.touched) bagsEl.value = String(mid || 30);
-        }
+    function productionPackNeed(f, bagsOut) {
+        if (!f || !f.packagingPlantId || !plantById(f.packagingPlantId)) return null;
+        const mat = plantById(f.packagingPlantId);
+        const bags = Math.max(0, Number(bagsOut) || 0);
+        return {
+            plantId: f.packagingPlantId,
+            name: mat ? displayName(mat) : f.packagingPlantId,
+            unit: (mat && mat.unit) || 'Pza',
+            need: bags,
+            have: mat ? Number(mat.stock) || 0 : 0,
+            missing: !mat
+        };
     }
     function updateProdPreview() {
         const slug = document.getElementById('prodProduct').value;
         const lots = Math.max(1, Number(document.getElementById('prodQty').value) || 1);
-        const bagsEl = document.getElementById('prodBagsOut');
-        const bagsWrap = document.getElementById('prodBagsWrap');
-        const lotsWrap = document.getElementById('prodLotsWrap');
         const box = document.getElementById('prodPreview');
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         const f = formulas[slug];
+        if (!box) return;
         if (!r || !f) {
-            box.innerHTML = 'Elige un producto con receta para ver el consumo.';
+            box.innerHTML = 'Elige un producto con receta para ver el consumo de MP.';
             return;
         }
-        const lotMode = isPlantLot(f);
-        if (bagsWrap) bagsWrap.style.display = lotMode ? '' : 'none';
-        if (lotsWrap) {
-            const lab = lotsWrap.querySelector('label') || lotsWrap;
-            // label text is in the label element itself
-        }
-        if (lotMode) syncProdBagsDefault();
-        const bagsOut = lotMode
-            ? Math.max(1, Math.floor(Number(bagsEl && bagsEl.value) || 1))
-            : lots;
         if (!formulaComplete(f)) {
             box.innerHTML = 'Esta receta todavía no tiene todas las dosis. Complétala en Productos → Formulación.';
             return;
         }
-        const lines = productionNeeds(slug, lots, bagsOut);
+        const lotMode = isPlantLot(f);
+        const lines = productionMpNeeds(slug, lots);
         const shortages = lines.filter(function (ln) { return ln.missing || ln.have < ln.need; });
         const totalKg = recipeTotalKg(f) * lots;
         const theo = theoreticalBags(f) * lots;
-        const mermaKg = lotMode ? Math.max(0, totalKg - bagsOut * (Number(f.packSizeKg) || 25)) : 0;
-        const rangeWarn = lotMode && f.yieldMin && f.yieldMax && (bagsOut < f.yieldMin * lots || bagsOut > f.yieldMax * lots);
-        box.innerHTML = '<strong>' + (lotMode
-            ? (lots + ' lote' + (lots === 1 ? '' : 's') + ' · ' + bagsOut + ' sacos reales de ' + r.name)
-            : (lots + ' ' + (lots === 1 ? f.batchLabel : f.batchLabel + 's') + ' de ' + r.name)) + '</strong>' +
+        const expected = lotMode && f.yieldMin && f.yieldMax
+            ? Math.round((Number(f.yieldMin) + Number(f.yieldMax)) / 2) * lots
+            : (lotMode ? Math.round(theo) : lots);
+        box.innerHTML = '<strong>Al emitir el ticket</strong> se descuenta MP' +
+            (lotMode ? (' de ' + lots + ' lote' + (lots === 1 ? '' : 's') + ' · ' + r.name) : (' · ' + lots + ' ' + f.batchLabel + '(s) · ' + r.name)) +
+            '<div class="muted" style="margin:6px 0">' +
             (lotMode
-                ? ('<div class="muted" style="margin:6px 0">MP del lote: ' + esc(String(Math.round(totalKg * 1000) / 1000)) +
-                    ' kg · teórico ' + esc(String(Math.round(theo * 100) / 100)) + ' sacos · merma implícita ≈ ' +
-                    esc(String(Math.round(mermaKg * 10) / 10)) + ' kg</div>')
-                : '') +
-            (rangeWarn
-                ? '<div class="stock-low">Aviso: ' + bagsOut + ' sacos está fuera del rango esperado ' +
-                    (f.yieldMin * lots) + '–' + (f.yieldMax * lots) + '.</div>'
-                : '') +
+                ? ('MP: ' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg · teórico ~' +
+                    esc(String(Math.round(theo * 100) / 100)) + ' sacos · esperado ' +
+                    esc(String(f.yieldMin * lots)) + '–' + esc(String(f.yieldMax * lots)) +
+                    ' (ref. ' + esc(String(expected)) + '). El PT se ingresa al confirmar sacos reales.')
+                : 'El producto terminado se confirma después con las unidades reales.') +
+            '</div>' +
             '<ul>' + lines.map(function (ln) {
                 const ok = !ln.missing && ln.have >= ln.need;
                 return '<li class="' + (ok ? '' : 'stock-low') + '">' + esc(ln.name) + ': −' + esc(String(ln.need)) +
                     (ln.unit ? ' ' + esc(ln.unit) : '') +
-                    (ln.kind === 'pack' ? ' <span class="muted">(empaque)</span>' : '') +
                     ' <span class="muted">(hay ' + esc(String(ln.have)) + ')</span></li>';
             }).join('') + '</ul>' +
             (shortages.length
-                ? '<div class="stock-low">Falta existencia en ' + shortages.length + ' materia(s). Carga inventario antes de registrar.</div>'
-                : '<div>Se sumará <strong>' + esc(String(bagsOut)) + '</strong> al producto terminado.</div>');
+                ? '<div class="stock-low">Falta existencia en ' + shortages.length + ' materia(s).</div>'
+                : '<div>Empaque y PT se mueven al <strong>confirmar</strong> el ticket.</div>');
+    }
+    function renderLotTicketsList() {
+        const box = document.getElementById('lotTicketsList');
+        if (!box) return;
+        const list = loadLotTickets();
+        if (!list.length) {
+            box.innerHTML = '<div class="empty">Sin tickets aún. Emite uno para mandarlo a planta.</div>';
+            return;
+        }
+        box.innerHTML = list.slice(0, 40).map(function (t) {
+            const sub = t.status === 'confirmed'
+                ? (t.bagsOut + ' u. · ' + formatLotWhen(t.confirmedAt || t.issuedAt))
+                : ('En planta · ' + formatLotWhen(t.issuedAt));
+            return '<button type="button" class="lot-row" data-lot-id="' + esc(t.id) + '">' +
+                '<div class="lot-row-top">' +
+                '<div><div class="lot-code">' + esc(t.id) + '</div>' +
+                '<div>' + esc(t.name) + '</div>' +
+                '<div class="muted">' + esc(t.code) + ' · ' + esc(sub) + '</div></div>' +
+                lotStatusBadge(t.status) +
+                '</div></button>';
+        }).join('');
+    }
+    function lotTicketDocHtml(t) {
+        const lines = (t.mpLines || []).map(function (ln) {
+            return '<tr><td>' + esc(ln.name) + '</td><td class="num">' + esc(String(ln.amount)) +
+                (ln.unit ? ' ' + esc(ln.unit) : '') + '</td></tr>';
+        }).join('');
+        const fill = t.status === 'confirmed'
+            ? ('<div class="lot-ticket-fill"><strong>Sacos reales confirmados:</strong> ' +
+                esc(String(t.bagsOut)) +
+                (t.mermaKg != null ? ' · merma ≈ ' + esc(String(Math.round(t.mermaKg * 10) / 10)) + ' kg' : '') +
+                (t.notes ? '<div class="muted" style="margin-top:6px">' + esc(t.notes) + '</div>' : '') +
+                '</div>')
+            : ('<div class="lot-ticket-fill">' +
+                '<div class="muted">Completar en planta al terminar el envasado</div>' +
+                '<div class="blank">Sacos / unidades reales: ____________</div>' +
+                '<div class="muted" style="margin-top:8px">Esperado ' +
+                esc(String(t.yieldMin || '—')) + '–' + esc(String(t.yieldMax || '—')) +
+                ' · teórico ~' + esc(String(t.yieldTheoretical || '—')) + '</div></div>');
+        return '<div class="lot-ticket-brand">' +
+            '<div class="mark"><span>S-35</span> Ticket de lote de producción</div>' +
+            '<div class="folio"><span>Lote</span>' + esc(t.id) + '</div></div>' +
+            '<div class="lot-ticket-meta">' +
+            '<div class="row"><span class="k">Producto</span><span class="v">' + esc(t.name) + '</span></div>' +
+            '<div class="row"><span class="k">Código</span><span class="v">' + esc(t.code) + '</span></div>' +
+            '<div class="row"><span class="k">Emitido</span><span class="v">' + esc(formatLotWhen(t.issuedAt)) + '</span></div>' +
+            '<div class="row"><span class="k">Lotes de planta</span><span class="v">' + esc(String(t.lots || 1)) + '</span></div>' +
+            (t.totalKg ? '<div class="row"><span class="k">MP total</span><span class="v">' + esc(String(t.totalKg)) + ' kg</span></div>' : '') +
+            '<div class="row"><span class="k">Estado</span><span class="v">' +
+            (t.status === 'confirmed' ? 'Confirmado' : t.status === 'cancelled' ? 'Cancelado' : 'En planta') +
+            '</span></div></div>' +
+            '<table class="lot-ticket-lines"><thead><tr><th>Materia prima</th><th class="num">Cantidad</th></tr></thead><tbody>' +
+            lines + '</tbody></table>' +
+            fill +
+            '<div class="lot-ticket-sign"><div class="sig">Autorizó / emitió</div><div class="sig">Producción / envasado</div></div>' +
+            '<p class="muted" style="margin-top:16px;font-size:12px">Anexar a la tarima. Este código identifica el lote de producto terminado.</p>';
+    }
+    function openLotTicketModal(id) {
+        const t = loadLotTickets().filter(function (x) { return x.id === id; })[0];
+        if (!t) return;
+        currentLotTicketId = id;
+        const modal = document.getElementById('lotTicketModal');
+        const doc = document.getElementById('lotTicketDoc');
+        const fields = document.getElementById('lotConfirmFields');
+        const confirmBtn = document.getElementById('lotTicketConfirmBtn');
+        const cancelBtn = document.getElementById('lotTicketCancelBtn');
+        const bags = document.getElementById('lotConfirmBags');
+        const notes = document.getElementById('lotConfirmNotes');
+        doc.innerHTML = lotTicketDocHtml(t);
+        const open = t.status === 'open';
+        fields.hidden = !open;
+        confirmBtn.hidden = !open;
+        cancelBtn.hidden = !open;
+        if (open) {
+            const mid = t.bagsExpected || (t.yieldMin && t.yieldMax
+                ? Math.round((Number(t.yieldMin) + Number(t.yieldMax)) / 2)
+                : Math.round(Number(t.yieldTheoretical) || 30));
+            bags.value = String(mid);
+            notes.value = '';
+        }
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+    function closeLotTicketModal() {
+        const modal = document.getElementById('lotTicketModal');
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+        currentLotTicketId = null;
     }
     function renderFinished() {
         const tbody = document.getElementById('finishedBody');
+        if (!tbody) return;
         tbody.innerHTML = recipes.map(function (r) {
             const fin = finishedStock[r.product] || { stock: 0, minStock: 0 };
             const low = fin.minStock > 0 && fin.stock < fin.minStock;
@@ -3807,87 +4081,151 @@
     }
     function refreshStockViews() {
         renderMaterials();
-        renderCatalog(data.products);
+        if (typeof renderCatalog === 'function') renderCatalog(data.products);
         renderFinished();
         updateProdPreview();
+        renderLotTicketsList();
     }
-    document.getElementById('prodProduct').addEventListener('change', function () {
-        const bagsEl = document.getElementById('prodBagsOut');
-        if (bagsEl) delete bagsEl.dataset.touched;
-        updateProdPreview();
-    });
+
+    document.getElementById('prodProduct').addEventListener('change', updateProdPreview);
     document.getElementById('prodQty').addEventListener('input', updateProdPreview);
-    const prodBagsOutEl = document.getElementById('prodBagsOut');
-    if (prodBagsOutEl) {
-        prodBagsOutEl.addEventListener('input', function () {
-            prodBagsOutEl.dataset.touched = '1';
-            updateProdPreview();
-        });
-    }
-    document.getElementById('prodRegisterBtn').addEventListener('click', function () {
+
+    document.getElementById('prodIssueBtn').addEventListener('click', function () {
         const slug = document.getElementById('prodProduct').value;
         const lots = Math.max(1, Math.floor(Number(document.getElementById('prodQty').value) || 1));
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         const f = formulas[slug];
         if (!r || !formulaComplete(f)) {
-            alert('Completa la receta en Productos → Formulación antes de producir.');
+            alert('Completa la receta en Productos → Formulación antes de emitir.');
             return;
         }
         const lotMode = isPlantLot(f);
-        const bagsOut = lotMode
-            ? Math.max(1, Math.floor(Number(document.getElementById('prodBagsOut').value) || 1))
-            : lots;
-        if (lotMode && f.yieldMin && f.yieldMax) {
-            const min = f.yieldMin * lots;
-            const max = f.yieldMax * lots;
-            if ((bagsOut < min || bagsOut > max) &&
-                !confirm('Los sacos reales (' + bagsOut + ') están fuera del rango ' + min + '–' + max + '. ¿Registrar de todos modos?')) {
-                return;
-            }
-        }
-        const lines = productionNeeds(slug, lots, bagsOut);
-        const shortages = lines.filter(function (ln) { return ln.missing || ln.have < ln.need; });
+        const mpLines = productionMpNeeds(slug, lots);
+        const shortages = mpLines.filter(function (ln) { return ln.missing || ln.have < ln.need; });
         if (shortages.length) {
-            alert('No hay existencia suficiente:\n' + shortages.map(function (ln) {
+            alert('No hay existencia suficiente de MP:\n' + shortages.map(function (ln) {
                 return '• ' + ln.name + ': necesita ' + ln.need + ', hay ' + ln.have;
             }).join('\n'));
             return;
         }
-        const msg = lotMode
-            ? ('¿Registrar ' + lots + ' lote' + (lots === 1 ? '' : 's') + ' de ' + r.name +
-                ' con ' + bagsOut + ' sacos reales?\nSe descontarán las MP del lote y el empaque de los sacos.')
-            : ('¿Registrar ' + lots + ' ' + (lots === 1 ? f.batchLabel : f.batchLabel + 's') + ' de ' + r.name + '?');
-        if (!confirm(msg)) return;
-        lines.forEach(function (ln) {
+        if (!confirm('¿Emitir ticket de lote a planta?\nSe descontarán las materias primas ahora. El producto terminado se ingresa al confirmar sacos reales.')) return;
+
+        mpLines.forEach(function (ln) {
             const mat = plantById(ln.plantId);
             if (mat) mat.stock = Math.max(0, (Number(mat.stock) || 0) - ln.need);
         });
         saveInventory(inventory);
-        if (!finishedStock[slug]) finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
-        finishedStock[slug].stock = (Number(finishedStock[slug].stock) || 0) + bagsOut;
-        saveFinished();
-        try {
-            const logKey = 's35_production_log';
-            const log = JSON.parse(localStorage.getItem(logKey) || '[]');
-            const totalKg = recipeTotalKg(f) * lots;
-            log.unshift({
-                id: 'PRD-' + Date.now(),
-                product: slug,
-                code: r.code,
-                at: new Date().toISOString(),
-                lots: lots,
-                bagsOut: bagsOut,
-                totalKg: totalKg,
-                mermaKg: lotMode ? Math.max(0, totalKg - bagsOut * (Number(f.packSizeKg) || 25)) : 0,
-                mode: lotMode ? 'plant-lot' : 'unit'
-            });
-            localStorage.setItem(logKey, JSON.stringify(log.slice(0, 200)));
-        } catch (_) {}
+
+        const totalKg = Math.round(recipeTotalKg(f) * lots * 1000) / 1000;
+        const theo = Math.round(theoreticalBags(f) * lots * 100) / 100;
+        const ticket = {
+            id: nextLotTicketId(r.code),
+            product: slug,
+            code: r.code,
+            name: r.name,
+            status: 'open',
+            issuedAt: new Date().toISOString(),
+            confirmedAt: null,
+            lots: lots,
+            mode: lotMode ? 'plant-lot' : 'unit',
+            totalKg: lotMode ? totalKg : null,
+            packSizeKg: Number(f.packSizeKg) || 25,
+            yieldTheoretical: lotMode ? theo : lots,
+            yieldMin: lotMode ? (Number(f.yieldMin) || 0) * lots : lots,
+            yieldMax: lotMode ? (Number(f.yieldMax) || 0) * lots : lots,
+            bagsExpected: lotMode && f.yieldMin && f.yieldMax
+                ? Math.round((Number(f.yieldMin) + Number(f.yieldMax)) / 2) * lots
+                : (lotMode ? Math.round(theo) : lots),
+            bagsOut: null,
+            mermaKg: null,
+            notes: '',
+            packagingPlantId: f.packagingPlantId || packagingId(r),
+            mpLines: mpLines.map(function (ln) {
+                return { plantId: ln.plantId, name: ln.name, amount: ln.need, unit: ln.unit };
+            })
+        };
+        const list = loadLotTickets();
+        list.unshift(ticket);
+        saveLotTickets(list);
         refreshStockViews();
-        alert('Producción registrada: +' + bagsOut + ' en producto terminado.');
+        openLotTicketModal(ticket.id);
     });
+
+    document.getElementById('lotTicketsList').addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-lot-id]');
+        if (btn) openLotTicketModal(btn.getAttribute('data-lot-id'));
+    });
+    document.getElementById('lotTicketModalClose').addEventListener('click', closeLotTicketModal);
+    document.getElementById('lotTicketModal').addEventListener('click', function (e) {
+        if (e.target === document.getElementById('lotTicketModal')) closeLotTicketModal();
+    });
+    document.getElementById('lotTicketPrint').addEventListener('click', function () {
+        window.print();
+    });
+    document.getElementById('lotTicketConfirmBtn').addEventListener('click', function () {
+        if (!currentLotTicketId) return;
+        const list = loadLotTickets();
+        const idx = list.findIndex(function (t) { return t.id === currentLotTicketId; });
+        if (idx < 0) return;
+        const t = list[idx];
+        if (t.status !== 'open') return;
+        const f = formulas[t.product];
+        const bagsOut = Math.max(1, Math.floor(Number(document.getElementById('lotConfirmBags').value) || 1));
+        const notes = String(document.getElementById('lotConfirmNotes').value || '').trim();
+        if (t.yieldMin && t.yieldMax && (bagsOut < t.yieldMin || bagsOut > t.yieldMax)) {
+            if (!confirm('Los sacos reales (' + bagsOut + ') están fuera del rango ' + t.yieldMin + '–' + t.yieldMax + '. ¿Confirmar de todos modos?')) return;
+        }
+        const pack = productionPackNeed(f || { packagingPlantId: t.packagingPlantId }, bagsOut);
+        if (pack && (pack.missing || pack.have < pack.need)) {
+            alert('No hay empaque suficiente:\n• ' + pack.name + ': necesita ' + pack.need + ', hay ' + pack.have);
+            return;
+        }
+        if (!confirm('¿Confirmar ingreso de ' + bagsOut + ' a producto terminado para el lote ' + t.id + '?')) return;
+        if (pack) {
+            const mat = plantById(pack.plantId);
+            if (mat) mat.stock = Math.max(0, (Number(mat.stock) || 0) - pack.need);
+            saveInventory(inventory);
+        }
+        if (!finishedStock[t.product]) finishedStock[t.product] = { slug: t.product, stock: 0, minStock: 0, unit: 'Pza' };
+        finishedStock[t.product].stock = (Number(finishedStock[t.product].stock) || 0) + bagsOut;
+        saveFinished();
+        t.status = 'confirmed';
+        t.confirmedAt = new Date().toISOString();
+        t.bagsOut = bagsOut;
+        t.notes = notes;
+        t.mermaKg = t.totalKg != null
+            ? Math.max(0, Number(t.totalKg) - bagsOut * (Number(t.packSizeKg) || 25))
+            : null;
+        list[idx] = t;
+        saveLotTickets(list);
+        refreshStockViews();
+        openLotTicketModal(t.id);
+        alert('Lote ' + t.id + ' confirmado: +' + bagsOut + ' en producto terminado.\nImprime el ticket y anexalo a la tarima.');
+    });
+    document.getElementById('lotTicketCancelBtn').addEventListener('click', function () {
+        if (!currentLotTicketId) return;
+        const list = loadLotTickets();
+        const idx = list.findIndex(function (t) { return t.id === currentLotTicketId; });
+        if (idx < 0) return;
+        const t = list[idx];
+        if (t.status !== 'open') return;
+        if (!confirm('¿Cancelar el lote ' + t.id + '?\nSe devolverán las materias primas descontadas al emitir.')) return;
+        (t.mpLines || []).forEach(function (ln) {
+            const mat = plantById(ln.plantId);
+            if (mat) mat.stock = (Number(mat.stock) || 0) + (Number(ln.amount) || 0);
+        });
+        saveInventory(inventory);
+        t.status = 'cancelled';
+        t.cancelledAt = new Date().toISOString();
+        list[idx] = t;
+        saveLotTickets(list);
+        refreshStockViews();
+        closeLotTicketModal();
+    });
+
     fillProdProducts();
     renderFinished();
+    renderLotTicketsList();
 
     loadMessages();
 
