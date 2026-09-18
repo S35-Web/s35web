@@ -906,6 +906,34 @@
             color: var(--muted);
             width: 100%;
         }
+        .formula-version-note {
+            display: grid;
+            gap: 6px;
+            width: 100%;
+            max-width: 420px;
+        }
+        .formula-version-note .field-label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .formula-version-note input {
+            height: 36px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 10px;
+            outline: none;
+            font-size: 13px;
+            width: 100%;
+        }
+        .formula-version-note input:focus {
+            border-color: var(--border-strong);
+        }
+        .formula-version-note input::placeholder {
+            color: var(--muted);
+            opacity: 0.85;
+        }
         .formula-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 
         .empty {
@@ -4953,6 +4981,31 @@
             '" title="Eliminar versión" aria-label="Eliminar versión">×</button>' +
             '</span>';
     }
+    function formulaVersionMetaHtml(ver, editable) {
+        const name = (ver && ver.name) || '';
+        const label = (ver && ver.label) || '';
+        if (!editable) {
+            return '<div class="formula-version-meta">' + esc(name) +
+                (label ? ' — ' + esc(label) : '') + '</div>';
+        }
+        return '<div class="formula-version-meta">' +
+            '<label class="formula-version-note">' +
+            '<span class="field-label">Nota / descripción de la versión' +
+            (name ? ' · ' + esc(name) : '') + '</span>' +
+            '<input data-field="versionLabel" type="text" maxlength="120" value="' + esc(label) +
+            '" placeholder="Ej. Marmolina fina + gruesa" autocomplete="off">' +
+            '</label></div>';
+    }
+    function syncFormulaVersionMeta(mount, ver, editable) {
+        if (!mount) return;
+        const meta = mount.querySelector('.formula-version-meta');
+        if (!meta) return;
+        const next = formulaVersionMetaHtml(ver, editable);
+        const tmp = document.createElement('div');
+        tmp.innerHTML = next;
+        const replacement = tmp.firstChild;
+        if (replacement) meta.replaceWith(replacement);
+    }
     function syncFormulaVersionChipDeletes(mount, f) {
         if (!mount || !f) return;
         const chips = mount.querySelector('.formula-version-chips');
@@ -5294,6 +5347,11 @@
         if (batchLabel) f.batchLabel = String(batchLabel.value || '').trim() || (isPlantLot(f) ? 'lote' : 'saco');
         if (water) f.water = Math.max(0, Number(water.value) || 0);
         if (packSize) f.packSizeKg = Math.max(0, Number(packSize.value) || 0);
+        const versionLabelEl = detail.querySelector('[data-field="versionLabel"]');
+        if (versionLabelEl) {
+            const ver = activeVersion(f);
+            if (ver) ver.label = String(versionLabelEl.value || '').trim();
+        }
         const rows = detail.querySelectorAll('[data-line]');
         f.items = [];
         rows.forEach(function (row) {
@@ -5396,8 +5454,7 @@
             const mount = formulaMountEl();
             if (mount) {
                 syncFormulaVersionChipDeletes(mount, f);
-                const meta = mount.querySelector('.formula-version-meta');
-                if (meta) meta.textContent = (next.name || '') + (next.label ? ' — ' + next.label : '');
+                syncFormulaVersionMeta(mount, next, canEditFormulas());
                 const packSize = mount.querySelector('[data-field="packSizeKg"]');
                 if (packSize) packSize.value = String(f.packSizeKg || 25);
                 const delBtn = mount.querySelector('#formulaDeleteVersionBtn');
@@ -5448,8 +5505,7 @@
             }).join('') +
             (editable ? '<button type="button" class="btn" id="formulaAddVersionBtn" title="Nueva versión" style="border-radius:999px;padding:6px 10px"><i class="fa-solid fa-plus"></i></button>' : '') +
             '</div>' +
-            '<div class="formula-version-meta">' + esc((ver && ver.name) || '') +
-            (ver && ver.label ? ' — ' + esc(ver.label) : '') + '</div></div>';
+            formulaVersionMetaHtml(ver, editable) + '</div>';
         function formulaLineHtml(it, idx, isPack) {
             const mat = plantById(it.plantId);
             const max = sliderMaxFor(it.amount, it.unit);
@@ -5596,7 +5652,17 @@
     });
     document.addEventListener('change', function (e) {
         if (!onFormulaMountEvent(e)) return;
-        if (e.target.getAttribute('data-field') !== 'plantId') return;
+        const field = e.target.getAttribute('data-field');
+        if (field === 'versionLabel') {
+            if (!canEditFormulas()) return;
+            readFormulaFromDom();
+            saveFormulas();
+            formulaDirty = false;
+            renderRecipeNav();
+            if (typeof renderProdVersionChips === 'function') renderProdVersionChips();
+            return;
+        }
+        if (field !== 'plantId') return;
         const row = e.target.closest('[data-line]');
         const mat = plantById(e.target.value);
         const wasPack = row && row.getAttribute('data-packaging') === '1';
@@ -5636,11 +5702,14 @@
             persistRootToActiveVersion(f);
             const id = nextVersionId(f);
             const name = id.toUpperCase();
-            const label = window.prompt('Nombre corto de la versión (ej. Marmolina estándar)', name) || name;
+            const label = window.prompt(
+                'Nota / descripción de la versión (ej. Marmolina fina + gruesa).\nPuedes editarla después bajo los chips V1, V2…',
+                ''
+            );
             f.versions.push({
                 id: id,
                 name: name,
-                label: label === name ? '' : label,
+                label: String(label || '').trim(),
                 yieldMin: Number(f.yieldMin) || 0,
                 yieldMax: Number(f.yieldMax) || 0,
                 water: Number(f.water) || 0,
