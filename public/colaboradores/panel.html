@@ -585,6 +585,16 @@
             border-color: var(--border-strong);
             color: var(--text);
         }
+        .chip.is-hidden-fam {
+            opacity: 0.55;
+        }
+        .chip.is-hidden-fam .chip-eye {
+            font-size: 10px;
+            opacity: 0.9;
+        }
+        .chip.active.is-hidden-fam {
+            opacity: 0.78;
+        }
         .chip .dot,
         .product-card .fam .dot,
         .prices-table .fam .dot,
@@ -664,8 +674,16 @@
         }
         .icon-action:hover { color: var(--text); background: var(--hover); }
         .icon-action.danger:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-bg); }
-        .icon-action.is-off { color: var(--muted); opacity: 0.72; }
-        .icon-action.is-off:hover { opacity: 1; }
+        .icon-action.is-off {
+            color: var(--muted);
+            opacity: 0.85;
+            border-style: dashed;
+        }
+        .icon-action.is-off:hover { opacity: 1; color: var(--text); }
+        .icon-action[data-toggle-fam-vis]:not(.is-off) {
+            color: var(--text);
+            border-color: var(--border-strong);
+        }
         .lot-ticket-chemistry {
             margin: 14px 0 4px;
             padding: 12px 14px;
@@ -3484,11 +3502,11 @@
                 </div>
                 <div class="table-card" style="margin-top:12px">
                     <table>
-                        <thead><tr><th>Nombre</th><th></th></tr></thead>
+                        <thead><tr><th>Nombre</th><th style="text-align:right;width:88px">En planta</th></tr></thead>
                         <tbody id="familiesBody"></tbody>
                     </table>
                 </div>
-                <p class="muted" style="margin:10px 0 0;font-size:12px">El ojo oculta la familia en el ticket de planta (bloque «Química»). Al quitar una familia con materiales, se mueven a Sin familia.</p>
+                <p class="muted" style="margin:10px 0 0;font-size:12px">El ojo (<i class="fa-solid fa-eye"></i> / <i class="fa-solid fa-eye-slash"></i>) muestra u oculta la familia en el ticket LT: lo oculto va al bloque «Química» (TAG + kg). Al quitar una familia con materiales, se mueven a Sin familia.</p>
             </div>
         </div>
     </div>
@@ -4144,7 +4162,17 @@
         if (hasUncategorized) cats.push(UNCATEGORIZED_ID);
         chips.innerHTML = cats.map(function (c) {
             const label = c === 'all' ? 'Todas' : familyLabel(c);
-            return '<button type="button" class="chip' + (c === matFilter ? ' active' : '') + '" data-cat="' + esc(c) + '">' + esc(label) + '</button>';
+            const famHidden = c !== 'all' && c !== UNCATEGORIZED_ID && isFamilyHidden(c);
+            const eyeHint = famHidden
+                ? ' <i class="fa-solid fa-eye-slash chip-eye" aria-hidden="true"></i>'
+                : '';
+            const title = famHidden
+                ? ' title="Oculta en ticket de planta (sigue filtrando aquí)"'
+                : '';
+            return '<button type="button" class="chip' +
+                (c === matFilter ? ' active' : '') +
+                (famHidden ? ' is-hidden-fam' : '') +
+                '" data-cat="' + esc(c) + '"' + title + '>' + esc(label) + eyeHint + '</button>';
         }).join('') +
             '<button type="button" class="chip" id="matChipAdd" title="Agregar familia" aria-label="Agregar familia"><i class="fa-solid fa-plus"></i></button>';
     }
@@ -4396,6 +4424,7 @@
         fam.hidden = !fam.hidden;
         saveFamilies(plantFamilies);
         renderFamiliesList();
+        renderMatChips();
         panelToast(fam.hidden
             ? '«' + fam.label + '» oculta en ticket de planta'
             : '«' + fam.label + '» visible en ticket de planta');
