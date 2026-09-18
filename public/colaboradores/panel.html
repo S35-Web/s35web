@@ -1683,6 +1683,20 @@
             font-size: 10px;
             font-family: var(--font);
         }
+        .prod-formula-chart {
+            position: relative;
+            min-height: 220px;
+            width: 100%;
+        }
+        .prod-formula-chart svg {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 480 / 240;
+            display: block;
+        }
+        .prod-formula-chart .axis-label {
+            font-size: 9px;
+        }
         .cortes-chart-empty {
             position: absolute;
             inset: 0;
@@ -2121,13 +2135,17 @@
                             <div id="lotTicketsList" class="lot-rows muted">Sin tickets aún.</div>
                         </div>
                         <div class="card span-5">
-                            <h3>Producto terminado</h3>
-                            <div class="table-card">
-                                <table class="inventory">
-                                    <thead><tr><th>Producto</th><th>Existencia</th><th>Mínimo</th></tr></thead>
-                                    <tbody id="finishedBody"></tbody>
-                                </table>
+                            <div class="cortes-chart-head" style="margin-bottom:8px">
+                                <div>
+                                    <h3 style="margin:0">Composición del lote</h3>
+                                    <div class="panel-sub" id="prodFormulaChartSub">Ingredientes · kg por lote</div>
+                                </div>
+                                <div class="cortes-chart-legend" aria-hidden="true">
+                                    <span class="leg"><span class="swatch"></span> Versión activa</span>
+                                    <span class="leg"><span class="swatch prev"></span> Otra versión</span>
+                                </div>
                             </div>
+                            <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Gráfica de composición de ingredientes"></div>
                         </div>
                     </div>
                 </section>
@@ -4514,22 +4532,202 @@
         currentLotTicketId = null;
     }
     function renderFinished() {
-        const tbody = document.getElementById('finishedBody');
-        if (!tbody) return;
-        tbody.innerHTML = recipes.map(function (r) {
-            const fin = finishedStock[r.product] || { stock: 0, minStock: 0 };
-            const low = fin.minStock > 0 && fin.stock < fin.minStock;
-            return '<tr><td>' + esc(r.name) + '<div class="muted">' + esc(r.code) + '</div></td>' +
-                '<td class="num' + (low ? ' stock-low' : '') + '">' + esc(String(fin.stock)) + '</td>' +
-                '<td class="num">' + esc(String(fin.minStock)) + '</td></tr>';
-        }).join('') || '<tr><td colspan="3" class="empty">Sin productos</td></tr>';
+        // Solo KPI de dashboard; la tabla de PT salió de Producción (gráfica de composición).
         updateDashExtras();
+    }
+    function shortIngLabel(name) {
+        const s = String(name || '').trim();
+        if (!s) return '—';
+        const parts = s.split(/\s+/);
+        if (parts[0].length <= 10) return parts[0];
+        return parts[0].slice(0, 9) + '…';
+    }
+    function formulaVersionItems(f, versionId) {
+        if (!f) return [];
+        ensureVersions(f);
+        const ver = (f.versions || []).filter(function (v) { return v.id === versionId; })[0]
+            || (versionId === f.activeVersionId ? activeVersion(f) : null);
+        if (!ver) return [];
+        return (ver.items || []).filter(function (it) {
+            return (it.unit || 'Kg') !== 'Pza' && (it.role || '') !== 'Empaque';
+        });
+    }
+    function buildMonotonePath(pts, baseY) {
+        if (!pts.length) return '';
+        if (pts.length === 1) return 'M' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1);
+        if (pts.length === 2) {
+            return 'M' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1) +
+                ' L' + pts[1].x.toFixed(1) + ' ' + pts[1].y.toFixed(1);
+        }
+        const nPts = pts.length;
+        const dx = [];
+        const dy = [];
+        const delta = [];
+        for (let i = 0; i < nPts - 1; i++) {
+            dx[i] = pts[i + 1].x - pts[i].x;
+            dy[i] = pts[i + 1].y - pts[i].y;
+            delta[i] = dx[i] !== 0 ? dy[i] / dx[i] : 0;
+        }
+        const m = new Array(nPts);
+        m[0] = delta[0];
+        m[nPts - 1] = delta[nPts - 2];
+        for (let i = 1; i < nPts - 1; i++) {
+            if (delta[i - 1] * delta[i] <= 0) m[i] = 0;
+            else m[i] = (delta[i - 1] + delta[i]) / 2;
+        }
+        for (let i = 0; i < nPts - 1; i++) {
+            if (Math.abs(delta[i]) < 1e-12) {
+                m[i] = 0;
+                m[i + 1] = 0;
+            } else {
+                const a = m[i] / delta[i];
+                const b = m[i + 1] / delta[i];
+                const s = a * a + b * b;
+                if (s > 9) {
+                    const t = 3 / Math.sqrt(s);
+                    m[i] = t * a * delta[i];
+                    m[i + 1] = t * b * delta[i];
+                }
+            }
+        }
+        function clampY(y) { return Math.min(y, baseY); }
+        let d = 'M' + pts[0].x.toFixed(1) + ' ' + clampY(pts[0].y).toFixed(1);
+        for (let i = 0; i < nPts - 1; i++) {
+            const h = dx[i];
+            const c1x = pts[i].x + h / 3;
+            const c1y = clampY(pts[i].y + (m[i] * h) / 3);
+            const c2x = pts[i + 1].x - h / 3;
+            const c2y = clampY(pts[i + 1].y - (m[i + 1] * h) / 3);
+            d += ' C' + c1x.toFixed(1) + ' ' + c1y.toFixed(1) +
+                ', ' + c2x.toFixed(1) + ' ' + c2y.toFixed(1) +
+                ', ' + pts[i + 1].x.toFixed(1) + ' ' + clampY(pts[i + 1].y).toFixed(1);
+        }
+        return d;
+    }
+    function renderProdFormulaChart() {
+        const host = document.getElementById('prodFormulaChart');
+        const subEl = document.getElementById('prodFormulaChartSub');
+        if (!host) return;
+        const slug = (document.getElementById('prodProduct') || {}).value;
+        const lots = Math.max(1, Number((document.getElementById('prodQty') || {}).value) || 1);
+        const f = formulas[slug];
+        const r = recipes.filter(function (x) { return x.product === slug; })[0];
+        if (!f || !r) {
+            host.innerHTML = '<div class="cortes-chart-empty">Elige un producto</div>';
+            if (subEl) subEl.textContent = 'Ingredientes · kg por lote';
+            return;
+        }
+        ensureVersions(f);
+        syncActiveVersionToRoot(f);
+        const active = activeVersion(f);
+        const activeItems = formulaVersionItems(f, f.activeVersionId);
+        if (!activeItems.length) {
+            host.innerHTML = '<div class="cortes-chart-empty">Sin dosis en esta versión</div>';
+            if (subEl) subEl.textContent = (active && active.name ? active.name + ' · ' : '') + 'Sin ingredientes';
+            return;
+        }
+        // Eje X = unión de plantIds (activa primero, luego otras versiones)
+        const order = [];
+        const seen = {};
+        activeItems.forEach(function (it) {
+            if (seen[it.plantId]) return;
+            seen[it.plantId] = true;
+            order.push(it.plantId);
+        });
+        const compareVer = (f.versions || []).filter(function (v) { return v.id !== f.activeVersionId; })[0] || null;
+        if (compareVer) {
+            formulaVersionItems(f, compareVer.id).forEach(function (it) {
+                if (seen[it.plantId]) return;
+                seen[it.plantId] = true;
+                order.push(it.plantId);
+            });
+        }
+        function amountMap(items) {
+            const m = {};
+            (items || []).forEach(function (it) {
+                m[it.plantId] = (Number(it.amount) || 0) * lots;
+            });
+            return m;
+        }
+        const curMap = amountMap(activeItems);
+        const prevMap = compareVer ? amountMap(formulaVersionItems(f, compareVer.id)) : {};
+        const labels = order.map(function (id) {
+            const mat = plantById(id);
+            return shortIngLabel(mat ? displayName(mat) : id);
+        });
+        const curVals = order.map(function (id) { return curMap[id] || 0; });
+        const prevVals = order.map(function (id) { return prevMap[id] || 0; });
+        const yMax = Math.max(1, Math.max.apply(null, curVals.concat(prevVals)) * 1.15);
+        const W = 480;
+        const H = 240;
+        const padL = 42;
+        const padR = 12;
+        const padT = 16;
+        const padB = 36;
+        const baseY = H - padB;
+        const n = order.length;
+        function ptX(i) {
+            if (n <= 1) return (padL + W - padR) / 2;
+            return padL + (i / (n - 1)) * (W - padL - padR);
+        }
+        function ptY(v) {
+            return baseY - (Math.max(0, v) / yMax) * (baseY - padT);
+        }
+        function ptsFrom(vals) {
+            return vals.map(function (v, i) { return { x: ptX(i), y: ptY(v) }; });
+        }
+        const curPts = ptsFrom(curVals);
+        const prevPts = ptsFrom(prevVals);
+        const curLine = buildMonotonePath(curPts, baseY);
+        const prevLine = compareVer ? buildMonotonePath(prevPts, baseY) : '';
+        const areaPath = curLine +
+            ' L' + ptX(n - 1).toFixed(1) + ' ' + baseY.toFixed(1) +
+            ' L' + ptX(0).toFixed(1) + ' ' + baseY.toFixed(1) + ' Z';
+        let grid = '';
+        let yLabels = '';
+        [0, 0.5, 1].forEach(function (fY) {
+            const y = ptY(yMax * fY);
+            grid += '<line class="grid-line" x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '"/>';
+            const lab = fY === 0 ? '0' : (yMax * fY >= 100 ? Math.round(yMax * fY) : Math.round(yMax * fY * 10) / 10);
+            yLabels += '<text class="y-label" x="' + (padL - 6) + '" y="' + (y + 3) + '" text-anchor="end">' + lab + '</text>';
+        });
+        let xLabels = '';
+        labels.forEach(function (lab, i) {
+            xLabels += '<text class="axis-label" x="' + ptX(i).toFixed(1) + '" y="' + (H - 10) +
+                '" text-anchor="middle">' + esc(lab) + '</text>';
+        });
+        const hatchId = 'prodHatch';
+        const defs =
+            '<defs>' +
+            '<pattern id="' + hatchId + '" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">' +
+            '<line x1="0" y1="0" x2="0" y2="7" stroke="currentColor" stroke-width="1" opacity="0.35"/>' +
+            '</pattern>' +
+            '</defs>';
+        const dots = curPts.map(function (p, i) {
+            return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) +
+                '" r="3.2" fill="var(--primary)" stroke="var(--panel)" stroke-width="1.5">' +
+                '<title>' + esc(labels[i]) + ': ' + esc(String(curVals[i])) + ' kg</title></circle>';
+        }).join('');
+        host.innerHTML =
+            '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
+            defs + grid + yLabels +
+            '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + hatchId + ')"/>' +
+            (prevLine ? '<path class="line-prev" d="' + prevLine + '" fill="none"/>' : '') +
+            '<path class="line-cur" d="' + curLine + '" fill="none"/>' +
+            dots + xLabels +
+            '</svg>';
+        if (subEl) {
+            subEl.textContent = (active ? active.name + (active.label ? ' — ' + active.label : '') : 'Versión') +
+                (lots > 1 ? ' · ×' + lots + ' lotes' : ' · kg por lote') +
+                (compareVer ? ' · vs ' + compareVer.name : '');
+        }
     }
     function refreshStockViews() {
         renderMaterials();
         if (typeof renderCatalog === 'function') renderCatalog(data.products);
         renderFinished();
         updateProdPreview();
+        renderProdFormulaChart();
         renderLotTicketsList();
     }
 
