@@ -656,6 +656,34 @@
         }
         .icon-action:hover { color: var(--text); background: var(--hover); }
         .icon-action.danger:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-bg); }
+        .icon-action.is-off { color: var(--muted); opacity: 0.72; }
+        .icon-action.is-off:hover { opacity: 1; }
+        .lot-ticket-chemistry {
+            margin: 14px 0 4px;
+            padding: 12px 14px;
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            background: var(--bg-soft);
+        }
+        .lot-ticket-chemistry .chem-title {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .lot-ticket-chemistry .chem-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 15px;
+        }
+        .lot-ticket-chemistry .chem-tag {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-weight: 600;
+        }
+        .lot-ticket-chemistry .chem-kg { font-weight: 600; white-space: nowrap; }
 
         .form-grid { display: grid; gap: 12px; }
         .form-grid label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
@@ -2858,7 +2886,7 @@
                         <tbody id="familiesBody"></tbody>
                     </table>
                 </div>
-                <p class="muted" style="margin:10px 0 0;font-size:12px">«Todas» es fija. Al quitar una familia con materiales, se mueven a Sin familia.</p>
+                <p class="muted" style="margin:10px 0 0;font-size:12px">El ojo oculta la familia en el ticket de planta (bloque «Química»). Al quitar una familia con materiales, se mueven a Sin familia.</p>
             </div>
         </div>
     </div>
@@ -2925,20 +2953,23 @@
     const UNCATEGORIZED_ID = 'none';
     const UNCATEGORIZED_LABEL = 'Sin familia';
     const DEFAULT_FAMILIES = [
-        { id: 'mineral', label: 'Minerales' },
-        { id: 'aglutinante', label: 'Aglutinantes' },
-        { id: 'polymer', label: 'Polímeros' },
-        { id: 'cellulose', label: 'Celulosa' },
-        { id: 'fiber', label: 'Fibras' },
-        { id: 'chemical', label: 'Químicos' },
-        { id: 'packaging', label: 'Empaque' }
+        { id: 'mineral', label: 'Minerales', hidden: false },
+        { id: 'aglutinante', label: 'Aglutinantes', hidden: false },
+        { id: 'polymer', label: 'Polímeros', hidden: false },
+        { id: 'cellulose', label: 'Celulosa', hidden: false },
+        { id: 'fiber', label: 'Fibras', hidden: false },
+        { id: 'chemical', label: 'Químicos', hidden: true },
+        { id: 'packaging', label: 'Empaque', hidden: false }
     ];
     const LEGACY_BINDER_CATS = { cement: true, lime: true, gypsum: true };
     function normalizeFamilyItem(f) {
         const id = String((f && f.id) || '').trim();
         const label = String((f && f.label) || '').trim();
         if (!id || !label || id === 'all' || id === UNCATEGORIZED_ID) return null;
-        return { id: id, label: label };
+        let hidden;
+        if (f && typeof f.hidden === 'boolean') hidden = f.hidden;
+        else hidden = id === 'chemical';
+        return { id: id, label: label, hidden: !!hidden };
     }
     function loadFamilies() {
         try {
@@ -2946,16 +2977,22 @@
             if (raw && Array.isArray(raw.items) && raw.items.length) {
                 const seen = {};
                 const list = [];
+                let migrate = false;
                 raw.items.forEach(function (f) {
+                    if (!f || typeof f.hidden !== 'boolean') migrate = true;
                     const item = normalizeFamilyItem(f);
                     if (!item || seen[item.id]) return;
                     seen[item.id] = true;
                     list.push(item);
                 });
-                if (list.length) return list;
+                if (list.length) {
+                    loadFamilies._migrate = migrate;
+                    return list;
+                }
             }
         } catch (_) {}
-        return DEFAULT_FAMILIES.map(function (f) { return { id: f.id, label: f.label }; });
+        loadFamilies._migrate = true;
+        return DEFAULT_FAMILIES.map(function (f) { return normalizeFamilyItem(f); }).filter(Boolean);
     }
     function saveFamilies(list) {
         localStorage.setItem(FAMILIES_KEY, JSON.stringify({
@@ -2964,7 +3001,15 @@
         }));
     }
     let plantFamilies = loadFamilies();
-    if (!localStorage.getItem(FAMILIES_KEY)) saveFamilies(plantFamilies);
+    if (!localStorage.getItem(FAMILIES_KEY) || loadFamilies._migrate) saveFamilies(plantFamilies);
+    function isFamilyHidden(category) {
+        const key = normalizeCategory(category);
+        if (!key || key === UNCATEGORIZED_ID) return false;
+        for (let i = 0; i < plantFamilies.length; i++) {
+            if (plantFamilies[i].id === key) return !!plantFamilies[i].hidden;
+        }
+        return false;
+    }
     function familyLabel(category) {
         const key = String(category || '').trim();
         if (!key || key === UNCATEGORIZED_ID) return UNCATEGORIZED_LABEL;
@@ -3504,11 +3549,20 @@
             const count = inventory.filter(function (m) {
                 return normalizeCategory(m.category) === f.id;
             }).length;
+            const hidden = !!f.hidden;
+            const eyeIcon = hidden ? 'fa-eye-slash' : 'fa-eye';
+            const eyeTitle = hidden
+                ? 'Oculta en ticket de planta (clic para mostrar)'
+                : 'Visible en ticket de planta (clic para ocultar)';
             return '<tr data-fam="' + esc(f.id) + '">' +
                 '<td>' + esc(f.label) +
                 (count ? '<div class="muted" style="font-size:12px">' + count + ' material' + (count === 1 ? '' : 'es') + '</div>' : '') +
+                (hidden ? '<div class="muted" style="font-size:11px">Oculta en planta</div>' : '') +
                 '</td>' +
                 '<td><div class="row-actions">' +
+                '<button type="button" class="icon-action' + (hidden ? ' is-off' : '') + '" data-toggle-fam-vis="' + esc(f.id) +
+                '" title="' + esc(eyeTitle) + '" aria-label="' + esc(eyeTitle) + '" aria-pressed="' + (hidden ? 'true' : 'false') +
+                '"><i class="fa-solid ' + eyeIcon + '"></i></button>' +
                 '<button type="button" class="icon-action danger" data-del-fam="' + esc(f.id) + '" title="Quitar familia" aria-label="Quitar familia"><i class="fa-solid fa-trash-can"></i></button>' +
                 '</div></td></tr>';
         }).join('') || '<tr><td colspan="2" class="empty">Sin familias</td></tr>';
@@ -3539,7 +3593,7 @@
             return false;
         }
         const id = slugifyFamily(label);
-        plantFamilies.push({ id: id, label: label });
+        plantFamilies.push({ id: id, label: label, hidden: false });
         saveFamilies(plantFamilies);
         fillPlantCategorySelect(id);
         renderMatChips();
@@ -3603,7 +3657,23 @@
         e.preventDefault();
         if (addPlantFamily(this.value)) this.value = '';
     });
+    function toggleFamilyVisibility(id) {
+        if (!id || id === 'all' || id === UNCATEGORIZED_ID) return;
+        const fam = plantFamilies.filter(function (f) { return f.id === id; })[0];
+        if (!fam) return;
+        fam.hidden = !fam.hidden;
+        saveFamilies(plantFamilies);
+        renderFamiliesList();
+        panelToast(fam.hidden
+            ? '«' + fam.label + '» oculta en ticket de planta'
+            : '«' + fam.label + '» visible en ticket de planta');
+    }
     document.getElementById('familiesBody').addEventListener('click', function (e) {
+        const vis = e.target.closest('[data-toggle-fam-vis]');
+        if (vis) {
+            toggleFamilyVisibility(vis.getAttribute('data-toggle-fam-vis'));
+            return;
+        }
         const del = e.target.closest('[data-del-fam]');
         if (del) removePlantFamily(del.getAttribute('data-del-fam'));
     });
@@ -5470,10 +5540,35 @@
         }
     }
     function lotTicketDocHtml(t) {
-        const lines = (t.mpLines || []).map(function (ln) {
+        const allLines = t.mpLines || [];
+        const hasVisFlags = allLines.some(function (ln) { return typeof ln.hidden === 'boolean'; });
+        const visibleLines = hasVisFlags
+            ? allLines.filter(function (ln) { return !ln.hidden; })
+            : allLines;
+        const hiddenLines = hasVisFlags
+            ? allLines.filter(function (ln) { return ln.hidden; })
+            : [];
+        let chem = t.chemistry || null;
+        if (!chem && hiddenLines.length) {
+            let kg = 0;
+            hiddenLines.forEach(function (ln) { kg += Number(ln.amount) || 0; });
+            chem = {
+                tag: t.code || '',
+                totalKg: Math.round(kg * 1000) / 1000
+            };
+        }
+        const lines = visibleLines.map(function (ln) {
             return '<tr><td>' + esc(ln.name) + '</td><td class="num">' + esc(String(ln.amount)) +
                 (ln.unit ? ' ' + esc(ln.unit) : '') + '</td></tr>';
         }).join('');
+        const chemistryBlock = chem && Number(chem.totalKg) > 0
+            ? ('<div class="lot-ticket-chemistry">' +
+                '<div class="chem-title">Química:</div>' +
+                '<div class="chem-row">' +
+                '<span class="chem-tag">' + esc(chem.tag || t.code || '—') + '</span>' +
+                '<span class="chem-kg">' + esc(String(chem.totalKg)) + ' kg</span>' +
+                '</div></div>')
+            : '';
         const fill = t.status === 'confirmed'
             ? ('<div class="lot-ticket-fill"><strong>Sacos reales confirmados:</strong> ' +
                 esc(String(t.bagsOut)) +
@@ -5503,7 +5598,9 @@
             (t.status === 'confirmed' ? 'Confirmado' : t.status === 'cancelled' ? 'Cancelado' : 'En planta') +
             '</span></div></div>' +
             '<table class="lot-ticket-lines"><thead><tr><th>Materia prima</th><th class="num">Cantidad</th></tr></thead><tbody>' +
-            lines + '</tbody></table>' +
+            (lines || '<tr><td colspan="2" class="muted">Sin MP visible para planta</td></tr>') +
+            '</tbody></table>' +
+            chemistryBlock +
             fill +
             '<div class="lot-ticket-sign"><div class="sig">Autorizó / emitió</div><div class="sig">Producción / envasado</div></div>' +
             '<p class="muted" style="margin-top:16px;font-size:12px">Anexar a la tarima. Este código identifica el lote de producto terminado.</p>';
@@ -5863,6 +5960,24 @@
 
         const totalKg = Math.round(recipeTotalKg(f) * lots * 1000) / 1000;
         const theo = Math.round(theoreticalBags(f) * lots * 100) / 100;
+        const snapLines = mpLines.map(function (ln) {
+            const mat = plantById(ln.plantId);
+            const cat = mat ? normalizeCategory(mat.category) : UNCATEGORIZED_ID;
+            const hidden = isFamilyHidden(cat);
+            return {
+                plantId: ln.plantId,
+                name: ln.name,
+                amount: ln.need,
+                unit: ln.unit,
+                category: cat,
+                hidden: hidden
+            };
+        });
+        let chemKg = 0;
+        snapLines.forEach(function (ln) {
+            if (ln.hidden) chemKg += Number(ln.amount) || 0;
+        });
+        chemKg = Math.round(chemKg * 1000) / 1000;
         const ticket = {
             id: nextLotTicketId(r.code),
             product: slug,
@@ -5888,9 +6003,10 @@
             mermaKg: null,
             notes: '',
             packagingPlantId: f.packagingPlantId || packagingId(r),
-            mpLines: mpLines.map(function (ln) {
-                return { plantId: ln.plantId, name: ln.name, amount: ln.need, unit: ln.unit };
-            })
+            mpLines: snapLines,
+            chemistry: chemKg > 0
+                ? { tag: r.code, totalKg: chemKg }
+                : null
         };
         const list = loadLotTickets();
         list.unshift(ticket);
