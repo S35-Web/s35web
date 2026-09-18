@@ -1197,7 +1197,7 @@
                 '<div class="fam">' + (r.family ? familyDot(r.family) : '') + esc(r.family || '—') + '</div>' +
                 '<div class="name">' + esc(r.name) + '</div>' +
                 '<div class="meta">' +
-                '<span class="unit">stock ' + stock + '</span>' +
+                '<span class="unit">Inventario: <strong>' + stock + '</strong></span>' +
                 '</div>' +
                 priceNote +
                 '<div class="muted product-code">' +
