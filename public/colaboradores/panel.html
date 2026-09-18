@@ -755,6 +755,25 @@
             align-items: center;
             margin-bottom: 10px;
         }
+        .formula-pack-section {
+            margin-top: 6px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .formula-pack-label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.01em;
+        }
+        .formula-line.formula-line-pack input[data-field="amount"],
+        .formula-line.formula-line-pack .formula-slider {
+            opacity: 0.78;
+            cursor: default;
+        }
+        .formula-line.formula-line-pack .formula-slider {
+            pointer-events: none;
+        }
         .formula-line .formula-slider {
             -webkit-appearance: none;
             appearance: none;
@@ -4613,20 +4632,90 @@
         if (String(recipe.product || '').indexOf('waxtard') === 0) return 'saco-rafia-waxtard';
         return 'saco-rafia-general';
     }
-    /** Piezas de empaque por saco/u. y plantId (familia Empaque / role Empaque / flags). */
+    /**
+     * Spec de empaque: plantId desde líneas Empaque / packagingPlantId.
+     * piecesPerBag = 1 (o f.piecesPerBag). La cantidad de la línea de fórmula es
+     * sacos teóricos del lote (auto), no piezas por saco — así Producción no doble-cuenta.
+     */
     function packagingSpec(f, recipe) {
         if (!f) return null;
         let plantId = f.packagingPlantId || null;
-        let pieces = 1;
         (f.items || []).forEach(function (it) {
             if (!isPackagingLine(it)) return;
             plantId = it.plantId || plantId;
-            const amt = Number(it.amount);
-            if (amt > 0) pieces = amt;
         });
         if (!plantId && recipe) plantId = packagingId(recipe);
         if (!plantId) return null;
+        const pieces = Number(f.piecesPerBag) > 0 ? Number(f.piecesPerBag) : 1;
         return { plantId: plantId, piecesPerBag: pieces };
+    }
+    /** Sacos/u. teóricos redondeados para auto-rellenar líneas de empaque (lote planta). */
+    function packagingAmountFromTheo(f) {
+        if (!f || !isPlantLot(f)) return null;
+        return Math.round(theoreticalBags(f));
+    }
+    /** Actualiza amount de líneas Empaque existentes; no inventa líneas nuevas. */
+    function syncFormulaPackagingAmounts(f) {
+        if (!f || !Array.isArray(f.items)) return false;
+        const qty = packagingAmountFromTheo(f);
+        if (qty == null) return false;
+        let changed = false;
+        f.items.forEach(function (it) {
+            if (!isPackagingLine(it)) return;
+            if (it.role !== 'Empaque') {
+                it.role = 'Empaque';
+                changed = true;
+            }
+            const mat = plantById(it.plantId);
+            if (mat && normalizeUnit(mat.unit) === 'Pza' && normalizeUnit(it.unit) !== 'Pza') {
+                it.unit = 'Pza';
+                changed = true;
+            }
+            if (Number(it.amount) !== qty) {
+                it.amount = qty;
+                changed = true;
+            }
+        });
+        return changed;
+    }
+    /** Materias primero, empaque al final (misma separación visual / índices estables). */
+    function orderFormulaItemsMaterialsFirst(f) {
+        if (!f || !Array.isArray(f.items) || !f.items.length) return false;
+        const mats = [];
+        const packs = [];
+        f.items.forEach(function (it) {
+            if (isPackagingLine(it)) packs.push(it);
+            else mats.push(it);
+        });
+        if (!packs.length) return false;
+        const next = mats.concat(packs);
+        let same = next.length === f.items.length;
+        if (same) {
+            for (let i = 0; i < next.length; i++) {
+                if (next[i] !== f.items[i]) { same = false; break; }
+            }
+        }
+        if (same) return false;
+        f.items = next;
+        return true;
+    }
+    function applyPackagingAmountsToDom(f) {
+        const detail = formulaMountEl();
+        if (!detail || !f) return;
+        const qty = packagingAmountFromTheo(f);
+        if (qty == null) return;
+        detail.querySelectorAll('[data-line][data-packaging="1"]').forEach(function (row) {
+            const amountEl = row.querySelector('[data-field="amount"]');
+            const slider = row.querySelector('[data-field="slider"]');
+            const unitEl = row.querySelector('[data-field="unit"]');
+            const unit = (unitEl && unitEl.value) || 'Pza';
+            if (amountEl) amountEl.value = String(qty);
+            if (slider) {
+                const max = sliderMaxFor(qty, unit);
+                if (Number(slider.max) < qty) slider.max = String(max);
+                slider.value = String(qty);
+            }
+        });
     }
     function mapDoseItems(list) {
         return (list || []).map(function (it) {
@@ -5017,6 +5106,11 @@
         const f = formulas[currentRecipe];
         const el = document.getElementById('formulaTotals');
         if (!f || !el) return;
+        if (syncFormulaPackagingAmounts(f)) {
+            persistRootToActiveVersion(f);
+            formulaDirty = true;
+        }
+        applyPackagingAmountsToDom(f);
         const totalKg = recipeTotalKg(f);
         const theo = theoreticalBags(f);
         if (!isPlantLot(f)) {
@@ -5049,21 +5143,28 @@
         const rows = detail.querySelectorAll('[data-line]');
         f.items = [];
         rows.forEach(function (row) {
+            const plantId = row.querySelector('[data-field="plantId"]').value;
+            const mat = plantById(plantId);
             const amountEl = row.querySelector('[data-field="amount"]');
             const slider = row.querySelector('[data-field="slider"]');
             const amount = Math.max(0, Number(amountEl && amountEl.value) || 0);
+            const unit = normalizeUnit(row.querySelector('[data-field="unit"]').value) || 'Kg';
+            const isPack = row.getAttribute('data-packaging') === '1' || isPackagingMaterial(mat);
             f.items.push({
-                plantId: row.querySelector('[data-field="plantId"]').value,
+                plantId: plantId,
                 amount: amount,
-                unit: normalizeUnit(row.querySelector('[data-field="unit"]').value) || 'Kg',
-                role: ''
+                unit: unit,
+                role: isPack ? 'Empaque' : ''
             });
-            if (slider && !slider.classList.contains('animating')) {
-                const max = sliderMaxFor(amount, row.querySelector('[data-field="unit"]').value);
+            if (slider && !slider.classList.contains('animating') && !isPack) {
+                const max = sliderMaxFor(amount, unit);
                 if (Number(slider.max) < amount) slider.max = String(max);
                 slider.value = String(amount);
             }
         });
+        syncFormulaPackagingAmounts(f);
+        orderFormulaItemsMaterialsFirst(f);
+        applyPackagingAmountsToDom(f);
         if (isPlantLot(f)) f.batchSize = recipeTotalKg(f);
         persistRootToActiveVersion(f);
         formulaDirty = true;
@@ -5178,6 +5279,9 @@
         ensureVersions(formulas[slug]);
         syncActiveVersionToRoot(formulas[slug]);
         const f = formulas[slug];
+        syncFormulaPackagingAmounts(f);
+        orderFormulaItemsMaterialsFirst(f);
+        if (isPlantLot(f)) f.batchSize = recipeTotalKg(f);
         const ver = activeVersion(f);
         renderRecipeNav();
         const editable = canEditFormulas();
@@ -5193,24 +5297,48 @@
             '</div>' +
             '<div class="formula-version-meta">' + esc((ver && ver.name) || '') +
             (ver && ver.label ? ' — ' + esc(ver.label) : '') + '</div></div>';
-        const lines = (f.items || []).map(function (it, idx) {
+        function formulaLineHtml(it, idx, isPack) {
             const mat = plantById(it.plantId);
             const max = sliderMaxFor(it.amount, it.unit);
             if (!editable) {
-                return '<div class="formula-line" style="grid-template-columns:1fr auto auto">' +
+                return '<div class="formula-line' + (isPack ? ' formula-line-pack' : '') +
+                    '" style="grid-template-columns:1fr auto auto">' +
                     '<div>' + esc(mat ? displayName(mat) : it.plantId) + '</div>' +
                     '<div class="num">' + esc(String(it.amount)) + '</div>' +
                     '<div class="muted">' + esc(it.unit || 'Kg') + '</div></div>';
             }
-            return '<div class="formula-line" data-line="' + idx + '">' +
+            const packAttr = isPack ? ' data-packaging="1"' : '';
+            const amountRo = isPack ? ' readonly' : '';
+            const sliderDis = isPack ? ' disabled' : '';
+            const unitDis = isPack ? ' disabled' : '';
+            return '<div class="formula-line' + (isPack ? ' formula-line-pack' : '') +
+                '" data-line="' + idx + '"' + packAttr + '>' +
                 '<select data-field="plantId">' + plantOptions(it.plantId) + '</select>' +
                 '<input data-field="slider" class="formula-slider" type="range" min="0" max="' + esc(String(max)) +
-                '" step="' + (Number(it.amount) % 1 ? '0.1' : '1') + '" value="' + esc(String(it.amount)) + '">' +
-                '<input data-field="amount" type="number" min="0" step="any" value="' + esc(String(it.amount)) + '">' +
-                '<select data-field="unit">' + unitOptions(it.unit || 'Kg') + '</select>' +
+                '" step="' + (Number(it.amount) % 1 ? '0.1' : '1') + '" value="' + esc(String(it.amount)) + '"' + sliderDis + '>' +
+                '<input data-field="amount" type="number" min="0" step="any" value="' + esc(String(it.amount)) + '"' + amountRo + '>' +
+                '<select data-field="unit"' + unitDis + '>' + unitOptions(it.unit || 'Kg') + '</select>' +
                 '<button type="button" class="icon-action danger" data-remove-line="' + idx + '" title="Quitar" aria-label="Quitar"><i class="fa-solid fa-trash-can"></i></button>' +
                 '</div>';
-        }).join('') || '<div class="empty">Agrega materias primas a esta receta.</div>';
+        }
+        const materialEntries = [];
+        const packEntries = [];
+        (f.items || []).forEach(function (it, idx) {
+            if (isPackagingLine(it)) packEntries.push({ it: it, idx: idx });
+            else materialEntries.push({ it: it, idx: idx });
+        });
+        let lines = materialEntries.map(function (e) {
+            return formulaLineHtml(e.it, e.idx, false);
+        }).join('');
+        if (packEntries.length) {
+            lines += '<div class="formula-pack-section">' +
+                '<div class="formula-pack-label">Empaque</div>' +
+                packEntries.map(function (e) {
+                    return formulaLineHtml(e.it, e.idx, true);
+                }).join('') +
+                '</div>';
+        }
+        if (!lines) lines = '<div class="empty">Agrega materias primas a esta receta.</div>';
         const meta = editable
             ? ('<div class="formula-meta">' +
                 (lotMode
@@ -5284,6 +5412,8 @@
     document.addEventListener('input', function (e) {
         if (!onFormulaMountEvent(e) || !e.target.closest('[data-field]')) return;
         const field = e.target.getAttribute('data-field');
+        const packRow = e.target.closest('[data-line][data-packaging="1"]');
+        if (packRow && (field === 'slider' || field === 'amount')) return;
         if (field === 'slider') {
             const row = e.target.closest('[data-line]');
             const amountEl = row && row.querySelector('[data-field="amount"]');
@@ -5306,8 +5436,11 @@
         if (e.target.getAttribute('data-field') !== 'plantId') return;
         const row = e.target.closest('[data-line]');
         const mat = plantById(e.target.value);
+        const wasPack = row && row.getAttribute('data-packaging') === '1';
+        const isPack = isPackagingMaterial(mat);
         if (row && mat && mat.unit) row.querySelector('[data-field="unit"]').value = mat.unit;
         readFormulaFromDom();
+        if (wasPack !== isPack) openRecipe(currentRecipe, true);
     });
     document.addEventListener('click', function (e) {
         if (!onFormulaMountEvent(e)) return;
@@ -5367,7 +5500,12 @@
             (f.items || []).forEach(function (it) { used[it.plantId] = true; });
             const next = inventory.filter(function (m) { return !used[m.id]; })[0] || inventory[0];
             if (!next) return;
-            f.items.push({ plantId: next.id, amount: 0, unit: next.unit || 'Kg', role: '' });
+            f.items.push({
+                plantId: next.id,
+                amount: 0,
+                unit: next.unit || 'Kg',
+                role: isPackagingMaterial(next) ? 'Empaque' : ''
+            });
             persistRootToActiveVersion(f);
             formulaDirty = true;
             openRecipe(currentRecipe, true);
@@ -5387,9 +5525,13 @@
         const rm = e.target.closest('[data-remove-line]');
         if (rm) {
             if (!canEditFormulas()) return;
+            const detail = formulaMountEl();
+            const row = rm.closest('[data-line]');
+            const rows = detail ? Array.prototype.slice.call(detail.querySelectorAll('[data-line]')) : [];
+            let idx = rows.indexOf(row);
+            if (idx < 0) idx = Number(rm.getAttribute('data-remove-line'));
             readFormulaFromDom();
-            const idx = Number(rm.getAttribute('data-remove-line'));
-            formulas[currentRecipe].items.splice(idx, 1);
+            if (idx >= 0) formulas[currentRecipe].items.splice(idx, 1);
             persistRootToActiveVersion(formulas[currentRecipe]);
             formulaDirty = true;
             openRecipe(currentRecipe, true);
