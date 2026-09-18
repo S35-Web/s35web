@@ -248,12 +248,23 @@
             font-size: 13px;
         }
         #prodPageSub {
-            line-height: 1.45;
-            max-width: 920px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0.55rem 1.85rem;
+            line-height: 1.5;
+            max-width: 1100px;
         }
-        #prodPageSub .prod-sub-sep {
-            opacity: 0.55;
-            margin: 0 0.15em;
+        #prodPageSub .prod-sub-metric {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0.35em;
+            white-space: nowrap;
+        }
+        #prodPageSub .prod-sub-label {
+            color: var(--muted);
+            font-weight: 500;
         }
         #prodPageSub strong {
             color: var(--text);
@@ -4475,6 +4486,9 @@
         const lots = Math.max(1, Number((document.getElementById('prodQty') || {}).value) || 1);
         const f = formulas[slug];
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
+        function metric(label, valueHtml) {
+            return '<span class="prod-sub-metric"><span class="prod-sub-label">' + esc(label) + '</span> ' + valueHtml + '</span>';
+        }
         if (!slug || !r) {
             el.textContent = 'Elige producto y versión de fórmula para ver inventario PT, plan de sacos y capacidad por MP.';
             return;
@@ -4483,11 +4497,11 @@
         const inv = Math.max(0, Number(fin.stock) || 0);
         const lotMode = f && isPlantLot(f);
         const unitLabel = lotMode ? 'sacos' : ((fin.unit === 'Pza' || !fin.unit) ? 'u.' : fin.unit);
-        const sep = ' <span class="prod-sub-sep">·</span> ';
+        const invMetric = metric('Inventario Actual:', '<strong>' + esc(String(inv)) + '</strong> ' + esc(unitLabel));
 
         if (!f || !formulaComplete(f)) {
-            el.innerHTML = 'Inv. <strong>' + esc(String(inv)) + '</strong> ' + esc(unitLabel) +
-                sep + 'Completa la fórmula en Productos → Formulación.';
+            el.innerHTML = invMetric +
+                '<span class="prod-sub-metric">Completa la fórmula en Productos → Formulación.</span>';
             return;
         }
         syncActiveVersionToRoot(f);
@@ -4496,18 +4510,18 @@
         const newTotal = inv + planBags;
         const cap = computeProdMaxLotsByInventory(slug);
         const lotWord = lots === 1 ? 'lote' : 'lotes';
-        const maxBit = cap.maxLots == null
-            ? 'Máx. —'
-            : ('Máx. <strong>' + esc(String(cap.maxLots)) + '</strong> ' + (cap.maxLots === 1 ? 'lote' : 'lotes'));
-        const critBit = cap.mpCrit
-            ? ('MPCrit <strong>' + esc(cap.mpCrit) + '</strong>')
-            : 'MPCrit —';
+        const maxVal = cap.maxLots == null
+            ? '—'
+            : ('<strong>' + esc(String(cap.maxLots)) + '</strong> ' + (cap.maxLots === 1 ? 'lote' : 'lotes'));
+        const critVal = cap.mpCrit
+            ? ('<strong>' + esc(cap.mpCrit) + '</strong>')
+            : '—';
         el.innerHTML =
-            'Inv. <strong>' + esc(String(inv)) + '</strong> ' + esc(unitLabel) +
-            sep + 'Plan ×' + esc(String(lots)) + ' ' + esc(lotWord) + ' → ~<strong>' + esc(String(planBags)) + '</strong> ' + esc(unitLabel) +
-            sep + 'Nuevo total <strong>' + esc(String(newTotal)) + '</strong>' +
-            sep + maxBit +
-            sep + critBit;
+            invMetric +
+            metric('Plan:', '×' + esc(String(lots)) + ' ' + esc(lotWord) + ' → ~<strong>' + esc(String(planBags)) + '</strong> ' + esc(unitLabel)) +
+            metric('Nuevo total:', '<strong>' + esc(String(newTotal)) + '</strong> ' + esc(unitLabel)) +
+            metric('Máximo:', maxVal) +
+            metric('MP Critica:', critVal);
     }
     function renderProdVersionChips() {
         const chips = document.getElementById('prodVersionChips');
