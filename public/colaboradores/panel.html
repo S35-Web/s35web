@@ -4438,11 +4438,11 @@
         return 1;
     }
     /**
-     * Máx. lotes / MPCrit: por cada MP, floor(margen_usable / dosis_por_lote);
-     * margen_usable = max(0, inventario − minStock). Misma base que la gráfica («margen hasta mínimo»).
-     * MPCrit = la MP con menor capacidad (argmin).
+     * Máx. lotes / MPCrit: por cada MP, floor(inventario / dosis_por_lote).
+     * Capacidad hasta agotar stock (cuando el requerido/negro alcanza el inventario),
+     * no el margen hasta mínimo (línea roja). MPCrit = la MP con menor capacidad (argmin).
      */
-    function computeProdMaxLotsByMargin(slug) {
+    function computeProdMaxLotsByInventory(slug) {
         const f = formulas[slug];
         if (!f) return { maxLots: null, mpCrit: null };
         syncActiveVersionToRoot(f);
@@ -4456,11 +4456,9 @@
             const dose = Number(it.amount) || 0;
             if (dose <= 0) return;
             const mat = plantById(it.plantId);
-            const have = mat ? Number(mat.stock) || 0 : 0;
-            const minStock = mat ? Number(mat.minStock) || 0 : 0;
-            const buffer = Math.max(0, have - minStock);
-            const lots = Math.floor(buffer / dose);
-            const ratio = buffer / dose;
+            const have = Math.max(0, mat ? Number(mat.stock) || 0 : 0);
+            const lots = Math.floor(have / dose);
+            const ratio = have / dose;
             if (lots < bestLots || (lots === bestLots && ratio < bestRatio)) {
                 bestLots = lots;
                 bestRatio = ratio;
@@ -4496,7 +4494,7 @@
         const perLot = bagsExpectedPerLot(f);
         const planBags = perLot * lots;
         const newTotal = inv + planBags;
-        const cap = computeProdMaxLotsByMargin(slug);
+        const cap = computeProdMaxLotsByInventory(slug);
         const lotWord = lots === 1 ? 'lote' : 'lotes';
         const maxBit = cap.maxLots == null
             ? 'Máx. —'
