@@ -1160,6 +1160,96 @@
             border-radius: var(--radius-sm); background: var(--bg);
             padding: 0 10px; outline: none; color: var(--text);
         }
+        /* —— Combobox cliente (checkout) —— */
+        .pos-client-picker { position: relative; }
+        .pos-client-trigger {
+            width: 100%; height: 34px; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); background: var(--bg);
+            padding: 0 10px; outline: none; color: var(--text);
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px; cursor: pointer; text-align: left;
+            transition: border-color .12s, background .12s;
+        }
+        .pos-client-trigger:hover { background: var(--hover); }
+        .pos-client-trigger:focus-visible,
+        .pos-client-trigger[aria-expanded="true"] {
+            border-color: var(--border-strong);
+        }
+        .pos-client-trigger-text {
+            min-width: 0; flex: 1;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .pos-client-trigger-label {
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            font-size: 13px;
+        }
+        .pos-client-trigger-badge {
+            flex-shrink: 0; font-size: 10px; font-weight: 500;
+            padding: 1px 6px; border-radius: 999px;
+            border: 1px solid var(--border); background: var(--bg-soft); color: var(--muted);
+        }
+        .pos-client-trigger-badge.is-dist {
+            background: var(--info-bg); color: var(--info); border-color: transparent;
+        }
+        .pos-client-trigger > .fa-magnifying-glass {
+            flex-shrink: 0; font-size: 12px; color: var(--muted);
+        }
+        .pos-client-popover {
+            position: absolute;
+            left: 0; right: auto;
+            bottom: calc(100% + 6px);
+            z-index: 60;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-modal);
+            display: flex; flex-direction: column;
+            min-width: 100%;
+            width: min(340px, 92vw);
+            max-height: min(420px, 55vh);
+            overflow: hidden;
+        }
+        .pos-client-popover[hidden] { display: none !important; }
+        .pos-client-search-wrap {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 12px; border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .pos-client-search-wrap > i { color: var(--muted); font-size: 12px; }
+        .pos-client-search {
+            flex: 1; min-width: 0; border: none; background: transparent;
+            outline: none; font-size: 13px; padding: 0; height: 24px;
+            color: var(--text);
+        }
+        .pos-client-search::placeholder { color: var(--muted); }
+        .pos-client-list {
+            overflow: auto; max-height: 340px; padding: 4px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .pos-client-option {
+            display: grid; grid-template-columns: 1fr auto;
+            gap: 2px 10px; align-items: start;
+            width: 100%; padding: 9px 10px;
+            border: none; background: transparent; border-radius: var(--radius-sm);
+            cursor: pointer; text-align: left; color: var(--text);
+        }
+        .pos-client-option:hover,
+        .pos-client-option.is-active { background: var(--hover); }
+        .pos-client-option.is-selected { background: var(--active); }
+        .pos-client-option-name {
+            font-size: 13px; font-weight: 500;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .pos-client-option-meta {
+            grid-column: 1 / -1;
+            font-size: 11px; color: var(--muted);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .pos-client-option .badge { justify-self: end; align-self: center; }
+        .pos-client-option-empty {
+            padding: 16px 12px; text-align: center;
+            color: var(--muted); font-size: 13px;
+        }
         .price-input {
             width: 62px;
             min-width: 62px;
@@ -2917,9 +3007,25 @@
                                 <div class="checkout-fields">
                                     <div>
                                         <div class="field-label">Cliente</div>
-                                        <select class="customer-input" id="posClientSelect">
-                                            <option value="">Sin cliente (mostrador)</option>
-                                        </select>
+                                        <div class="pos-client-picker" id="posClientPicker">
+                                            <input type="hidden" id="posClientSelect" value="" autocomplete="off">
+                                            <button type="button" class="pos-client-trigger" id="posClientTrigger"
+                                                aria-haspopup="listbox" aria-expanded="false" aria-controls="posClientPickerList">
+                                                <span class="pos-client-trigger-text">
+                                                    <span class="pos-client-trigger-label" id="posClientTriggerLabel">Sin cliente (mostrador)</span>
+                                                    <span class="pos-client-trigger-badge" id="posClientTriggerBadge" hidden></span>
+                                                </span>
+                                                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                            </button>
+                                            <div class="pos-client-popover" id="posClientPopover" hidden role="dialog" aria-label="Buscar cliente">
+                                                <div class="pos-client-search-wrap">
+                                                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                                    <input type="search" id="posClientPickerSearch" class="pos-client-search"
+                                                        placeholder="Nombre, empresa, teléfono, email o RFC" autocomplete="off" aria-autocomplete="list" aria-controls="posClientPickerList">
+                                                </div>
+                                                <div class="pos-client-list" id="posClientPickerList" role="listbox"></div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div>
                                         <div class="field-label">Método de pago</div>
