@@ -1159,6 +1159,26 @@
             .join(' ');
     }
 
+    /** Resalta substrings del query (case-insensitive) escapando HTML. */
+    function highlightClientMatch(text, query) {
+        const raw = String(text == null ? '' : text);
+        const q = String(query || '').trim();
+        if (!q || !raw) return esc(raw);
+        const lower = raw.toLowerCase();
+        const qLower = q.toLowerCase();
+        let out = '';
+        let i = 0;
+        let idx = lower.indexOf(qLower, i);
+        while (idx !== -1) {
+            out += esc(raw.slice(i, idx));
+            out += '<mark class="pos-client-match">' + esc(raw.slice(idx, idx + q.length)) + '</mark>';
+            i = idx + q.length;
+            idx = lower.indexOf(qLower, i);
+        }
+        out += esc(raw.slice(i));
+        return out;
+    }
+
     function filteredCheckoutClients() {
         const q = (document.getElementById('posClientPickerSearch') &&
             document.getElementById('posClientPickerSearch').value || '').toLowerCase().trim();
@@ -1167,6 +1187,22 @@
         }).filter(function (c) {
             return !q || clientPickerHaystack(c).includes(q);
         });
+    }
+
+    function clientPickerCreateLabel(q) {
+        if (q) return 'Crear «' + q + '»';
+        return 'Agregar cliente';
+    }
+
+    function openQuickCreateFromPicker() {
+        const q = (document.getElementById('posClientPickerSearch') &&
+            document.getElementById('posClientPickerSearch').value || '').trim();
+        closeClientPicker();
+        openClientModal(null);
+        if (q) {
+            const nameEl = document.getElementById('clientName');
+            if (nameEl) nameEl.value = q;
+        }
     }
 
     function renderClientPickerList() {
@@ -1189,25 +1225,38 @@
         });
         list.forEach(function (c) {
             const dist = isDistributorClient(c);
-            const meta = [c.company, c.phone, c.email, c.rfc].filter(Boolean).join(' · ');
+            const metaParts = [c.company, c.phone, c.email, c.rfc].filter(Boolean);
+            const metaHtml = metaParts.map(function (part) {
+                return highlightClientMatch(part, q);
+            }).join(' · ');
             rows.push({
                 id: c.id,
                 html: '<button type="button" class="pos-client-option' +
                     (current === c.id ? ' is-selected' : '') +
                     '" role="option" data-client-id="' + esc(c.id) + '" aria-selected="' +
                     (current === c.id ? 'true' : 'false') + '">' +
-                    '<span class="pos-client-option-name">' + esc(c.name) + '</span>' +
+                    '<span class="pos-client-option-name">' + highlightClientMatch(c.name, q) + '</span>' +
                     '<span class="badge' + (dist ? ' b-primary' : '') + '">' + esc(clientTypeLabel(c)) + '</span>' +
-                    (meta ? '<span class="pos-client-option-meta">' + esc(meta) + '</span>' : '') +
+                    (metaHtml ? '<span class="pos-client-option-meta">' + metaHtml + '</span>' : '') +
                     '</button>'
             });
         });
+        let html = '';
         if (!list.length && q) {
-            listEl.innerHTML = rows[0].html +
+            html = rows[0].html +
                 '<div class="pos-client-option-empty">Sin coincidencias</div>';
         } else {
-            listEl.innerHTML = rows.map(function (r) { return r.html; }).join('');
+            html = rows.map(function (r) { return r.html; }).join('');
         }
+        html += '<button type="button" class="pos-client-option pos-client-create" role="option" ' +
+            'data-client-create="1" aria-selected="false">' +
+            '<span class="pos-client-option-name">' +
+            '<i class="fa-solid fa-plus" aria-hidden="true"></i> ' +
+            esc(clientPickerCreateLabel(q)) +
+            '</span>' +
+            '<span class="pos-client-option-meta">Abrir alta de cliente</span>' +
+            '</button>';
+        listEl.innerHTML = html;
         const options = listEl.querySelectorAll('.pos-client-option');
         if (clientPickerActiveIdx < 0 || clientPickerActiveIdx >= options.length) {
             clientPickerActiveIdx = 0;
@@ -2238,6 +2287,7 @@
                 e.preventDefault();
                 const name = (document.getElementById('clientName').value || '').trim();
                 if (!name) return;
+                const wasNew = !editingClientId;
                 const next = {
                     id: editingClientId || ('cli-' + Date.now().toString(36)),
                     name: name,
@@ -2259,10 +2309,14 @@
                 renderClients();
                 fillClientSelect();
                 fillHistoryClientFilter();
-                applyCartTierPrices();
-                renderProducts();
-                renderCart();
-                toast(editingClientId ? 'Cliente actualizado' : 'Cliente creado');
+                if (wasNew) {
+                    setSelectedClientId(next.id);
+                } else {
+                    applyCartTierPrices();
+                    renderProducts();
+                    renderCart();
+                }
+                toast(wasNew ? 'Cliente creado' : 'Cliente actualizado');
             });
         }
         const clientTypeSeg = document.getElementById('clientTypeSeg');
@@ -2317,7 +2371,12 @@
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     const opt = options[clientPickerActiveIdx];
-                    if (opt) pickClientFromPicker(opt.getAttribute('data-client-id') || '');
+                    if (!opt) return;
+                    if (opt.getAttribute('data-client-create') === '1') {
+                        openQuickCreateFromPicker();
+                        return;
+                    }
+                    pickClientFromPicker(opt.getAttribute('data-client-id') || '');
                 }
             });
         }
@@ -2325,6 +2384,10 @@
             clientPickerList.addEventListener('click', function (e) {
                 const opt = e.target.closest('.pos-client-option');
                 if (!opt) return;
+                if (opt.getAttribute('data-client-create') === '1') {
+                    openQuickCreateFromPicker();
+                    return;
+                }
                 pickClientFromPicker(opt.getAttribute('data-client-id') || '');
             });
             clientPickerList.addEventListener('mousemove', function (e) {
