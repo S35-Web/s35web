@@ -2322,6 +2322,7 @@
                     <div class="card">
                         <div class="toolbar">
                             <input id="matSearch" class="search" type="search" placeholder="Buscar materia prima">
+                            <button id="matFamiliesBtn" class="btn" type="button"><i class="fa-solid fa-tags"></i> Familias</button>
                             <button id="matAddBtn" class="btn primary" type="button"><i class="fa-solid fa-plus"></i> Alta</button>
                         </div>
                         <div class="chips" id="matChips"></div>
@@ -2822,15 +2823,7 @@
                         <input id="plantMin" type="number" min="0" step="1" required value="0">
                     </label>
                     <label>Categoría
-                        <select id="plantCategory">
-                            <option value="mineral">Minerales</option>
-                            <option value="aglutinante">Aglutinantes</option>
-                            <option value="polymer">Polímeros</option>
-                            <option value="cellulose">Celulosa</option>
-                            <option value="fiber">Fibras</option>
-                            <option value="chemical">Químicos</option>
-                            <option value="packaging">Empaque</option>
-                        </select>
+                        <select id="plantCategory"></select>
                     </label>
                     <label>Ficha de laboratorio (opcional)
                         <select id="plantLab">
@@ -2843,6 +2836,30 @@
                     <button type="submit" class="btn primary">Guardar</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="familiesModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="familiesModalTitle" style="max-width:440px">
+            <div class="modal-head">
+                <strong id="familiesModalTitle">Familias de materia prima</strong>
+                <button id="familiesModalClose" class="btn" type="button">Cerrar</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid" style="grid-template-columns:1fr auto;align-items:end">
+                    <label>Nueva familia
+                        <input id="familyNameInput" type="text" autocomplete="off" placeholder="Ej. Pigmentos" maxlength="48">
+                    </label>
+                    <button type="button" class="btn primary" id="familyAddBtn"><i class="fa-solid fa-plus"></i> Agregar</button>
+                </div>
+                <div class="table-card" style="margin-top:12px">
+                    <table>
+                        <thead><tr><th>Nombre</th><th></th></tr></thead>
+                        <tbody id="familiesBody"></tbody>
+                    </table>
+                </div>
+                <p class="muted" style="margin:10px 0 0;font-size:12px">«Todas» es fija. Al quitar una familia con materiales, se mueven a Sin familia.</p>
+            </div>
         </div>
     </div>
 
@@ -2904,20 +2921,81 @@
 
     const data = window.S35_PANEL_DATA || { products: [], materials: [], plantMaterials: [], recipes: [], usedIn: {} };
     const PLANT_KEY = 's35_plant_inventory';
-    const CAT_LABEL = {
-        mineral: 'Minerales',
-        aglutinante: 'Aglutinantes',
-        polymer: 'Polímeros',
-        cellulose: 'Celulosa',
-        fiber: 'Fibras',
-        chemical: 'Químicos',
-        packaging: 'Empaque'
-    };
+    const FAMILIES_KEY = 's35_plant_families';
+    const UNCATEGORIZED_ID = 'none';
+    const UNCATEGORIZED_LABEL = 'Sin familia';
+    const DEFAULT_FAMILIES = [
+        { id: 'mineral', label: 'Minerales' },
+        { id: 'aglutinante', label: 'Aglutinantes' },
+        { id: 'polymer', label: 'Polímeros' },
+        { id: 'cellulose', label: 'Celulosa' },
+        { id: 'fiber', label: 'Fibras' },
+        { id: 'chemical', label: 'Químicos' },
+        { id: 'packaging', label: 'Empaque' }
+    ];
     const LEGACY_BINDER_CATS = { cement: true, lime: true, gypsum: true };
+    function normalizeFamilyItem(f) {
+        const id = String((f && f.id) || '').trim();
+        const label = String((f && f.label) || '').trim();
+        if (!id || !label || id === 'all' || id === UNCATEGORIZED_ID) return null;
+        return { id: id, label: label };
+    }
+    function loadFamilies() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(FAMILIES_KEY) || 'null');
+            if (raw && Array.isArray(raw.items) && raw.items.length) {
+                const seen = {};
+                const list = [];
+                raw.items.forEach(function (f) {
+                    const item = normalizeFamilyItem(f);
+                    if (!item || seen[item.id]) return;
+                    seen[item.id] = true;
+                    list.push(item);
+                });
+                if (list.length) return list;
+            }
+        } catch (_) {}
+        return DEFAULT_FAMILIES.map(function (f) { return { id: f.id, label: f.label }; });
+    }
+    function saveFamilies(list) {
+        localStorage.setItem(FAMILIES_KEY, JSON.stringify({
+            items: list,
+            updatedAt: new Date().toISOString()
+        }));
+    }
+    let plantFamilies = loadFamilies();
+    if (!localStorage.getItem(FAMILIES_KEY)) saveFamilies(plantFamilies);
+    function familyLabel(category) {
+        const key = String(category || '').trim();
+        if (!key || key === UNCATEGORIZED_ID) return UNCATEGORIZED_LABEL;
+        for (let i = 0; i < plantFamilies.length; i++) {
+            if (plantFamilies[i].id === key) return plantFamilies[i].label;
+        }
+        return key;
+    }
+    function hasFamilyId(id) {
+        return plantFamilies.some(function (f) { return f.id === id; });
+    }
     function normalizeCategory(category) {
         const key = String(category || '').trim();
         if (LEGACY_BINDER_CATS[key]) return 'aglutinante';
-        return key || 'mineral';
+        if (!key) return 'mineral';
+        if (key === UNCATEGORIZED_ID) return UNCATEGORIZED_ID;
+        return key;
+    }
+    function slugifyFamily(label) {
+        let base = String(label || 'familia').toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '') || 'familia';
+        if (base === 'all' || base === UNCATEGORIZED_ID) base = 'familia-' + base;
+        let id = base;
+        let n = 2;
+        while (hasFamilyId(id) || id === 'all' || id === UNCATEGORIZED_ID) {
+            id = base + '-' + n;
+            n += 1;
+        }
+        return id;
     }
 
     function normalizeUnit(unit) {
@@ -3356,20 +3434,45 @@
     // catalogSearch eliminado; búsqueda vive en #productsSearch
 
     let matFilter = 'all';
-    const plantCats = ['all', 'mineral', 'aglutinante', 'polymer', 'cellulose', 'fiber', 'chemical', 'packaging'];
     const chips = document.getElementById('matChips');
-    chips.innerHTML = plantCats.map(function (c) {
-        const label = c === 'all' ? 'Todas' : (CAT_LABEL[c] || c);
-        return '<button type="button" class="chip' + (c === 'all' ? ' active' : '') + '" data-cat="' + esc(c) + '">' + esc(label) + '</button>';
-    }).join('');
+    function fillPlantCategorySelect(selected) {
+        const sel = document.getElementById('plantCategory');
+        if (!sel) return;
+        const cur = selected != null ? String(selected) : String(sel.value || '');
+        const opts = plantFamilies.map(function (f) {
+            return '<option value="' + esc(f.id) + '">' + esc(f.label) + '</option>';
+        });
+        if (cur && !hasFamilyId(cur) && cur !== UNCATEGORIZED_ID) {
+            opts.push('<option value="' + esc(cur) + '">' + esc(familyLabel(cur)) + '</option>');
+        }
+        opts.push('<option value="' + UNCATEGORIZED_ID + '">' + esc(UNCATEGORIZED_LABEL) + '</option>');
+        sel.innerHTML = opts.join('');
+        const valid = hasFamilyId(cur) || cur === UNCATEGORIZED_ID ||
+            (cur && !hasFamilyId(cur) && cur !== UNCATEGORIZED_ID);
+        if (cur && valid) sel.value = cur;
+        if (!sel.value) sel.value = (plantFamilies[0] && plantFamilies[0].id) || UNCATEGORIZED_ID;
+    }
+    function renderMatChips() {
+        const cats = ['all'].concat(plantFamilies.map(function (f) { return f.id; }));
+        const hasUncategorized = inventory.some(function (m) {
+            return normalizeCategory(m.category) === UNCATEGORIZED_ID;
+        });
+        if (hasUncategorized) cats.push(UNCATEGORIZED_ID);
+        chips.innerHTML = cats.map(function (c) {
+            const label = c === 'all' ? 'Todas' : familyLabel(c);
+            return '<button type="button" class="chip' + (c === matFilter ? ' active' : '') + '" data-cat="' + esc(c) + '">' + esc(label) + '</button>';
+        }).join('') +
+            '<button type="button" class="chip" id="matChipAdd" title="Agregar familia" aria-label="Agregar familia"><i class="fa-solid fa-plus"></i></button>';
+    }
     function displayName(m) {
         return m.unit ? m.name + ' (' + m.unit + ')' : m.name;
     }
     function filteredInventory() {
         const q = (document.getElementById('matSearch').value || '').toLowerCase();
         return inventory.filter(function (m) {
-            const catOk = matFilter === 'all' || m.category === matFilter;
-            const qOk = !q || [m.name, m.unit, CAT_LABEL[m.category]].some(function (v) {
+            const cat = normalizeCategory(m.category);
+            const catOk = matFilter === 'all' || cat === matFilter;
+            const qOk = !q || [m.name, m.unit, familyLabel(cat)].some(function (v) {
                 return String(v || '').toLowerCase().includes(q);
             });
             return catOk && qOk;
@@ -3394,14 +3497,116 @@
         }).join('') || '<tr><td colspan="4" class="empty">Sin resultados</td></tr>';
         updateDashExtras();
     }
+    function renderFamiliesList() {
+        const body = document.getElementById('familiesBody');
+        if (!body) return;
+        body.innerHTML = plantFamilies.map(function (f) {
+            const count = inventory.filter(function (m) {
+                return normalizeCategory(m.category) === f.id;
+            }).length;
+            return '<tr data-fam="' + esc(f.id) + '">' +
+                '<td>' + esc(f.label) +
+                (count ? '<div class="muted" style="font-size:12px">' + count + ' material' + (count === 1 ? '' : 'es') + '</div>' : '') +
+                '</td>' +
+                '<td><div class="row-actions">' +
+                '<button type="button" class="icon-action danger" data-del-fam="' + esc(f.id) + '" title="Quitar familia" aria-label="Quitar familia"><i class="fa-solid fa-trash-can"></i></button>' +
+                '</div></td></tr>';
+        }).join('') || '<tr><td colspan="2" class="empty">Sin familias</td></tr>';
+    }
+    const familiesModal = document.getElementById('familiesModal');
+    function closeFamiliesModal() {
+        familiesModal.classList.remove('show');
+        familiesModal.setAttribute('aria-hidden', 'true');
+    }
+    function openFamiliesModal() {
+        document.getElementById('familyNameInput').value = '';
+        renderFamiliesList();
+        familiesModal.classList.add('show');
+        familiesModal.setAttribute('aria-hidden', 'false');
+        document.getElementById('familyNameInput').focus();
+    }
+    function addPlantFamily(rawLabel) {
+        const label = String(rawLabel || '').trim().replace(/\s+/g, ' ');
+        if (!label) {
+            panelToast('Escribe un nombre de familia');
+            return false;
+        }
+        const dup = plantFamilies.some(function (f) {
+            return f.label.toLocaleLowerCase('es') === label.toLocaleLowerCase('es');
+        });
+        if (dup) {
+            panelToast('Esa familia ya existe');
+            return false;
+        }
+        const id = slugifyFamily(label);
+        plantFamilies.push({ id: id, label: label });
+        saveFamilies(plantFamilies);
+        fillPlantCategorySelect(id);
+        renderMatChips();
+        renderFamiliesList();
+        panelToast('Familia «' + label + '» agregada');
+        return true;
+    }
+    function removePlantFamily(id) {
+        if (!id || id === 'all' || id === UNCATEGORIZED_ID) return;
+        if (!hasFamilyId(id)) return;
+        const label = familyLabel(id);
+        const using = inventory.filter(function (m) {
+            return normalizeCategory(m.category) === id;
+        });
+        if (using.length) {
+            if (!confirm('Hay ' + using.length + ' materia' + (using.length === 1 ? '' : 's') +
+                ' prima' + (using.length === 1 ? '' : 's') + ' en «' + label +
+                '». Se moverán a «' + UNCATEGORIZED_LABEL + '» y se eliminará la familia. ¿Continuar?')) {
+                return;
+            }
+            using.forEach(function (m) { m.category = UNCATEGORIZED_ID; });
+            saveInventory(inventory);
+        } else if (!confirm('¿Eliminar la familia «' + label + '»?')) {
+            return;
+        }
+        plantFamilies = plantFamilies.filter(function (f) { return f.id !== id; });
+        saveFamilies(plantFamilies);
+        if (matFilter === id) matFilter = 'all';
+        fillPlantCategorySelect();
+        renderMatChips();
+        renderFamiliesList();
+        renderMaterials();
+        updateMaterialKpi();
+        panelToast('Familia «' + label + '» eliminada');
+    }
+    fillPlantCategorySelect();
+    renderMatChips();
     chips.addEventListener('click', function (e) {
-        const btn = e.target.closest('.chip');
+        if (e.target.closest('#matChipAdd')) {
+            openFamiliesModal();
+            return;
+        }
+        const btn = e.target.closest('.chip[data-cat]');
         if (!btn) return;
         matFilter = btn.getAttribute('data-cat');
-        chips.querySelectorAll('.chip').forEach(function (el) { el.classList.toggle('active', el === btn); });
+        chips.querySelectorAll('.chip[data-cat]').forEach(function (el) {
+            el.classList.toggle('active', el === btn);
+        });
         renderMaterials();
     });
     document.getElementById('matSearch').addEventListener('input', renderMaterials);
+    document.getElementById('matFamiliesBtn').addEventListener('click', openFamiliesModal);
+    document.getElementById('familiesModalClose').addEventListener('click', closeFamiliesModal);
+    familiesModal.addEventListener('click', function (e) { if (e.target === familiesModal) closeFamiliesModal(); });
+    document.getElementById('familyAddBtn').addEventListener('click', function () {
+        const input = document.getElementById('familyNameInput');
+        if (addPlantFamily(input.value)) input.value = '';
+    });
+    document.getElementById('familyNameInput').addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        if (addPlantFamily(this.value)) this.value = '';
+    });
+    document.getElementById('familiesBody').addEventListener('click', function (e) {
+        const del = e.target.closest('[data-del-fam]');
+        if (del) removePlantFamily(del.getAttribute('data-del-fam'));
+    });
 
     const plantModal = document.getElementById('plantModal');
     const plantLab = document.getElementById('plantLab');
@@ -3413,13 +3618,14 @@
         plantModal.setAttribute('aria-hidden', 'true');
     }
     function openPlantModal(item) {
+        fillPlantCategorySelect(item ? normalizeCategory(item.category) : (plantFamilies[0] && plantFamilies[0].id) || UNCATEGORIZED_ID);
         document.getElementById('plantModalTitle').textContent = item ? 'Editar materia prima' : 'Alta de materia prima';
         document.getElementById('plantId').value = item ? item.id : '';
         document.getElementById('plantName').value = item ? item.name : '';
         document.getElementById('plantUnit').value = item ? (item.unit || '') : 'Kg';
         document.getElementById('plantStock').value = item ? item.stock : 0;
         document.getElementById('plantMin').value = item ? item.minStock : 0;
-        document.getElementById('plantCategory').value = item ? normalizeCategory(item.category) : 'mineral';
+        document.getElementById('plantCategory').value = item ? normalizeCategory(item.category) : (plantFamilies[0] && plantFamilies[0].id) || UNCATEGORIZED_ID;
         plantLab.value = item && item.labSlug ? item.labSlug : '';
         plantModal.classList.add('show');
         plantModal.setAttribute('aria-hidden', 'false');
@@ -3436,7 +3642,11 @@
     document.getElementById('plantModalClose').addEventListener('click', closePlantModal);
     document.getElementById('plantModalCancel').addEventListener('click', closePlantModal);
     plantModal.addEventListener('click', function (e) { if (e.target === plantModal) closePlantModal(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePlantModal(); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        closePlantModal();
+        closeFamiliesModal();
+    });
     document.getElementById('plantForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const id = document.getElementById('plantId').value;
@@ -3455,6 +3665,7 @@
         else inventory.push(next);
         saveInventory(inventory);
         updateMaterialKpi();
+        renderMatChips();
         renderMaterials();
         closePlantModal();
     });
@@ -3474,6 +3685,7 @@
             inventory = inventory.filter(function (m) { return m.id !== id; });
             saveInventory(inventory);
             updateMaterialKpi();
+            renderMatChips();
             renderMaterials();
         }
     });
