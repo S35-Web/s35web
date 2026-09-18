@@ -74,7 +74,7 @@ module.exports = [
     admixture: FINISH_ADMIX,
     pigment: ['dioxido-de-titanio'],
     status: 'lote-planta',
-    note: 'Dosificación de planta por lote (755.5 kg → ~30 sacos). Ver batch-doses.js / panel Formulación.',
+    note: 'Dosificación de planta por lote (755.5 kg → ~30 sacos).',
   }),
   dryMortar({
     product: 'waxtard-blanco-absoluto',

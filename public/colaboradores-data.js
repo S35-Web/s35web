@@ -1198,7 +1198,7 @@ window.S35_PANEL_DATA = {
       "kind": "seco",
       "water": "6.0–7.0 L / saco 25 kg",
       "status": "lote-planta",
-      "note": "Dosificación de planta por lote (755.5 kg → ~30 sacos). Ver batch-doses.js / panel Formulación.",
+      "note": "Dosificación de planta por lote (755.5 kg → ~30 sacos).",
       "image": "/Assets/productos_thumbs/WAXTARD-blanco-perla.jpg",
       "imageAlt": "Saco de 25 kg de Waxtard Blanco Perla",
       "items": [

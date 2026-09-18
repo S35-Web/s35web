@@ -638,6 +638,11 @@
             color: var(--muted);
             margin-bottom: 12px;
         }
+        .note-box .note-dose {
+            color: var(--text);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
 
         .inventory thead th {
             background: var(--bg-soft);
@@ -3704,6 +3709,12 @@
         return String(s == null ? '' : s)
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
+    function formatRecipeNote(note) {
+        return esc(note).replace(
+            /(\d+(?:\.\d+)?\s*kg\s*(?:→|->|—|–|-)\s*~?\d+\s*sacos)/gi,
+            '<span class="note-dose">$1</span>'
+        );
+    }
     function formatRelativeDate(isoOrDate) {
         const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
         if (isNaN(d)) return '';
@@ -4864,7 +4875,7 @@
             '<div class="muted">' + esc(r.code) + ' · ' + esc(r.family) +
             (lotMode ? ' · <span class="badge b-success">Lote planta</span>' : '') + '</div></div>' +
             recipeStatus(f) + '</div>' +
-            (r.note ? '<div class="note-box">' + esc(r.note) + '</div>' : '') +
+            (r.note ? '<div class="note-box">' + formatRecipeNote(r.note) + '</div>' : '') +
             versionBar +
             lotSummary +
             meta +
