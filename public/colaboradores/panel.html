@@ -5019,24 +5019,18 @@
             box.innerHTML = '<div class="empty">Sin tickets de compra. Al emitir con MP insuficiente puedes Guardar el preview aquí.</div>';
             return;
         }
-        const allowDel = canDeletePurchaseTickets();
         box.innerHTML = list.slice(0, 40).map(function (t) {
             const n = (t.deficitLines || []).length;
             const sub = n + (n === 1 ? ' MP a comprar' : ' MP a comprar') +
                 ' · ×' + (t.lots || 1) + ' lotes · ' + formatLotWhen(t.issuedAt);
             const formulaBit = t.formulaVersionName ? (' · ' + t.formulaVersionName) : '';
-            const rowBtn = '<button type="button" class="lot-row" data-purchase-id="' + esc(t.id) + '">' +
+            return '<button type="button" class="lot-row" data-purchase-id="' + esc(t.id) + '">' +
                 '<div class="lot-row-top">' +
                 '<div><div class="lot-code">' + esc(t.id) + '</div>' +
                 '<div>' + esc(t.name) + '</div>' +
                 '<div class="muted">' + esc(t.code) + esc(formulaBit) + ' · ' + esc(sub) + '</div></div>' +
                 purchaseStatusBadge() +
                 '</div></button>';
-            if (!allowDel) return rowBtn;
-            return '<div class="lot-row-item">' + rowBtn +
-                '<button type="button" class="icon-action danger" data-purchase-del="' + esc(t.id) +
-                '" title="Eliminar" aria-label="Eliminar ticket de compra"><i class="fa-solid fa-trash-can"></i></button>' +
-                '</div>';
         }).join('');
     }
     function purchaseTicketDocHtml(t) {
@@ -5701,13 +5695,6 @@
     const purchaseTicketsListEl = document.getElementById('purchaseTicketsList');
     if (purchaseTicketsListEl) {
         purchaseTicketsListEl.addEventListener('click', function (e) {
-            const delBtn = e.target.closest('[data-purchase-del]');
-            if (delBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-                deletePurchaseTicketById(delBtn.getAttribute('data-purchase-del'));
-                return;
-            }
             const btn = e.target.closest('[data-purchase-id]');
             if (btn) openPurchaseTicketModal(btn.getAttribute('data-purchase-id'));
         });
