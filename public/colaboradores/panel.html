@@ -755,16 +755,20 @@
             align-items: center;
             margin-bottom: 10px;
         }
+        .formula-packaging-block,
         .formula-pack-section {
-            margin-top: 6px;
-            padding-top: 12px;
+            margin-top: 10px;
+            padding-top: 14px;
             border-top: 1px solid var(--border);
         }
+        .formula-packaging-block .formula-pack-label,
         .formula-pack-label {
             font-size: 12px;
-            color: var(--muted);
+            font-weight: 600;
+            color: var(--text);
             margin-bottom: 8px;
-            letter-spacing: 0.01em;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
         }
         .formula-line.formula-line-pack input[data-field="amount"],
         .formula-line.formula-line-pack .formula-slider {
@@ -3741,7 +3745,7 @@
             minStock: Number(m.minStock) || 0,
             category: normalizeCategory(m.category),
             labSlug: m.labSlug || null,
-            isPackaging: m.isPackaging === true,
+            isPackaging: m.isPackaging === true || normalizeCategory(m.category) === 'packaging',
             consumeOnConfirm: m.consumeOnConfirm === true
         };
     }
@@ -3786,10 +3790,24 @@
         if (!mat) return 0;
         return Math.max(0, (Number(mat.stock) || 0) - materialReserved(mat));
     }
+    function packagingHintText(mat) {
+        if (!mat) return '';
+        return (String(mat.id || '') + ' ' + String(mat.name || ''))
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    }
     function isPackagingMaterial(mat) {
         if (!mat) return false;
         if (mat.isPackaging === true || mat.consumeOnConfirm === true) return true;
-        return normalizeCategory(mat.category) === 'packaging';
+        const cat = normalizeCategory(mat.category);
+        if (cat === 'packaging') return true;
+        const fam = String(familyLabel(cat) || '');
+        if (/empaque/i.test(cat) || /empaque/i.test(fam)) return true;
+        const hint = packagingHintText(mat);
+        if (/(^|[^a-z])(saco|sacos|cubeta|cubetas|empaque|rafia)([^a-z]|$)/.test(hint)) return true;
+        if (hint.indexOf('saco-') === 0 || hint.indexOf('cubeta-') === 0) return true;
+        return false;
     }
     function isPackagingLine(it) {
         if (!it) return false;
@@ -4654,7 +4672,57 @@
         if (!f || !isPlantLot(f)) return null;
         return Math.round(theoreticalBags(f));
     }
-    /** Actualiza amount de líneas Empaque existentes; no inventa líneas nuevas. */
+    /** Resuelve plantId de empaque típico (fórmula → receta → catálogo). */
+    function resolvePackagingPlantId(f, recipe) {
+        if (f && f.packagingPlantId && plantById(f.packagingPlantId)) return f.packagingPlantId;
+        if (f && Array.isArray(f.items)) {
+            for (let i = 0; i < f.items.length; i++) {
+                if (isPackagingLine(f.items[i]) && plantById(f.items[i].plantId)) {
+                    return f.items[i].plantId;
+                }
+            }
+        }
+        if (recipe) {
+            const fromRecipe = packagingId(recipe);
+            if (fromRecipe && plantById(fromRecipe)) return fromRecipe;
+        }
+        return null;
+    }
+    /**
+     * Si la fórmula no tiene línea Empaque pero el catálogo sí tiene el saco/cubeta
+     * típico del producto, la añade (cubre seeds plant-lot y localStorage viejo).
+     */
+    function ensureFormulaPackagingLine(f, recipe) {
+        if (!f) return false;
+        ensureVersions(f);
+        const plantId = resolvePackagingPlantId(f, recipe);
+        if (!plantId || !plantById(plantId)) return false;
+        if (!f.packagingPlantId) f.packagingPlantId = plantId;
+        const mat = plantById(plantId);
+        let changed = false;
+        function ensureInList(items) {
+            if (!Array.isArray(items)) return false;
+            if (items.some(isPackagingLine)) return false;
+            items.push({
+                plantId: plantId,
+                amount: 1,
+                unit: (mat && mat.unit) || 'Pza',
+                role: 'Empaque'
+            });
+            return true;
+        }
+        (f.versions || []).forEach(function (ver) {
+            if (!Array.isArray(ver.items)) ver.items = [];
+            if (ensureInList(ver.items)) changed = true;
+        });
+        syncActiveVersionToRoot(f);
+        if (ensureInList(f.items)) changed = true;
+        if (syncFormulaPackagingAmounts(f)) changed = true;
+        if (orderFormulaItemsMaterialsFirst(f)) changed = true;
+        if (changed) persistRootToActiveVersion(f);
+        return changed;
+    }
+    /** Actualiza amount de líneas Empaque; si faltan, ensureFormulaPackagingLine las crea. */
     function syncFormulaPackagingAmounts(f) {
         if (!f || !Array.isArray(f.items)) return false;
         const qty = packagingAmountFromTheo(f);
@@ -4904,6 +4972,16 @@
                 }];
             const versions = versionsSrc.map(function (ver) {
                 const items = mapDoseItems(ver.items);
+                const packId = dose.packagingPlantId || packagingId(recipe);
+                if (packId && plantById(packId) && !items.some(isPackagingLine)) {
+                    const mat = plantById(packId);
+                    items.push({
+                        plantId: packId,
+                        amount: 1,
+                        unit: (mat && mat.unit) || 'Pza',
+                        role: 'Empaque'
+                    });
+                }
                 const totalKg = items.reduce(function (s, it) {
                     return s + ((it.unit || 'Kg') === 'Kg' ? it.amount : 0);
                 }, 0);
@@ -4935,7 +5013,11 @@
                 yieldMax: 0,
                 batchSize: 0
             };
-            return syncActiveVersionToRoot(f);
+            syncActiveVersionToRoot(f);
+            syncFormulaPackagingAmounts(f);
+            orderFormulaItemsMaterialsFirst(f);
+            persistRootToActiveVersion(f);
+            return f;
         }
         const liquid = recipe.kind === 'liquido';
         const sack = String(recipe.water || '').match(/saco\s+(\d+)/i);
@@ -5037,7 +5119,12 @@
                 });
             }
         } catch (_) {}
-        Object.keys(map).forEach(function (slug) { ensureVersions(map[slug]); syncActiveVersionToRoot(map[slug]); });
+        Object.keys(map).forEach(function (slug) {
+            ensureVersions(map[slug]);
+            syncActiveVersionToRoot(map[slug]);
+            const recipe = recipes.filter(function (r) { return r.product === slug; })[0];
+            ensureFormulaPackagingLine(map[slug], recipe);
+        });
         return map;
     }
     function saveFormulas() {
@@ -5279,6 +5366,7 @@
         ensureVersions(formulas[slug]);
         syncActiveVersionToRoot(formulas[slug]);
         const f = formulas[slug];
+        ensureFormulaPackagingLine(f, r);
         syncFormulaPackagingAmounts(f);
         orderFormulaItemsMaterialsFirst(f);
         if (isPlantLot(f)) f.batchSize = recipeTotalKg(f);
@@ -5331,7 +5419,7 @@
             return formulaLineHtml(e.it, e.idx, false);
         }).join('');
         if (packEntries.length) {
-            lines += '<div class="formula-pack-section">' +
+            lines += '<div class="formula-packaging-block formula-pack-section">' +
                 '<div class="formula-pack-label">Empaque</div>' +
                 packEntries.map(function (e) {
                     return formulaLineHtml(e.it, e.idx, true);
