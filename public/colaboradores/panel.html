@@ -2096,7 +2096,7 @@
 
                 <section id="production" class="section">
                     <h1 class="page-title">Producción</h1>
-                    <p class="page-sub">Emite un ticket de lote a planta (descuenta MP). Al regresar los sacos reales, confirmas el ingreso de producto terminado y lotificas la tarima.</p>
+                    <p class="page-sub">Elige producto y versión de fórmula, emite el ticket a planta y confirma sacos reales. Para editar dosis con sliders o crear V3… ve a <strong>Productos → Formulación</strong>.</p>
                     <div class="grid">
                         <div class="card span-7">
                             <h3>Emitir ticket de lote</h3>
@@ -2108,9 +2108,14 @@
                                     <input id="prodQty" type="number" min="1" step="1" value="1">
                                 </label>
                             </div>
+                            <div class="formula-version-bar" id="prodVersionBar" style="margin-top:0">
+                                <div class="formula-version-chips" id="prodVersionChips"></div>
+                                <div class="formula-version-meta" id="prodVersionMeta"></div>
+                            </div>
                             <div id="prodPreview" class="prod-preview muted">Elige un producto con receta para ver el consumo de MP.</div>
                             <div class="formula-actions">
                                 <button type="button" class="btn primary" id="prodIssueBtn"><i class="fa-solid fa-ticket"></i> Emitir ticket a planta</button>
+                                <button type="button" class="btn" id="prodEditFormulaBtn"><i class="fa-solid fa-sliders"></i> Editar dosis / versiones</button>
                             </div>
                             <h3 style="margin-top:28px">Lotes abiertos / recientes</h3>
                             <div id="lotTicketsList" class="lot-rows muted">Sin tickets aún.</div>
@@ -4341,17 +4346,47 @@
             missing: !mat
         };
     }
+    function renderProdVersionChips() {
+        const chips = document.getElementById('prodVersionChips');
+        const meta = document.getElementById('prodVersionMeta');
+        const bar = document.getElementById('prodVersionBar');
+        if (!chips) return;
+        const slug = (document.getElementById('prodProduct') || {}).value;
+        const f = formulas[slug];
+        if (!f) {
+            chips.innerHTML = '';
+            if (meta) meta.textContent = '';
+            if (bar) bar.style.display = 'none';
+            return;
+        }
+        ensureVersions(f);
+        syncActiveVersionToRoot(f);
+        const ver = activeVersion(f);
+        if (bar) bar.style.display = '';
+        chips.innerHTML = (f.versions || []).map(function (v) {
+            return '<button type="button" data-prod-version="' + esc(v.id) + '" class="' +
+                (v.id === f.activeVersionId ? 'active' : '') + '">' + esc(v.name || v.id) + '</button>';
+        }).join('') || '';
+        if (meta) {
+            meta.textContent = ver
+                ? ((ver.name || '') + (ver.label ? ' — ' + ver.label : '') + ' · editar dosis en Formulación')
+                : '';
+        }
+    }
     function updateProdPreview() {
         const slug = document.getElementById('prodProduct').value;
         const lots = Math.max(1, Number(document.getElementById('prodQty').value) || 1);
         const box = document.getElementById('prodPreview');
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         const f = formulas[slug];
+        renderProdVersionChips();
         if (!box) return;
         if (!r || !f) {
             box.innerHTML = 'Elige un producto con receta para ver el consumo de MP.';
             return;
         }
+        syncActiveVersionToRoot(f);
+        const ver = activeVersion(f);
         if (!formulaComplete(f)) {
             box.innerHTML = 'Esta receta todavía no tiene todas las dosis. Complétala en Productos → Formulación.';
             return;
@@ -4366,6 +4401,7 @@
             : (lotMode ? Math.round(theo) : lots);
         box.innerHTML = '<strong>Al emitir el ticket</strong> se descuenta MP' +
             (lotMode ? (' de ' + lots + ' lote' + (lots === 1 ? '' : 's') + ' · ' + r.name) : (' · ' + lots + ' ' + f.batchLabel + '(s) · ' + r.name)) +
+            (ver ? (' · <strong>' + esc(ver.name) + '</strong>' + (ver.label ? ' <span class="muted">(' + esc(ver.label) + ')</span>' : '')) : '') +
             '<div class="muted" style="margin:6px 0">' +
             (lotMode
                 ? ('MP: ' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg · teórico ~' +
@@ -4499,6 +4535,29 @@
 
     document.getElementById('prodProduct').addEventListener('change', updateProdPreview);
     document.getElementById('prodQty').addEventListener('input', updateProdPreview);
+    const prodVersionChipsEl = document.getElementById('prodVersionChips');
+    if (prodVersionChipsEl) {
+        prodVersionChipsEl.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-prod-version]');
+            if (!btn) return;
+            const slug = document.getElementById('prodProduct').value;
+            const f = formulas[slug];
+            if (!f) return;
+            ensureVersions(f);
+            f.activeVersionId = btn.getAttribute('data-prod-version');
+            syncActiveVersionToRoot(f);
+            formulaDirty = true;
+            updateProdPreview();
+        });
+    }
+    const prodEditFormulaBtn = document.getElementById('prodEditFormulaBtn');
+    if (prodEditFormulaBtn) {
+        prodEditFormulaBtn.addEventListener('click', function () {
+            const slug = document.getElementById('prodProduct').value;
+            if (!slug) return;
+            showSection('products', { slug: slug, tab: 'formula' });
+        });
+    }
 
     document.getElementById('prodIssueBtn').addEventListener('click', function () {
         const slug = document.getElementById('prodProduct').value;
