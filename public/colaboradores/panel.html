@@ -247,6 +247,18 @@
             color: var(--muted);
             font-size: 13px;
         }
+        #prodPageSub {
+            line-height: 1.45;
+            max-width: 920px;
+        }
+        #prodPageSub .prod-sub-sep {
+            opacity: 0.55;
+            margin: 0 0.15em;
+        }
+        #prodPageSub strong {
+            color: var(--text);
+            font-weight: 600;
+        }
 
         /* Dashboard greeting */
         .dash-hero { margin-bottom: 28px; max-width: 640px; }
@@ -2159,7 +2171,7 @@
 
                 <section id="production" class="section">
                     <h1 class="page-title">Producción</h1>
-                    <p class="page-sub">Elige producto y versión de fórmula, emite el ticket a planta y confirma sacos reales. Para editar dosis con sliders o crear V3… ve a <strong>Productos → Formulación</strong>.</p>
+                    <p class="page-sub" id="prodPageSub">Elige producto y versión de fórmula para ver inventario PT, plan de sacos y capacidad por MP.</p>
                     <div class="grid">
                         <div class="card span-12">
                             <div class="cortes-chart-head" style="margin-bottom:8px">
@@ -4416,6 +4428,89 @@
             missing: !mat
         };
     }
+    /** Sacos/u. esperados por 1 lote (o 1 unidad si no es plant-lot). Misma regla que al emitir ticket. */
+    function bagsExpectedPerLot(f) {
+        if (!f) return 0;
+        if (isPlantLot(f) && f.yieldMin && f.yieldMax) {
+            return Math.round((Number(f.yieldMin) + Number(f.yieldMax)) / 2);
+        }
+        if (isPlantLot(f)) return Math.round(theoreticalBags(f));
+        return 1;
+    }
+    /**
+     * Máx. lotes / MPCrit: por cada MP, floor(margen_usable / dosis_por_lote);
+     * margen_usable = max(0, inventario − minStock). Misma base que la gráfica («margen hasta mínimo»).
+     * MPCrit = la MP con menor capacidad (argmin).
+     */
+    function computeProdMaxLotsByMargin(slug) {
+        const f = formulas[slug];
+        if (!f) return { maxLots: null, mpCrit: null };
+        syncActiveVersionToRoot(f);
+        const items = (f.items || []).filter(function (it) {
+            return (it.unit || '') !== 'Pza' && (it.role || '') !== 'Empaque';
+        });
+        let bestLots = Infinity;
+        let bestRatio = Infinity;
+        let bestName = null;
+        items.forEach(function (it) {
+            const dose = Number(it.amount) || 0;
+            if (dose <= 0) return;
+            const mat = plantById(it.plantId);
+            const have = mat ? Number(mat.stock) || 0 : 0;
+            const minStock = mat ? Number(mat.minStock) || 0 : 0;
+            const buffer = Math.max(0, have - minStock);
+            const lots = Math.floor(buffer / dose);
+            const ratio = buffer / dose;
+            if (lots < bestLots || (lots === bestLots && ratio < bestRatio)) {
+                bestLots = lots;
+                bestRatio = ratio;
+                bestName = mat ? (mat.name || it.plantId) : (it.plantId || '—');
+            }
+        });
+        if (!isFinite(bestLots)) return { maxLots: null, mpCrit: null };
+        return { maxLots: bestLots, mpCrit: bestName };
+    }
+    function updateProdPageSub() {
+        const el = document.getElementById('prodPageSub');
+        if (!el) return;
+        const slug = (document.getElementById('prodProduct') || {}).value;
+        const lots = Math.max(1, Number((document.getElementById('prodQty') || {}).value) || 1);
+        const f = formulas[slug];
+        const r = recipes.filter(function (x) { return x.product === slug; })[0];
+        if (!slug || !r) {
+            el.textContent = 'Elige producto y versión de fórmula para ver inventario PT, plan de sacos y capacidad por MP.';
+            return;
+        }
+        const fin = finishedStock[slug] || { stock: 0, unit: 'Pza' };
+        const inv = Math.max(0, Number(fin.stock) || 0);
+        const lotMode = f && isPlantLot(f);
+        const unitLabel = lotMode ? 'sacos' : ((fin.unit === 'Pza' || !fin.unit) ? 'u.' : fin.unit);
+        const sep = ' <span class="prod-sub-sep">·</span> ';
+
+        if (!f || !formulaComplete(f)) {
+            el.innerHTML = 'Inv. <strong>' + esc(String(inv)) + '</strong> ' + esc(unitLabel) +
+                sep + 'Completa la fórmula en Productos → Formulación.';
+            return;
+        }
+        syncActiveVersionToRoot(f);
+        const perLot = bagsExpectedPerLot(f);
+        const planBags = perLot * lots;
+        const newTotal = inv + planBags;
+        const cap = computeProdMaxLotsByMargin(slug);
+        const lotWord = lots === 1 ? 'lote' : 'lotes';
+        const maxBit = cap.maxLots == null
+            ? 'Máx. —'
+            : ('Máx. <strong>' + esc(String(cap.maxLots)) + '</strong> ' + (cap.maxLots === 1 ? 'lote' : 'lotes'));
+        const critBit = cap.mpCrit
+            ? ('MPCrit <strong>' + esc(cap.mpCrit) + '</strong>')
+            : 'MPCrit —';
+        el.innerHTML =
+            'Inv. <strong>' + esc(String(inv)) + '</strong> ' + esc(unitLabel) +
+            sep + 'Plan ×' + esc(String(lots)) + ' ' + esc(lotWord) + ' → ~<strong>' + esc(String(planBags)) + '</strong> ' + esc(unitLabel) +
+            sep + 'Nuevo total <strong>' + esc(String(newTotal)) + '</strong>' +
+            sep + maxBit +
+            sep + critBit;
+    }
     function renderProdVersionChips() {
         const chips = document.getElementById('prodVersionChips');
         const meta = document.getElementById('prodVersionMeta');
@@ -4450,6 +4545,7 @@
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         const f = formulas[slug];
         renderProdVersionChips();
+        updateProdPageSub();
         if (!box) {
             renderProdFormulaChart();
             return;
