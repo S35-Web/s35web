@@ -1259,7 +1259,15 @@
             const list = unitPrice(it.product, units);
             it.basePrice = list;
             it.tierIndex = tierIndexForQty(units);
-            if (it.priceOverride != null && isFinite(Number(it.priceOverride))) {
+            /* Promo siempre lleva override (default $0); no se “limpia” al precio de lista. */
+            if (it.isPromo) {
+                const ov = it.priceOverride != null && isFinite(Number(it.priceOverride))
+                    ? Number(it.priceOverride)
+                    : 0;
+                it.priceOverride = roundMoney(ov);
+                it.price = it.priceOverride;
+                it.priceOverridePct = priceDeltaPct(it.price, list);
+            } else if (it.priceOverride != null && isFinite(Number(it.priceOverride))) {
                 it.price = roundMoney(it.priceOverride);
                 it.priceOverridePct = priceDeltaPct(it.price, list);
             } else {
@@ -1677,7 +1685,9 @@
         const list = unitPrice(cart[idx].product, cartQty());
         const n = roundMoney(nextPrice);
         if (!isFinite(n) || n < 0) return false;
-        if (Math.abs(n - list) < 0.005) {
+        if (cart[idx].isPromo) {
+            cart[idx].priceOverride = n;
+        } else if (Math.abs(n - list) < 0.005) {
             cart[idx].priceOverride = null;
         } else {
             cart[idx].priceOverride = n;
@@ -1739,7 +1749,11 @@
         } else {
             body.innerHTML = cart.map(function (it, idx) {
                 const base = it.basePrice != null ? it.basePrice : it.price;
-                const pct = it.priceOverride != null ? priceDeltaPct(it.price, base) : null;
+                const pct = (it.isPromo || it.priceOverride != null) ? priceDeltaPct(it.price, base) : null;
+                const promoBadge = it.isPromo
+                    ? '<span class="ci-promo-badge" title="Línea promo (solo staff; el cliente no ve este badge)">' +
+                        'Promo</span>'
+                    : '';
                 const badgeHtml = (pct != null && Math.abs(pct) >= 0.05)
                     ? '<span class="ci-price-badge" title="Ajuste interno (no se muestra al cliente)">' +
                         esc(formatPriceDeltaBadge(pct)) + '</span>'
@@ -1761,8 +1775,11 @@
                         'aria-label="Editar precio" title="Editar precio unitario">' +
                         '<i class="fa-solid fa-pen" aria-hidden="true"></i></button>' +
                         '</div>');
-                return '<div class="cart-item' + (it.priceOverride != null ? ' has-price-override' : '') + '">' +
-                    '<div class="ci-name">' + esc(it.name) + '</div>' +
+                const itemClass = 'cart-item' +
+                    (it.priceOverride != null ? ' has-price-override' : '') +
+                    (it.isPromo ? ' is-promo' : '');
+                return '<div class="' + itemClass + '">' +
+                    '<div class="ci-name">' + esc(it.name) + promoBadge + '</div>' +
                     '<div class="ci-line" data-edit-price="' + idx + '" title="Editar precio unitario">' +
                     money(it.qty * it.price) + '</div>' +
                     metaHtml +
@@ -1829,7 +1846,8 @@
     function addToCart(slug) {
         const r = recipeBySlug(slug);
         if (!r) return;
-        const existing = cart.filter(function (it) { return it.product === slug; })[0];
+        /* No mezclar con líneas promo del mismo producto. */
+        const existing = cart.filter(function (it) { return it.product === slug && !it.isPromo; })[0];
         if (existing) existing.qty += 1;
         else {
             cart.push({
@@ -1841,6 +1859,7 @@
                 basePrice: unitPrice(r.product, cartQty() + 1),
                 priceOverride: null,
                 priceOverridePct: null,
+                isPromo: false,
                 qty: 1
             });
         }
@@ -1848,6 +1867,136 @@
         renderCart();
         renderProducts();
         toast('Agregado: ' + r.name);
+    }
+
+    /** Línea promo: precio override (default $0), línea aparte del mismo SKU a precio lista. */
+    function addPromoToCart(slug, qty, unitPriceOverride) {
+        const r = recipeBySlug(slug);
+        if (!r) return false;
+        const q = Math.floor(Number(qty));
+        if (!isFinite(q) || q < 1) return false;
+        let price = roundMoney(unitPriceOverride);
+        if (!isFinite(price) || price < 0) price = 0;
+        const existing = cart.filter(function (it) {
+            return it.product === slug && it.isPromo &&
+                Math.abs(Number(it.priceOverride) - price) < 0.005;
+        })[0];
+        if (existing) {
+            existing.qty += q;
+        } else {
+            cart.push({
+                product: r.product,
+                name: r.name,
+                code: r.code || '',
+                unit: unitFor(r),
+                price: price,
+                basePrice: unitPrice(r.product, cartQty() + q),
+                priceOverride: price,
+                priceOverridePct: null,
+                isPromo: true,
+                qty: q
+            });
+        }
+        applyCartTierPrices();
+        renderCart();
+        renderProducts();
+        toast('Promo: ' + r.name + (price === 0 ? ' · $0' : ' · ' + money(price)));
+        return true;
+    }
+
+    let promoPickSlug = null;
+
+    function promoCatalogList(query) {
+        const q = String(query || '').trim().toLowerCase();
+        return getRecipes().filter(function (r) {
+            if (!q) return true;
+            const fam = recipeFamily(r);
+            return [r.name, r.code, fam, r.product].some(function (v) {
+                return String(v || '').toLowerCase().includes(q);
+            });
+        }).slice(0, 40);
+    }
+
+    function syncPromoSelectedUi() {
+        const el = document.getElementById('posPromoSelected');
+        const btn = document.getElementById('posPromoConfirm');
+        const r = promoPickSlug ? recipeBySlug(promoPickSlug) : null;
+        if (el) {
+            if (r) {
+                el.hidden = false;
+                el.textContent = r.name + (r.code ? ' · ' + r.code : '');
+            } else {
+                el.hidden = true;
+                el.textContent = 'Sin producto seleccionado';
+            }
+        }
+        if (btn) btn.disabled = !r;
+    }
+
+    function renderPromoPickList() {
+        const host = document.getElementById('posPromoPickList');
+        if (!host) return;
+        const searchEl = document.getElementById('posPromoSearch');
+        const list = promoCatalogList(searchEl ? searchEl.value : '');
+        if (!list.length) {
+            host.innerHTML = '<div class="empty" style="padding:12px">Sin productos</div>';
+            return;
+        }
+        host.innerHTML = list.map(function (r) {
+            const active = r.product === promoPickSlug ? ' active' : '';
+            const stock = finishedQty(r.product);
+            return '<button type="button" class="promo-pick-item' + active + '" role="option" ' +
+                'aria-selected="' + (r.product === promoPickSlug ? 'true' : 'false') + '" ' +
+                'data-promo-pick="' + esc(r.product) + '">' +
+                '<span><span class="pname">' + esc(r.name) + '</span>' +
+                '<div class="pmeta">' + esc(r.code || r.product) + ' · stock ' + stock + '</div></span>' +
+                '<span class="pmeta">' + money(baseUnitPrice(r.product)) + '</span>' +
+                '</button>';
+        }).join('');
+    }
+
+    function openPromoModal() {
+        promoPickSlug = null;
+        const modal = document.getElementById('posPromoModal');
+        const searchEl = document.getElementById('posPromoSearch');
+        const qtyEl = document.getElementById('posPromoQty');
+        const priceEl = document.getElementById('posPromoPrice');
+        if (searchEl) searchEl.value = '';
+        if (qtyEl) qtyEl.value = '1';
+        if (priceEl) priceEl.value = '0';
+        syncPromoSelectedUi();
+        renderPromoPickList();
+        if (!modal) return;
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        requestAnimationFrame(function () {
+            if (searchEl) searchEl.focus();
+        });
+    }
+
+    function closePromoModal() {
+        const modal = document.getElementById('posPromoModal');
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+        promoPickSlug = null;
+    }
+
+    function submitPromoForm(e) {
+        if (e) e.preventDefault();
+        if (!promoPickSlug) {
+            toast('Elige un producto');
+            return;
+        }
+        const qtyEl = document.getElementById('posPromoQty');
+        const priceEl = document.getElementById('posPromoPrice');
+        const qty = qtyEl ? Number(qtyEl.value) : 1;
+        const price = priceEl ? Number(priceEl.value) : 0;
+        if (!addPromoToCart(promoPickSlug, qty, price)) {
+            toast('Revisa cantidad y precio');
+            return;
+        }
+        closePromoModal();
     }
 
     function nextFolio() {
@@ -1909,6 +2058,7 @@
                     row.priceOverride = it.priceOverride;
                     row.priceOverridePct = it.priceOverridePct;
                 }
+                if (it.isPromo) row.isPromo = true;
                 return row;
             }),
             total: cartTotal(),
@@ -2372,6 +2522,40 @@
         }
         const checkoutBtn = document.getElementById('posCheckoutBtn');
         if (checkoutBtn) checkoutBtn.addEventListener('click', checkout);
+
+        function wirePromoOpen(el) {
+            if (el) el.addEventListener('click', openPromoModal);
+        }
+        wirePromoOpen(document.getElementById('posPromoBtn'));
+        wirePromoOpen(document.getElementById('posPromoCartBtn'));
+        const promoClose = document.getElementById('posPromoModalClose');
+        if (promoClose) promoClose.addEventListener('click', closePromoModal);
+        const promoCancel = document.getElementById('posPromoCancel');
+        if (promoCancel) promoCancel.addEventListener('click', closePromoModal);
+        const promoModal = document.getElementById('posPromoModal');
+        if (promoModal) {
+            promoModal.addEventListener('click', function (e) {
+                if (e.target === promoModal) closePromoModal();
+            });
+        }
+        const promoSearch = document.getElementById('posPromoSearch');
+        if (promoSearch) {
+            promoSearch.addEventListener('input', function () {
+                renderPromoPickList();
+            });
+        }
+        const promoList = document.getElementById('posPromoPickList');
+        if (promoList) {
+            promoList.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-promo-pick]');
+                if (!btn) return;
+                promoPickSlug = btn.getAttribute('data-promo-pick');
+                syncPromoSelectedUi();
+                renderPromoPickList();
+            });
+        }
+        const promoForm = document.getElementById('posPromoForm');
+        if (promoForm) promoForm.addEventListener('submit', submitPromoForm);
 
         const histSearch = document.getElementById('posHistorySearch');
         if (histSearch) histSearch.addEventListener('input', renderHistory);
