@@ -3209,6 +3209,10 @@
         } else if (id === 'formulas') {
             id = 'products';
             tab = 'formula';
+        } else if (id === 'site') {
+            id = 'dashboard';
+            recipe = null;
+            tab = null;
         } else if (id === 'products' && recipe && !tab) {
             tab = null;
         }
@@ -3238,6 +3242,8 @@
         } else if (id === 'formulas') {
             id = 'products';
             legacyTab = legacyTab || 'formula';
+        } else if (id === 'site') {
+            id = 'dashboard';
         }
         if (SECTION_IDS.indexOf(id) < 0) id = 'dashboard';
         if (!canAccess(id)) {
