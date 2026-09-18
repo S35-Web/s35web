@@ -4742,6 +4742,8 @@
                 minStock: minStock,
                 buffer: buffer,
                 ok: !!mat && have >= need,
+                // Alerta en etiqueta kg: rojo si falta inventario; naranja si toca el margen (inv − mín)
+                alert: !mat ? 'danger' : (need > have ? 'danger' : (need > buffer ? 'warning' : null)),
                 missing: !mat
             };
         });
@@ -4813,11 +4815,15 @@
                 ' · margen hasta mín.: ' + esc(fmtQty(row.buffer)) + ' ' + esc(row.unit) +
                 ' (mín. ' + esc(fmtQty(row.minStock)) + ')';
             if (row.missing) tip += ' · sin MP en planta';
-            else if (row.need >= row.buffer) tip += ' · toca/cruza mínimo';
-            if (!row.missing && !row.ok) tip += ' · insuficiente';
+            else if (row.alert === 'danger') tip += ' · insuficiente';
+            else if (row.alert === 'warning') tip += ' · toca margen (precaución)';
             const sp = stockPts[i];
             const bp = bufferPts[i];
             const np = needPts[i];
+            const alertFill = row.alert === 'danger' ? 'var(--danger)'
+                : (row.alert === 'warning' ? 'var(--warning)' : 'var(--prod-line-need)');
+            const labelFill = row.alert === 'danger' ? 'var(--danger)'
+                : (row.alert === 'warning' ? 'var(--warning)' : 'var(--text)');
             marks +=
                 '<circle cx="' + bp.x.toFixed(1) + '" cy="' + bp.y.toFixed(1) +
                 '" r="2.2" fill="var(--prod-line-min)" stroke="var(--panel)" stroke-width="1">' +
@@ -4826,11 +4832,11 @@
                 '" r="2.6" fill="var(--prod-line-stock)" stroke="var(--panel)" stroke-width="1">' +
                 '<title>' + tip + '</title></circle>' +
                 '<circle cx="' + np.x.toFixed(1) + '" cy="' + np.y.toFixed(1) +
-                '" r="3.4" fill="' + (row.ok ? 'var(--prod-line-need)' : 'var(--danger)') +
+                '" r="3.4" fill="' + alertFill +
                 '" stroke="var(--panel)" stroke-width="1.5">' +
                 '<title>' + tip + '</title></circle>' +
                 '<text class="y-label" x="' + np.x.toFixed(1) + '" y="' + (np.y - 8).toFixed(1) +
-                '" text-anchor="middle" style="fill:' + (row.ok ? 'var(--text)' : 'var(--danger)') +
+                '" text-anchor="middle" style="fill:' + labelFill +
                 ';font-size:9px">' + esc(fmtQty(row.need)) + '</text>';
         });
         host.innerHTML =
@@ -4843,12 +4849,12 @@
             marks + xLabels +
             '</svg>';
         if (subEl) {
-            const shortCount = rows.filter(function (row) { return !row.ok; }).length;
-            const atMinCount = rows.filter(function (row) { return !row.missing && row.need >= row.buffer; }).length;
+            const shortCount = rows.filter(function (row) { return row.alert === 'danger'; }).length;
+            const atMinCount = rows.filter(function (row) { return row.alert === 'warning'; }).length;
             subEl.textContent = (active ? active.name + (active.label ? ' — ' + active.label : '') : 'Versión') +
                 ' · margen = inventario − mínimo' +
                 (lots > 1 ? ' · vs ×' + lots + ' lotes' : ' · vs 1 lote') +
-                (atMinCount ? ' · ' + atMinCount + ' tocan mínimo' : '') +
+                (atMinCount ? ' · ' + atMinCount + ' precaución' : '') +
                 (shortCount ? ' · ' + shortCount + ' con falta' : '');
         }
     }
