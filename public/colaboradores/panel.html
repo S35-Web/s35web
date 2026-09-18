@@ -1636,6 +1636,21 @@
             height: 0;
             width: 14px;
         }
+        .prod-formula-chart-legend .swatch.stock {
+            background: #c4c4c4;
+        }
+        .prod-formula-chart-legend .swatch.min {
+            background: #e8a5a5;
+        }
+        .prod-formula-chart-legend .swatch.need {
+            background: var(--text);
+        }
+        [data-theme="dark"] .prod-formula-chart-legend .swatch.stock {
+            background: #525252;
+        }
+        [data-theme="dark"] .prod-formula-chart-legend .swatch.min {
+            background: #c47a7a;
+        }
         .cortes-chart {
             width: 100%;
             position: relative;
@@ -1686,17 +1701,50 @@
         }
         .prod-formula-chart {
             position: relative;
-            min-height: 240px;
+            min-height: 260px;
             width: 100%;
+            --prod-line-need: var(--text);
+            --prod-line-stock: #c4c4c4;
+            --prod-line-min: #e8a5a5;
+        }
+        [data-theme="dark"] .prod-formula-chart {
+            --prod-line-stock: #525252;
+            --prod-line-min: #c47a7a;
         }
         .prod-formula-chart svg {
             width: 100%;
             height: auto;
-            aspect-ratio: 960 / 260;
+            aspect-ratio: 960 / 280;
             display: block;
         }
         .prod-formula-chart .axis-label {
-            font-size: 9px;
+            font-size: 8px;
+            fill: var(--muted);
+        }
+        .prod-formula-chart .line-stock {
+            fill: none;
+            stroke: var(--prod-line-stock);
+            stroke-width: 1.5;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+        .prod-formula-chart .line-min {
+            fill: none;
+            stroke: var(--prod-line-min);
+            stroke-width: 1.35;
+            stroke-dasharray: 3.5 2.5;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+        .prod-formula-chart .line-need {
+            fill: none;
+            stroke: var(--prod-line-need);
+            stroke-width: 1.85;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+        .prod-formula-chart .area-hatch {
+            opacity: 0.45;
         }
         .cortes-chart-empty {
             position: absolute;
@@ -2119,9 +2167,10 @@
                                     <h3 style="margin:0">Inventario de materia prima</h3>
                                     <div class="panel-sub" id="prodFormulaChartSub">Ingredientes · kg en inventario</div>
                                 </div>
-                                <div class="cortes-chart-legend" aria-hidden="true">
-                                    <span class="leg"><span class="swatch"></span> En inventario</span>
-                                    <span class="leg"><span class="swatch prev"></span> Requerido (lote)</span>
+                                <div class="cortes-chart-legend prod-formula-chart-legend" aria-hidden="true">
+                                    <span class="leg"><span class="swatch need"></span> Requerido (lote)</span>
+                                    <span class="leg"><span class="swatch stock"></span> En inventario</span>
+                                    <span class="leg"><span class="swatch min"></span> Mínimo</span>
                                 </div>
                             </div>
                             <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Gráfica de inventario de materia prima por ingrediente"></div>
@@ -4544,12 +4593,35 @@
         // Solo KPI de dashboard; la tabla de PT salió de Producción (gráfica de composición).
         updateDashExtras();
     }
-    function shortIngLabel(name) {
-        const s = String(name || '').trim();
-        if (!s) return '—';
-        const parts = s.split(/\s+/);
-        if (parts[0].length <= 10) return parts[0];
-        return parts[0].slice(0, 9) + '…';
+    function wrapIngLabel(name) {
+        const s = String(name || '').trim().replace(/\s+/g, ' ');
+        if (!s) return ['—'];
+        const parts = s.split(' ');
+        if (parts.length === 1) return [parts[0]];
+        if (parts.length === 2) {
+            return [
+                parts[0],
+                parts[1].charAt(0).toLocaleUpperCase('es') + parts[1].slice(1)
+            ];
+        }
+        // Equilibra ~2 líneas (ej. "Marmolina en" / "talco malla 100")
+        let best = 1;
+        let bestDiff = Infinity;
+        for (let i = 1; i < parts.length; i++) {
+            const a = parts.slice(0, i).join(' ');
+            const b = parts.slice(i).join(' ');
+            const diff = Math.abs(a.length - b.length);
+            // Prefiere no dejar una sola palabra muy corta en la 2ª si hay opción
+            const score = diff + (b.length < 4 ? 4 : 0) + (a.length > 18 ? 3 : 0);
+            if (score < bestDiff) {
+                bestDiff = score;
+                best = i;
+            }
+        }
+        const line1 = parts.slice(0, best).join(' ');
+        let line2 = parts.slice(best).join(' ');
+        if (line2) line2 = line2.charAt(0).toLocaleUpperCase('es') + line2.slice(1);
+        return [line1, line2];
     }
     function formulaVersionItems(f, versionId) {
         if (!f) return [];
@@ -4656,28 +4728,30 @@
             const unit = (it && it.unit) || (mat && mat.unit) || 'Kg';
             const need = (Number(it && it.amount) || 0) * lots;
             const have = mat ? Number(mat.stock) || 0 : 0;
-            const fullName = mat ? displayName(mat) : id;
+            const min = mat ? Number(mat.minStock) || 0 : 0;
+            const fullName = mat ? (mat.name || id) : id;
             return {
                 plantId: id,
-                label: shortIngLabel(fullName),
+                labelLines: wrapIngLabel(fullName),
                 fullName: fullName,
                 unit: unit,
                 need: need,
                 have: have,
+                min: min,
                 ok: !!mat && have >= need,
                 missing: !mat
             };
         });
-        const labels = rows.map(function (row) { return row.label; });
         const stockVals = rows.map(function (row) { return row.have; });
         const needVals = rows.map(function (row) { return row.need; });
-        const yMax = Math.max(1, Math.max.apply(null, stockVals.concat(needVals)) * 1.15);
+        const minVals = rows.map(function (row) { return row.min; });
+        const yMax = Math.max(1, Math.max.apply(null, stockVals.concat(needVals, minVals)) * 1.15);
         const W = 960;
-        const H = 260;
+        const H = 280;
         const padL = 48;
         const padR = 16;
         const padT = 28;
-        const padB = 40;
+        const padB = 54;
         const baseY = H - padB;
         const n = rows.length;
         function ptX(i) {
@@ -4692,8 +4766,10 @@
         }
         const stockPts = ptsFrom(stockVals);
         const needPts = ptsFrom(needVals);
+        const minPts = ptsFrom(minVals);
         const stockLine = buildMonotonePath(stockPts, baseY);
         const needLine = buildMonotonePath(needPts, baseY);
+        const minLine = buildMonotonePath(minPts, baseY);
         const areaPath = stockLine +
             ' L' + ptX(n - 1).toFixed(1) + ' ' + baseY.toFixed(1) +
             ' L' + ptX(0).toFixed(1) + ' ' + baseY.toFixed(1) + ' Z';
@@ -4706,49 +4782,59 @@
             yLabels += '<text class="y-label" x="' + (padL - 6) + '" y="' + (y + 3) + '" text-anchor="end">' + lab + '</text>';
         });
         let xLabels = '';
-        labels.forEach(function (lab, i) {
-            xLabels += '<text class="axis-label" x="' + ptX(i).toFixed(1) + '" y="' + (H - 10) +
-                '" text-anchor="middle">' + esc(lab) + '</text>';
+        rows.forEach(function (row, i) {
+            const x = ptX(i).toFixed(1);
+            const lines = row.labelLines;
+            let tspans = '';
+            lines.forEach(function (ln, li) {
+                const dy = li === 0 ? 0 : 9;
+                tspans += '<tspan x="' + x + '" dy="' + dy + '">' + esc(ln) + '</tspan>';
+            });
+            xLabels += '<text class="axis-label" x="' + x + '" y="' + (H - 32) +
+                '" text-anchor="middle">' + tspans + '</text>';
         });
         const hatchId = 'prodHatch';
         const defs =
             '<defs>' +
             '<pattern id="' + hatchId + '" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">' +
-            '<line x1="0" y1="0" x2="0" y2="7" stroke="currentColor" stroke-width="1" opacity="0.35"/>' +
+            '<line x1="0" y1="0" x2="0" y2="7" stroke="var(--prod-line-stock)" stroke-width="1" opacity="0.4"/>' +
             '</pattern>' +
             '</defs>';
-        // Etiquetas de inventario encima de cada punto (serie principal)
-        let valueLabels = '';
-        stockPts.forEach(function (p, i) {
-            const row = rows[i];
+        // Puntos + tooltips (requerido = serie principal)
+        let marks = '';
+        rows.forEach(function (row, i) {
             const tip =
                 esc(row.fullName) +
-                ' — inventario: ' + esc(fmtQty(row.have)) + ' ' + esc(row.unit) +
-                ' · requiere: ' + esc(fmtQty(row.need)) + ' ' + esc(row.unit) +
+                ' — requiere: ' + esc(fmtQty(row.need)) + ' ' + esc(row.unit) +
+                ' · inventario: ' + esc(fmtQty(row.have)) + ' ' + esc(row.unit) +
+                ' · mínimo: ' + esc(fmtQty(row.min)) + ' ' + esc(row.unit) +
                 (row.missing ? ' · sin MP en planta' : (row.ok ? '' : ' · insuficiente'));
-            const fill = row.ok ? 'var(--primary)' : 'var(--danger)';
-            valueLabels +=
-                '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) +
-                '" r="3.4" fill="' + fill + '" stroke="var(--panel)" stroke-width="1.5">' +
+            const sp = stockPts[i];
+            const mp = minPts[i];
+            const np = needPts[i];
+            marks +=
+                '<circle cx="' + mp.x.toFixed(1) + '" cy="' + mp.y.toFixed(1) +
+                '" r="2.2" fill="var(--prod-line-min)" stroke="var(--panel)" stroke-width="1">' +
                 '<title>' + tip + '</title></circle>' +
-                '<text class="y-label" x="' + p.x.toFixed(1) + '" y="' + (p.y - 8).toFixed(1) +
+                '<circle cx="' + sp.x.toFixed(1) + '" cy="' + sp.y.toFixed(1) +
+                '" r="2.6" fill="var(--prod-line-stock)" stroke="var(--panel)" stroke-width="1">' +
+                '<title>' + tip + '</title></circle>' +
+                '<circle cx="' + np.x.toFixed(1) + '" cy="' + np.y.toFixed(1) +
+                '" r="3.4" fill="' + (row.ok ? 'var(--prod-line-need)' : 'var(--danger)') +
+                '" stroke="var(--panel)" stroke-width="1.5">' +
+                '<title>' + tip + '</title></circle>' +
+                '<text class="y-label" x="' + np.x.toFixed(1) + '" y="' + (np.y - 8).toFixed(1) +
                 '" text-anchor="middle" style="fill:' + (row.ok ? 'var(--text)' : 'var(--danger)') +
-                ';font-size:9px">' + esc(fmtQty(row.have)) + '</text>';
+                ';font-size:9px">' + esc(fmtQty(row.need)) + '</text>';
         });
-        const needDots = needPts.map(function (p, i) {
-            const row = rows[i];
-            return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) +
-                '" r="2.4" fill="none" stroke="#a3a3a3" stroke-width="1.25">' +
-                '<title>' + esc(row.fullName) + ' — requiere: ' + esc(fmtQty(row.need)) +
-                ' ' + esc(row.unit) + '</title></circle>';
-        }).join('');
         host.innerHTML =
             '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
             defs + grid + yLabels +
             '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + hatchId + ')"/>' +
-            '<path class="line-prev" d="' + needLine + '" fill="none"/>' +
-            '<path class="line-cur" d="' + stockLine + '" fill="none"/>' +
-            needDots + valueLabels + xLabels +
+            '<path class="line-min" d="' + minLine + '"/>' +
+            '<path class="line-stock" d="' + stockLine + '"/>' +
+            '<path class="line-need" d="' + needLine + '"/>' +
+            marks + xLabels +
             '</svg>';
         if (subEl) {
             const shortCount = rows.filter(function (row) { return !row.ok; }).length;
