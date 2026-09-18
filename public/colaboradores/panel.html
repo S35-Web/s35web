@@ -2221,6 +2221,21 @@
             color: var(--text);
             font-weight: 500;
         }
+        .pd-family-edit {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pd-family-edit select {
+            font: inherit;
+            font-size: 13px;
+            color: var(--text);
+            background: var(--surface, #fff);
+            border: 1px solid var(--border, #ddd);
+            border-radius: 6px;
+            padding: 2px 8px;
+            max-width: 220px;
+        }
         .pd-id-link {
             display: inline-flex;
             align-items: center;
@@ -3012,6 +3027,7 @@
                         <div>
                             <div class="toolbar">
                                 <input id="posProductSearch" class="search" type="search" placeholder="Buscar por nombre, código o familia">
+                                <button type="button" class="btn" id="posFamiliesBtn"><i class="fa-solid fa-tags"></i> Familias</button>
                             </div>
                             <div class="chips" id="posFamilyChips"></div>
                             <div class="product-grid" id="posProductGrid"></div>
@@ -3212,6 +3228,7 @@
                         <div class="card">
                             <div class="toolbar">
                                 <input id="productsSearch" class="search" type="search" placeholder="Buscar nombre, código o familia">
+                                <button type="button" class="btn" id="productsFamiliesBtn"><i class="fa-solid fa-tags"></i> Familias</button>
                                 <button type="button" class="btn" id="productsResetPricesBtn">Restablecer defaults</button>
                             </div>
                             <div class="chips" id="productsFamilyChips"></div>
@@ -3473,6 +3490,30 @@
                     </table>
                 </div>
                 <p class="muted" style="margin:10px 0 0;font-size:12px">El ojo oculta la familia en el ticket de planta (bloque «Química»). Al quitar una familia con materiales, se mueven a Sin familia.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="productFamiliesModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="productFamiliesModalTitle" style="max-width:440px">
+            <div class="modal-head">
+                <strong id="productFamiliesModalTitle">Familias de producto</strong>
+                <button id="productFamiliesModalClose" class="btn" type="button">Cerrar</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid" style="grid-template-columns:1fr auto;align-items:end">
+                    <label>Nueva familia
+                        <input id="productFamilyNameInput" type="text" autocomplete="off" placeholder="Ej. Sistemas especiales" maxlength="48">
+                    </label>
+                    <button type="button" class="btn primary" id="productFamilyAddBtn"><i class="fa-solid fa-plus"></i> Agregar</button>
+                </div>
+                <div class="table-card" style="margin-top:12px">
+                    <table>
+                        <thead><tr><th>Nombre</th><th></th></tr></thead>
+                        <tbody id="productFamiliesBody"></tbody>
+                    </table>
+                </div>
+                <p class="muted" style="margin:10px 0 0;font-size:12px">El chip «Todas» es fijo. Al quitar una familia con productos, se mueven a Sin familia.</p>
             </div>
         </div>
     </div>
@@ -5237,6 +5278,24 @@
 
     /* —— Hub Productos —— */
     let productsFamilyFilter = 'all';
+    const PRODUCT_UNCATEGORIZED_ID = 'none';
+    const PRODUCT_UNCATEGORIZED_LABEL = 'Sin familia';
+
+    function hubEffectiveFamily(slug, fallback) {
+        if (window.S35PosModule && window.S35PosModule.getEffectiveFamily) {
+            return window.S35PosModule.getEffectiveFamily(slug, fallback);
+        }
+        return String(fallback || '').trim();
+    }
+
+    function hubManagedFamilies() {
+        if (window.S35PosModule && window.S35PosModule.getProductFamilies) {
+            return window.S35PosModule.getProductFamilies().map(function (f) { return f.label; });
+        }
+        const set = {};
+        hubCatalog().forEach(function (p) { if (p.family) set[p.family] = true; });
+        return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, 'es'); });
+    }
 
     function hubCatalog() {
         const bySlug = {};
@@ -5248,7 +5307,7 @@
                 slug: p.slug,
                 name: p.name,
                 code: p.code || '',
-                family: p.family || '',
+                family: hubEffectiveFamily(p.slug, p.family || ''),
                 status: p.status || '',
                 line: p.line || '',
                 packaging: p.packaging || '',
@@ -5264,12 +5323,13 @@
             };
         });
         recipes.forEach(function (r) {
+            const fam = hubEffectiveFamily(r.product, r.family || '');
             if (!bySlug[r.product]) {
                 bySlug[r.product] = {
                     slug: r.product,
                     name: r.name,
                     code: r.code || '',
-                    family: r.family || '',
+                    family: fam,
                     status: '',
                     line: '',
                     packaging: '',
@@ -5286,7 +5346,7 @@
             } else {
                 bySlug[r.product].hasRecipe = true;
                 if (!bySlug[r.product].code && r.code) bySlug[r.product].code = r.code;
-                if (!bySlug[r.product].family && r.family) bySlug[r.product].family = r.family;
+                bySlug[r.product].family = hubEffectiveFamily(r.product, bySlug[r.product].family || r.family || '');
                 if (!bySlug[r.product].image && r.image) bySlug[r.product].image = r.image;
                 if (!bySlug[r.product].imageAlt && r.imageAlt) bySlug[r.product].imageAlt = r.imageAlt;
             }
@@ -5298,7 +5358,7 @@
                     slug: slug,
                     name: pres.listName || slug,
                     code: pres.code || '',
-                    family: pres.category || '',
+                    family: hubEffectiveFamily(slug, pres.category || ''),
                     status: '',
                     line: '',
                     packaging: '',
@@ -5321,12 +5381,6 @@
         });
     }
 
-    function hubFamilies() {
-        const set = {};
-        hubCatalog().forEach(function (p) { if (p.family) set[p.family] = true; });
-        return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, 'es'); });
-    }
-
     function familyDotHtml(family) {
         if (window.S35PosModule && window.S35PosModule.familyDot) return window.S35PosModule.familyDot(family);
         return '';
@@ -5335,19 +5389,26 @@
     function renderProductHubChips() {
         const chips = document.getElementById('productsFamilyChips');
         if (!chips) return;
-        const list = ['all'].concat(hubFamilies());
+        const list = ['all'].concat(hubManagedFamilies());
+        const hasNone = hubCatalog().some(function (p) { return !p.family; });
+        if (hasNone) list.push(PRODUCT_UNCATEGORIZED_ID);
         chips.innerHTML = list.map(function (f) {
-            const label = f === 'all' ? 'Todas' : f;
+            const label = f === 'all'
+                ? 'Todas'
+                : (f === PRODUCT_UNCATEGORIZED_ID ? PRODUCT_UNCATEGORIZED_LABEL : f);
             return '<button type="button" class="chip' + (f === productsFamilyFilter ? ' active' : '') + '" data-fam="' + esc(f) + '">' +
                 familyDotHtml(f) + esc(label) + '</button>';
-        }).join('');
+        }).join('') +
+            '<button type="button" class="chip" id="productsFamilyChipAdd" data-manage-product-families="1" title="Gestionar familias" aria-label="Gestionar familias"><i class="fa-solid fa-plus"></i></button>';
     }
 
     function filteredHubProducts() {
         const q = ((document.getElementById('productsSearch') || {}).value || '').toLowerCase().trim();
         return hubCatalog().filter(function (p) {
-            const famOk = productsFamilyFilter === 'all' || p.family === productsFamilyFilter;
-            const qOk = !q || [p.name, p.code, p.family, p.slug].some(function (v) {
+            const fam = p.family || '';
+            const famOk = productsFamilyFilter === 'all'
+                || (productsFamilyFilter === PRODUCT_UNCATEGORIZED_ID ? !fam : fam === productsFamilyFilter);
+            const qOk = !q || [p.name, p.code, fam, p.slug].some(function (v) {
                 return String(v || '').toLowerCase().includes(q);
             });
             return famOk && qOk;
@@ -5370,7 +5431,7 @@
             return '<tr data-open-product="' + esc(p.slug) + '">' +
                 '<td class="muted">' + esc(p.code || '—') + '</td>' +
                 '<td>' + (p.family ? '<span class="fam">' + familyDotHtml(p.family) + '</span> ' : '') + esc(p.name) + '</td>' +
-                '<td class="muted">' + esc(p.family || '—') + '</td>' +
+                '<td class="muted">' + esc(p.family || PRODUCT_UNCATEGORIZED_LABEL) + '</td>' +
                 '<td class="muted">' + esc(presLabels) + '</td>' +
                 '<td>' + recipeBadge + '</td>' +
                 '<td><button type="button" class="btn ghost" data-open-product="' + esc(p.slug) + '">Abrir</button></td></tr>';
@@ -5434,7 +5495,7 @@
         document.getElementById('pdName').textContent = item.name;
         document.getElementById('pdMeta').innerHTML =
             '<span>' + esc(item.code || 'Sin código FT') + '</span>' +
-            '<span>' + esc(item.family || 'Sin familia') + '</span>' +
+            '<span>' + esc(item.family || PRODUCT_UNCATEGORIZED_LABEL) + '</span>' +
             (item.hasFicha ? '<span class="badge b-success">Ficha</span>' : '<span class="badge">Sin ficha</span>');
 
         const pub = document.getElementById('pdPublicLink');
@@ -5466,11 +5527,17 @@
             ? '<img src="' + esc(item.image) + '" alt="' + esc(item.imageAlt || item.name) + '" loading="lazy">'
             : '<div class="pd-thumb-fallback">—</div>';
 
+        const familySelectOpts = (window.S35PosModule && window.S35PosModule.productFamilySelectHtml)
+            ? window.S35PosModule.productFamilySelectHtml(item.family)
+            : ('<option value="">' + esc(PRODUCT_UNCATEGORIZED_LABEL) + '</option>' +
+                (item.family ? '<option value="' + esc(item.family) + '" selected>' + esc(item.family) + '</option>' : ''));
+
         const metaBits = [];
         metaBits.push('<span>Código <strong>' + esc(item.code || '—') + '</strong></span>');
-        if (item.family) {
-            metaBits.push('<span>Familia <strong>' + familyDotHtml(item.family) + esc(item.family) + '</strong></span>');
-        }
+        metaBits.push(
+            '<span class="pd-family-edit">Familia ' +
+            '<select id="pdFamilySelect" aria-label="Familia del producto">' + familySelectOpts + '</select></span>'
+        );
         if (primaryLabel) {
             metaBits.push('<span>Presentación <strong>' + esc(primaryLabel) + '</strong></span>');
         }
@@ -5533,7 +5600,11 @@
         const chips = document.getElementById('productsFamilyChips');
         if (chips) {
             chips.addEventListener('click', function (e) {
-                const btn = e.target.closest('.chip');
+                if (e.target.closest('[data-manage-product-families]')) {
+                    openProductFamiliesModal();
+                    return;
+                }
+                const btn = e.target.closest('.chip[data-fam]');
                 if (!btn) return;
                 productsFamilyFilter = btn.getAttribute('data-fam') || 'all';
                 renderProductHubChips();
@@ -5548,6 +5619,21 @@
                 const row = e.target.closest('[data-open-product]');
                 if (!row) return;
                 openProductHub(row.getAttribute('data-open-product'));
+            });
+        }
+        const summaryMount = document.getElementById('pdSummaryMount');
+        if (summaryMount) {
+            summaryMount.addEventListener('change', function (e) {
+                const sel = e.target.closest('#pdFamilySelect');
+                if (!sel || !hubProductSlug || !window.S35PosModule || !window.S35PosModule.setProductFamily) return;
+                const next = sel.value || '';
+                if (!window.S35PosModule.setProductFamily(hubProductSlug, next)) {
+                    panelToast('No se pudo actualizar la familia');
+                    return;
+                }
+                if (window.S35PosModule.refreshProductFamilyUi) window.S35PosModule.refreshProductFamilyUi();
+                panelToast(next ? ('Familia: ' + next) : PRODUCT_UNCATEGORIZED_LABEL);
+                openProductHub(hubProductSlug, { skipHash: true, tab: hubProductTab });
             });
         }
         const back = document.getElementById('productsBackBtn');
@@ -5588,7 +5674,112 @@
                 if (hubProductSlug && hubProductTab === 'precios') renderProductPricesTab();
             });
         }
+        const productsFamiliesBtn = document.getElementById('productsFamiliesBtn');
+        if (productsFamiliesBtn) productsFamiliesBtn.addEventListener('click', openProductFamiliesModal);
+        const posFamiliesBtn = document.getElementById('posFamiliesBtn');
+        if (posFamiliesBtn) posFamiliesBtn.addEventListener('click', openProductFamiliesModal);
     }
+
+    function renderProductFamiliesList() {
+        const body = document.getElementById('productFamiliesBody');
+        if (!body || !window.S35PosModule || !window.S35PosModule.getProductFamilies) return;
+        const list = window.S35PosModule.getProductFamilies();
+        body.innerHTML = list.map(function (f) {
+            const using = window.S35PosModule.productsUsingFamily
+                ? window.S35PosModule.productsUsingFamily(f.label)
+                : [];
+            const count = using.length;
+            return '<tr data-prod-fam="' + esc(f.id) + '">' +
+                '<td>' + familyDotHtml(f.label) + ' ' + esc(f.label) +
+                (count ? '<div class="muted" style="font-size:12px">' + count + ' producto' + (count === 1 ? '' : 's') + '</div>' : '') +
+                '</td>' +
+                '<td><div class="row-actions">' +
+                '<button type="button" class="icon-action danger" data-del-prod-fam="' + esc(f.id) +
+                '" title="Quitar familia" aria-label="Quitar familia"><i class="fa-solid fa-trash-can"></i></button>' +
+                '</div></td></tr>';
+        }).join('') || '<tr><td colspan="2" class="empty">Sin familias</td></tr>';
+    }
+
+    const productFamiliesModal = document.getElementById('productFamiliesModal');
+    function closeProductFamiliesModal() {
+        if (!productFamiliesModal) return;
+        productFamiliesModal.classList.remove('show');
+        productFamiliesModal.setAttribute('aria-hidden', 'true');
+    }
+    function openProductFamiliesModal() {
+        if (!productFamiliesModal) return;
+        const input = document.getElementById('productFamilyNameInput');
+        if (input) input.value = '';
+        renderProductFamiliesList();
+        productFamiliesModal.classList.add('show');
+        productFamiliesModal.setAttribute('aria-hidden', 'false');
+        if (input) input.focus();
+    }
+    function addProductFamilyFromUi() {
+        if (!window.S35PosModule || !window.S35PosModule.addProductFamily) return;
+        const input = document.getElementById('productFamilyNameInput');
+        const result = window.S35PosModule.addProductFamily(input ? input.value : '');
+        if (!result || !result.ok) {
+            if (result && result.error === 'duplicate') panelToast('Esa familia ya existe');
+            else if (result && result.error === 'reserved') panelToast('Nombre reservado');
+            else panelToast('Escribe un nombre de familia');
+            return;
+        }
+        if (input) input.value = '';
+        renderProductFamiliesList();
+        if (productsFamilyFilter !== 'all' && productsFamilyFilter !== PRODUCT_UNCATEGORIZED_ID) {
+            /* keep filter */
+        }
+        renderProductHubChips();
+        renderProductHubList();
+        if (hubProductSlug) openProductHub(hubProductSlug, { skipHash: true, tab: hubProductTab });
+        panelToast('Familia «' + result.item.label + '» agregada');
+    }
+    function removeProductFamilyFromUi(id) {
+        if (!window.S35PosModule || !window.S35PosModule.removeProductFamily) return;
+        const fams = window.S35PosModule.getProductFamilies
+            ? window.S35PosModule.getProductFamilies()
+            : [];
+        const fam = fams.filter(function (f) { return f.id === id || f.label === id; })[0];
+        if (!fam) return;
+        const using = window.S35PosModule.productsUsingFamily
+            ? window.S35PosModule.productsUsingFamily(fam.label)
+            : [];
+        if (using.length) {
+            if (!confirm('Hay ' + using.length + ' producto' + (using.length === 1 ? '' : 's') +
+                ' en «' + fam.label + '». Se moverán a «' + PRODUCT_UNCATEGORIZED_LABEL +
+                '» y se eliminará la familia. ¿Continuar?')) {
+                return;
+            }
+        } else if (!confirm('¿Eliminar la familia «' + fam.label + '»?')) {
+            return;
+        }
+        const result = window.S35PosModule.removeProductFamily(id, { confirmed: true });
+        if (!result || !result.ok) return;
+        if (productsFamilyFilter === result.label) productsFamilyFilter = 'all';
+        renderProductFamiliesList();
+        renderProductHubChips();
+        renderProductHubList();
+        if (hubProductSlug) openProductHub(hubProductSlug, { skipHash: true, tab: hubProductTab });
+        panelToast('Familia «' + result.label + '» eliminada');
+    }
+
+    document.getElementById('productFamiliesModalClose').addEventListener('click', closeProductFamiliesModal);
+    productFamiliesModal.addEventListener('click', function (e) {
+        if (e.target === productFamiliesModal) closeProductFamiliesModal();
+    });
+    document.getElementById('productFamilyAddBtn').addEventListener('click', addProductFamilyFromUi);
+    document.getElementById('productFamilyNameInput').addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        addProductFamilyFromUi();
+    });
+    document.getElementById('productFamiliesBody').addEventListener('click', function (e) {
+        const del = e.target.closest('[data-del-prod-fam]');
+        if (!del) return;
+        removeProductFamilyFromUi(del.getAttribute('data-del-prod-fam'));
+    });
+    document.addEventListener('s35:open-product-families', openProductFamiliesModal);
 
     bindProductHub();
     renderRecipeNav();
@@ -7219,6 +7410,21 @@
             }
             if (hubProductSlug && window.S35PosModule && window.S35PosModule.renderProductSalesAnalytics) {
                 window.S35PosModule.renderProductSalesAnalytics(hubProductSlug);
+            }
+        },
+        onProductFamiliesChanged: function () {
+            if (productsFamilyFilter !== 'all' && productsFamilyFilter !== PRODUCT_UNCATEGORIZED_ID) {
+                const labels = hubManagedFamilies();
+                if (labels.indexOf(productsFamilyFilter) < 0) productsFamilyFilter = 'all';
+            }
+            if (typeof renderProductHubChips === 'function') renderProductHubChips();
+            if (typeof renderProductHubList === 'function') renderProductHubList();
+            if (typeof renderProductFamiliesList === 'function' &&
+                productFamiliesModal && productFamiliesModal.classList.contains('show')) {
+                renderProductFamiliesList();
+            }
+            if (hubProductSlug && typeof openProductHub === 'function') {
+                openProductHub(hubProductSlug, { skipHash: true, tab: hubProductTab });
             }
         },
         role: currentRole,

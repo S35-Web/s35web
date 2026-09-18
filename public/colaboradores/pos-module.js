@@ -36,12 +36,268 @@
         'Líquidos': '#c41626'
     };
     const FAMILY_COLOR_NEUTRAL = '#9a9a9a';
+    const PRODUCT_FAMILIES_KEY = 's35_product_families';
+    const PRODUCT_FAMILY_OVERRIDES_KEY = 's35_product_family_overrides';
+    const PRODUCT_UNCATEGORIZED_ID = 'none';
+    const PRODUCT_UNCATEGORIZED_LABEL = 'Sin familia';
+    const NEW_FAMILY_PALETTE = ['#1565c0', '#6a1b9a', '#00838f', '#ef6c00', '#2e7d32', '#ad1457', '#455a64'];
+
+    function slugifyProductFamily(label, existingIds) {
+        let base = String(label || 'familia').toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '') || 'familia';
+        if (base === 'all' || base === PRODUCT_UNCATEGORIZED_ID) base = 'familia-' + base;
+        let id = base;
+        let n = 2;
+        const taken = existingIds || {};
+        while (taken[id] || id === 'all' || id === PRODUCT_UNCATEGORIZED_ID) {
+            id = base + '-' + n;
+            n += 1;
+        }
+        return id;
+    }
+
+    function normalizeProductFamilyItem(f) {
+        const label = String((f && (f.label || f.name || f.id)) || '').trim().replace(/\s+/g, ' ');
+        if (!label || label === 'all' || label === PRODUCT_UNCATEGORIZED_ID ||
+            label.toLocaleLowerCase('es') === PRODUCT_UNCATEGORIZED_LABEL.toLocaleLowerCase('es')) {
+            return null;
+        }
+        const id = String((f && f.id) || '').trim() || slugifyProductFamily(label, {});
+        const color = String((f && f.color) || FAMILY_COLORS[label] || FAMILY_COLOR_NEUTRAL).trim() || FAMILY_COLOR_NEUTRAL;
+        return { id: id, label: label, color: color };
+    }
+
+    function catalogFamilyLabels() {
+        const set = {};
+        const data = window.S35_PANEL_DATA || {};
+        (data.recipes || []).forEach(function (r) {
+            const f = String((r && r.family) || '').trim();
+            if (f) set[f] = true;
+        });
+        (data.products || []).forEach(function (p) {
+            const f = String((p && p.family) || '').trim();
+            if (f) set[f] = true;
+        });
+        Object.keys(FAMILY_COLORS).forEach(function (f) { set[f] = true; });
+        return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, 'es'); });
+    }
+
+    function defaultProductFamilies() {
+        const takenIds = {};
+        const seenLabels = {};
+        return catalogFamilyLabels().map(function (label) {
+            const key = label.toLocaleLowerCase('es');
+            if (seenLabels[key]) return null;
+            seenLabels[key] = true;
+            const id = slugifyProductFamily(label, takenIds);
+            takenIds[id] = true;
+            return {
+                id: id,
+                label: label,
+                color: FAMILY_COLORS[label] || FAMILY_COLOR_NEUTRAL
+            };
+        }).filter(Boolean);
+    }
+
+    function loadProductFamilies() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(PRODUCT_FAMILIES_KEY) || 'null');
+            if (raw && Array.isArray(raw.items) && raw.items.length) {
+                const seen = {};
+                const list = [];
+                raw.items.forEach(function (f) {
+                    const item = normalizeProductFamilyItem(f);
+                    if (!item) return;
+                    const key = item.label.toLocaleLowerCase('es');
+                    if (seen[key] || seen[item.id]) return;
+                    seen[key] = true;
+                    seen[item.id] = true;
+                    list.push(item);
+                });
+                if (list.length) return list;
+            }
+        } catch (_) {}
+        return defaultProductFamilies();
+    }
+
+    function saveProductFamilies(list) {
+        localStorage.setItem(PRODUCT_FAMILIES_KEY, JSON.stringify({
+            items: list,
+            updatedAt: new Date().toISOString()
+        }));
+    }
+
+    function loadProductFamilyOverrides() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(PRODUCT_FAMILY_OVERRIDES_KEY) || 'null');
+            if (raw && raw.map && typeof raw.map === 'object') return raw.map;
+            if (raw && typeof raw === 'object' && !Array.isArray(raw)) return raw;
+        } catch (_) {}
+        return {};
+    }
+
+    function saveProductFamilyOverrides(map) {
+        localStorage.setItem(PRODUCT_FAMILY_OVERRIDES_KEY, JSON.stringify({
+            map: map,
+            updatedAt: new Date().toISOString()
+        }));
+    }
+
+    let productFamilies = loadProductFamilies();
+    let productFamilyOverrides = loadProductFamilyOverrides();
+    if (!localStorage.getItem(PRODUCT_FAMILIES_KEY)) saveProductFamilies(productFamilies);
+
+    function familyColor(family) {
+        if (!family || family === 'all' || family === PRODUCT_UNCATEGORIZED_ID) return FAMILY_COLOR_NEUTRAL;
+        for (let i = 0; i < productFamilies.length; i++) {
+            if (productFamilies[i].label === family) return productFamilies[i].color || FAMILY_COLOR_NEUTRAL;
+        }
+        return FAMILY_COLORS[family] || FAMILY_COLOR_NEUTRAL;
+    }
 
     function familyDot(family) {
-        const color = family === 'all'
-            ? FAMILY_COLOR_NEUTRAL
-            : (FAMILY_COLORS[family] || FAMILY_COLOR_NEUTRAL);
+        const color = familyColor(family);
         return '<span class="dot" style="background:' + esc(color) + '" aria-hidden="true"></span>';
+    }
+
+    function getEffectiveFamily(slug, fallback) {
+        const key = String(slug || '').trim();
+        if (key && Object.prototype.hasOwnProperty.call(productFamilyOverrides, key)) {
+            return String(productFamilyOverrides[key] || '').trim();
+        }
+        return String(fallback || '').trim();
+    }
+
+    function recipeFamily(r) {
+        if (!r) return '';
+        return getEffectiveFamily(r.product, r.family);
+    }
+
+    function setProductFamilyOverride(slug, familyLabel) {
+        const key = String(slug || '').trim();
+        if (!key) return false;
+        const next = String(familyLabel || '').trim();
+        if (next && !productFamilies.some(function (f) { return f.label === next; })) {
+            return false;
+        }
+        productFamilyOverrides[key] = next;
+        saveProductFamilyOverrides(productFamilyOverrides);
+        return true;
+    }
+
+    function productsUsingFamily(label) {
+        const want = String(label || '').trim();
+        const out = [];
+        const seen = {};
+        getRecipes().forEach(function (r) {
+            if (recipeFamily(r) !== want) return;
+            if (seen[r.product]) return;
+            seen[r.product] = true;
+            out.push({ slug: r.product, name: r.name });
+        });
+        const data = window.S35_PANEL_DATA || {};
+        (data.products || []).forEach(function (p) {
+            if (!p || !p.slug || seen[p.slug]) return;
+            if (getEffectiveFamily(p.slug, p.family) !== want) return;
+            seen[p.slug] = true;
+            out.push({ slug: p.slug, name: p.name });
+        });
+        return out;
+    }
+
+    function hasUncategorizedProducts() {
+        const data = window.S35_PANEL_DATA || {};
+        const recipes = getRecipes();
+        for (let i = 0; i < recipes.length; i++) {
+            if (!recipeFamily(recipes[i])) return true;
+        }
+        const products = data.products || [];
+        for (let j = 0; j < products.length; j++) {
+            const p = products[j];
+            if (!p || !p.slug) continue;
+            if (!getEffectiveFamily(p.slug, p.family)) return true;
+        }
+        return false;
+    }
+
+    function addProductFamily(rawLabel, color) {
+        const label = String(rawLabel || '').trim().replace(/\s+/g, ' ');
+        if (!label) return { ok: false, error: 'empty' };
+        if (label.toLocaleLowerCase('es') === PRODUCT_UNCATEGORIZED_LABEL.toLocaleLowerCase('es') ||
+            label === 'all' || label === PRODUCT_UNCATEGORIZED_ID) {
+            return { ok: false, error: 'reserved' };
+        }
+        const dup = productFamilies.some(function (f) {
+            return f.label.toLocaleLowerCase('es') === label.toLocaleLowerCase('es');
+        });
+        if (dup) return { ok: false, error: 'duplicate' };
+        const taken = {};
+        productFamilies.forEach(function (f) { taken[f.id] = true; });
+        const id = slugifyProductFamily(label, taken);
+        const tint = String(color || '').trim() ||
+            NEW_FAMILY_PALETTE[productFamilies.length % NEW_FAMILY_PALETTE.length] ||
+            FAMILY_COLOR_NEUTRAL;
+        const item = { id: id, label: label, color: tint };
+        productFamilies.push(item);
+        productFamilies.sort(function (a, b) { return a.label.localeCompare(b.label, 'es'); });
+        saveProductFamilies(productFamilies);
+        refreshProductFamilyUi();
+        return { ok: true, item: item };
+    }
+
+    function removeProductFamily(idOrLabel, opts) {
+        opts = opts || {};
+        const key = String(idOrLabel || '').trim();
+        if (!key || key === 'all' || key === PRODUCT_UNCATEGORIZED_ID) return { ok: false, error: 'reserved' };
+        const fam = productFamilies.filter(function (f) {
+            return f.id === key || f.label === key;
+        })[0];
+        if (!fam) return { ok: false, error: 'missing' };
+        const using = productsUsingFamily(fam.label);
+        if (using.length && !opts.confirmed) {
+            return { ok: false, error: 'needs_confirm', count: using.length, label: fam.label, using: using };
+        }
+        using.forEach(function (p) {
+            productFamilyOverrides[p.slug] = '';
+        });
+        if (using.length) saveProductFamilyOverrides(productFamilyOverrides);
+        productFamilies = productFamilies.filter(function (f) { return f.id !== fam.id; });
+        saveProductFamilies(productFamilies);
+        if (familyFilter === fam.label) familyFilter = 'all';
+        if (priceFamilyFilter === fam.label) priceFamilyFilter = 'all';
+        refreshProductFamilyUi();
+        return { ok: true, label: fam.label, moved: using.length };
+    }
+
+    function productFamilySelectHtml(selected) {
+        const cur = String(selected || '').trim();
+        const opts = ['<option value="">' + esc(PRODUCT_UNCATEGORIZED_LABEL) + '</option>'].concat(
+            productFamilies.map(function (f) {
+                return '<option value="' + esc(f.label) + '"' +
+                    (f.label === cur ? ' selected' : '') + '>' + esc(f.label) + '</option>';
+            })
+        );
+        if (cur && !productFamilies.some(function (f) { return f.label === cur; })) {
+            opts.push('<option value="' + esc(cur) + '" selected>' + esc(cur) + '</option>');
+        }
+        return opts.join('');
+    }
+
+    function refreshProductFamilyUi() {
+        renderChips();
+        renderPriceChips();
+        renderProducts();
+        renderPrices();
+        if (typeof window.S35PanelAPI === 'object' &&
+            typeof window.S35PanelAPI.onProductFamiliesChanged === 'function') {
+            window.S35PanelAPI.onProductFamiliesChanged();
+        }
+    }
+
+    function requestOpenProductFamiliesModal() {
+        document.dispatchEvent(new CustomEvent('s35:open-product-families'));
     }
 
     const TIER_IDS = ['t1', 't2', 't3', 't4', 't5', 't6'];
@@ -440,7 +696,7 @@
         if (period === 'year') {
             const labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
             return {
-                subtitle: 'Enero a diciembre',
+                subtitle: 'Cada mes del año',
                 buckets: labels.map(function (label, i) {
                     return { key: i, label: label, amount: 0 };
                 })
@@ -699,7 +955,7 @@
                 id: r.product,
                 name: r.name,
                 code: r.code || '',
-                family: r.family || '',
+                family: recipeFamily(r),
                 kind: r.kind,
                 recipe: r,
                 fromRecipe: true
@@ -726,11 +982,12 @@
                     return p.fromRecipe && (p.code === listCode || p.code === litCode);
                 })[0]
                 : null;
+            const fallbackFam = (sibling && recipeFamily(sibling.recipe)) || it.category || 'Lista mayorista';
             byId[it.id] = {
                 id: it.id,
                 name: sibling ? sibling.name : it.name,
                 code: listCode,
-                family: (sibling && sibling.family) || it.category || 'Lista mayorista',
+                family: getEffectiveFamily(it.id, fallbackFam),
                 kind: kind,
                 recipe: sibling ? sibling.recipe : null,
                 fromRecipe: false,
@@ -799,7 +1056,7 @@
     }
 
     function flatDefaultFor(r) {
-        return FAMILY_DEFAULTS[r.family] || 400;
+        return FAMILY_DEFAULTS[recipeFamily(r)] || 400;
     }
 
     function sixTiers(n) {
@@ -1314,20 +1571,25 @@
     }
 
     function families() {
-        const set = {};
-        getRecipes().forEach(function (r) { if (r.family) set[r.family] = true; });
-        return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, 'es'); });
+        return productFamilies.map(function (f) { return f.label; });
     }
 
     function renderFamilyChips(containerId, activeFilter) {
         const chips = document.getElementById(containerId);
         if (!chips) return;
         const list = ['all'].concat(families());
+        if (hasUncategorizedProducts()) list.push(PRODUCT_UNCATEGORIZED_ID);
+        const addId = containerId === 'posPriceFamilyChips' ? 'posPriceFamilyChipAdd' : 'posFamilyChipAdd';
         chips.innerHTML = list.map(function (f) {
-            const label = f === 'all' ? 'Todas' : f;
+            const label = f === 'all'
+                ? 'Todas'
+                : (f === PRODUCT_UNCATEGORIZED_ID ? PRODUCT_UNCATEGORIZED_LABEL : f);
             return '<button type="button" class="chip' + (f === activeFilter ? ' active' : '') + '" data-fam="' + esc(f) + '">' +
                 familyDot(f) + esc(label) + '</button>';
-        }).join('');
+        }).join('') +
+            '<button type="button" class="chip" id="' + addId +
+            '" data-manage-families="1" title="Gestionar familias" aria-label="Gestionar familias">' +
+            '<i class="fa-solid fa-plus"></i></button>';
     }
 
     function renderChips() {
@@ -1341,8 +1603,10 @@
     function filteredProducts() {
         const q = (document.getElementById('posProductSearch') && document.getElementById('posProductSearch').value || '').toLowerCase().trim();
         return getRecipes().filter(function (r) {
-            const famOk = familyFilter === 'all' || r.family === familyFilter;
-            const qOk = !q || [r.name, r.code, r.family, r.product].some(function (v) {
+            const fam = recipeFamily(r);
+            const famOk = familyFilter === 'all'
+                || (familyFilter === PRODUCT_UNCATEGORIZED_ID ? !fam : fam === familyFilter);
+            const qOk = !q || [r.name, r.code, fam, r.product].some(function (v) {
                 return String(v || '').toLowerCase().includes(q);
             });
             return famOk && qOk;
@@ -1377,9 +1641,10 @@
             } else if (cartUnits >= 100 && live !== base) {
                 priceNote = '<span class="muted" style="font-size:11px">Escalón ' + esc(tierLabelForQty(cartUnits)) + '</span>';
             }
+            const fam = recipeFamily(r);
             return '<button type="button" class="product-card" data-add="' + esc(r.product) + '">' +
                 img +
-                '<div class="fam">' + (r.family ? familyDot(r.family) : '') + esc(r.family || '—') + '</div>' +
+                '<div class="fam">' + (fam ? familyDot(fam) : '') + esc(fam || PRODUCT_UNCATEGORIZED_LABEL) + '</div>' +
                 '<div class="name">' + esc(r.name) + '</div>' +
                 '<div class="meta">' +
                 '<span class="unit">Inventario: <strong>' + stock + '</strong></span>' +
@@ -1895,8 +2160,10 @@
         if (!tbody) return;
         const q = (document.getElementById('posPriceSearch') && document.getElementById('posPriceSearch').value || '').toLowerCase().trim();
         const list = pricedCatalog().filter(function (p) {
-            const famOk = priceFamilyFilter === 'all' || p.family === priceFamilyFilter;
-            const qOk = !q || [p.name, p.code, p.family, p.listName, p.id].some(function (v) {
+            const fam = p.family || '';
+            const famOk = priceFamilyFilter === 'all'
+                || (priceFamilyFilter === PRODUCT_UNCATEGORIZED_ID ? !fam : fam === priceFamilyFilter);
+            const qOk = !q || [p.name, p.code, fam, p.listName, p.id].some(function (v) {
                 return String(v || '').toLowerCase().includes(q);
             });
             return famOk && qOk;
@@ -2001,7 +2268,11 @@
         const chips = document.getElementById('posFamilyChips');
         if (chips) {
             chips.addEventListener('click', function (e) {
-                const btn = e.target.closest('.chip');
+                if (e.target.closest('[data-manage-families]')) {
+                    requestOpenProductFamiliesModal();
+                    return;
+                }
+                const btn = e.target.closest('.chip[data-fam]');
                 if (!btn) return;
                 familyFilter = btn.getAttribute('data-fam');
                 renderChips();
@@ -2218,7 +2489,11 @@
         const priceChips = document.getElementById('posPriceFamilyChips');
         if (priceChips) {
             priceChips.addEventListener('click', function (e) {
-                const btn = e.target.closest('.chip');
+                if (e.target.closest('[data-manage-families]')) {
+                    requestOpenProductFamiliesModal();
+                    return;
+                }
+                const btn = e.target.closest('.chip[data-fam]');
                 if (!btn) return;
                 priceFamilyFilter = btn.getAttribute('data-fam');
                 renderPriceChips();
@@ -2660,7 +2935,7 @@
             const periodBtn = e.target.closest('[data-pd-sales-period]');
             if (periodBtn) {
                 const next = periodBtn.getAttribute('data-pd-sales-period');
-                if (['day', 'week', 'month'].indexOf(next) < 0) return;
+                if (['day', 'week', 'month', 'year'].indexOf(next) < 0) return;
                 pdSalesPeriod = next;
                 pdSalesOffset = 0;
                 renderProductSalesAnalytics(pdSalesSlug);
@@ -2755,7 +3030,7 @@
             '<button type="button" class="cortes-today-btn" data-pd-sales-reset>Actual</button>' +
             '</div></div>' +
             '<div class="seg-control pd-sales-periods" role="tablist" aria-label="Periodo de ventas del producto">' +
-            [['day', 'Día'], ['week', 'Semana'], ['month', 'Mes']].map(function (pair) {
+            [['day', 'Día'], ['week', 'Semana'], ['month', 'Mes'], ['year', 'Año']].map(function (pair) {
                 const on = pdSalesPeriod === pair[0];
                 return '<button type="button" role="tab" data-pd-sales-period="' + pair[0] + '"' +
                     (on ? ' class="active" aria-selected="true"' : ' aria-selected="false"') + '>' +
@@ -2846,6 +3121,18 @@
             money: money,
             familyDot: familyDot,
             familyColors: FAMILY_COLORS,
+            familyColor: familyColor,
+            getProductFamilies: function () { return productFamilies.slice(); },
+            getEffectiveFamily: getEffectiveFamily,
+            setProductFamily: setProductFamilyOverride,
+            addProductFamily: addProductFamily,
+            removeProductFamily: removeProductFamily,
+            productsUsingFamily: productsUsingFamily,
+            productFamilySelectHtml: productFamilySelectHtml,
+            productUncategorizedId: PRODUCT_UNCATEGORIZED_ID,
+            productUncategorizedLabel: PRODUCT_UNCATEGORIZED_LABEL,
+            refreshProductFamilyUi: refreshProductFamilyUi,
+            openProductFamiliesModal: requestOpenProductFamiliesModal,
             tierLabels: TIER_LABELS,
             presentationsForSlug: presentationsForSlug,
             getPriceEntry: function (id) { return prices[id] || null; },
