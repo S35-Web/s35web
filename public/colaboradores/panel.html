@@ -1965,23 +1965,53 @@
             border-radius: var(--radius-sm);
             overflow: hidden;
             margin-bottom: 20px;
+            background: var(--bg-soft);
         }
         .seg-control button {
             height: 34px;
             padding: 0 16px;
             border: none;
             border-right: 1px solid var(--border);
-            background: var(--bg);
+            background: transparent;
             color: var(--muted);
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
+            line-height: 1;
+            white-space: nowrap;
         }
         .seg-control button:last-child { border-right: none; }
         .seg-control button:hover { color: var(--text); background: var(--hover); }
         .seg-control button.active {
             background: var(--text);
             color: var(--bg);
+        }
+        /* Tipo cliente/distribuidor en modal Alta */
+        .form-grid .seg-control {
+            margin-bottom: 0;
+            width: 100%;
+            display: flex;
+        }
+        #clientTypeSeg button {
+            flex: 1;
+            height: 36px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            background: var(--bg);
+        }
+        #clientTypeSeg button:hover {
+            background: var(--hover);
+            color: var(--text);
+        }
+        #clientTypeSeg button.active {
+            background: var(--text);
+            color: var(--primary-fg);
+        }
+        #clientTypeSeg button:focus-visible {
+            outline: 2px solid var(--text);
+            outline-offset: -2px;
+            z-index: 1;
         }
 
         /* —— Hub Productos (lista + dashboard) —— */
@@ -3130,12 +3160,13 @@
             </div>
             <form id="clientForm" class="modal-body">
                 <div class="form-grid">
-                    <label>Tipo
-                        <div class="seg-control" id="clientTypeSeg" role="tablist" aria-label="Tipo de cliente" style="margin-top:2px">
+                    <div class="field-block">
+                        <span class="field-label">Tipo</span>
+                        <div class="seg-control" id="clientTypeSeg" role="tablist" aria-label="Tipo de cliente">
                             <button type="button" role="tab" data-client-type="client" class="active" aria-selected="true">Cliente</button>
                             <button type="button" role="tab" data-client-type="distributor" aria-selected="false">Distribuidor</button>
                         </div>
-                    </label>
+                    </div>
                     <label>Nombre
                         <input id="clientName" type="text" required autocomplete="off">
                     </label>
