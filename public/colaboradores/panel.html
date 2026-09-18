@@ -3009,7 +3009,7 @@
                         <div class="card span-5">
                             <div class="prod-side-block">
                                 <h3>Lotes abiertos</h3>
-                                <p class="panel-sub">En planta · descuenta MP al emitir</p>
+                                <p class="panel-sub">En planta · mezcla al emitir · empaque reservado</p>
                                 <div id="lotTicketsList" class="lot-rows muted">Sin tickets abiertos.</div>
                             </div>
                             <div class="prod-side-block">
@@ -3710,14 +3710,20 @@
     (data.products || []).forEach(function (p) { p.name = normalizeName(p.name); });
     (data.recipes || []).forEach(function (r) { r.name = normalizeName(r.name); });
     function normalizeItem(m) {
+        const stock = Math.max(0, Number(m.stock) || 0);
+        let reserved = Math.max(0, Number(m.reserved) || 0);
+        if (reserved > stock) reserved = stock;
         return {
             id: m.id,
             name: normalizeName(m.name),
             unit: normalizeUnit(m.unit),
-            stock: Number(m.stock) || 0,
+            stock: stock,
+            reserved: reserved,
             minStock: Number(m.minStock) || 0,
             category: normalizeCategory(m.category),
-            labSlug: m.labSlug || null
+            labSlug: m.labSlug || null,
+            isPackaging: m.isPackaging === true,
+            consumeOnConfirm: m.consumeOnConfirm === true
         };
     }
     function seedInventory() {
@@ -3754,6 +3760,43 @@
     let inventory = loadInventory();
     if (persistNormalized) saveInventory(inventory);
 
+    function materialReserved(mat) {
+        return Math.max(0, Number(mat && mat.reserved) || 0);
+    }
+    function materialFreeStock(mat) {
+        if (!mat) return 0;
+        return Math.max(0, (Number(mat.stock) || 0) - materialReserved(mat));
+    }
+    function isPackagingMaterial(mat) {
+        if (!mat) return false;
+        if (mat.isPackaging === true || mat.consumeOnConfirm === true) return true;
+        return normalizeCategory(mat.category) === 'packaging';
+    }
+    function isPackagingLine(it) {
+        if (!it) return false;
+        if (String(it.role || '') === 'Empaque') return true;
+        return isPackagingMaterial(plantById(it.plantId));
+    }
+    function reservePlantQty(plantId, qty) {
+        const mat = plantById(plantId);
+        if (!mat) return false;
+        const q = Math.max(0, Number(qty) || 0);
+        if (q > materialFreeStock(mat) + 1e-9) return false;
+        mat.reserved = materialReserved(mat) + q;
+        return true;
+    }
+    function releasePlantQty(plantId, qty) {
+        const mat = plantById(plantId);
+        if (!mat) return;
+        mat.reserved = Math.max(0, materialReserved(mat) - Math.max(0, Number(qty) || 0));
+    }
+    function consumePlantQty(plantId, qty) {
+        const mat = plantById(plantId);
+        if (!mat) return;
+        mat.stock = Math.max(0, (Number(mat.stock) || 0) - Math.max(0, Number(qty) || 0));
+        if (materialReserved(mat) > mat.stock) mat.reserved = mat.stock;
+    }
+
     const FINISHED_KEY = 's35_finished_stock';
     function loadFinished() {
         const seed = {};
@@ -3786,7 +3829,7 @@
         });
         document.getElementById('kpiFinished').textContent = finishedTotal;
         const low = inventory.filter(function (m) {
-            return m.minStock > 0 && m.stock < m.minStock;
+            return m.minStock > 0 && materialFreeStock(m) < m.minStock;
         }).length;
         document.getElementById('kpiLowStock').textContent = low;
     }
@@ -4197,10 +4240,17 @@
             const lab = m.labSlug
                 ? '<div class="muted"><a class="link" href="/laboratorio/materials/' + esc(m.labSlug) + '" target="_blank">Ficha</a></div>'
                 : '';
-            const low = m.minStock > 0 && m.stock < m.minStock;
+            const free = materialFreeStock(m);
+            const reserved = materialReserved(m);
+            const low = m.minStock > 0 && free < m.minStock;
+            const stockCell = esc(String(m.stock)) +
+                (reserved > 0
+                    ? '<div class="muted" style="font-size:11px">libre ' + esc(String(free)) +
+                        ' · res. ' + esc(String(reserved)) + '</div>'
+                    : '');
             return '<tr data-plant="' + esc(m.id) + '">' +
                 '<td>' + esc(displayName(m)) + lab + '</td>' +
-                '<td class="num' + (low ? ' stock-low' : '') + '">' + esc(String(m.stock)) + '</td>' +
+                '<td class="num' + (low ? ' stock-low' : '') + '">' + stockCell + '</td>' +
                 '<td class="num">' + esc(String(m.minStock)) + '</td>' +
                 '<td><div class="row-actions">' +
                 '<button type="button" class="icon-action" data-edit="' + esc(m.id) + '" title="Editar" aria-label="Editar"><i class="fa-solid fa-pen-to-square"></i></button>' +
@@ -4211,10 +4261,14 @@
     }
     function matCountRowHtml(m) {
         const unit = m.unit ? String(m.unit) : '—';
+        const reserved = materialReserved(m);
+        const stockLabel = reserved > 0
+            ? (String(m.stock) + ' (res. ' + reserved + ')')
+            : String(m.stock);
         return '<tr>' +
             '<td><span class="mc-name">' + esc(m.name) + '</span>' +
             '<span class="mc-unit">' + esc(unit) + '</span></td>' +
-            '<td class="num">' + esc(String(m.stock)) + '</td>' +
+            '<td class="num">' + esc(stockLabel) + '</td>' +
             '<td class="num">' + esc(String(m.minStock)) + '</td>' +
             '<td class="blank"><span class="mc-blank-line" aria-hidden="true"></span></td>' +
             '</tr>';
@@ -4458,6 +4512,24 @@
         document.getElementById('plantMin').value = item ? item.minStock : 0;
         document.getElementById('plantCategory').value = item ? normalizeCategory(item.category) : (plantFamilies[0] && plantFamilies[0].id) || UNCATEGORIZED_ID;
         plantLab.value = item && item.labSlug ? item.labSlug : '';
+        let reservedHint = document.getElementById('plantReservedHint');
+        if (!reservedHint) {
+            const stockLabel = document.getElementById('plantStock');
+            if (stockLabel && stockLabel.parentNode) {
+                reservedHint = document.createElement('div');
+                reservedHint.id = 'plantReservedHint';
+                reservedHint.className = 'muted';
+                reservedHint.style.cssText = 'font-size:12px;margin-top:4px';
+                stockLabel.parentNode.appendChild(reservedHint);
+            }
+        }
+        if (reservedHint) {
+            const res = item ? materialReserved(item) : 0;
+            reservedHint.textContent = res > 0
+                ? ('Reservado en lotes abiertos: ' + res + ' · libre ' + materialFreeStock(item))
+                : '';
+            reservedHint.hidden = res <= 0;
+        }
         plantModal.classList.add('show');
         plantModal.setAttribute('aria-hidden', 'false');
         document.getElementById('plantName').focus();
@@ -4481,14 +4553,19 @@
     document.getElementById('plantForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const id = document.getElementById('plantId').value;
+        const prev = id ? inventory.filter(function (m) { return m.id === id; })[0] : null;
+        const stock = Math.max(0, Number(document.getElementById('plantStock').value) || 0);
         const next = {
             id: id || slugifyPlant(document.getElementById('plantName').value),
             name: normalizeName(document.getElementById('plantName').value),
             unit: normalizeUnit(document.getElementById('plantUnit').value),
-            stock: Math.max(0, Number(document.getElementById('plantStock').value) || 0),
+            stock: stock,
+            reserved: Math.min(stock, prev ? materialReserved(prev) : 0),
             minStock: Math.max(0, Number(document.getElementById('plantMin').value) || 0),
             category: normalizeCategory(document.getElementById('plantCategory').value),
-            labSlug: plantLab.value || null
+            labSlug: plantLab.value || null,
+            isPackaging: prev ? !!prev.isPackaging : false,
+            consumeOnConfirm: prev ? !!prev.consumeOnConfirm : false
         };
         if (!next.name) return;
         const idx = inventory.findIndex(function (m) { return m.id === next.id; });
@@ -4535,6 +4612,21 @@
         if (recipe.kind === 'liquido') return 'cubeta-19l';
         if (String(recipe.product || '').indexOf('waxtard') === 0) return 'saco-rafia-waxtard';
         return 'saco-rafia-general';
+    }
+    /** Piezas de empaque por saco/u. y plantId (familia Empaque / role Empaque / flags). */
+    function packagingSpec(f, recipe) {
+        if (!f) return null;
+        let plantId = f.packagingPlantId || null;
+        let pieces = 1;
+        (f.items || []).forEach(function (it) {
+            if (!isPackagingLine(it)) return;
+            plantId = it.plantId || plantId;
+            const amt = Number(it.amount);
+            if (amt > 0) pieces = amt;
+        });
+        if (!plantId && recipe) plantId = packagingId(recipe);
+        if (!plantId) return null;
+        return { plantId: plantId, piecesPerBag: pieces };
     }
     function mapDoseItems(list) {
         return (list || []).map(function (it) {
@@ -6002,7 +6094,7 @@
         if (!f) return [];
         const lotCount = Math.max(1, Number(lots) || 1);
         return (f.items || []).filter(function (it) {
-            return (it.unit || '') !== 'Pza' && (it.role || '') !== 'Empaque';
+            return !isPackagingLine(it);
         }).map(function (it) {
             const mat = plantById(it.plantId);
             return {
@@ -6015,17 +6107,45 @@
             };
         });
     }
-    function productionPackNeed(f, bagsOut) {
-        if (!f || !f.packagingPlantId || !plantById(f.packagingPlantId)) return null;
-        const mat = plantById(f.packagingPlantId);
+    function productionPackNeed(f, bagsOut, recipe) {
+        const spec = packagingSpec(f, recipe);
+        const plantId = (spec && spec.plantId) || (f && f.packagingPlantId) || null;
+        if (!plantId || !plantById(plantId)) return null;
+        const pieces = (spec && spec.piecesPerBag) || 1;
+        const mat = plantById(plantId);
         const bags = Math.max(0, Number(bagsOut) || 0);
+        const need = bags * pieces;
         return {
-            plantId: f.packagingPlantId,
-            name: mat ? displayName(mat) : f.packagingPlantId,
+            plantId: plantId,
+            name: mat ? displayName(mat) : plantId,
             unit: (mat && mat.unit) || 'Pza',
-            need: bags,
-            have: mat ? Number(mat.stock) || 0 : 0,
-            missing: !mat
+            need: need,
+            have: materialFreeStock(mat),
+            stock: mat ? Number(mat.stock) || 0 : 0,
+            reserved: materialReserved(mat),
+            piecesPerBag: pieces,
+            missing: !mat,
+            isPackaging: true
+        };
+    }
+    /** Requerido teórico de empaque para N lotes (sacos esperados × piezas/saco). */
+    function packagingTheoNeed(f, lots, recipe) {
+        const spec = packagingSpec(f, recipe);
+        if (!spec) return null;
+        const bags = bagsExpectedPerLot(f) * Math.max(1, Number(lots) || 1);
+        const need = bags * (Number(spec.piecesPerBag) || 1);
+        const mat = plantById(spec.plantId);
+        return {
+            plantId: spec.plantId,
+            name: mat ? displayName(mat) : spec.plantId,
+            unit: (mat && mat.unit) || 'Pza',
+            need: need,
+            have: materialFreeStock(mat),
+            stock: mat ? Number(mat.stock) || 0 : 0,
+            reserved: materialReserved(mat),
+            piecesPerBag: Number(spec.piecesPerBag) || 1,
+            missing: !mat,
+            isPackaging: true
         };
     }
     /** Sacos/u. esperados por 1 lote (o 1 unidad si no es plant-lot). Misma regla que al emitir ticket. */
@@ -6061,9 +6181,7 @@
         ensureVersions(f);
         syncActiveVersionToRoot(f);
         const nLots = Math.max(1, Number(lots) || 1);
-        const items = formulaVersionItems(f, f.activeVersionId).filter(function (it) {
-            return (it.unit || '') !== 'Pza' && (it.role || '') !== 'Empaque';
-        });
+        const items = formulaVersionItems(f, f.activeVersionId);
         const order = [];
         const seen = {};
         items.forEach(function (it) {
@@ -6078,6 +6196,30 @@
         let bestMarginName = null;
         let alert = 'ok';
         let alertMp = null;
+        function considerDose(dose, have, buffer, fullName) {
+            if (!(dose > 0)) return;
+            const invLots = Math.floor(Math.max(0, have) / dose);
+            const invRatio = Math.max(0, have) / dose;
+            if (invLots < bestLots || (invLots === bestLots && invRatio < bestRatio)) {
+                bestLots = invLots;
+                bestRatio = invRatio;
+                bestName = fullName;
+            }
+            const marginLots = Math.floor(buffer / dose);
+            if (marginLots < bestMarginLots) {
+                bestMarginLots = marginLots;
+                bestMarginName = fullName;
+            }
+        }
+        function bumpAlert(rowAlert, fullName) {
+            if (rowAlert === 'danger' && alert !== 'danger') {
+                alert = 'danger';
+                alertMp = fullName;
+            } else if (rowAlert === 'warning' && alert === 'ok') {
+                alert = 'warning';
+                alertMp = fullName;
+            }
+        }
         const rows = order.map(function (id) {
             const mat = plantById(id);
             const it = items.filter(function (x) { return x.plantId === id; })[0];
@@ -6090,27 +6232,8 @@
             const fullName = mat ? (mat.name || id) : id;
             const missing = !mat;
             const rowAlert = missing ? 'danger' : (need > have ? 'danger' : (need > buffer ? 'warning' : null));
-            if (dose > 0) {
-                const invLots = Math.floor(Math.max(0, have) / dose);
-                const invRatio = Math.max(0, have) / dose;
-                if (invLots < bestLots || (invLots === bestLots && invRatio < bestRatio)) {
-                    bestLots = invLots;
-                    bestRatio = invRatio;
-                    bestName = fullName;
-                }
-                const marginLots = Math.floor(buffer / dose);
-                if (marginLots < bestMarginLots) {
-                    bestMarginLots = marginLots;
-                    bestMarginName = fullName;
-                }
-            }
-            if (rowAlert === 'danger' && alert !== 'danger') {
-                alert = 'danger';
-                alertMp = fullName;
-            } else if (rowAlert === 'warning' && alert === 'ok') {
-                alert = 'warning';
-                alertMp = fullName;
-            }
+            considerDose(dose, have, buffer, fullName);
+            bumpAlert(rowAlert, fullName);
             return {
                 plantId: id,
                 labelLines: wrapIngLabel(fullName),
@@ -6123,9 +6246,41 @@
                 buffer: buffer,
                 ok: !!mat && have >= need,
                 alert: rowAlert,
-                missing: missing
+                missing: missing,
+                isPackaging: false
             };
         });
+        // Empaque: teórico = sacos esperados × lotes × piezas/saco (eje de gráfica + capacidad)
+        const pack = packagingTheoNeed(f, nLots);
+        if (pack) {
+            const mat = plantById(pack.plantId);
+            const dose = bagsExpectedPerLot(f) * (Number(pack.piecesPerBag) || 1);
+            const need = Number(pack.need) || 0;
+            const have = materialFreeStock(mat);
+            const minStock = mat ? Number(mat.minStock) || 0 : 0;
+            const buffer = Math.max(0, have - minStock);
+            const fullName = mat ? (mat.name || pack.plantId) : pack.plantId;
+            const missing = !mat;
+            const rowAlert = missing ? 'danger' : (need > have ? 'danger' : (need > buffer ? 'warning' : null));
+            considerDose(dose, have, buffer, fullName);
+            bumpAlert(rowAlert, fullName);
+            rows.push({
+                plantId: pack.plantId,
+                labelLines: wrapIngLabel(fullName),
+                fullName: fullName,
+                unit: pack.unit || 'Pza',
+                dose: dose,
+                need: need,
+                have: have,
+                minStock: minStock,
+                buffer: buffer,
+                ok: !!mat && have >= need,
+                alert: rowAlert,
+                missing: missing,
+                isPackaging: true,
+                reserved: materialReserved(mat)
+            });
+        }
         return {
             rows: rows,
             maxLotsInv: isFinite(bestLots) ? bestLots : null,
@@ -6716,6 +6871,19 @@
                 '<span class="chem-kg">' + esc(String(chem.totalKg)) + ' kg</span>' +
                 '</div></div>')
             : '';
+        const packLines = t.packLines || [];
+        const packBlock = packLines.length
+            ? ('<div class="lot-ticket-chemistry" style="margin-top:12px">' +
+                '<div class="chem-title">Empaque (teórico / a reportar):</div>' +
+                packLines.map(function (ln) {
+                    return '<div class="chem-row">' +
+                        '<span class="chem-tag">' + esc(ln.name) + '</span>' +
+                        '<span class="chem-kg">' + esc(String(ln.amount)) +
+                        (ln.unit ? ' ' + esc(ln.unit) : '') +
+                        ' · reserva al emitir</span></div>';
+                }).join('') +
+                '</div>')
+            : '';
         return '<div class="lot-ticket-brand">' +
             '<div class="mark"><span>S-35</span> Ticket de lote de producción</div>' +
             '<div class="folio"><span>Lote</span>' + esc(t.id) + '</div></div>' +
@@ -6734,7 +6902,8 @@
             (lines || '<tr><td colspan="2" class="muted">Sin MP visible para planta</td></tr>') +
             '</tbody></table>' +
             chemistryBlock +
-            '<p class="muted" style="margin-top:16px;font-size:12px">Confirma para emitir al sistema. Hasta entonces no se puede imprimir ni enviar a planta.</p>';
+            packBlock +
+            '<p class="muted" style="margin-top:16px;font-size:12px">Confirma para emitir al sistema. La mezcla se descuenta; el empaque queda reservado hasta confirmar sacos reales. Hasta entonces no se puede imprimir ni enviar a planta.</p>';
     }
     function syncLotTicketActionButtons() {
         const pending = !!currentLotTicketPending;
@@ -6791,6 +6960,22 @@
             if (ln.hidden) chemKg += Number(ln.amount) || 0;
         });
         chemKg = Math.round(chemKg * 1000) / 1000;
+        const bagsExpected = lotMode && f.yieldMin && f.yieldMax
+            ? Math.round((Number(f.yieldMin) + Number(f.yieldMax)) / 2) * lots
+            : (lotMode ? Math.round(theo) : lots);
+        const packTheo = packagingTheoNeed(f, lots, r);
+        const packLines = packTheo
+            ? [{
+                plantId: packTheo.plantId,
+                name: packTheo.name,
+                amount: packTheo.need,
+                unit: packTheo.unit,
+                piecesPerBag: packTheo.piecesPerBag,
+                role: 'Empaque',
+                reserved: true,
+                theoretical: true
+            }]
+            : [];
         return {
             id: nextLotTicketId(r.code),
             product: slug,
@@ -6809,15 +6994,15 @@
             yieldTheoretical: lotMode ? theo : lots,
             yieldMin: lotMode ? (Number(f.yieldMin) || 0) * lots : lots,
             yieldMax: lotMode ? (Number(f.yieldMax) || 0) * lots : lots,
-            bagsExpected: lotMode && f.yieldMin && f.yieldMax
-                ? Math.round((Number(f.yieldMin) + Number(f.yieldMax)) / 2) * lots
-                : (lotMode ? Math.round(theo) : lots),
+            bagsExpected: bagsExpected,
             bagsOut: null,
             mermaKg: null,
             producedBy: '',
             notes: '',
-            packagingPlantId: f.packagingPlantId || packagingId(r),
+            packagingPlantId: (packTheo && packTheo.plantId) || f.packagingPlantId || packagingId(r),
             mpLines: snapLines,
+            packLines: packLines,
+            packReserved: true,
             chemistry: chemKg > 0
                 ? { tag: r.code, totalKg: chemKg }
                 : null
@@ -6826,9 +7011,27 @@
     function commitPendingLotTicket() {
         const t = currentLotTicket;
         if (!t || !currentLotTicketPending) return;
+        const packLines = t.packLines || [];
+        for (let i = 0; i < packLines.length; i++) {
+            const ln = packLines[i];
+            const mat = plantById(ln.plantId);
+            const need = Number(ln.amount) || 0;
+            if (!mat || materialFreeStock(mat) < need) {
+                alert(
+                    'No hay empaque libre suficiente para reservar:\n• ' +
+                    (ln.name || ln.plantId) + ': necesita ' + need +
+                    ', libre ' + (mat ? materialFreeStock(mat) : 0) +
+                    (mat && materialReserved(mat) ? ' (reservado ' + materialReserved(mat) + ')' : '')
+                );
+                return;
+            }
+        }
         (t.mpLines || []).forEach(function (ln) {
             const mat = plantById(ln.plantId);
             if (mat) mat.stock = Math.max(0, (Number(mat.stock) || 0) - (Number(ln.amount) || 0));
+        });
+        packLines.forEach(function (ln) {
+            reservePlantQty(ln.plantId, Number(ln.amount) || 0);
         });
         saveInventory(inventory);
         const list = loadLotTickets();
@@ -6837,12 +7040,16 @@
             return;
         }
         t.issuedAt = new Date().toISOString();
+        t.packReserved = packLines.length > 0;
         list.unshift(t);
         saveLotTickets(list);
         currentLotTicketPending = false;
         refreshStockViews();
         openLotTicketModal(t, { pending: false, fromEmit: true });
-        panelToast('Lote ' + t.id + ' emitido a planta');
+        panelToast(
+            'Lote ' + t.id + ' emitido a planta' +
+            (packLines.length ? ' · empaque reservado' : '')
+        );
     }
     function discardPendingLotTicket() {
         const wasPending = !!currentLotTicketPending;
@@ -6952,7 +7159,7 @@
             || (versionId === f.activeVersionId ? activeVersion(f) : null);
         if (!ver) return [];
         return (ver.items || []).filter(function (it) {
-            return (it.unit || 'Kg') !== 'Pza' && (it.role || '') !== 'Empaque';
+            return !isPackagingLine(it);
         });
     }
     function buildMonotonePath(pts, baseY) {
@@ -7098,8 +7305,12 @@
         rows.forEach(function (row, i) {
             let tip =
                 esc(row.fullName) +
+                (row.isPackaging ? ' (empaque teórico)' : '') +
                 ' — requiere: ' + esc(fmtQty(row.need)) + ' ' + esc(row.unit) +
-                ' · inventario: ' + esc(fmtQty(row.have)) + ' ' + esc(row.unit) +
+                ' · inventario' + (row.isPackaging ? ' libre' : '') + ': ' + esc(fmtQty(row.have)) + ' ' + esc(row.unit) +
+                (row.isPackaging && row.reserved
+                    ? ' · reservado: ' + esc(fmtQty(row.reserved))
+                    : '') +
                 ' · margen hasta mín.: ' + esc(fmtQty(row.buffer)) + ' ' + esc(row.unit) +
                 ' (mín. ' + esc(fmtQty(row.minStock)) + ')';
             if (row.missing) tip += ' · sin MP en planta';
@@ -7139,8 +7350,10 @@
         if (subEl) {
             const shortCount = rows.filter(function (row) { return row.alert === 'danger'; }).length;
             const atMinCount = rows.filter(function (row) { return row.alert === 'warning'; }).length;
+            const packCount = rows.filter(function (row) { return row.isPackaging; }).length;
             subEl.textContent = (active ? active.name + (active.label ? ' — ' + active.label : '') : 'Versión') +
                 ' · margen = inventario − mínimo' +
+                (packCount ? ' · empaque teórico incluido' : '') +
                 (lots > 1 ? ' · vs ×' + lots + ' lotes' : ' · vs 1 lote') +
                 (atMinCount ? ' · ' + atMinCount + ' precaución' : '') +
                 (shortCount ? ' · ' + shortCount + ' con falta' : '');
@@ -7330,17 +7543,59 @@
         if (t.yieldMin && t.yieldMax && (bagsOut < t.yieldMin || bagsOut > t.yieldMax)) {
             if (!confirm('Los sacos reales (' + bagsOut + ') están fuera del rango ' + t.yieldMin + '–' + t.yieldMax + '. ¿Confirmar de todos modos?')) return;
         }
-        const pack = productionPackNeed(f || { packagingPlantId: t.packagingPlantId }, bagsOut);
-        if (pack && (pack.missing || pack.have < pack.need)) {
-            alert('No hay empaque suficiente:\n• ' + pack.name + ': necesita ' + pack.need + ', hay ' + pack.have);
-            return;
+        const snapPack = (t.packLines && t.packLines.length)
+            ? t.packLines
+            : null;
+        const packConsumptions = [];
+        if (snapPack) {
+            for (let i = 0; i < snapPack.length; i++) {
+                const ln = snapPack[i];
+                const pieces = Number(ln.piecesPerBag) || 1;
+                const theo = Number(ln.amount) || 0;
+                const actual = bagsOut * pieces;
+                const mat = plantById(ln.plantId);
+                const freeAfterRelease = materialFreeStock(mat) + (t.packReserved !== false ? theo : 0);
+                if (!mat || freeAfterRelease < actual) {
+                    alert(
+                        'No hay empaque suficiente:\n• ' + (ln.name || ln.plantId) +
+                        ': necesita ' + actual + ' (reales), disponible tras liberar reserva ' +
+                        (mat ? freeAfterRelease : 0)
+                    );
+                    return;
+                }
+                packConsumptions.push({
+                    plantId: ln.plantId,
+                    name: ln.name,
+                    theo: theo,
+                    actual: actual,
+                    unit: ln.unit || 'Pza'
+                });
+            }
+        } else {
+            const pack = productionPackNeed(f || { packagingPlantId: t.packagingPlantId }, bagsOut);
+            if (pack && (pack.missing || pack.have < pack.need)) {
+                alert('No hay empaque suficiente:\n• ' + pack.name + ': necesita ' + pack.need + ', hay ' + pack.have);
+                return;
+            }
+            if (pack) {
+                packConsumptions.push({
+                    plantId: pack.plantId,
+                    name: pack.name,
+                    theo: 0,
+                    actual: pack.need,
+                    unit: pack.unit || 'Pza',
+                    legacy: true
+                });
+            }
         }
         if (!confirm('¿Confirmar ingreso de ' + bagsOut + ' a producto terminado para el lote ' + t.id + '?')) return;
-        if (pack) {
-            const mat = plantById(pack.plantId);
-            if (mat) mat.stock = Math.max(0, (Number(mat.stock) || 0) - pack.need);
-            saveInventory(inventory);
-        }
+        packConsumptions.forEach(function (pc) {
+            if (!pc.legacy && t.packReserved !== false) {
+                releasePlantQty(pc.plantId, pc.theo);
+            }
+            consumePlantQty(pc.plantId, pc.actual);
+        });
+        if (packConsumptions.length) saveInventory(inventory);
         if (!finishedStock[t.product]) finishedStock[t.product] = { slug: t.product, stock: 0, minStock: 0, unit: 'Pza' };
         finishedStock[t.product].stock = (Number(finishedStock[t.product].stock) || 0) + bagsOut;
         saveFinished();
@@ -7349,6 +7604,10 @@
         t.bagsOut = bagsOut;
         t.producedBy = producedBy;
         t.notes = notes;
+        t.packConsumed = packConsumptions.map(function (pc) {
+            return { plantId: pc.plantId, amount: pc.actual, theoretical: pc.theo, unit: pc.unit };
+        });
+        t.packReserved = false;
         t.mermaKg = t.totalKg != null
             ? Math.max(0, Number(t.totalKg) - bagsOut * (Number(t.packSizeKg) || 25))
             : null;
@@ -7365,11 +7624,20 @@
         if (idx < 0) return;
         const t = list[idx];
         if (t.status !== 'open') return;
-        if (!confirm('¿Cancelar el lote ' + t.id + '?\nSe devolverán las materias primas descontadas al emitir.')) return;
+        if (!confirm(
+            '¿Cancelar el lote ' + t.id + '?\nSe devolverán las materias primas de mezcla descontadas al emitir' +
+            ((t.packLines && t.packLines.length) ? ' y se liberará la reserva de empaque.' : '.')
+        )) return;
         (t.mpLines || []).forEach(function (ln) {
             const mat = plantById(ln.plantId);
             if (mat) mat.stock = (Number(mat.stock) || 0) + (Number(ln.amount) || 0);
         });
+        if (t.packReserved !== false) {
+            (t.packLines || []).forEach(function (ln) {
+                releasePlantQty(ln.plantId, Number(ln.amount) || 0);
+            });
+        }
+        t.packReserved = false;
         saveInventory(inventory);
         t.status = 'cancelled';
         t.cancelledAt = new Date().toISOString();
