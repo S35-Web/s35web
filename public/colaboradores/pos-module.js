@@ -1575,53 +1575,131 @@
         cart = cart.filter(function (it) { return !(it.isPromo && it.promoAuto); });
     }
 
+    /** Quita overrides de precio aplicados por códigos % / fijo. */
+    function clearPromoPriceOverrides() {
+        cart.forEach(function (it) {
+            if (!it.promoPriceAuto) return;
+            it.promoPriceAuto = false;
+            it.promoCode = null;
+            it.priceOverride = null;
+            it.priceOverridePct = null;
+        });
+    }
+
+    function applyPercentOrFixedToEligible(promo) {
+        const units = cartQty();
+        let affected = 0;
+        cart.forEach(function (it) {
+            if (it.isPromo) return;
+            if (!isProductEligibleForPromo(promo, it.product)) return;
+            const list = unitPrice(it.product, units);
+            let next = list;
+            if (promo.type === 'percent') {
+                const pct = Math.max(0, Math.min(100, Number(promo.percentOff) || 0));
+                next = list * (1 - pct / 100);
+            } else if (promo.type === 'fixed') {
+                const off = Math.max(0, Number(promo.fixedOff) || 0);
+                next = Math.max(0, list - off);
+            } else {
+                return;
+            }
+            it.priceOverride = roundMoney(next);
+            it.promoPriceAuto = true;
+            it.promoCode = promo.code;
+            affected += 1;
+        });
+        return affected;
+    }
+
+    function promoCartDetail(promo) {
+        if (!promo) return '';
+        if (promo.type === 'pallet_bonus') {
+            const qtyEl = eligiblePaidQty(promo);
+            const calc = calcPalletBonus(promo, qtyEl);
+            return calc.giftTotal
+                ? (calc.pallets + ' tarima' + (calc.pallets === 1 ? '' : 's') + ' · +' + calc.giftTotal + ' regalo')
+                : 'sin tarima completa aún';
+        }
+        if (promo.type === 'percent') {
+            const pct = Number(promo.percentOff) || 0;
+            const n = eligiblePaidQty(promo);
+            return '−' + pct + '% unitario · ' + n + ' u elegibles';
+        }
+        if (promo.type === 'fixed') {
+            const off = Number(promo.fixedOff) || 0;
+            const n = eligiblePaidQty(promo);
+            return '−' + money(off) + ' / u · ' + n + ' u elegibles';
+        }
+        return promoTypeLabel(promo.type);
+    }
+
     function syncAppliedPromoLines(opts) {
         opts = opts || {};
         const quiet = !!opts.quiet;
         stripAutoPromoLines();
+        clearPromoPriceOverrides();
         if (!appliedPromoCode) {
-            if (!quiet) { /* noop */ }
-            return { ok: true, giftTotal: 0 };
+            return { ok: true, giftTotal: 0, affected: 0 };
         }
         const promo = promoByCode(appliedPromoCode);
         if (!promo || !promo.active) {
             appliedPromoCode = null;
             if (!quiet) toast('Código de promo no válido o inactivo');
-            return { ok: false, giftTotal: 0 };
+            return { ok: false, giftTotal: 0, affected: 0 };
         }
         if (promo.distributorOnly && !selectedClientIsDistributor()) {
             appliedPromoCode = null;
             if (!quiet) toast('Este código es solo para distribuidores');
-            return { ok: false, giftTotal: 0 };
+            return { ok: false, giftTotal: 0, affected: 0 };
         }
-        if (promo.type !== 'pallet_bonus') {
-            if (!quiet) toast('Tipo de promo no soportado aún en el carrito: ' + promoTypeLabel(promo.type));
-            return { ok: false, giftTotal: 0 };
-        }
-        const qtyEl = eligiblePaidQty(promo);
-        const calc = calcPalletBonus(promo, qtyEl);
-        const gifts = allocateGiftByProduct(promo, calc.giftTotal);
-        Object.keys(gifts).forEach(function (slug) {
-            const gq = gifts[slug];
-            if (gq < 1) return;
-            const r = recipeBySlug(slug);
-            if (!r) return;
-            cart.push({
-                product: r.product,
-                name: r.name,
-                code: r.code || '',
-                unit: unitFor(r),
-                price: 0,
-                basePrice: unitPrice(r.product, cartQty()),
-                priceOverride: 0,
-                priceOverridePct: null,
-                isPromo: true,
-                promoAuto: true,
-                promoCode: promo.code,
-                qty: gq
+        if (promo.type === 'pallet_bonus') {
+            const qtyEl = eligiblePaidQty(promo);
+            const calc = calcPalletBonus(promo, qtyEl);
+            const gifts = allocateGiftByProduct(promo, calc.giftTotal);
+            Object.keys(gifts).forEach(function (slug) {
+                const gq = gifts[slug];
+                if (gq < 1) return;
+                const r = recipeBySlug(slug);
+                if (!r) return;
+                cart.push({
+                    product: r.product,
+                    name: r.name,
+                    code: r.code || '',
+                    unit: unitFor(r),
+                    price: 0,
+                    basePrice: unitPrice(r.product, cartQty()),
+                    priceOverride: 0,
+                    priceOverridePct: null,
+                    isPromo: true,
+                    promoAuto: true,
+                    promoCode: promo.code,
+                    qty: gq
+                });
             });
-        });
-        return { ok: true, giftTotal: calc.giftTotal, calc: calc, qtyEligible: qtyEl };
+            return { ok: true, giftTotal: calc.giftTotal, calc: calc, qtyEligible: qtyEl, affected: calc.giftTotal };
+        }
+        if (promo.type === 'percent' || promo.type === 'fixed') {
+            if (promo.type === 'percent') {
+                const pct = Number(promo.percentOff);
+                if (!isFinite(pct) || pct <= 0 || pct > 100) {
+                    appliedPromoCode = null;
+                    if (!quiet) toast('Este código no tiene un % de descuento válido');
+                    return { ok: false, giftTotal: 0, affected: 0 };
+                }
+            } else {
+                const off = Number(promo.fixedOff);
+                if (!isFinite(off) || off <= 0) {
+                    appliedPromoCode = null;
+                    if (!quiet) toast('Este código no tiene un monto fijo válido');
+                    return { ok: false, giftTotal: 0, affected: 0 };
+                }
+            }
+            const affected = applyPercentOrFixedToEligible(promo);
+            return { ok: true, giftTotal: 0, affected: affected, qtyEligible: eligiblePaidQty(promo) };
+        }
+        appliedPromoCode = null;
+        if (!quiet) toast('Tipo de promo no soportado: ' + promoTypeLabel(promo.type));
+        return { ok: false, giftTotal: 0, affected: 0 };
     }
 
     function applyPromoCodeInput(rawCode) {
@@ -1643,8 +1721,20 @@
             toast('Código solo para clientes distribuidores');
             return false;
         }
-        if (promo.type !== 'pallet_bonus') {
-            toast('Este tipo de promo aún no se aplica en el carrito');
+        if (promo.type === 'percent') {
+            const pct = Number(promo.percentOff);
+            if (!isFinite(pct) || pct <= 0 || pct > 100) {
+                toast('Código sin % de descuento válido');
+                return false;
+            }
+        } else if (promo.type === 'fixed') {
+            const off = Number(promo.fixedOff);
+            if (!isFinite(off) || off <= 0) {
+                toast('Código sin monto fijo válido');
+                return false;
+            }
+        } else if (promo.type !== 'pallet_bonus') {
+            toast('Tipo de promo no soportado');
             return false;
         }
         appliedPromoCode = promo.code;
@@ -1652,10 +1742,20 @@
         applyCartTierPrices();
         renderCart();
         renderProducts();
-        if (result.giftTotal > 0) {
-            toast(promo.code + ' · +' + result.giftTotal + ' de regalo');
+        if (promo.type === 'pallet_bonus') {
+            if (result.giftTotal > 0) {
+                toast(promo.code + ' · +' + result.giftTotal + ' de regalo');
+            } else {
+                toast(promo.code + ' aplicado · agrega tarimas completas para bonificar');
+            }
+        } else if (promo.type === 'percent') {
+            toast(promo.code + ' · −' + promo.percentOff + '% en elegibles' +
+                (result.affected ? '' : ' · agrega productos'));
+        } else if (promo.type === 'fixed') {
+            toast(promo.code + ' · −' + money(promo.fixedOff) + ' / u' +
+                (result.affected ? '' : ' · agrega productos'));
         } else {
-            toast(promo.code + ' aplicado · agrega tarimas completas para bonificar');
+            toast(promo.code + ' aplicado');
         }
         return true;
     }
@@ -1665,6 +1765,7 @@
         const had = !!appliedPromoCode;
         appliedPromoCode = null;
         stripAutoPromoLines();
+        clearPromoPriceOverrides();
         applyCartTierPrices();
         if (!opts.skipRender) {
             renderCart();
@@ -1975,7 +2076,7 @@
     }
 
     function beginEditCartPrice(idx) {
-        if (!cart[idx] || cart[idx].promoAuto) return;
+        if (!cart[idx] || cart[idx].promoAuto || cart[idx].promoPriceAuto) return;
         editingPriceIdx = idx;
         renderCart();
         requestAnimationFrame(function () {
@@ -1988,7 +2089,7 @@
     }
 
     function setCartUnitPrice(idx, nextPrice) {
-        if (!cart[idx] || cart[idx].promoAuto) return false;
+        if (!cart[idx] || cart[idx].promoAuto || cart[idx].promoPriceAuto) return false;
         const list = unitPrice(cart[idx].product, cartQty());
         const n = roundMoney(nextPrice);
         if (!isFinite(n) || n < 0) return false;
@@ -2043,11 +2144,7 @@
         const codeBanner = document.getElementById('posCartPromoBanner');
         if (codeBanner) {
             if (applied) {
-                const qtyEl = eligiblePaidQty(applied);
-                const calc = calcPalletBonus(applied, qtyEl);
-                const detail = calc.giftTotal
-                    ? (calc.pallets + ' tarima' + (calc.pallets === 1 ? '' : 's') + ' · +' + calc.giftTotal + ' regalo')
-                    : 'sin tarima completa aún';
+                const detail = promoCartDetail(applied);
                 codeBanner.hidden = false;
                 codeBanner.innerHTML =
                     '<span class="pos-promo-code-badge" title="Código interno (no se muestra al cliente)">' +
@@ -2078,7 +2175,8 @@
             body.innerHTML = cart.map(function (it, idx) {
                 const base = it.basePrice != null ? it.basePrice : it.price;
                 const pct = (it.isPromo || it.priceOverride != null) ? priceDeltaPct(it.price, base) : null;
-                const promoBadge = it.isPromo
+                const priceLocked = !!(it.promoAuto || it.promoPriceAuto);
+                const promoBadge = (it.isPromo || it.promoPriceAuto)
                     ? ('<span class="ci-promo-badge" title="Bonificación / promo (solo staff)">' +
                         esc(it.promoCode || 'Promo') + '</span>')
                     : '';
@@ -2086,11 +2184,17 @@
                     ? '<span class="ci-price-badge" title="Ajuste interno (no se muestra al cliente)">' +
                         esc(formatPriceDeltaBadge(pct)) + '</span>'
                     : '';
-                const editing = !it.promoAuto && editingPriceIdx === idx;
+                const editing = !priceLocked && editingPriceIdx === idx;
                 let metaHtml;
                 if (it.promoAuto) {
                     metaHtml = '<div class="ci-meta"><span class="ci-unit-price" style="cursor:default">' +
                         money(it.price) + ' / ' + esc(it.unit) + '</span></div>';
+                } else if (it.promoPriceAuto) {
+                    metaHtml = ('<div class="ci-meta">' +
+                        '<span class="ci-unit-price" style="cursor:default" title="Precio con código de promo">' +
+                        money(it.price) + ' / ' + esc(it.unit) + '</span>' +
+                        badgeHtml +
+                        '</div>');
                 } else if (editing) {
                     metaHtml = ('<div class="ci-meta ci-meta-editing">' +
                         '<input class="ci-price-input" type="number" inputmode="decimal" min="0" step="0.01" ' +
@@ -2112,7 +2216,8 @@
                 const itemClass = 'cart-item' +
                     (it.priceOverride != null ? ' has-price-override' : '') +
                     (it.isPromo ? ' is-promo' : '') +
-                    (it.promoAuto ? ' is-promo-auto' : '');
+                    (it.promoAuto ? ' is-promo-auto' : '') +
+                    (it.promoPriceAuto ? ' is-promo-price' : '');
                 const qtyRow = it.promoAuto
                     ? ('<div class="qty-row">' +
                         '<span class="qty-locked" title="Cantidad calculada por el código">' + esc(String(it.qty)) + '</span>' +
@@ -2128,7 +2233,7 @@
                         '</div>');
                 return '<div class="' + itemClass + '">' +
                     '<div class="ci-name">' + esc(it.name) + promoBadge + '</div>' +
-                    '<div class="ci-line"' + (it.promoAuto ? '' : ' data-edit-price="' + idx + '" title="Editar precio unitario"') + '>' +
+                    '<div class="ci-line"' + (priceLocked ? '' : ' data-edit-price="' + idx + '" title="Editar precio unitario"') + '>' +
                     money(it.qty * it.price) + '</div>' +
                     metaHtml +
                     '<div></div>' +
@@ -2322,6 +2427,7 @@
                 if (it.isPromo) row.isPromo = true;
                 if (it.promoCode) row.promoCode = it.promoCode;
                 if (it.promoAuto) row.promoAuto = true;
+                if (it.promoPriceAuto) row.promoPriceAuto = true;
                 return row;
             }),
             total: cartTotal(),
@@ -3727,6 +3833,8 @@
             return;
         }
         let levels = defaultPalletLevels();
+        let percentOff = null;
+        let fixedOff = null;
         if (type === 'pallet_bonus') {
             const levelsResult = collectPromoLevelsFromEditor();
             if (!levelsResult.ok) {
@@ -3734,6 +3842,22 @@
                 return;
             }
             levels = levelsResult.levels;
+        } else if (type === 'percent') {
+            const pctRaw = (document.getElementById('promoAdminPercent') || {}).value;
+            const pct = Number(pctRaw);
+            if (!isFinite(pct) || pct <= 0 || pct > 100) {
+                toast('Indica un % de descuento entre 0.1 y 100');
+                return;
+            }
+            percentOff = pct;
+        } else if (type === 'fixed') {
+            const offRaw = (document.getElementById('promoAdminFixed') || {}).value;
+            const off = Number(offRaw);
+            if (!isFinite(off) || off <= 0) {
+                toast('Indica un monto fijo mayor a 0');
+                return;
+            }
+            fixedOff = off;
         }
         const draft = normalizePromoItem({
             id: existing ? existing.id : ('promo-' + Date.now().toString(36)),
@@ -3745,8 +3869,8 @@
             eligibleProducts: eligible,
             palletSize: (document.getElementById('promoAdminPalletSize') || {}).value,
             levels: levels,
-            percentOff: (document.getElementById('promoAdminPercent') || {}).value,
-            fixedOff: (document.getElementById('promoAdminFixed') || {}).value,
+            percentOff: percentOff,
+            fixedOff: fixedOff,
             notes: (document.getElementById('promoAdminNotes') || {}).value,
             updatedAt: new Date().toISOString()
         });
