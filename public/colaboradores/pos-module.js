@@ -3580,50 +3580,118 @@
     }
 
     function fillPromoEligibleSelect(selected) {
-        const sel = document.getElementById('promoAdminEligible');
-        if (!sel) return;
+        const list = document.getElementById('promoAdminEligibleList');
+        if (!list) return;
         const picked = {};
         (selected || []).forEach(function (s) { picked[s] = true; });
         const recipes = getRecipes();
-        sel.innerHTML = recipes.map(function (r) {
-            return '<option value="' + esc(r.product) + '"' +
-                (picked[r.product] ? ' selected' : '') + '>' +
-                esc(r.name) + (r.code ? ' (' + esc(r.code) + ')' : '') +
-                '</option>';
+        if (!recipes.length) {
+            list.innerHTML = '<p class="muted" style="margin:0;font-size:12px">No hay productos cargados.</p>';
+            return;
+        }
+        list.innerHTML = recipes.map(function (r) {
+            const id = 'promoElig_' + String(r.product || '').replace(/[^a-zA-Z0-9_-]/g, '_');
+            return '<label class="promo-eligible-item" for="' + esc(id) + '">' +
+                '<input type="checkbox" id="' + esc(id) + '" value="' + esc(r.product) + '"' +
+                (picked[r.product] ? ' checked' : '') + '>' +
+                '<span>' + esc(r.name) + (r.code ? ' <span class="muted">(' + esc(r.code) + ')</span>' : '') + '</span>' +
+                '</label>';
         }).join('');
     }
 
-    function levelsToTextarea(levels) {
-        return (levels || defaultPalletLevels()).map(function (lv) {
-            if (lv.special) return lv.min + '+|especial';
-            const maxPart = lv.max == null ? '' : String(lv.max);
-            return lv.min + '-' + maxPart + '|' + lv.giftPerPallet;
-        }).join('\n');
+    function collectPromoEligibleFromList() {
+        const list = document.getElementById('promoAdminEligibleList');
+        if (!list) return [];
+        return Array.prototype.slice.call(list.querySelectorAll('input[type="checkbox"]:checked'))
+            .map(function (el) { return el.value; })
+            .filter(Boolean);
     }
 
-    function parseLevelsTextarea(text) {
-        const lines = String(text || '').split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean);
-        if (!lines.length) return defaultPalletLevels();
+    function promoLevelRowHtml(lv, idx) {
+        const special = !!(lv && lv.special);
+        const minVal = lv && lv.min != null ? String(lv.min) : '';
+        const maxVal = lv && lv.max != null && lv.max !== '' ? String(lv.max) : '';
+        const giftVal = !special && lv && lv.giftPerPallet != null ? String(lv.giftPerPallet) : '';
+        return '<div class="promo-level-row' + (special ? ' is-special' : '') + '" data-promo-level-row role="listitem">' +
+            '<label>Desde (sacos)' +
+            '<input type="number" min="0" step="1" data-level-min value="' + esc(minVal) + '">' +
+            '</label>' +
+            '<label>Hasta (sacos)' +
+            '<input type="number" min="0" step="1" data-level-max value="' + esc(maxVal) + '"' +
+            ' placeholder="∞" ' + (special ? 'disabled' : '') + '>' +
+            '</label>' +
+            '<label>Regalo por tarima' +
+            '<input type="number" min="0" step="1" data-level-gift value="' + esc(giftVal) + '"' +
+            ' placeholder="' + (special ? '—' : '0') + '" ' + (special ? 'disabled' : '') + '>' +
+            '</label>' +
+            '<label class="promo-level-special">' +
+            '<input type="checkbox" data-level-special' + (special ? ' checked' : '') + '>' +
+            ' Especial / convenio' +
+            '</label>' +
+            '<button type="button" class="btn ghost danger promo-level-del" data-level-del title="Quitar nivel" aria-label="Quitar nivel">' +
+            '<i class="fa-solid fa-trash-can"></i>' +
+            '</button>' +
+            '</div>';
+    }
+
+    function renderPromoLevelsEditor(levels) {
+        const list = document.getElementById('promoAdminLevelsList');
+        if (!list) return;
+        const rows = (levels && levels.length) ? levels : defaultPalletLevels();
+        list.innerHTML = rows.map(function (lv, i) { return promoLevelRowHtml(lv, i); }).join('');
+    }
+
+    function syncPromoLevelRowUi(row) {
+        if (!row) return;
+        const specialEl = row.querySelector('[data-level-special]');
+        const maxEl = row.querySelector('[data-level-max]');
+        const giftEl = row.querySelector('[data-level-gift]');
+        const special = !!(specialEl && specialEl.checked);
+        row.classList.toggle('is-special', special);
+        if (maxEl) {
+            maxEl.disabled = special;
+            if (special) maxEl.value = '';
+        }
+        if (giftEl) {
+            giftEl.disabled = special;
+            if (special) giftEl.value = '';
+            giftEl.placeholder = special ? '—' : '0';
+        }
+    }
+
+    function collectPromoLevelsFromEditor() {
+        const list = document.getElementById('promoAdminLevelsList');
+        if (!list) return defaultPalletLevels();
+        const rows = Array.prototype.slice.call(list.querySelectorAll('[data-promo-level-row]'));
         const out = [];
-        lines.forEach(function (line) {
-            const parts = line.split('|');
-            const range = String(parts[0] || '').trim();
-            const giftRaw = String(parts[1] || '').trim().toLowerCase();
-            if (range.indexOf('+') >= 0 || giftRaw === 'especial' || giftRaw === 'special') {
-                const min = Math.floor(Number(String(range).replace(/[^0-9]/g, '')) || 0);
+        rows.forEach(function (row) {
+            const minEl = row.querySelector('[data-level-min]');
+            const maxEl = row.querySelector('[data-level-max]');
+            const giftEl = row.querySelector('[data-level-gift]');
+            const specialEl = row.querySelector('[data-level-special]');
+            const special = !!(specialEl && specialEl.checked);
+            const min = Math.max(0, Math.floor(Number(minEl && minEl.value) || 0));
+            if (special) {
                 out.push({ min: min, max: null, giftPerPallet: null, special: true });
                 return;
             }
-            const rm = range.match(/^(\d+)\s*-\s*(\d+)?$/);
-            if (!rm) return;
+            const maxRaw = maxEl ? String(maxEl.value || '').trim() : '';
+            const giftRaw = giftEl ? String(giftEl.value || '').trim() : '';
             out.push({
-                min: Math.floor(Number(rm[1]) || 0),
-                max: rm[2] ? Math.floor(Number(rm[2])) : null,
-                giftPerPallet: Math.floor(Number(giftRaw) || 0),
+                min: min,
+                max: maxRaw === '' ? null : Math.floor(Number(maxRaw)),
+                giftPerPallet: giftRaw === '' ? 0 : Math.floor(Number(giftRaw) || 0),
                 special: false
             });
         });
         return out.length ? out : defaultPalletLevels();
+    }
+
+    function addPromoLevelRow(preset) {
+        const list = document.getElementById('promoAdminLevelsList');
+        if (!list) return;
+        const lv = preset || { min: '', max: '', giftPerPallet: '', special: false };
+        list.insertAdjacentHTML('beforeend', promoLevelRowHtml(lv, list.children.length));
     }
 
     function openPromoAdminModal(id) {
@@ -3639,7 +3707,6 @@
         const distEl = document.getElementById('promoAdminDistributorOnly');
         const allEl = document.getElementById('promoAdminAllProducts');
         const palletEl = document.getElementById('promoAdminPalletSize');
-        const levelsEl = document.getElementById('promoAdminLevels');
         const percentEl = document.getElementById('promoAdminPercent');
         const fixedEl = document.getElementById('promoAdminFixed');
         const notesEl = document.getElementById('promoAdminNotes');
@@ -3657,7 +3724,7 @@
         const eligWrap = document.getElementById('promoAdminEligibleWrap');
         if (eligWrap) eligWrap.hidden = allProducts;
         if (palletEl) palletEl.value = String(p ? p.palletSize : 80);
-        if (levelsEl) levelsEl.value = levelsToTextarea(p ? p.levels : defaultPalletLevels());
+        renderPromoLevelsEditor(p ? p.levels : defaultPalletLevels());
         if (percentEl) percentEl.value = p && p.percentOff != null ? String(p.percentOff) : '';
         if (fixedEl) fixedEl.value = p && p.fixedOff != null ? String(p.fixedOff) : '';
         if (notesEl) notesEl.value = p ? (p.notes || '') : '';
@@ -3686,12 +3753,9 @@
         const typeEl = document.getElementById('promoAdminType');
         const type = typeEl ? typeEl.value : 'pallet_bonus';
         const allEl = document.getElementById('promoAdminAllProducts');
-        const sel = document.getElementById('promoAdminEligible');
         let eligible = [];
         if (!allEl || !allEl.checked) {
-            eligible = sel
-                ? Array.prototype.slice.call(sel.selectedOptions).map(function (o) { return o.value; })
-                : [];
+            eligible = collectPromoEligibleFromList();
         }
         const existing = promoAdminEditId ? promoById(promoAdminEditId) : null;
         if (!existing && promoByCode(code)) {
@@ -3711,7 +3775,7 @@
             distributorOnly: !!(document.getElementById('promoAdminDistributorOnly') || {}).checked,
             eligibleProducts: eligible,
             palletSize: (document.getElementById('promoAdminPalletSize') || {}).value,
-            levels: parseLevelsTextarea((document.getElementById('promoAdminLevels') || {}).value),
+            levels: collectPromoLevelsFromEditor(),
             percentOff: (document.getElementById('promoAdminPercent') || {}).value,
             fixedOff: (document.getElementById('promoAdminFixed') || {}).value,
             notes: (document.getElementById('promoAdminNotes') || {}).value,
@@ -3791,6 +3855,31 @@
             allEl.addEventListener('change', function () {
                 const wrap = document.getElementById('promoAdminEligibleWrap');
                 if (wrap) wrap.hidden = !!allEl.checked;
+            });
+        }
+        const levelsList = document.getElementById('promoAdminLevelsList');
+        if (levelsList) {
+            levelsList.addEventListener('click', function (e) {
+                const delBtn = e.target.closest('[data-level-del]');
+                if (!delBtn) return;
+                const row = delBtn.closest('[data-promo-level-row]');
+                if (!row) return;
+                const siblings = levelsList.querySelectorAll('[data-promo-level-row]');
+                if (siblings.length <= 1) {
+                    toast('Deja al menos un nivel');
+                    return;
+                }
+                row.remove();
+            });
+            levelsList.addEventListener('change', function (e) {
+                if (!e.target || !e.target.matches('[data-level-special]')) return;
+                syncPromoLevelRowUi(e.target.closest('[data-promo-level-row]'));
+            });
+        }
+        const addLevelBtn = document.getElementById('promoAdminAddLevel');
+        if (addLevelBtn) {
+            addLevelBtn.addEventListener('click', function () {
+                addPromoLevelRow({ min: '', max: '', giftPerPallet: '', special: false });
             });
         }
         const form = document.getElementById('promoAdminForm');
