@@ -1391,8 +1391,7 @@
             { min: 240, max: 479, giftPerPallet: 6 },
             { min: 480, max: 959, giftPerPallet: 7 },
             { min: 960, max: 2399, giftPerPallet: 8 },
-            { min: 2400, max: 4999, giftPerPallet: 10 },
-            { min: 5000, max: null, giftPerPallet: null, special: true }
+            { min: 2400, max: 4999, giftPerPallet: 10 }
         ];
     }
 
@@ -1407,7 +1406,7 @@
             eligibleProducts: [],
             palletSize: 80,
             levels: defaultPalletLevels(),
-            notes: 'Programa Bonificaciones Distribuidores S-35: producto de regalo por tarimas completas de 80. Niveles 80+5 … 80+10; 5000+ especial/convenio. Seed del programa multi-nivel.',
+            notes: 'Programa Bonificaciones Distribuidores S-35: producto de regalo por tarimas completas de 80. Niveles 80+5 … 80+10.',
             updatedAt: new Date().toISOString()
         };
     }
@@ -1421,18 +1420,18 @@
         const code = normalizePromoCode(p.code);
         if (!code) return null;
         const type = String(p.type || 'pallet_bonus').trim() || 'pallet_bonus';
-        const levels = Array.isArray(p.levels) && p.levels.length
-            ? p.levels.map(function (lv) {
-                return {
-                    min: Math.max(0, Math.floor(Number(lv.min) || 0)),
-                    max: lv.max == null || lv.max === '' ? null : Math.floor(Number(lv.max)),
-                    giftPerPallet: lv.giftPerPallet == null || lv.giftPerPallet === ''
-                        ? null
-                        : Math.floor(Number(lv.giftPerPallet)),
-                    special: !!lv.special
-                };
-            })
-            : defaultPalletLevels();
+        const levelsRaw = Array.isArray(p.levels) ? p.levels : [];
+        const levels = levelsRaw.map(function (lv) {
+            if (!lv || lv.special) return null;
+            if (lv.max == null || lv.max === '' || lv.giftPerPallet == null || lv.giftPerPallet === '') return null;
+            const min = Math.floor(Number(lv.min));
+            const max = Math.floor(Number(lv.max));
+            const gift = Math.floor(Number(lv.giftPerPallet));
+            if (!isFinite(min) || !isFinite(max) || !isFinite(gift)) return null;
+            if (min < 0 || max < 0 || gift < 0 || min > max) return null;
+            return { min: min, max: max, giftPerPallet: gift };
+        }).filter(Boolean);
+        const levelsFinal = levels.length ? levels : defaultPalletLevels();
         const eligible = Array.isArray(p.eligibleProducts)
             ? p.eligibleProducts.map(function (s) { return String(s || '').trim(); }).filter(Boolean)
             : [];
@@ -1445,7 +1444,7 @@
             distributorOnly: !!p.distributorOnly,
             eligibleProducts: eligible,
             palletSize: Math.max(1, Math.floor(Number(p.palletSize) || 80)),
-            levels: levels,
+            levels: levelsFinal,
             percentOff: p.percentOff != null && isFinite(Number(p.percentOff)) ? Number(p.percentOff) : null,
             fixedOff: p.fixedOff != null && isFinite(Number(p.fixedOff)) ? Number(p.fixedOff) : null,
             notes: String(p.notes || '').trim(),
@@ -1515,8 +1514,9 @@
         const levels = (promo && promo.levels) || [];
         for (let i = 0; i < levels.length; i++) {
             const lv = levels[i];
-            const min = Number(lv.min) || 0;
-            const max = lv.max == null ? Infinity : Number(lv.max);
+            const min = Number(lv.min);
+            const max = Number(lv.max);
+            if (!isFinite(min) || !isFinite(max)) continue;
             if (q >= min && q <= max) return lv;
         }
         return null;
@@ -1525,23 +1525,13 @@
     /**
      * Calcula sacos de regalo del programa por tarimas.
      * B = floor(qtyElegible / palletSize) * giftPerPallet(nivel).
-     * Nivel especial (5000+) → gift = 0 + flag special.
      */
     function calcPalletBonus(promo, qtyEligible) {
         const palletSize = Math.max(1, Number(promo && promo.palletSize) || 80);
         const q = Math.floor(Number(qtyEligible) || 0);
         const level = findPromoLevel(promo, q);
         if (!level || q < palletSize) {
-            return { giftTotal: 0, pallets: 0, giftPerPallet: 0, level: level, special: !!(level && level.special) };
-        }
-        if (level.special || level.giftPerPallet == null) {
-            return {
-                giftTotal: 0,
-                pallets: Math.floor(q / palletSize),
-                giftPerPallet: null,
-                level: level,
-                special: true
-            };
+            return { giftTotal: 0, pallets: 0, giftPerPallet: 0, level: level };
         }
         const pallets = Math.floor(q / palletSize);
         const giftPerPallet = Math.max(0, Math.floor(Number(level.giftPerPallet) || 0));
@@ -1549,8 +1539,7 @@
             giftTotal: pallets * giftPerPallet,
             pallets: pallets,
             giftPerPallet: giftPerPallet,
-            level: level,
-            special: false
+            level: level
         };
     }
 
@@ -1611,12 +1600,6 @@
         }
         const qtyEl = eligiblePaidQty(promo);
         const calc = calcPalletBonus(promo, qtyEl);
-        if (calc.special) {
-            if (!quiet) {
-                toast('Volumen especial (5000+): requiere convenio manual — sin bonificación automática');
-            }
-            return { ok: true, giftTotal: 0, special: true, calc: calc };
-        }
         const gifts = allocateGiftByProduct(promo, calc.giftTotal);
         Object.keys(gifts).forEach(function (slug) {
             const gq = gifts[slug];
@@ -1669,9 +1652,7 @@
         applyCartTierPrices();
         renderCart();
         renderProducts();
-        if (result.special) {
-            toast(promo.code + ' aplicado · volumen especial (convenio manual)');
-        } else if (result.giftTotal > 0) {
+        if (result.giftTotal > 0) {
             toast(promo.code + ' · +' + result.giftTotal + ' de regalo');
         } else {
             toast(promo.code + ' aplicado · agrega tarimas completas para bonificar');
@@ -2064,11 +2045,9 @@
             if (applied) {
                 const qtyEl = eligiblePaidQty(applied);
                 const calc = calcPalletBonus(applied, qtyEl);
-                let detail = calc.special
-                    ? 'volumen especial · convenio'
-                    : (calc.giftTotal
-                        ? (calc.pallets + ' tarima' + (calc.pallets === 1 ? '' : 's') + ' · +' + calc.giftTotal + ' regalo')
-                        : 'sin tarima completa aún');
+                const detail = calc.giftTotal
+                    ? (calc.pallets + ' tarima' + (calc.pallets === 1 ? '' : 's') + ' · +' + calc.giftTotal + ' regalo')
+                    : 'sin tarima completa aún';
                 codeBanner.hidden = false;
                 codeBanner.innerHTML =
                     '<span class="pos-promo-code-badge" title="Código interno (no se muestra al cliente)">' +
@@ -3607,26 +3586,19 @@
             .filter(Boolean);
     }
 
-    function promoLevelRowHtml(lv, idx) {
-        const special = !!(lv && lv.special);
-        const minVal = lv && lv.min != null ? String(lv.min) : '';
+    function promoLevelRowHtml(lv) {
+        const minVal = lv && lv.min != null && lv.min !== '' ? String(lv.min) : '';
         const maxVal = lv && lv.max != null && lv.max !== '' ? String(lv.max) : '';
-        const giftVal = !special && lv && lv.giftPerPallet != null ? String(lv.giftPerPallet) : '';
-        return '<div class="promo-level-row' + (special ? ' is-special' : '') + '" data-promo-level-row role="listitem">' +
-            '<label>Desde (sacos)' +
+        const giftVal = lv && lv.giftPerPallet != null && lv.giftPerPallet !== '' ? String(lv.giftPerPallet) : '';
+        return '<div class="promo-level-row" data-promo-level-row role="listitem">' +
+            '<label>Desde' +
             '<input type="number" min="0" step="1" data-level-min value="' + esc(minVal) + '">' +
             '</label>' +
-            '<label>Hasta (sacos)' +
-            '<input type="number" min="0" step="1" data-level-max value="' + esc(maxVal) + '"' +
-            ' placeholder="∞" ' + (special ? 'disabled' : '') + '>' +
+            '<label>Hasta' +
+            '<input type="number" min="0" step="1" data-level-max value="' + esc(maxVal) + '">' +
             '</label>' +
             '<label>Regalo por tarima' +
-            '<input type="number" min="0" step="1" data-level-gift value="' + esc(giftVal) + '"' +
-            ' placeholder="' + (special ? '—' : '0') + '" ' + (special ? 'disabled' : '') + '>' +
-            '</label>' +
-            '<label class="promo-level-special">' +
-            '<input type="checkbox" data-level-special' + (special ? ' checked' : '') + '>' +
-            ' Especial / convenio' +
+            '<input type="number" min="0" step="1" data-level-gift value="' + esc(giftVal) + '">' +
             '</label>' +
             '<button type="button" class="btn ghost danger promo-level-del" data-level-del title="Quitar nivel" aria-label="Quitar nivel">' +
             '<i class="fa-solid fa-trash-can"></i>' +
@@ -3638,60 +3610,48 @@
         const list = document.getElementById('promoAdminLevelsList');
         if (!list) return;
         const rows = (levels && levels.length) ? levels : defaultPalletLevels();
-        list.innerHTML = rows.map(function (lv, i) { return promoLevelRowHtml(lv, i); }).join('');
-    }
-
-    function syncPromoLevelRowUi(row) {
-        if (!row) return;
-        const specialEl = row.querySelector('[data-level-special]');
-        const maxEl = row.querySelector('[data-level-max]');
-        const giftEl = row.querySelector('[data-level-gift]');
-        const special = !!(specialEl && specialEl.checked);
-        row.classList.toggle('is-special', special);
-        if (maxEl) {
-            maxEl.disabled = special;
-            if (special) maxEl.value = '';
-        }
-        if (giftEl) {
-            giftEl.disabled = special;
-            if (special) giftEl.value = '';
-            giftEl.placeholder = special ? '—' : '0';
-        }
+        list.innerHTML = rows.map(function (lv) { return promoLevelRowHtml(lv); }).join('');
     }
 
     function collectPromoLevelsFromEditor() {
         const list = document.getElementById('promoAdminLevelsList');
-        if (!list) return defaultPalletLevels();
+        if (!list) return { ok: false, error: 'No se encontraron niveles', levels: [] };
         const rows = Array.prototype.slice.call(list.querySelectorAll('[data-promo-level-row]'));
+        if (!rows.length) return { ok: false, error: 'Agrega al menos un nivel', levels: [] };
         const out = [];
-        rows.forEach(function (row) {
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
             const minEl = row.querySelector('[data-level-min]');
             const maxEl = row.querySelector('[data-level-max]');
             const giftEl = row.querySelector('[data-level-gift]');
-            const specialEl = row.querySelector('[data-level-special]');
-            const special = !!(specialEl && specialEl.checked);
-            const min = Math.max(0, Math.floor(Number(minEl && minEl.value) || 0));
-            if (special) {
-                out.push({ min: min, max: null, giftPerPallet: null, special: true });
-                return;
-            }
+            const minRaw = minEl ? String(minEl.value || '').trim() : '';
             const maxRaw = maxEl ? String(maxEl.value || '').trim() : '';
             const giftRaw = giftEl ? String(giftEl.value || '').trim() : '';
-            out.push({
-                min: min,
-                max: maxRaw === '' ? null : Math.floor(Number(maxRaw)),
-                giftPerPallet: giftRaw === '' ? 0 : Math.floor(Number(giftRaw) || 0),
-                special: false
-            });
-        });
-        return out.length ? out : defaultPalletLevels();
+            if (minRaw === '' || maxRaw === '' || giftRaw === '') {
+                return { ok: false, error: 'Completa Desde, Hasta y Regalo en cada nivel', levels: [] };
+            }
+            const min = Math.floor(Number(minRaw));
+            const max = Math.floor(Number(maxRaw));
+            const gift = Math.floor(Number(giftRaw));
+            if (!isFinite(min) || !isFinite(max) || !isFinite(gift)) {
+                return { ok: false, error: 'Los niveles deben ser números válidos', levels: [] };
+            }
+            if (min < 0 || max < 0 || gift < 0) {
+                return { ok: false, error: 'Desde, Hasta y Regalo no pueden ser negativos', levels: [] };
+            }
+            if (min > max) {
+                return { ok: false, error: 'En cada nivel, Desde no puede ser mayor que Hasta', levels: [] };
+            }
+            out.push({ min: min, max: max, giftPerPallet: gift });
+        }
+        return { ok: true, levels: out };
     }
 
     function addPromoLevelRow(preset) {
         const list = document.getElementById('promoAdminLevelsList');
         if (!list) return;
-        const lv = preset || { min: '', max: '', giftPerPallet: '', special: false };
-        list.insertAdjacentHTML('beforeend', promoLevelRowHtml(lv, list.children.length));
+        const lv = preset || { min: '', max: '', giftPerPallet: '' };
+        list.insertAdjacentHTML('beforeend', promoLevelRowHtml(lv));
     }
 
     function openPromoAdminModal(id) {
@@ -3766,6 +3726,15 @@
             toast('Ya existe ese código');
             return;
         }
+        let levels = defaultPalletLevels();
+        if (type === 'pallet_bonus') {
+            const levelsResult = collectPromoLevelsFromEditor();
+            if (!levelsResult.ok) {
+                toast(levelsResult.error);
+                return;
+            }
+            levels = levelsResult.levels;
+        }
         const draft = normalizePromoItem({
             id: existing ? existing.id : ('promo-' + Date.now().toString(36)),
             code: code,
@@ -3775,7 +3744,7 @@
             distributorOnly: !!(document.getElementById('promoAdminDistributorOnly') || {}).checked,
             eligibleProducts: eligible,
             palletSize: (document.getElementById('promoAdminPalletSize') || {}).value,
-            levels: collectPromoLevelsFromEditor(),
+            levels: levels,
             percentOff: (document.getElementById('promoAdminPercent') || {}).value,
             fixedOff: (document.getElementById('promoAdminFixed') || {}).value,
             notes: (document.getElementById('promoAdminNotes') || {}).value,
@@ -3871,15 +3840,11 @@
                 }
                 row.remove();
             });
-            levelsList.addEventListener('change', function (e) {
-                if (!e.target || !e.target.matches('[data-level-special]')) return;
-                syncPromoLevelRowUi(e.target.closest('[data-promo-level-row]'));
-            });
         }
         const addLevelBtn = document.getElementById('promoAdminAddLevel');
         if (addLevelBtn) {
             addLevelBtn.addEventListener('click', function () {
-                addPromoLevelRow({ min: '', max: '', giftPerPallet: '', special: false });
+                addPromoLevelRow({ min: '', max: '', giftPerPallet: '' });
             });
         }
         const form = document.getElementById('promoAdminForm');
