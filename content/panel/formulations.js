@@ -173,10 +173,16 @@ module.exports = [
   dryMortar({
     product: 'ceramico',
     water: 'Solo agua',
-    cement: ['cemento-gris'],
+    cement: ['cemento-gris', 'cal'],
     aggregate: ['arena-silicea-graduada'],
-    filler: ['carbonato-de-calcio', 'caolin'],
-    admixture: TILE_ADMIX,
+    filler: ['carbonato-de-calcio'],
+    admixture: [
+      ['polimero-redispersable-vae', 'Polímero redispersable'],
+      ['celulosa-hpmc', 'Retención de agua / reología'],
+    ],
+    status: 'lote-planta',
+    note: 'Dosificación de planta por lote (869 kg → ~34.76 sacos). ARENA DESHIDRATADA FINA → arena-deshidratada (única deshidratada en catálogo). TALCO 100 → marmolina-talco-100.',
+    notesOnMix: ['Mortero de planta (plantId mortero) sin ficha de Laboratorio.'],
   }),
   dryMortar({
     product: 'porcelanico-universal',

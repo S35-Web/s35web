@@ -183,4 +183,29 @@ module.exports = {
       },
     ],
   },
+  ceramico: {
+    mode: 'plant-lot',
+    packSizeKg: 25,
+    packagingPlantId: 'saco-rafia-general',
+    note: 'Lote de planta FT-AD-002. V1 Pegaxpress Cerámico (869 kg → ~34.76 sacos). ARENA DESHIDRATADA FINA → arena-deshidratada (única MP deshidratada en catálogo; no hay SKU «fina» separado).',
+    defaultVersionId: 'v1',
+    versions: [
+      {
+        id: 'v1',
+        name: 'V1',
+        label: 'Arena deshidratada + talco 100',
+        yieldMin: 34,
+        yieldMax: 35,
+        items: [
+          { plantId: 'arena-deshidratada', amount: 412, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'marmolina-talco-100', amount: 250, unit: 'Kg', role: 'Carga' },
+          { plantId: 'cemento-portland-gris', amount: 125, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'mortero', amount: 50, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'calidra', amount: 25, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'resina-rdp740h', amount: 6, unit: 'Kg', role: 'Polímero' },
+          { plantId: 'walocell', amount: 1, unit: 'Kg', role: 'Celulosa' },
+        ],
+      },
+    ],
+  },
 };
