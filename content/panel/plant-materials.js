@@ -13,7 +13,7 @@ module.exports = [
   { id: "arena-cribada-fina", name: "Arena cribada fina", unit: "Kg", minStock: 1000, category: "mineral", labSlug: "arena-silicea-graduada" },
   { id: "arena-cribada-gruesa", name: "Arena cribada gruesa", unit: "Kg", minStock: 2000, category: "mineral", labSlug: "arena-de-rio" },
   { id: "arena-deshidratada", name: "Arena deshidratada", unit: "Kg", minStock: 2000, category: "mineral", labSlug: "arena-silicea-graduada" },
-  { id: "calidra", name: "Calidra", unit: "Kg", minStock: 500, category: "aglutinante", labSlug: "cal" },
+  { id: "calidra", name: "Cal", unit: "Kg", minStock: 500, category: "aglutinante", labSlug: "cal" },
   { id: "cemento-portland-gris", name: "Cemento portland gris", unit: "Kg", minStock: 1000, category: "aglutinante", labSlug: "cemento-gris" },
   { id: "cemento-portland-blanco", name: "Cemento portland blanco", unit: "Kg", minStock: 250, category: "aglutinante", labSlug: "cemento-blanco" },
   { id: "cubeta-19l", name: "Cubeta 19L", unit: "Pza", minStock: 100, category: "packaging", labSlug: null },

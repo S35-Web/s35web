@@ -990,7 +990,7 @@ window.S35_PANEL_DATA = {
     },
     {
       "id": "calidra",
-      "name": "Calidra",
+      "name": "Cal",
       "unit": "Kg",
       "minStock": 500,
       "category": "aglutinante",
