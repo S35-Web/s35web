@@ -176,6 +176,41 @@ window.S35_PANEL_DATA = {
       "imageAlt": "Saco de 25 kg de Microconcreto: Concreto aparente (Cemento plástico)"
     },
     {
+      "slug": "microconcreto-blanco-pulido",
+      "name": "Microconcreto: Blanco (Pulido)",
+      "code": "FT-MC-002",
+      "family": "Microconcretos",
+      "status": "draft",
+      "line": "Microconcreto de acabado blanco pulido",
+      "packaging": "25 kg",
+      "description": "MICROCONCRETO BLANCO (PULIDO): ficha en borrador. Pendiente de validación comercial.",
+      "lead": "MICROCONCRETO BLANCO (PULIDO) está en catálogo como borrador a partir del histórico de planta. Confirmar dosificación, usos y rendimiento con la ficha impresa vigente antes de especificar en obra.",
+      "strip": [
+        "Borrador interno · pendiente de ficha impresa",
+        "25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "presentación"
+        },
+        {
+          "value": "Consultar",
+          "label": "agua / dosificación"
+        },
+        {
+          "value": "Consultar",
+          "label": "espesor de trabajo"
+        },
+        {
+          "value": "Consultar",
+          "label": "rendimiento"
+        }
+      ],
+      "image": "",
+      "imageAlt": "Microconcreto: Blanco (Pulido)"
+    },
+    {
       "slug": "styrobond-pro",
       "name": "Styrobond pro+",
       "code": "FT-PP-001",
@@ -209,6 +244,41 @@ window.S35_PANEL_DATA = {
       ],
       "image": "/Assets/productos_thumbs/styrobond.jpg",
       "imageAlt": "Saco de 25 kg de Styrobond Pro+, pegamento y recubrimiento para EPS"
+    },
+    {
+      "slug": "cellbond-pro",
+      "name": "Cellbond pro+",
+      "code": "FT-PP-002",
+      "family": "Pro+ Systems",
+      "status": "draft",
+      "line": "Adhesivo para block celular",
+      "packaging": "25 kg",
+      "description": "CELLBOND PRO+: ficha en borrador. Pendiente de validación comercial.",
+      "lead": "CELLBOND PRO+ está en catálogo como borrador a partir del histórico de planta. Confirmar dosificación, usos y rendimiento con la ficha impresa vigente antes de especificar en obra.",
+      "strip": [
+        "Borrador interno · pendiente de ficha impresa",
+        "25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "presentación"
+        },
+        {
+          "value": "Consultar",
+          "label": "agua / dosificación"
+        },
+        {
+          "value": "Consultar",
+          "label": "espesor de trabajo"
+        },
+        {
+          "value": "Consultar",
+          "label": "rendimiento"
+        }
+      ],
+      "image": "",
+      "imageAlt": "Cellbond pro+"
     },
     {
       "slug": "leveltec-pro",
@@ -559,6 +629,216 @@ window.S35_PANEL_DATA = {
       ],
       "image": "/Assets/productos_thumbs/adhesivo-heavy-duty.jpg",
       "imageAlt": "Envase de 1 L de Adhesivo Heavy Duty S-35"
+    },
+    {
+      "slug": "textura-adhesile",
+      "name": "Textura adhesile",
+      "code": "FT-PR-010",
+      "family": "Estucos premium",
+      "status": "draft",
+      "line": "Textura de acabado",
+      "packaging": "25 kg",
+      "description": "TEXTURA ADHESILE: ficha en borrador. Pendiente de validación comercial.",
+      "lead": "TEXTURA ADHESILE está en catálogo como borrador a partir del histórico de planta. Confirmar dosificación, usos y rendimiento con la ficha impresa vigente antes de especificar en obra.",
+      "strip": [
+        "Borrador interno · pendiente de ficha impresa",
+        "25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "presentación"
+        },
+        {
+          "value": "Consultar",
+          "label": "agua / dosificación"
+        },
+        {
+          "value": "Consultar",
+          "label": "espesor de trabajo"
+        },
+        {
+          "value": "Consultar",
+          "label": "rendimiento"
+        }
+      ],
+      "image": "",
+      "imageAlt": "Textura adhesile"
+    },
+    {
+      "slug": "tirol-plaste",
+      "name": "Tirol plaste",
+      "code": "FT-PR-011",
+      "family": "Estucos premium",
+      "status": "draft",
+      "line": "Tirol / textura proyectada",
+      "packaging": "25 kg",
+      "description": "TIROL PLASTE: ficha en borrador. Pendiente de validación comercial.",
+      "lead": "TIROL PLASTE está en catálogo como borrador a partir del histórico de planta. Confirmar dosificación, usos y rendimiento con la ficha impresa vigente antes de especificar en obra.",
+      "strip": [
+        "Borrador interno · pendiente de ficha impresa",
+        "25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "presentación"
+        },
+        {
+          "value": "Consultar",
+          "label": "agua / dosificación"
+        },
+        {
+          "value": "Consultar",
+          "label": "espesor de trabajo"
+        },
+        {
+          "value": "Consultar",
+          "label": "rendimiento"
+        }
+      ],
+      "image": "",
+      "imageAlt": "Tirol plaste"
+    },
+    {
+      "slug": "mortercom",
+      "name": "Mortercom",
+      "code": "FT-PR-012",
+      "family": "Pro+ Systems",
+      "status": "draft",
+      "line": "Mortero de línea (nombre comercial pendiente)",
+      "packaging": "25 kg",
+      "description": "MORTERCOM: ficha en borrador. Pendiente de validación comercial.",
+      "lead": "MORTERCOM está en catálogo como borrador a partir del histórico de planta. Confirmar dosificación, usos y rendimiento con la ficha impresa vigente antes de especificar en obra.",
+      "strip": [
+        "Borrador interno · pendiente de ficha impresa",
+        "25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "presentación"
+        },
+        {
+          "value": "Consultar",
+          "label": "agua / dosificación"
+        },
+        {
+          "value": "Consultar",
+          "label": "espesor de trabajo"
+        },
+        {
+          "value": "Consultar",
+          "label": "rendimiento"
+        }
+      ],
+      "image": "",
+      "imageAlt": "Mortercom"
+    },
+    {
+      "slug": "cemencom",
+      "name": "Cemencom gris",
+      "code": "FT-PR-013",
+      "family": "Pro+ Systems",
+      "status": "draft",
+      "line": "Cementicio de línea (nombre comercial pendiente)",
+      "packaging": "25 kg",
+      "description": "CEMENCOM: ficha en borrador. Pendiente de validación comercial.",
+      "lead": "CEMENCOM está en catálogo como borrador a partir del histórico de planta. Confirmar dosificación, usos y rendimiento con la ficha impresa vigente antes de especificar en obra.",
+      "strip": [
+        "Borrador interno · pendiente de ficha impresa",
+        "25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "presentación"
+        },
+        {
+          "value": "Consultar",
+          "label": "agua / dosificación"
+        },
+        {
+          "value": "Consultar",
+          "label": "espesor de trabajo"
+        },
+        {
+          "value": "Consultar",
+          "label": "rendimiento"
+        }
+      ],
+      "image": "",
+      "imageAlt": "Cemencom gris"
+    },
+    {
+      "slug": "aditivo-sp85",
+      "name": "Aditivo sp85",
+      "code": "FT-PR-014",
+      "family": "Líquidos",
+      "status": "draft",
+      "line": "Aditivo SP85",
+      "packaging": "1 kg",
+      "description": "ADITIVO SP85: ficha en borrador. Pendiente de validación comercial.",
+      "lead": "ADITIVO SP85 está en catálogo como borrador a partir del histórico de planta. Confirmar dosificación, usos y rendimiento con la ficha impresa vigente antes de especificar en obra.",
+      "strip": [
+        "Borrador interno · pendiente de ficha impresa",
+        "1 kg"
+      ],
+      "kpis": [
+        {
+          "value": "1 kg",
+          "label": "presentación"
+        },
+        {
+          "value": "Consultar",
+          "label": "agua / dosificación"
+        },
+        {
+          "value": "Consultar",
+          "label": "espesor de trabajo"
+        },
+        {
+          "value": "Consultar",
+          "label": "rendimiento"
+        }
+      ],
+      "image": "",
+      "imageAlt": "Aditivo sp85"
+    },
+    {
+      "slug": "waxtard-thermo",
+      "name": "Waxtard thermo",
+      "code": "FT-PR-015",
+      "family": "Estucos premium",
+      "status": "draft",
+      "line": "Estuco térmico Waxtard",
+      "packaging": "25 kg",
+      "description": "WAXTARD THERMO: ficha en borrador. Pendiente de validación comercial.",
+      "lead": "WAXTARD THERMO está en catálogo como borrador a partir del histórico de planta. Confirmar dosificación, usos y rendimiento con la ficha impresa vigente antes de especificar en obra.",
+      "strip": [
+        "Borrador interno · pendiente de ficha impresa",
+        "25 kg"
+      ],
+      "kpis": [
+        {
+          "value": "25 kg",
+          "label": "presentación"
+        },
+        {
+          "value": "Consultar",
+          "label": "agua / dosificación"
+        },
+        {
+          "value": "Consultar",
+          "label": "espesor de trabajo"
+        },
+        {
+          "value": "Consultar",
+          "label": "rendimiento"
+        }
+      ],
+      "image": "",
+      "imageAlt": "Waxtard thermo"
     },
     {
       "slug": "basecoat-plus-blanco",
@@ -4785,6 +5065,591 @@ window.S35_PANEL_DATA = {
       "items": [],
       "batchDose": null,
       "suggested": []
+    },
+    {
+      "product": "textura-adhesile",
+      "name": "Textura adhesile",
+      "code": "FT-PR-010",
+      "family": "Estucos premium",
+      "kind": "seco",
+      "water": "Consultar ficha",
+      "status": "mapa-funcional",
+      "note": "Borrador: Textura Adhesile (+ Pluxel histórico). Dosificación de planta pendiente.",
+      "image": "",
+      "imageAlt": "Textura adhesile",
+      "items": [
+        {
+          "slug": "cemento-blanco",
+          "name": "Cemento blanco",
+          "code": "ML-BND-004",
+          "category": "Cementantes",
+          "role": "Cementante",
+          "note": ""
+        },
+        {
+          "slug": "marmolina-fina",
+          "name": "Marmolina fina",
+          "code": "ML-FIL-001",
+          "category": "Cargas",
+          "role": "Agregado",
+          "note": ""
+        },
+        {
+          "slug": "carbonato-de-calcio",
+          "name": "Carbonato de calcio",
+          "code": "ML-FIL-002",
+          "category": "Cargas",
+          "role": "Carga",
+          "note": ""
+        },
+        {
+          "slug": "polimero-redispersable-vae",
+          "name": "Polímero redispersable VAE",
+          "code": "ML-ADM-002",
+          "category": "Aditivos",
+          "role": "Polímero redispersable",
+          "note": ""
+        },
+        {
+          "slug": "celulosa-hpmc",
+          "name": "Celulosa HPMC",
+          "code": "ML-ADM-001",
+          "category": "Aditivos",
+          "role": "Retención de agua / reología",
+          "note": ""
+        },
+        {
+          "slug": "eter-de-almidon",
+          "name": "Éter de almidón",
+          "code": "ML-ADM-003",
+          "category": "Aditivos",
+          "role": "Antideslizamiento",
+          "note": ""
+        }
+      ],
+      "batchDose": null,
+      "suggested": [
+        {
+          "plantId": "cemento-portland-blanco",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
+      ]
+    },
+    {
+      "product": "tirol-plaste",
+      "name": "Tirol plaste",
+      "code": "FT-PR-011",
+      "family": "Estucos premium",
+      "kind": "seco",
+      "water": "Consultar ficha",
+      "status": "mapa-funcional",
+      "note": "Borrador: Tirol Plaste. Dosificación de planta pendiente.",
+      "image": "",
+      "imageAlt": "Tirol plaste",
+      "items": [
+        {
+          "slug": "cemento-blanco",
+          "name": "Cemento blanco",
+          "code": "ML-BND-004",
+          "category": "Cementantes",
+          "role": "Cementante",
+          "note": ""
+        },
+        {
+          "slug": "marmolina-fina",
+          "name": "Marmolina fina",
+          "code": "ML-FIL-001",
+          "category": "Cargas",
+          "role": "Agregado",
+          "note": ""
+        },
+        {
+          "slug": "carbonato-de-calcio",
+          "name": "Carbonato de calcio",
+          "code": "ML-FIL-002",
+          "category": "Cargas",
+          "role": "Carga",
+          "note": ""
+        },
+        {
+          "slug": "polimero-redispersable-vae",
+          "name": "Polímero redispersable VAE",
+          "code": "ML-ADM-002",
+          "category": "Aditivos",
+          "role": "Polímero redispersable",
+          "note": ""
+        },
+        {
+          "slug": "celulosa-hpmc",
+          "name": "Celulosa HPMC",
+          "code": "ML-ADM-001",
+          "category": "Aditivos",
+          "role": "Retención de agua / reología",
+          "note": ""
+        },
+        {
+          "slug": "eter-de-almidon",
+          "name": "Éter de almidón",
+          "code": "ML-ADM-003",
+          "category": "Aditivos",
+          "role": "Antideslizamiento",
+          "note": ""
+        }
+      ],
+      "batchDose": null,
+      "suggested": [
+        {
+          "plantId": "cemento-portland-blanco",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
+      ]
+    },
+    {
+      "product": "microconcreto-blanco-pulido",
+      "name": "Microconcreto: Blanco (Pulido)",
+      "code": "FT-MC-002",
+      "family": "Microconcretos",
+      "kind": "seco",
+      "water": "Consultar ficha",
+      "status": "mapa-funcional",
+      "note": "Borrador FT-MC-002: Microconcreto Blanco (Pulido). Incluye Acabado Premium Pulido histórico.",
+      "image": "",
+      "imageAlt": "Microconcreto: Blanco (Pulido)",
+      "items": [
+        {
+          "slug": "cemento-blanco",
+          "name": "Cemento blanco",
+          "code": "ML-BND-004",
+          "category": "Cementantes",
+          "role": "Cementante",
+          "note": ""
+        },
+        {
+          "slug": "marmolina-fina",
+          "name": "Marmolina fina",
+          "code": "ML-FIL-001",
+          "category": "Cargas",
+          "role": "Agregado",
+          "note": ""
+        },
+        {
+          "slug": "carbonato-de-calcio",
+          "name": "Carbonato de calcio",
+          "code": "ML-FIL-002",
+          "category": "Cargas",
+          "role": "Carga",
+          "note": ""
+        },
+        {
+          "slug": "polimero-redispersable-vae",
+          "name": "Polímero redispersable VAE",
+          "code": "ML-ADM-002",
+          "category": "Aditivos",
+          "role": "Polímero redispersable",
+          "note": ""
+        },
+        {
+          "slug": "celulosa-hpmc",
+          "name": "Celulosa HPMC",
+          "code": "ML-ADM-001",
+          "category": "Aditivos",
+          "role": "Retención de agua / reología",
+          "note": ""
+        },
+        {
+          "slug": "eter-de-almidon",
+          "name": "Éter de almidón",
+          "code": "ML-ADM-003",
+          "category": "Aditivos",
+          "role": "Antideslizamiento",
+          "note": ""
+        },
+        {
+          "slug": "dioxido-de-titanio",
+          "name": "Dióxido de titanio",
+          "code": "ML-PIG-001",
+          "category": "Pigmentos",
+          "role": "Pigmento",
+          "note": ""
+        }
+      ],
+      "batchDose": null,
+      "suggested": [
+        {
+          "plantId": "cemento-portland-blanco",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
+      ]
+    },
+    {
+      "product": "mortercom",
+      "name": "Mortercom",
+      "code": "FT-PR-012",
+      "family": "Pro+ Systems",
+      "kind": "seco",
+      "water": "Consultar ficha",
+      "status": "mapa-funcional",
+      "note": "Borrador: Mortercom (nombre comercial pendiente). Dosificación pendiente.",
+      "image": "",
+      "imageAlt": "Mortercom",
+      "items": [
+        {
+          "slug": "cemento-gris",
+          "name": "Cemento gris",
+          "code": "ML-BND-003",
+          "category": "Cementantes",
+          "role": "Cementante",
+          "note": ""
+        },
+        {
+          "slug": "arena-silicea-graduada",
+          "name": "Arena silícea graduada",
+          "code": "ML-AGG-003",
+          "category": "Agregados",
+          "role": "Agregado",
+          "note": ""
+        },
+        {
+          "slug": "carbonato-de-calcio",
+          "name": "Carbonato de calcio",
+          "code": "ML-FIL-002",
+          "category": "Cargas",
+          "role": "Carga",
+          "note": ""
+        }
+      ],
+      "batchDose": null,
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        }
+      ]
+    },
+    {
+      "product": "cemencom",
+      "name": "Cemencom gris",
+      "code": "FT-PR-013",
+      "family": "Pro+ Systems",
+      "kind": "seco",
+      "water": "Consultar ficha",
+      "status": "mapa-funcional",
+      "note": "Borrador: Cemencom (incluye Fibracon/Imper históricos). Nombre comercial pendiente.",
+      "image": "",
+      "imageAlt": "Cemencom gris",
+      "items": [
+        {
+          "slug": "cemento-gris",
+          "name": "Cemento gris",
+          "code": "ML-BND-003",
+          "category": "Cementantes",
+          "role": "Cementante",
+          "note": ""
+        },
+        {
+          "slug": "arena-silicea-graduada",
+          "name": "Arena silícea graduada",
+          "code": "ML-AGG-003",
+          "category": "Agregados",
+          "role": "Agregado",
+          "note": ""
+        },
+        {
+          "slug": "carbonato-de-calcio",
+          "name": "Carbonato de calcio",
+          "code": "ML-FIL-002",
+          "category": "Cargas",
+          "role": "Carga",
+          "note": ""
+        }
+      ],
+      "batchDose": null,
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        }
+      ]
+    },
+    {
+      "product": "aditivo-sp85",
+      "name": "Aditivo sp85",
+      "code": "FT-PR-014",
+      "family": "Líquidos",
+      "kind": "liquido",
+      "water": "",
+      "status": "pendiente",
+      "note": "Borrador: Aditivo SP85. Receta de planta pendiente.",
+      "image": "",
+      "imageAlt": "Aditivo sp85",
+      "items": [],
+      "batchDose": null,
+      "suggested": []
+    },
+    {
+      "product": "waxtard-thermo",
+      "name": "Waxtard thermo",
+      "code": "FT-PR-015",
+      "family": "Estucos premium",
+      "kind": "seco",
+      "water": "Consultar ficha",
+      "status": "mapa-funcional",
+      "note": "Borrador: Waxtard Thermo. Dosificación pendiente.",
+      "image": "",
+      "imageAlt": "Waxtard thermo",
+      "items": [
+        {
+          "slug": "cemento-blanco",
+          "name": "Cemento blanco",
+          "code": "ML-BND-004",
+          "category": "Cementantes",
+          "role": "Cementante",
+          "note": ""
+        },
+        {
+          "slug": "marmolina-fina",
+          "name": "Marmolina fina",
+          "code": "ML-FIL-001",
+          "category": "Cargas",
+          "role": "Agregado",
+          "note": ""
+        },
+        {
+          "slug": "carbonato-de-calcio",
+          "name": "Carbonato de calcio",
+          "code": "ML-FIL-002",
+          "category": "Cargas",
+          "role": "Carga",
+          "note": ""
+        },
+        {
+          "slug": "polimero-redispersable-vae",
+          "name": "Polímero redispersable VAE",
+          "code": "ML-ADM-002",
+          "category": "Aditivos",
+          "role": "Polímero redispersable",
+          "note": ""
+        },
+        {
+          "slug": "celulosa-hpmc",
+          "name": "Celulosa HPMC",
+          "code": "ML-ADM-001",
+          "category": "Aditivos",
+          "role": "Retención de agua / reología",
+          "note": ""
+        },
+        {
+          "slug": "eter-de-almidon",
+          "name": "Éter de almidón",
+          "code": "ML-ADM-003",
+          "category": "Aditivos",
+          "role": "Antideslizamiento",
+          "note": ""
+        }
+      ],
+      "batchDose": null,
+      "suggested": [
+        {
+          "plantId": "cemento-portland-blanco",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
+      ]
+    },
+    {
+      "product": "cellbond-pro",
+      "name": "Cellbond pro+",
+      "code": "FT-PP-002",
+      "family": "Pro+ Systems",
+      "kind": "seco",
+      "water": "Consultar ficha",
+      "status": "mapa-funcional",
+      "note": "Borrador reactivado FT-PP-002: Cellbond Pro+. Dosificación pendiente.",
+      "image": "",
+      "imageAlt": "Cellbond pro+",
+      "items": [
+        {
+          "slug": "cemento-gris",
+          "name": "Cemento gris",
+          "code": "ML-BND-003",
+          "category": "Cementantes",
+          "role": "Cementante",
+          "note": ""
+        },
+        {
+          "slug": "arena-silicea-graduada",
+          "name": "Arena silícea graduada",
+          "code": "ML-AGG-003",
+          "category": "Agregados",
+          "role": "Agregado",
+          "note": ""
+        },
+        {
+          "slug": "carbonato-de-calcio",
+          "name": "Carbonato de calcio",
+          "code": "ML-FIL-002",
+          "category": "Cargas",
+          "role": "Carga",
+          "note": ""
+        },
+        {
+          "slug": "polimero-redispersable-vae",
+          "name": "Polímero redispersable VAE",
+          "code": "ML-ADM-002",
+          "category": "Aditivos",
+          "role": "Polímero redispersable",
+          "note": ""
+        },
+        {
+          "slug": "celulosa-hpmc",
+          "name": "Celulosa HPMC",
+          "code": "ML-ADM-001",
+          "category": "Aditivos",
+          "role": "Retención de agua / reología",
+          "note": ""
+        },
+        {
+          "slug": "eter-de-almidon",
+          "name": "Éter de almidón",
+          "code": "ML-ADM-003",
+          "category": "Aditivos",
+          "role": "Antideslizamiento",
+          "note": ""
+        }
+      ],
+      "batchDose": null,
+      "suggested": [
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante"
+        },
+        {
+          "plantId": "arena-deshidratada",
+          "unit": "Kg",
+          "role": "Agregado"
+        },
+        {
+          "plantId": "marmolina-talco-200",
+          "unit": "Kg",
+          "role": "Carga"
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero redispersable"
+        },
+        {
+          "plantId": "kimacell",
+          "unit": "Kg",
+          "role": "Retención de agua / reología"
+        }
+      ]
     }
   ],
   "usedIn": {
@@ -4817,6 +5682,30 @@ window.S35_PANEL_DATA = {
         "slug": "styrobond-pro",
         "name": "Styrobond pro+",
         "code": "FT-PP-001",
+        "role": "Cementante"
+      },
+      {
+        "slug": "textura-adhesile",
+        "name": "Textura adhesile",
+        "code": "FT-PR-010",
+        "role": "Cementante"
+      },
+      {
+        "slug": "tirol-plaste",
+        "name": "Tirol plaste",
+        "code": "FT-PR-011",
+        "role": "Cementante"
+      },
+      {
+        "slug": "microconcreto-blanco-pulido",
+        "name": "Microconcreto: Blanco (Pulido)",
+        "code": "FT-MC-002",
+        "role": "Cementante"
+      },
+      {
+        "slug": "waxtard-thermo",
+        "name": "Waxtard thermo",
+        "code": "FT-PR-015",
         "role": "Cementante"
       }
     ],
@@ -4873,6 +5762,30 @@ window.S35_PANEL_DATA = {
         "slug": "pegaxpress-psp",
         "name": "Pegaxpress: Piso sobre piso",
         "code": "FT-AD-004",
+        "role": "Agregado"
+      },
+      {
+        "slug": "textura-adhesile",
+        "name": "Textura adhesile",
+        "code": "FT-PR-010",
+        "role": "Agregado"
+      },
+      {
+        "slug": "tirol-plaste",
+        "name": "Tirol plaste",
+        "code": "FT-PR-011",
+        "role": "Agregado"
+      },
+      {
+        "slug": "microconcreto-blanco-pulido",
+        "name": "Microconcreto: Blanco (Pulido)",
+        "code": "FT-MC-002",
+        "role": "Agregado"
+      },
+      {
+        "slug": "waxtard-thermo",
+        "name": "Waxtard thermo",
+        "code": "FT-PR-015",
         "role": "Agregado"
       }
     ],
@@ -4954,6 +5867,48 @@ window.S35_PANEL_DATA = {
         "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Carga"
+      },
+      {
+        "slug": "textura-adhesile",
+        "name": "Textura adhesile",
+        "code": "FT-PR-010",
+        "role": "Carga"
+      },
+      {
+        "slug": "tirol-plaste",
+        "name": "Tirol plaste",
+        "code": "FT-PR-011",
+        "role": "Carga"
+      },
+      {
+        "slug": "microconcreto-blanco-pulido",
+        "name": "Microconcreto: Blanco (Pulido)",
+        "code": "FT-MC-002",
+        "role": "Carga"
+      },
+      {
+        "slug": "mortercom",
+        "name": "Mortercom",
+        "code": "FT-PR-012",
+        "role": "Carga"
+      },
+      {
+        "slug": "cemencom",
+        "name": "Cemencom gris",
+        "code": "FT-PR-013",
+        "role": "Carga"
+      },
+      {
+        "slug": "waxtard-thermo",
+        "name": "Waxtard thermo",
+        "code": "FT-PR-015",
+        "role": "Carga"
+      },
+      {
+        "slug": "cellbond-pro",
+        "name": "Cellbond pro+",
+        "code": "FT-PP-002",
+        "role": "Carga"
       }
     ],
     "polimero-redispersable-vae": [
@@ -5033,6 +5988,36 @@ window.S35_PANEL_DATA = {
         "slug": "ultraforce",
         "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
+        "role": "Polímero redispersable"
+      },
+      {
+        "slug": "textura-adhesile",
+        "name": "Textura adhesile",
+        "code": "FT-PR-010",
+        "role": "Polímero redispersable"
+      },
+      {
+        "slug": "tirol-plaste",
+        "name": "Tirol plaste",
+        "code": "FT-PR-011",
+        "role": "Polímero redispersable"
+      },
+      {
+        "slug": "microconcreto-blanco-pulido",
+        "name": "Microconcreto: Blanco (Pulido)",
+        "code": "FT-MC-002",
+        "role": "Polímero redispersable"
+      },
+      {
+        "slug": "waxtard-thermo",
+        "name": "Waxtard thermo",
+        "code": "FT-PR-015",
+        "role": "Polímero redispersable"
+      },
+      {
+        "slug": "cellbond-pro",
+        "name": "Cellbond pro+",
+        "code": "FT-PP-002",
         "role": "Polímero redispersable"
       }
     ],
@@ -5114,6 +6099,36 @@ window.S35_PANEL_DATA = {
         "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Retención de agua / reología"
+      },
+      {
+        "slug": "textura-adhesile",
+        "name": "Textura adhesile",
+        "code": "FT-PR-010",
+        "role": "Retención de agua / reología"
+      },
+      {
+        "slug": "tirol-plaste",
+        "name": "Tirol plaste",
+        "code": "FT-PR-011",
+        "role": "Retención de agua / reología"
+      },
+      {
+        "slug": "microconcreto-blanco-pulido",
+        "name": "Microconcreto: Blanco (Pulido)",
+        "code": "FT-MC-002",
+        "role": "Retención de agua / reología"
+      },
+      {
+        "slug": "waxtard-thermo",
+        "name": "Waxtard thermo",
+        "code": "FT-PR-015",
+        "role": "Retención de agua / reología"
+      },
+      {
+        "slug": "cellbond-pro",
+        "name": "Cellbond pro+",
+        "code": "FT-PP-002",
+        "role": "Retención de agua / reología"
       }
     ],
     "eter-de-almidon": [
@@ -5152,6 +6167,36 @@ window.S35_PANEL_DATA = {
         "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
         "role": "Antideslizamiento"
+      },
+      {
+        "slug": "textura-adhesile",
+        "name": "Textura adhesile",
+        "code": "FT-PR-010",
+        "role": "Antideslizamiento"
+      },
+      {
+        "slug": "tirol-plaste",
+        "name": "Tirol plaste",
+        "code": "FT-PR-011",
+        "role": "Antideslizamiento"
+      },
+      {
+        "slug": "microconcreto-blanco-pulido",
+        "name": "Microconcreto: Blanco (Pulido)",
+        "code": "FT-MC-002",
+        "role": "Antideslizamiento"
+      },
+      {
+        "slug": "waxtard-thermo",
+        "name": "Waxtard thermo",
+        "code": "FT-PR-015",
+        "role": "Antideslizamiento"
+      },
+      {
+        "slug": "cellbond-pro",
+        "name": "Cellbond pro+",
+        "code": "FT-PP-002",
+        "role": "Antideslizamiento"
       }
     ],
     "dioxido-de-titanio": [
@@ -5177,6 +6222,12 @@ window.S35_PANEL_DATA = {
         "slug": "basecoat-plus-blanco",
         "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
+        "role": "Pigmento"
+      },
+      {
+        "slug": "microconcreto-blanco-pulido",
+        "name": "Microconcreto: Blanco (Pulido)",
+        "code": "FT-MC-002",
         "role": "Pigmento"
       }
     ],
@@ -5234,6 +6285,24 @@ window.S35_PANEL_DATA = {
         "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Cementante"
+      },
+      {
+        "slug": "mortercom",
+        "name": "Mortercom",
+        "code": "FT-PR-012",
+        "role": "Cementante"
+      },
+      {
+        "slug": "cemencom",
+        "name": "Cemencom gris",
+        "code": "FT-PR-013",
+        "role": "Cementante"
+      },
+      {
+        "slug": "cellbond-pro",
+        "name": "Cellbond pro+",
+        "code": "FT-PP-002",
+        "role": "Cementante"
       }
     ],
     "arena-silicea-graduada": [
@@ -5271,6 +6340,24 @@ window.S35_PANEL_DATA = {
         "slug": "ultraforce",
         "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
+        "role": "Agregado"
+      },
+      {
+        "slug": "mortercom",
+        "name": "Mortercom",
+        "code": "FT-PR-012",
+        "role": "Agregado"
+      },
+      {
+        "slug": "cemencom",
+        "name": "Cemencom gris",
+        "code": "FT-PR-013",
+        "role": "Agregado"
+      },
+      {
+        "slug": "cellbond-pro",
+        "name": "Cellbond pro+",
+        "code": "FT-PP-002",
         "role": "Agregado"
       }
     ],
@@ -5581,6 +6668,102 @@ window.S35_PANEL_DATA = {
       "category": "LIQUIDOS",
       "listName": "Nanotech sellador hidrofóbico",
       "parentId": "nanotech-hidrofobico",
+      "sellable": true
+    },
+    {
+      "id": "textura-adhesile",
+      "productSlug": "textura-adhesile",
+      "code": "FT-PR-010",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "WAXTARD",
+      "listName": "TEXTURA ADHESILE",
+      "sellable": true
+    },
+    {
+      "id": "tirol-plaste",
+      "productSlug": "tirol-plaste",
+      "code": "FT-PR-011",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "WAXTARD",
+      "listName": "TIROL PLASTE",
+      "sellable": true
+    },
+    {
+      "id": "microconcreto-blanco-pulido",
+      "productSlug": "microconcreto-blanco-pulido",
+      "code": "FT-MC-002",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "PRODUCTOS ARQUITECTONICOS",
+      "listName": "MICROCONCRETO BLANCO (PULIDO)",
+      "sellable": true
+    },
+    {
+      "id": "mortercom",
+      "productSlug": "mortercom",
+      "code": "FT-PR-012",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "PRODUCTOS PROFESIONALES",
+      "listName": "MORTERCOM",
+      "sellable": true
+    },
+    {
+      "id": "cemencom",
+      "productSlug": "cemencom",
+      "code": "FT-PR-013",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "PRODUCTOS PROFESIONALES",
+      "listName": "CEMENCOM",
+      "sellable": true
+    },
+    {
+      "id": "aditivo-sp85",
+      "productSlug": "aditivo-sp85",
+      "code": "FT-PR-014",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 1,
+      "label": "Kg",
+      "category": "LIQUIDOS",
+      "listName": "ADITIVO SP85",
+      "sellable": true
+    },
+    {
+      "id": "waxtard-thermo",
+      "productSlug": "waxtard-thermo",
+      "code": "FT-PR-015",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "WAXTARD",
+      "listName": "WAXTARD THERMO",
+      "sellable": true
+    },
+    {
+      "id": "cellbond-pro",
+      "productSlug": "cellbond-pro",
+      "code": "FT-PP-002",
+      "kind": "seco",
+      "unit": "kg",
+      "size": 25,
+      "label": "Saco",
+      "category": "PRODUCTOS PROFESIONALES",
+      "listName": "CELLBOND PRO+",
       "sellable": true
     }
   ],
@@ -6254,6 +7437,246 @@ window.S35_PANEL_DATA = {
           "t4": 2604.6,
           "t5": 2552.5,
           "t6": 2501.45
+        }
+      },
+      {
+        "id": "textura-adhesile",
+        "name": "TEXTURA ADHESILE",
+        "category": "WAXTARD",
+        "kind": "seco",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "textura-adhesile",
+        "code": "FT-PR-010",
+        "note": "FT-PR-010 · borrador histórico",
+        "unitLabel": "",
+        "productSlug": "textura-adhesile",
+        "parentId": null,
+        "tiers": [
+          122.45,
+          110.2,
+          106.9,
+          96.21,
+          94.29,
+          92.4
+        ],
+        "pricesByTier": {
+          "t1": 122.45,
+          "t2": 110.2,
+          "t3": 106.9,
+          "t4": 96.21,
+          "t5": 94.29,
+          "t6": 92.4
+        }
+      },
+      {
+        "id": "tirol-plaste",
+        "name": "TIROL PLASTE",
+        "category": "WAXTARD",
+        "kind": "seco",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "tirol-plaste",
+        "code": "FT-PR-011",
+        "note": "FT-PR-011 · borrador histórico",
+        "unitLabel": "",
+        "productSlug": "tirol-plaste",
+        "parentId": null,
+        "tiers": [
+          111.91,
+          100.72,
+          97.69,
+          87.92,
+          86.17,
+          84.44
+        ],
+        "pricesByTier": {
+          "t1": 111.91,
+          "t2": 100.72,
+          "t3": 97.69,
+          "t4": 87.92,
+          "t5": 86.17,
+          "t6": 84.44
+        }
+      },
+      {
+        "id": "microconcreto-blanco-pulido",
+        "name": "MICROCONCRETO BLANCO (PULIDO)",
+        "category": "PRODUCTOS ARQUITECTONICOS",
+        "kind": "seco",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "microconcreto-blanco-pulido",
+        "code": "FT-MC-002",
+        "note": "FT-MC-002 · borrador histórico",
+        "unitLabel": "",
+        "productSlug": "microconcreto-blanco-pulido",
+        "parentId": null,
+        "tiers": [
+          221.78,
+          199.61,
+          193.62,
+          174.26,
+          170.77,
+          167.36
+        ],
+        "pricesByTier": {
+          "t1": 221.78,
+          "t2": 199.61,
+          "t3": 193.62,
+          "t4": 174.26,
+          "t5": 170.77,
+          "t6": 167.36
+        }
+      },
+      {
+        "id": "mortercom",
+        "name": "MORTERCOM",
+        "category": "PRODUCTOS PROFESIONALES",
+        "kind": "seco",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "mortercom",
+        "code": "FT-PR-012",
+        "note": "FT-PR-012 · borrador histórico",
+        "unitLabel": "",
+        "productSlug": "mortercom",
+        "parentId": null,
+        "tiers": [
+          65.44,
+          58.9,
+          57.13,
+          51.42,
+          50.39,
+          49.38
+        ],
+        "pricesByTier": {
+          "t1": 65.44,
+          "t2": 58.9,
+          "t3": 57.13,
+          "t4": 51.42,
+          "t5": 50.39,
+          "t6": 49.38
+        }
+      },
+      {
+        "id": "cemencom",
+        "name": "CEMENCOM",
+        "category": "PRODUCTOS PROFESIONALES",
+        "kind": "seco",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "cemencom",
+        "code": "FT-PR-013",
+        "note": "FT-PR-013 · borrador histórico",
+        "unitLabel": "",
+        "productSlug": "cemencom",
+        "parentId": null,
+        "tiers": [
+          62.21,
+          55.99,
+          54.31,
+          48.88,
+          47.9,
+          46.95
+        ],
+        "pricesByTier": {
+          "t1": 62.21,
+          "t2": 55.99,
+          "t3": 54.31,
+          "t4": 48.88,
+          "t5": 47.9,
+          "t6": 46.95
+        }
+      },
+      {
+        "id": "aditivo-sp85",
+        "name": "ADITIVO SP85",
+        "category": "LIQUIDOS",
+        "kind": "seco",
+        "presentationKg": 1,
+        "oldKg": 1,
+        "recipeSlug": "aditivo-sp85",
+        "code": "FT-PR-014",
+        "note": "FT-PR-014 · borrador histórico",
+        "unitLabel": "",
+        "productSlug": "aditivo-sp85",
+        "parentId": null,
+        "tiers": [
+          91.02,
+          81.92,
+          79.46,
+          71.52,
+          70.09,
+          68.69
+        ],
+        "pricesByTier": {
+          "t1": 91.02,
+          "t2": 81.92,
+          "t3": 79.46,
+          "t4": 71.52,
+          "t5": 70.09,
+          "t6": 68.69
+        }
+      },
+      {
+        "id": "waxtard-thermo",
+        "name": "WAXTARD THERMO",
+        "category": "WAXTARD",
+        "kind": "seco",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "waxtard-thermo",
+        "code": "FT-PR-015",
+        "note": "FT-PR-015 · borrador histórico",
+        "unitLabel": "",
+        "productSlug": "waxtard-thermo",
+        "parentId": null,
+        "tiers": [
+          105.16,
+          94.65,
+          91.81,
+          82.63,
+          80.98,
+          79.36
+        ],
+        "pricesByTier": {
+          "t1": 105.16,
+          "t2": 94.65,
+          "t3": 91.81,
+          "t4": 82.63,
+          "t5": 80.98,
+          "t6": 79.36
+        }
+      },
+      {
+        "id": "cellbond-pro",
+        "name": "CELLBOND PRO+",
+        "category": "PRODUCTOS PROFESIONALES",
+        "kind": "seco",
+        "presentationKg": 25,
+        "oldKg": 25,
+        "recipeSlug": "cellbond-pro",
+        "code": "FT-PP-002",
+        "note": "FT-PP-002 · borrador histórico",
+        "unitLabel": "",
+        "productSlug": "cellbond-pro",
+        "parentId": null,
+        "tiers": [
+          385,
+          346.5,
+          336.11,
+          302.49,
+          296.45,
+          290.52
+        ],
+        "pricesByTier": {
+          "t1": 385,
+          "t2": 346.5,
+          "t3": 336.11,
+          "t4": 302.49,
+          "t5": 296.45,
+          "t6": 290.52
         }
       }
     ]

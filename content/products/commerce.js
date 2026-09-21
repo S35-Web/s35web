@@ -59,6 +59,16 @@ const PRESENTATIONS = [
   // Sin cubeta heavy-duty en lista oficial (no añadir FT-PC-009 sin decisión de negocio).
   { id: 'nanotech-hidrofobico', productSlug: 'nanotech-hidrofobico', code: 'FT-PR-005', kind: 'liquido', unit: 'L', size: 1, label: 'Litro', category: 'LIQUIDOS', listName: 'Nanotech sellador hidrofóbico', sellable: true },
   { id: 'nanotech-hidrofobico-18', productSlug: 'nanotech-hidrofobico', code: 'FT-PC-005', kind: 'liquido', unit: 'L', size: 18, label: 'Cubeta', category: 'LIQUIDOS', listName: 'Nanotech sellador hidrofóbico', parentId: 'nanotech-hidrofobico', sellable: true },
+
+  // HISTÓRICO REACTIVADO / NUEVOS (borrador 2026-09)
+  { id: 'textura-adhesile', productSlug: 'textura-adhesile', code: 'FT-PR-010', kind: 'seco', unit: 'kg', size: 25, label: 'Saco', category: 'WAXTARD', listName: 'TEXTURA ADHESILE', sellable: true },
+  { id: 'tirol-plaste', productSlug: 'tirol-plaste', code: 'FT-PR-011', kind: 'seco', unit: 'kg', size: 25, label: 'Saco', category: 'WAXTARD', listName: 'TIROL PLASTE', sellable: true },
+  { id: 'microconcreto-blanco-pulido', productSlug: 'microconcreto-blanco-pulido', code: 'FT-MC-002', kind: 'seco', unit: 'kg', size: 25, label: 'Saco', category: 'PRODUCTOS ARQUITECTONICOS', listName: 'MICROCONCRETO BLANCO (PULIDO)', sellable: true },
+  { id: 'mortercom', productSlug: 'mortercom', code: 'FT-PR-012', kind: 'seco', unit: 'kg', size: 25, label: 'Saco', category: 'PRODUCTOS PROFESIONALES', listName: 'MORTERCOM', sellable: true },
+  { id: 'cemencom', productSlug: 'cemencom', code: 'FT-PR-013', kind: 'seco', unit: 'kg', size: 25, label: 'Saco', category: 'PRODUCTOS PROFESIONALES', listName: 'CEMENCOM', sellable: true },
+  { id: 'aditivo-sp85', productSlug: 'aditivo-sp85', code: 'FT-PR-014', kind: 'seco', unit: 'kg', size: 1, label: 'Kg', category: 'LIQUIDOS', listName: 'ADITIVO SP85', sellable: true },
+  { id: 'waxtard-thermo', productSlug: 'waxtard-thermo', code: 'FT-PR-015', kind: 'seco', unit: 'kg', size: 25, label: 'Saco', category: 'WAXTARD', listName: 'WAXTARD THERMO', sellable: true },
+  { id: 'cellbond-pro', productSlug: 'cellbond-pro', code: 'FT-PP-002', kind: 'seco', unit: 'kg', size: 25, label: 'Saco', category: 'PRODUCTOS PROFESIONALES', listName: 'CELLBOND PRO+', sellable: true },
 ];
 
 function byId(id) {

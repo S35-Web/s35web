@@ -68,6 +68,15 @@ const PRICES_BY_ID = {
   'adhesivo-heavy-duty': { oldKg: 1, prices: [155, 139.5, 135.32, 121.78, 119.35, 116.96], note: 'FT-PR-009 · Litro' },
   'nanotech-hidrofobico': { oldKg: 1, prices: [230, 207, 200.79, 180.71, 177.1, 173.55], note: 'FT-PR-005 · Litro' },
   'nanotech-hidrofobico-18': { oldKg: 18, prices: [3315, 2983.5, 2894, 2604.6, 2552.5, 2501.45], note: 'FT-PC-005 · Cubeta' },
+
+  'textura-adhesile': { oldKg: 25, prices: [122.45, 110.2, 106.9, 96.21, 94.29, 92.4], note: 'FT-PR-010 · borrador histórico' },
+  'tirol-plaste': { oldKg: 25, prices: [111.91, 100.72, 97.69, 87.92, 86.17, 84.44], note: 'FT-PR-011 · borrador histórico' },
+  'microconcreto-blanco-pulido': { oldKg: 25, prices: [221.78, 199.61, 193.62, 174.26, 170.77, 167.36], note: 'FT-MC-002 · borrador histórico' },
+  'mortercom': { oldKg: 25, prices: [65.44, 58.9, 57.13, 51.42, 50.39, 49.38], note: 'FT-PR-012 · borrador histórico' },
+  'cemencom': { oldKg: 25, prices: [62.21, 55.99, 54.31, 48.88, 47.9, 46.95], note: 'FT-PR-013 · borrador histórico' },
+  'aditivo-sp85': { oldKg: 1, prices: [91.02, 81.92, 79.46, 71.52, 70.09, 68.69], note: 'FT-PR-014 · borrador histórico' },
+  'waxtard-thermo': { oldKg: 25, prices: [105.16, 94.65, 91.81, 82.63, 80.98, 79.36], note: 'FT-PR-015 · borrador histórico' },
+  'cellbond-pro': { oldKg: 25, prices: [385.0, 346.5, 336.11, 302.49, 296.45, 290.52], note: 'FT-PP-002 · borrador histórico' },
 };
 
 const items = commerce.PRESENTATIONS.map(function (pres) {

@@ -1440,6 +1440,70 @@
                 return { added: added, updated: updated, total: clients.length };
             });
     }
+
+    /** Import yearly synthetic tickets from historical-sales-import.json (idempotent by sale id). */
+    const HIST_SALES_FLAG = 's35_hist_sales_imported_v1';
+    function importHistoricalSales(opts) {
+        opts = opts || {};
+        const force = !!opts.force;
+        return fetch('/colaboradores/data/historical-sales-import.json', { cache: 'no-store' })
+            .then(function (r) {
+                if (!r.ok) throw new Error('No se pudo leer el histórico de ventas');
+                return r.json();
+            })
+            .then(function (data) {
+                const incoming = (data && Array.isArray(data.items)) ? data.items : [];
+                if (!incoming.length) {
+                    return { added: 0, updated: 0, total: sales.length, skipped: true };
+                }
+                const byId = {};
+                sales.forEach(function (s, i) { byId[s.id] = i; });
+                let added = 0;
+                let updated = 0;
+                incoming.forEach(function (row) {
+                    if (!row || !row.id || !Array.isArray(row.items) || !row.items.length) return;
+                    const next = {
+                        id: row.id,
+                        folio: row.folio || row.id,
+                        createdAt: row.createdAt,
+                        clientId: row.clientId || null,
+                        client: row.client || null,
+                        customer: row.customer || 'Histórico',
+                        paymentMethod: row.paymentMethod || 'transferencia',
+                        billing: row.billing || 'sin_facturar',
+                        items: row.items,
+                        total: Number(row.total) || 0,
+                        user: row.user || 'import-historico',
+                        meta: row.meta || { source: 'old-panel' }
+                    };
+                    if (byId[next.id] != null) {
+                        if (force) {
+                            sales[byId[next.id]] = next;
+                            updated += 1;
+                        }
+                    } else {
+                        byId[next.id] = sales.length;
+                        sales.push(next);
+                        added += 1;
+                    }
+                });
+                if (added || updated) {
+                    saveSales();
+                    renderHistory();
+                    renderCortes();
+                    updatePosKpis();
+                }
+                try { localStorage.setItem(HIST_SALES_FLAG, new Date().toISOString()); } catch (_) {}
+                return { added: added, updated: updated, total: sales.length };
+            });
+    }
+    function ensureHistoricalSalesImport() {
+        try {
+            if (localStorage.getItem(HIST_SALES_FLAG)) return;
+        } catch (_) {}
+        importHistoricalSales({ force: false }).catch(function () { /* silencioso en arranque */ });
+    }
+
     function clientById(id) {
         if (!id) return null;
         return clients.filter(function (c) { return c.id === id; })[0] || null;
@@ -4162,6 +4226,7 @@
         clients = loadClients();
         promoCodes = loadPromoCodes();
         ensurePromoSeeds();
+        ensureHistoricalSalesImport();
         bind();
         renderChips();
         renderProducts();
@@ -4201,6 +4266,7 @@
             resetPricesToDefaults: resetPricesToDefaults,
             priceEditorHtml: priceEditorHtml,
             renderProductSalesAnalytics: renderProductSalesAnalytics,
+            importHistoricalSales: importHistoricalSales,
             baseUnitPrice: baseUnitPrice,
             unitFor: unitFor,
             getPromoCodes: function () { return promoCodes.slice(); },

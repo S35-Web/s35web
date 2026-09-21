@@ -27,41 +27,6 @@ function mortar(p) {
 
 module.exports = [
   mortar({
-    slug: 'cellbond-pro',
-    code: 'FT-PP-002',
-    family: 'pro-systems',
-    legacy: true,
-    name: 'CELLBOND',
-    variant: 'Pro+',
-    line: 'Adhesivo para block celular · descontinuado',
-    accent: '#00897b',
-    pack: '/Assets/productos_background/cellbond.png',
-    description: 'Cellbond Pro+: producto descontinuado. Fuera de catálogo.',
-    strip: ['Descontinuado · fuera de catálogo', 'Saco de 25 kg'],
-    lead: 'Cellbond Pro+ está descontinuado. Esta ficha se conserva para archivo. No forma parte del catálogo vigente ni del índice público. Para asiento de block de concreto usar Pegaxpress: Block.',
-    identification: [
-      { label: 'Tipo de producto', value: 'Adhesivo para block celular (línea anterior)' },
-      { label: 'Estado', value: 'Descontinuado · fuera de catálogo' },
-      { label: 'Presentación', value: 'Saco de 25 kg' },
-    ],
-    prose: [
-      'Producto de la línea anterior, fuera de producción comercial.',
-      'No usar esta ficha para especificar obra nueva. Block de concreto: Pegaxpress: Block. Otros casos: consultar a Especificaciones S-35.',
-    ],
-    uses: [
-      { title: 'Archivo.', text: 'Solo referencia de productos ya instalados.' },
-      { title: 'Obra nueva.', text: 'No especificar Cellbond. Consultar la línea Pro+ vigente.' },
-      { title: 'No confundir con.', text: 'Pegaxpress: Block es el adhesivo de block de concreto en catálogo.' },
-      { title: 'Soporte.', text: 'Consultar al equipo S-35 si hay que dar mantenimiento a un paño existente.' },
-    ],
-    apply: 'Producto descontinuado: no aplicar en obra nueva.',
-    kpi3v: 'Archivo', kpi3l: 'fuera de catálogo',
-    notes: [
-      'Descontinuado: no aparece en el catálogo, el índice de /productos ni el sitemap.',
-    ],
-  }),
-
-  mortar({
     slug: 'estuco-base-pro',
     code: 'FT-LG-001',
     family: 'estucos-premium',
