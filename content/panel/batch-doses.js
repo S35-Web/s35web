@@ -157,4 +157,30 @@ module.exports = {
       },
     ],
   },
+  'basecoat-plus-blanco': {
+    mode: 'plant-lot',
+    packSizeKg: 25,
+    packagingPlantId: 'saco-rafia-general',
+    note: 'Lote de planta FT-PS-001. V1 Panel System (842.5 kg → ~33.7 sacos). TALCO NORMAL → marmolina-talco-100 (no hay talco sin malla en catálogo).',
+    defaultVersionId: 'v1',
+    versions: [
+      {
+        id: 'v1',
+        name: 'V1',
+        label: 'Marmolina fina + talco 100',
+        yieldMin: 33,
+        yieldMax: 34,
+        items: [
+          { plantId: 'marmolina-fina', amount: 400, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'marmolina-talco-100', amount: 200, unit: 'Kg', role: 'Carga' },
+          { plantId: 'cemento-portland-blanco', amount: 200, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'calidra', amount: 25, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'resina-rdp740h', amount: 15, unit: 'Kg', role: 'Polímero' },
+          { plantId: 'estearato', amount: 1, unit: 'Kg', role: 'Aditivo' },
+          { plantId: 'walocell', amount: 1, unit: 'Kg', role: 'Celulosa' },
+          { plantId: 'arbocel-celulosa', amount: 0.5, unit: 'Kg', role: 'Celulosa' },
+        ],
+      },
+    ],
+  },
 };

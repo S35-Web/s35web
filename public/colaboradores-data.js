@@ -2630,8 +2630,8 @@ window.S35_PANEL_DATA = {
       "family": "Panel System",
       "kind": "seco",
       "water": "6.1 L llana / 7.5 L proyección · saco 25 kg",
-      "status": "mapa-funcional",
-      "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "status": "lote-planta",
+      "note": "Dosificación de planta por lote (842.5 kg → ~33.7 sacos). TALCO NORMAL → marmolina-talco-100 (no hay talco sin malla en catálogo de planta).",
       "image": "/Assets/productos_thumbs/basecoat-blanco.jpg",
       "imageAlt": "Saco de 25 kg de Basecoat Plus: Blanco absoluto",
       "items": [
@@ -2644,10 +2644,10 @@ window.S35_PANEL_DATA = {
           "note": ""
         },
         {
-          "slug": "arena-silicea-graduada",
-          "name": "Arena silícea graduada",
-          "code": "ML-AGG-003",
-          "category": "Agregados",
+          "slug": "marmolina-fina",
+          "name": "Marmolina fina",
+          "code": "ML-FIL-001",
+          "category": "Cargas",
           "role": "Agregado",
           "note": ""
         },
@@ -2697,30 +2697,184 @@ window.S35_PANEL_DATA = {
           "code": "",
           "category": "",
           "role": "Nota de mezcla",
-          "note": "Microfibras de refuerzo: aún no hay ficha de fibra en Laboratorio."
+          "note": "Arbocel → arbocel-celulosa (fibra de celulosa de planta)."
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta FT-PS-001. V1 Panel System (842.5 kg → ~33.7 sacos). TALCO NORMAL → marmolina-talco-100 (no hay talco sin malla en catálogo).",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Marmolina fina + talco 100",
+            "yieldMin": 33,
+            "yieldMax": 34,
+            "yieldTheoretical": 33.7,
+            "totalKg": 842.5,
+            "items": [
+              {
+                "plantId": "marmolina-fina",
+                "amount": 400,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "marmolina-talco-100",
+                "amount": 200,
+                "unit": "Kg",
+                "role": "Carga"
+              },
+              {
+                "plantId": "cemento-portland-blanco",
+                "amount": 200,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "calidra",
+                "amount": 25,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "resina-rdp740h",
+                "amount": 15,
+                "unit": "Kg",
+                "role": "Polímero"
+              },
+              {
+                "plantId": "estearato",
+                "amount": 1,
+                "unit": "Kg",
+                "role": "Aditivo"
+              },
+              {
+                "plantId": "walocell",
+                "amount": 1,
+                "unit": "Kg",
+                "role": "Celulosa"
+              },
+              {
+                "plantId": "arbocel-celulosa",
+                "amount": 0.5,
+                "unit": "Kg",
+                "role": "Celulosa"
+              }
+            ]
+          }
+        ],
+        "yieldMin": 33,
+        "yieldMax": 34,
+        "yieldTheoretical": 33.7,
+        "totalKg": 842.5,
+        "items": [
+          {
+            "plantId": "marmolina-fina",
+            "amount": 400,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "marmolina-talco-100",
+            "amount": 200,
+            "unit": "Kg",
+            "role": "Carga"
+          },
+          {
+            "plantId": "cemento-portland-blanco",
+            "amount": 200,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "calidra",
+            "amount": 25,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "resina-rdp740h",
+            "amount": 15,
+            "unit": "Kg",
+            "role": "Polímero"
+          },
+          {
+            "plantId": "estearato",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Aditivo"
+          },
+          {
+            "plantId": "walocell",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Celulosa"
+          },
+          {
+            "plantId": "arbocel-celulosa",
+            "amount": 0.5,
+            "unit": "Kg",
+            "role": "Celulosa"
+          }
+        ]
+      },
       "suggested": [
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado",
+          "amount": 400
+        },
+        {
+          "plantId": "marmolina-talco-100",
+          "unit": "Kg",
+          "role": "Carga",
+          "amount": 200
+        },
         {
           "plantId": "cemento-portland-blanco",
           "unit": "Kg",
-          "role": "Cementante"
+          "role": "Cementante",
+          "amount": 200
         },
         {
-          "plantId": "arena-deshidratada",
+          "plantId": "calidra",
           "unit": "Kg",
-          "role": "Agregado"
+          "role": "Cementante",
+          "amount": 25
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero",
+          "amount": 15
+        },
+        {
+          "plantId": "estearato",
+          "unit": "Kg",
+          "role": "Aditivo",
+          "amount": 1
+        },
+        {
+          "plantId": "walocell",
+          "unit": "Kg",
+          "role": "Celulosa",
+          "amount": 1
+        },
+        {
+          "plantId": "arbocel-celulosa",
+          "unit": "Kg",
+          "role": "Celulosa",
+          "amount": 0.5
         },
         {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "resina-rdp740h",
-          "unit": "Kg",
-          "role": "Polímero redispersable"
         },
         {
           "plantId": "kimacell",
@@ -3499,6 +3653,12 @@ window.S35_PANEL_DATA = {
         "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
         "role": "Agregado"
+      },
+      {
+        "slug": "basecoat-plus-blanco",
+        "name": "Basecoat Plus: Blanco absoluto",
+        "code": "FT-PS-001",
+        "role": "Agregado"
       }
     ],
     "carbonato-de-calcio": [
@@ -3932,12 +4092,6 @@ window.S35_PANEL_DATA = {
         "slug": "basecoat-plus-gris",
         "name": "Basecoat Plus: Gris",
         "code": "FT-PS-002",
-        "role": "Agregado"
-      },
-      {
-        "slug": "basecoat-plus-blanco",
-        "name": "Basecoat Plus: Blanco absoluto",
-        "code": "FT-PS-001",
         "role": "Agregado"
       },
       {
