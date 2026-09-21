@@ -2373,6 +2373,7 @@
         .cortes-today-btn:hover { color: var(--text); background: var(--hover); }
         .seg-control {
             display: inline-flex;
+            flex-wrap: wrap;
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             overflow: hidden;
@@ -3497,7 +3498,7 @@
                     <div class="cortes-head">
                         <div>
                             <h1 class="page-title">Cortes</h1>
-                            <p class="page-sub">Corte del día, semana, mes y año · ventas de este navegador.</p>
+                            <p class="page-sub">Corte del día, semana, mes, año e historial · ventas de este navegador.</p>
                         </div>
                         <div class="cortes-range">
                             <button type="button" class="cortes-nav-btn" id="cortesPrev" title="Periodo anterior" aria-label="Periodo anterior"><i class="fa-solid fa-chevron-left"></i></button>
@@ -3512,6 +3513,7 @@
                         <button type="button" role="tab" data-period="week" aria-selected="false">Semana</button>
                         <button type="button" role="tab" data-period="month" aria-selected="false">Mes</button>
                         <button type="button" role="tab" data-period="year" aria-selected="false">Año</button>
+                        <button type="button" role="tab" data-period="historial" aria-selected="false">Historial</button>
                     </div>
 
                     <div class="cortes-chart-panel">

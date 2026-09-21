@@ -656,11 +656,32 @@
     function startOfYear(d) {
         return new Date(d.getFullYear(), 0, 1);
     }
+    function salesYearSpan(list) {
+        let minY = null;
+        let maxY = null;
+        (list || sales || []).forEach(function (s) {
+            const d = new Date(s.createdAt);
+            if (isNaN(d.getTime())) return;
+            const y = d.getFullYear();
+            if (minY == null || y < minY) minY = y;
+            if (maxY == null || y > maxY) maxY = y;
+        });
+        const nowY = new Date().getFullYear();
+        if (minY == null) {
+            minY = nowY;
+            maxY = nowY;
+        }
+        return { min: minY, max: maxY };
+    }
     function periodBounds(period, offset, now) {
         now = now || new Date();
         let start;
         let end;
-        if (period === 'week') {
+        if (period === 'historial') {
+            const span = salesYearSpan(sales);
+            start = new Date(span.min, 0, 1);
+            end = new Date(span.max + 1, 0, 1);
+        } else if (period === 'week') {
             start = addDays(startOfWeekMonday(now), offset * 7);
             end = addDays(start, 7);
         } else if (period === 'month') {
@@ -678,6 +699,12 @@
     }
     function formatPeriodLabel(period, start, end) {
         const optsDay = { day: 'numeric', month: 'short', year: 'numeric' };
+        if (period === 'historial') {
+            const y0 = start.getFullYear();
+            const y1 = end.getFullYear() - 1;
+            if (y0 === y1) return 'Historial · ' + y0;
+            return 'Historial · ' + y0 + ' – ' + y1;
+        }
         if (period === 'day') {
             const today = startOfLocalDay(new Date());
             if (start.getTime() === today.getTime()) return 'Hoy · ' + start.toLocaleDateString('es-MX', optsDay);
@@ -717,6 +744,15 @@
     }
 
     function emptyRhythmBuckets(period, bounds) {
+        if (period === 'historial') {
+            const y0 = bounds.start.getFullYear();
+            const y1 = Math.max(y0, bounds.end.getFullYear() - 1);
+            const buckets = [];
+            for (let y = y0; y <= y1; y++) {
+                buckets.push({ key: y, label: String(y), amount: 0 });
+            }
+            return { subtitle: 'Cada año del historial', buckets: buckets };
+        }
         if (period === 'week') {
             return {
                 subtitle: 'Lunes a viernes',
@@ -780,6 +816,9 @@
                 if (d.getFullYear() === bounds.start.getFullYear()) {
                     buckets[d.getMonth()].amount += amt;
                 }
+            } else if (period === 'historial') {
+                const idx = d.getFullYear() - bounds.start.getFullYear();
+                if (buckets[idx]) buckets[idx].amount += amt;
             }
         });
         return { subtitle: meta.subtitle, buckets: buckets };
@@ -804,7 +843,10 @@
         if (!host) return;
 
         const cur = fillRhythmBuckets(period, bounds, list);
-        const prev = fillRhythmBuckets(period, prevBounds, prevList);
+        const showPrev = period !== 'historial' && prevBounds && prevList;
+        const prev = showPrev
+            ? fillRhythmBuckets(period, prevBounds, prevList)
+            : { subtitle: '', buckets: cur.buckets.map(function (b) { return { key: b.key, label: b.label, amount: 0 }; }) };
         if (subEl) subEl.textContent = cur.subtitle;
 
         const n = cur.buckets.length;
@@ -917,7 +959,9 @@
             ' L' + ptX(0).toFixed(1) + ' ' + baseY.toFixed(1) + ' Z';
 
         let xLabels = '';
-        const labelEvery = period === 'month' ? (n > 20 ? 2 : 1) : (period === 'day' ? 2 : 1);
+        const labelEvery = period === 'month' ? (n > 20 ? 2 : 1)
+            : (period === 'day' ? 2
+                : (period === 'historial' ? (n > 16 ? 2 : 1) : 1));
         for (let i = 0; i < n; i++) {
             const showLabel = i === 0 || i === n - 1 || (i % labelEvery === 0);
             if (!showLabel) continue;
@@ -938,7 +982,7 @@
             '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
             defs + grid + yLabels +
             (hasData ? '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + esc(hatchId) + ')"/>' : '') +
-            '<path class="line-prev" d="' + prevLine + '"/>' +
+            (showPrev && prevLine ? '<path class="line-prev" d="' + prevLine + '"/>' : '') +
             '<path class="line-cur" d="' + curLine + '"/>' +
             xLabels +
             '</svg>';
@@ -2678,10 +2722,13 @@
         const section = document.getElementById('cortes');
         if (!section) return;
 
+        const isHist = cortesPeriod === 'historial';
+        if (isHist) cortesOffset = 0;
+
         const bounds = periodBounds(cortesPeriod, cortesOffset);
-        const prevBounds = periodBounds(cortesPeriod, cortesOffset - 1);
+        const prevBounds = isHist ? null : periodBounds(cortesPeriod, cortesOffset - 1);
         const list = salesInRange(sales, bounds.start, bounds.end);
-        const prevList = salesInRange(sales, prevBounds.start, prevBounds.end);
+        const prevList = isHist ? [] : salesInRange(sales, prevBounds.start, prevBounds.end);
         const total = sumTotals(list);
         const prevTotal = sumTotals(prevList);
         const tickets = list.length;
@@ -2691,7 +2738,11 @@
         if (rangeLabel) rangeLabel.textContent = formatPeriodLabel(cortesPeriod, bounds.start, bounds.end);
 
         const nextBtn = document.getElementById('cortesNext');
-        if (nextBtn) nextBtn.disabled = cortesOffset >= 0;
+        if (nextBtn) nextBtn.disabled = isHist || cortesOffset >= 0;
+        const prevBtn = document.getElementById('cortesPrev');
+        if (prevBtn) prevBtn.disabled = isHist;
+        const resetBtn = document.getElementById('cortesReset');
+        if (resetBtn) resetBtn.disabled = isHist;
 
         const totalEl = document.getElementById('cortesTotal');
         if (totalEl) totalEl.textContent = money(total);
@@ -2700,7 +2751,19 @@
         const avgEl = document.getElementById('cortesAvg');
         if (avgEl) avgEl.textContent = money(avg);
         const hintEl = document.getElementById('cortesCompareHint');
-        if (hintEl) hintEl.textContent = formatDelta(total, prevTotal);
+        if (hintEl) {
+            hintEl.textContent = isHist
+                ? 'Vista completa · todos los años con ventas'
+                : formatDelta(total, prevTotal);
+        }
+
+        const legendHost = document.querySelector('#cortes .cortes-chart-legend');
+        if (legendHost) {
+            legendHost.innerHTML = isHist
+                ? '<span class="leg"><span class="swatch"></span> Historial</span>'
+                : '<span class="leg"><span class="swatch"></span> Periodo</span>' +
+                  '<span class="leg"><span class="swatch prev"></span> Anterior</span>';
+        }
 
         renderCortesChart(cortesPeriod, bounds, list, prevBounds, prevList);
 
@@ -3203,6 +3266,7 @@
         const cortesPrev = document.getElementById('cortesPrev');
         if (cortesPrev) {
             cortesPrev.addEventListener('click', function () {
+                if (cortesPeriod === 'historial') return;
                 cortesOffset -= 1;
                 renderCortes();
             });
@@ -3210,6 +3274,7 @@
         const cortesNext = document.getElementById('cortesNext');
         if (cortesNext) {
             cortesNext.addEventListener('click', function () {
+                if (cortesPeriod === 'historial') return;
                 if (cortesOffset >= 0) return;
                 cortesOffset += 1;
                 renderCortes();
@@ -3697,24 +3762,26 @@
             const periodBtn = e.target.closest('[data-pd-sales-period]');
             if (periodBtn) {
                 const next = periodBtn.getAttribute('data-pd-sales-period');
-                if (['day', 'week', 'month', 'year'].indexOf(next) < 0) return;
+                if (['day', 'week', 'month', 'year', 'historial'].indexOf(next) < 0) return;
                 pdSalesPeriod = next;
                 pdSalesOffset = 0;
                 renderProductSalesAnalytics(pdSalesSlug);
                 return;
             }
             if (e.target.closest('[data-pd-sales-prev]')) {
+                if (pdSalesPeriod === 'historial') return;
                 pdSalesOffset -= 1;
                 renderProductSalesAnalytics(pdSalesSlug);
                 return;
             }
             if (e.target.closest('[data-pd-sales-next]')) {
-                if (pdSalesOffset >= 0) return;
+                if (pdSalesPeriod === 'historial' || pdSalesOffset >= 0) return;
                 pdSalesOffset += 1;
                 renderProductSalesAnalytics(pdSalesSlug);
                 return;
             }
             if (e.target.closest('[data-pd-sales-reset]')) {
+                if (pdSalesPeriod === 'historial') return;
                 pdSalesOffset = 0;
                 renderProductSalesAnalytics(pdSalesSlug);
             }
@@ -3752,10 +3819,12 @@
             return;
         }
 
+        const isHist = pdSalesPeriod === 'historial';
+        if (isHist) pdSalesOffset = 0;
         const bounds = periodBounds(pdSalesPeriod, pdSalesOffset);
-        const prevBounds = periodBounds(pdSalesPeriod, pdSalesOffset - 1);
+        const prevBounds = isHist ? null : periodBounds(pdSalesPeriod, pdSalesOffset - 1);
         const periodSales = salesInRange(sales, bounds.start, bounds.end);
-        const prevPeriodSales = salesInRange(sales, prevBounds.start, prevBounds.end);
+        const prevPeriodSales = isHist ? [] : salesInRange(sales, prevBounds.start, prevBounds.end);
         const curSeries = productRhythmSeries(periodSales, keys);
         const prevSeries = productRhythmSeries(prevPeriodSales, keys);
 
@@ -3775,7 +3844,7 @@
         });
         const avgPrice = unitCount ? unitSum / unitCount : 0;
         const clients = topClientsForProduct(periodSales, keys, 5);
-        const canGoNext = pdSalesOffset < 0;
+        const canGoNext = !isHist && pdSalesOffset < 0;
 
         mount.innerHTML =
             '<div class="pd-sales-block">' +
@@ -3785,14 +3854,15 @@
             '<p class="page-sub" style="margin:0">Ritmo y clientes de este producto · POS local</p>' +
             '</div>' +
             '<div class="cortes-range pd-sales-range">' +
-            '<button type="button" class="cortes-nav-btn" data-pd-sales-prev title="Periodo anterior" aria-label="Periodo anterior"><i class="fa-solid fa-chevron-left"></i></button>' +
+            '<button type="button" class="cortes-nav-btn" data-pd-sales-prev title="Periodo anterior" aria-label="Periodo anterior"' +
+            (isHist ? ' disabled' : '') + '><i class="fa-solid fa-chevron-left"></i></button>' +
             '<span class="cortes-range-label" id="pdSalesRangeLabel">' + esc(formatPeriodLabel(pdSalesPeriod, bounds.start, bounds.end)) + '</span>' +
             '<button type="button" class="cortes-nav-btn" data-pd-sales-next title="Periodo siguiente" aria-label="Periodo siguiente"' +
             (canGoNext ? '' : ' disabled') + '><i class="fa-solid fa-chevron-right"></i></button>' +
-            '<button type="button" class="cortes-today-btn" data-pd-sales-reset>Actual</button>' +
+            '<button type="button" class="cortes-today-btn" data-pd-sales-reset' + (isHist ? ' disabled' : '') + '>Actual</button>' +
             '</div></div>' +
             '<div class="seg-control pd-sales-periods" role="tablist" aria-label="Periodo de ventas del producto">' +
-            [['day', 'Día'], ['week', 'Semana'], ['month', 'Mes'], ['year', 'Año']].map(function (pair) {
+            [['day', 'Día'], ['week', 'Semana'], ['month', 'Mes'], ['year', 'Año'], ['historial', 'Historial']].map(function (pair) {
                 const on = pdSalesPeriod === pair[0];
                 return '<button type="button" role="tab" data-pd-sales-period="' + pair[0] + '"' +
                     (on ? ' class="active" aria-selected="true"' : ' aria-selected="false"') + '>' +
@@ -3809,8 +3879,10 @@
             '<div class="cortes-chart-head">' +
             '<div><h3>Ritmo de ventas</h3><p class="panel-sub" id="pdSalesChartSub"></p></div>' +
             '<div class="cortes-chart-legend" aria-hidden="true">' +
-            '<span class="leg"><span class="swatch"></span> Periodo</span>' +
-            '<span class="leg"><span class="swatch prev"></span> Anterior</span>' +
+            (isHist
+                ? '<span class="leg"><span class="swatch"></span> Historial</span>'
+                : '<span class="leg"><span class="swatch"></span> Periodo</span>' +
+                  '<span class="leg"><span class="swatch prev"></span> Anterior</span>') +
             '</div></div>' +
             '<div class="cortes-chart" id="pdSalesChart" role="img" aria-label="Ritmo de ventas del producto"></div>' +
             '</div>' +
