@@ -3082,25 +3082,33 @@ window.S35_PANEL_DATA = {
       "code": "FT-PP-001",
       "family": "Pro+ Systems",
       "kind": "seco",
-      "water": "Solo agua",
-      "status": "mapa-funcional",
-      "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "water": "6.0 – 6.1 L / saco 25 kg",
+      "status": "lote-planta",
+      "note": "Dosificación de planta por lote (742 kg → ~29.68 sacos de 25 kg). TALCO NORMAL → marmolina-talco-100. CAL → calidra. CEMENTO BLANCO → cemento-portland-blanco.",
       "image": "/Assets/productos_thumbs/styrobond.jpg",
       "imageAlt": "Saco de 25 kg de Styrobond Pro+, pegamento y recubrimiento para EPS",
       "items": [
         {
-          "slug": "cemento-gris",
-          "name": "Cemento gris",
-          "code": "ML-BND-003",
+          "slug": "cemento-blanco",
+          "name": "Cemento blanco",
+          "code": "ML-BND-004",
           "category": "Cementantes",
           "role": "Cementante",
           "note": ""
         },
         {
-          "slug": "arena-silicea-graduada",
-          "name": "Arena silícea graduada",
-          "code": "ML-AGG-003",
-          "category": "Agregados",
+          "slug": "cal",
+          "name": "Cal",
+          "code": "ML-BND-001",
+          "category": "Cementantes",
+          "role": "Cementante",
+          "note": ""
+        },
+        {
+          "slug": "marmolina-fina",
+          "name": "Marmolina fina",
+          "code": "ML-FIL-001",
+          "category": "Cargas",
           "role": "Agregado",
           "note": ""
         },
@@ -3127,45 +3135,183 @@ window.S35_PANEL_DATA = {
           "category": "Aditivos",
           "role": "Retención de agua / reología",
           "note": ""
-        },
-        {
-          "slug": "eter-de-almidon",
-          "name": "Éter de almidón",
-          "code": "ML-ADM-003",
-          "category": "Aditivos",
-          "role": "Antideslizamiento",
-          "note": ""
-        },
-        {
-          "slug": null,
-          "name": "",
-          "code": "",
-          "category": "",
-          "role": "Nota de mezcla",
-          "note": "Microfibras para recubrimiento de EPS: ficha de fibra pendiente."
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta FT-PP-001. V1 Styrobond pro+ (742 kg → ~29.68 sacos de 25 kg). TALCO NORMAL → marmolina-talco-100. CAL → calidra. CEMENTO BLANCO → cemento-portland-blanco.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Marmolina gruesa + fina + talco 100",
+            "yieldMin": 29,
+            "yieldMax": 30,
+            "yieldTheoretical": 29.68,
+            "totalKg": 742,
+            "items": [
+              {
+                "plantId": "marmolina-gruesa",
+                "amount": 200,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "marmolina-fina",
+                "amount": 150,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "marmolina-talco-100",
+                "amount": 200,
+                "unit": "Kg",
+                "role": "Carga"
+              },
+              {
+                "plantId": "cemento-portland-blanco",
+                "amount": 150,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "calidra",
+                "amount": 25,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "resina-rdp740h",
+                "amount": 15,
+                "unit": "Kg",
+                "role": "Polímero"
+              },
+              {
+                "plantId": "estearato",
+                "amount": 1,
+                "unit": "Kg",
+                "role": "Aditivo"
+              },
+              {
+                "plantId": "walocell",
+                "amount": 1,
+                "unit": "Kg",
+                "role": "Celulosa"
+              }
+            ]
+          }
+        ],
+        "yieldMin": 29,
+        "yieldMax": 30,
+        "yieldTheoretical": 29.68,
+        "totalKg": 742,
+        "items": [
+          {
+            "plantId": "marmolina-gruesa",
+            "amount": 200,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "marmolina-fina",
+            "amount": 150,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "marmolina-talco-100",
+            "amount": 200,
+            "unit": "Kg",
+            "role": "Carga"
+          },
+          {
+            "plantId": "cemento-portland-blanco",
+            "amount": 150,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "calidra",
+            "amount": 25,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "resina-rdp740h",
+            "amount": 15,
+            "unit": "Kg",
+            "role": "Polímero"
+          },
+          {
+            "plantId": "estearato",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Aditivo"
+          },
+          {
+            "plantId": "walocell",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Celulosa"
+          }
+        ]
+      },
       "suggested": [
         {
-          "plantId": "cemento-portland-gris",
+          "plantId": "marmolina-gruesa",
           "unit": "Kg",
-          "role": "Cementante"
+          "role": "Agregado",
+          "amount": 200
         },
         {
-          "plantId": "arena-deshidratada",
+          "plantId": "marmolina-fina",
           "unit": "Kg",
-          "role": "Agregado"
+          "role": "Agregado",
+          "amount": 150
+        },
+        {
+          "plantId": "marmolina-talco-100",
+          "unit": "Kg",
+          "role": "Carga",
+          "amount": 200
+        },
+        {
+          "plantId": "cemento-portland-blanco",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 150
+        },
+        {
+          "plantId": "calidra",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 25
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero",
+          "amount": 15
+        },
+        {
+          "plantId": "estearato",
+          "unit": "Kg",
+          "role": "Aditivo",
+          "amount": 1
+        },
+        {
+          "plantId": "walocell",
+          "unit": "Kg",
+          "role": "Celulosa",
+          "amount": 1
         },
         {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "resina-rdp740h",
-          "unit": "Kg",
-          "role": "Polímero redispersable"
         },
         {
           "plantId": "kimacell",
@@ -4666,6 +4812,12 @@ window.S35_PANEL_DATA = {
         "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
         "role": "Cementante"
+      },
+      {
+        "slug": "styrobond-pro",
+        "name": "Styrobond pro+",
+        "code": "FT-PP-001",
+        "role": "Cementante"
       }
     ],
     "marmolina-fina": [
@@ -4697,6 +4849,12 @@ window.S35_PANEL_DATA = {
         "slug": "basecoat-plus-blanco",
         "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
+        "role": "Agregado"
+      },
+      {
+        "slug": "styrobond-pro",
+        "name": "Styrobond pro+",
+        "code": "FT-PP-001",
         "role": "Agregado"
       },
       {
@@ -4994,12 +5152,6 @@ window.S35_PANEL_DATA = {
         "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
         "role": "Antideslizamiento"
-      },
-      {
-        "slug": "styrobond-pro",
-        "name": "Styrobond pro+",
-        "code": "FT-PP-001",
-        "role": "Antideslizamiento"
       }
     ],
     "dioxido-de-titanio": [
@@ -5048,12 +5200,6 @@ window.S35_PANEL_DATA = {
         "role": "Cementante"
       },
       {
-        "slug": "styrobond-pro",
-        "name": "Styrobond pro+",
-        "code": "FT-PP-001",
-        "role": "Cementante"
-      },
-      {
         "slug": "leveltec-pro",
         "name": "Leveltec pro",
         "code": "FT-PP-003",
@@ -5098,12 +5244,6 @@ window.S35_PANEL_DATA = {
         "role": "Agregado"
       },
       {
-        "slug": "styrobond-pro",
-        "name": "Styrobond pro+",
-        "code": "FT-PP-001",
-        "role": "Agregado"
-      },
-      {
         "slug": "leveltec-pro",
         "name": "Leveltec pro",
         "code": "FT-PP-003",
@@ -5135,6 +5275,12 @@ window.S35_PANEL_DATA = {
       }
     ],
     "cal": [
+      {
+        "slug": "styrobond-pro",
+        "name": "Styrobond pro+",
+        "code": "FT-PP-001",
+        "role": "Cementante"
+      },
       {
         "slug": "leveltec-pro",
         "name": "Leveltec pro",

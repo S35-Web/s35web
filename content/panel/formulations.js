@@ -149,12 +149,16 @@ module.exports = [
   }),
   dryMortar({
     product: 'styrobond-pro',
-    water: 'Solo agua',
-    cement: ['cemento-gris'],
-    aggregate: ['arena-silicea-graduada'],
+    water: '6.0 – 6.1 L / saco 25 kg',
+    cement: ['cemento-blanco', 'cal'],
+    aggregate: ['marmolina-fina'],
     filler: ['carbonato-de-calcio'],
-    admixture: TILE_ADMIX,
-    notesOnMix: ['Microfibras para recubrimiento de EPS: ficha de fibra pendiente.'],
+    admixture: [
+      ['polimero-redispersable-vae', 'Polímero redispersable'],
+      ['celulosa-hpmc', 'Retención de agua / reología'],
+    ],
+    status: 'lote-planta',
+    note: 'Dosificación de planta por lote (742 kg → ~29.68 sacos de 25 kg). TALCO NORMAL → marmolina-talco-100. CAL → calidra. CEMENTO BLANCO → cemento-portland-blanco.',
   }),
   dryMortar({
     product: 'leveltec-pro',

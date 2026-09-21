@@ -360,4 +360,30 @@ module.exports = {
       },
     ],
   },
+  'styrobond-pro': {
+    mode: 'plant-lot',
+    packSizeKg: 25,
+    packagingPlantId: 'saco-rafia-general',
+    note: 'Lote de planta FT-PP-001. V1 Styrobond pro+ (742 kg → ~29.68 sacos de 25 kg). TALCO NORMAL → marmolina-talco-100. CAL → calidra. CEMENTO BLANCO → cemento-portland-blanco.',
+    defaultVersionId: 'v1',
+    versions: [
+      {
+        id: 'v1',
+        name: 'V1',
+        label: 'Marmolina gruesa + fina + talco 100',
+        yieldMin: 29,
+        yieldMax: 30,
+        items: [
+          { plantId: 'marmolina-gruesa', amount: 200, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'marmolina-fina', amount: 150, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'marmolina-talco-100', amount: 200, unit: 'Kg', role: 'Carga' },
+          { plantId: 'cemento-portland-blanco', amount: 150, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'calidra', amount: 25, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'resina-rdp740h', amount: 15, unit: 'Kg', role: 'Polímero' },
+          { plantId: 'estearato', amount: 1, unit: 'Kg', role: 'Aditivo' },
+          { plantId: 'walocell', amount: 1, unit: 'Kg', role: 'Celulosa' },
+        ],
+      },
+    ],
+  },
 };
