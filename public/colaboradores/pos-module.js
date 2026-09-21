@@ -302,7 +302,7 @@
 
     let cortesPeriod = 'day';
     let cortesOffset = 0;
-    let pdSalesPeriod = 'month';
+    let pdSalesPeriod = 'historial';
     let pdSalesOffset = 0;
     let pdSalesSlug = null;
     let pdSalesBound = false;
