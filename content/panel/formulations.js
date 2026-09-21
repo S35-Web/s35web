@@ -193,11 +193,16 @@ module.exports = [
   dryMortar({
     product: 'porcelanico-universal',
     water: 'Solo agua',
-    cement: ['cemento-gris'],
-    aggregate: ['arena-silicea-graduada'],
+    cement: ['cemento-gris', 'cal'],
+    aggregate: ['marmolina-fina'],
     filler: ['carbonato-de-calcio'],
-    admixture: TILE_ADMIX,
-    note: 'Tipo C: más polímero que el Cerámico. Dosificación de planta pendiente.',
+    admixture: [
+      ['polimero-redispersable-vae', 'Polímero redispersable'],
+      ['celulosa-hpmc', 'Retención de agua / reología'],
+    ],
+    status: 'lote-planta',
+    note: 'Dosificación de planta por lote (748.6 kg → ~29.94 sacos). CAL → calidra. TALCO NORMAL → marmolina-talco-100 (misma regla FT-PS-001).',
+    notesOnMix: ['Mortero de planta (plantId mortero) sin ficha de Laboratorio.'],
   }),
   dryMortar({
     product: 'pegaxpress-psp',

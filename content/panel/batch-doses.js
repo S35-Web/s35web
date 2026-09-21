@@ -235,6 +235,31 @@ module.exports = {
       },
     ],
   },
+  'porcelanico-universal': {
+    mode: 'plant-lot',
+    packSizeKg: 25,
+    packagingPlantId: 'saco-rafia-general',
+    note: 'Lote de planta FT-AD-001. V1 Pegaxpress Porcelánico universal (748.6 kg → ~29.94 sacos). CAL → calidra. TALCO NORMAL → marmolina-talco-100 (misma regla FT-PS-001; no hay talco sin malla en catálogo).',
+    defaultVersionId: 'v1',
+    versions: [
+      {
+        id: 'v1',
+        name: 'V1',
+        label: 'Marmolina gruesa + talco 100',
+        yieldMin: 29,
+        yieldMax: 30,
+        items: [
+          { plantId: 'marmolina-gruesa', amount: 412, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'marmolina-talco-100', amount: 100, unit: 'Kg', role: 'Carga' },
+          { plantId: 'cemento-portland-gris', amount: 150, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'mortero', amount: 50, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'calidra', amount: 25, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'resina-rdp740h', amount: 10, unit: 'Kg', role: 'Polímero' },
+          { plantId: 'walocell', amount: 1.6, unit: 'Kg', role: 'Celulosa' },
+        ],
+      },
+    ],
+  },
   'pegaxpress-psp': {
     mode: 'plant-lot',
     packSizeKg: 25,
