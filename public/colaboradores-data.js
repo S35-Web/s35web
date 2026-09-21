@@ -1045,6 +1045,14 @@ window.S35_PANEL_DATA = {
       "labSlug": null
     },
     {
+      "id": "jal-cribado",
+      "name": "Jal cribado",
+      "unit": "Kg",
+      "minStock": 500,
+      "category": "mineral",
+      "labSlug": "jal-pumita"
+    },
+    {
       "id": "kimacell",
       "name": "Kimacell",
       "unit": "Kg",
@@ -3178,8 +3186,8 @@ window.S35_PANEL_DATA = {
       "family": "Pro+ Systems",
       "kind": "seco",
       "water": "4.0 L / saco 35 kg",
-      "status": "mapa-funcional",
-      "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "status": "lote-planta",
+      "note": "Dosificación de planta por lote (518.2 kg → ~14.81 sacos de 35 kg). PELOS DE FIBRA → fibra-de-polipropileno. TALCO 100 → marmolina-talco-100. JAL CRIBADO → jal-cribado (labSlug jal-pumita). CAL → calidra.",
       "image": "/Assets/productos_thumbs/LEVELTEC-pro.jpg",
       "imageAlt": "Saco de 35 kg de Leveltec Pro, nivelante cementante de pisos",
       "items": [
@@ -3192,9 +3200,33 @@ window.S35_PANEL_DATA = {
           "note": ""
         },
         {
+          "slug": "cal",
+          "name": "Cal",
+          "code": "ML-BND-001",
+          "category": "Cementantes",
+          "role": "Cementante",
+          "note": ""
+        },
+        {
           "slug": "arena-silicea-graduada",
           "name": "Arena silícea graduada",
           "code": "ML-AGG-003",
+          "category": "Agregados",
+          "role": "Agregado",
+          "note": ""
+        },
+        {
+          "slug": "marmolina-fina",
+          "name": "Marmolina fina",
+          "code": "ML-FIL-001",
+          "category": "Cargas",
+          "role": "Agregado",
+          "note": ""
+        },
+        {
+          "slug": "jal-pumita",
+          "name": "Jal · Pumita",
+          "code": "ML-AGG-004",
           "category": "Agregados",
           "role": "Agregado",
           "note": ""
@@ -3222,14 +3254,222 @@ window.S35_PANEL_DATA = {
           "category": "Aditivos",
           "role": "Reología de autonivelado (grado baja viscosidad)",
           "note": ""
+        },
+        {
+          "slug": null,
+          "name": "",
+          "code": "",
+          "category": "",
+          "role": "Nota de mezcla",
+          "note": "Mortero de planta (plantId mortero) sin ficha de Laboratorio."
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 35,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta FT-PP-003. V1 Leveltec pro (518.2 kg → ~14.81 sacos de 35 kg). PELOS DE FIBRA → fibra-de-polipropileno. TALCO 100 → marmolina-talco-100. JAL CRIBADO → jal-cribado (nuevo; labSlug jal-pumita). CAL → calidra. CEMENTO → cemento-portland-gris. Saco ficha 35 kg.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Arena fina + jal cribado + talco 100",
+            "yieldMin": 14,
+            "yieldMax": 15,
+            "yieldTheoretical": 14.81,
+            "totalKg": 518.2,
+            "items": [
+              {
+                "plantId": "walocell",
+                "amount": 1,
+                "unit": "Kg",
+                "role": "Celulosa"
+              },
+              {
+                "plantId": "resina-rdp740h",
+                "amount": 12,
+                "unit": "Kg",
+                "role": "Polímero"
+              },
+              {
+                "plantId": "fibra-de-polipropileno",
+                "amount": 0.2,
+                "unit": "Kg",
+                "role": "Fibra"
+              },
+              {
+                "plantId": "arena-cribada-fina",
+                "amount": 150,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "marmolina-talco-100",
+                "amount": 100,
+                "unit": "Kg",
+                "role": "Carga"
+              },
+              {
+                "plantId": "marmolina-fina",
+                "amount": 50,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "jal-cribado",
+                "amount": 80,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "calidra",
+                "amount": 25,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "mortero",
+                "amount": 50,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "cemento-portland-gris",
+                "amount": 50,
+                "unit": "Kg",
+                "role": "Cementante"
+              }
+            ]
+          }
+        ],
+        "yieldMin": 14,
+        "yieldMax": 15,
+        "yieldTheoretical": 14.81,
+        "totalKg": 518.2,
+        "items": [
+          {
+            "plantId": "walocell",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Celulosa"
+          },
+          {
+            "plantId": "resina-rdp740h",
+            "amount": 12,
+            "unit": "Kg",
+            "role": "Polímero"
+          },
+          {
+            "plantId": "fibra-de-polipropileno",
+            "amount": 0.2,
+            "unit": "Kg",
+            "role": "Fibra"
+          },
+          {
+            "plantId": "arena-cribada-fina",
+            "amount": 150,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "marmolina-talco-100",
+            "amount": 100,
+            "unit": "Kg",
+            "role": "Carga"
+          },
+          {
+            "plantId": "marmolina-fina",
+            "amount": 50,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "jal-cribado",
+            "amount": 80,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "calidra",
+            "amount": 25,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "mortero",
+            "amount": 50,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "cemento-portland-gris",
+            "amount": 50,
+            "unit": "Kg",
+            "role": "Cementante"
+          }
+        ]
+      },
       "suggested": [
+        {
+          "plantId": "walocell",
+          "unit": "Kg",
+          "role": "Celulosa",
+          "amount": 1
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero",
+          "amount": 12
+        },
+        {
+          "plantId": "fibra-de-polipropileno",
+          "unit": "Kg",
+          "role": "Fibra",
+          "amount": 0.2
+        },
+        {
+          "plantId": "arena-cribada-fina",
+          "unit": "Kg",
+          "role": "Agregado",
+          "amount": 150
+        },
+        {
+          "plantId": "marmolina-talco-100",
+          "unit": "Kg",
+          "role": "Carga",
+          "amount": 100
+        },
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado",
+          "amount": 50
+        },
+        {
+          "plantId": "jal-cribado",
+          "unit": "Kg",
+          "role": "Agregado",
+          "amount": 80
+        },
+        {
+          "plantId": "calidra",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 25
+        },
+        {
+          "plantId": "mortero",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 50
+        },
         {
           "plantId": "cemento-portland-gris",
           "unit": "Kg",
-          "role": "Cementante"
+          "role": "Cementante",
+          "amount": 50
         },
         {
           "plantId": "arena-deshidratada",
@@ -3240,11 +3480,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "resina-rdp740h",
-          "unit": "Kg",
-          "role": "Polímero redispersable"
         },
         {
           "plantId": "kimacell",
@@ -4465,6 +4700,12 @@ window.S35_PANEL_DATA = {
         "role": "Agregado"
       },
       {
+        "slug": "leveltec-pro",
+        "name": "Leveltec pro",
+        "code": "FT-PP-003",
+        "role": "Agregado"
+      },
+      {
         "slug": "porcelanico-universal",
         "name": "Pegaxpress: Porcelánico universal",
         "code": "FT-AD-001",
@@ -4895,6 +5136,12 @@ window.S35_PANEL_DATA = {
     ],
     "cal": [
       {
+        "slug": "leveltec-pro",
+        "name": "Leveltec pro",
+        "code": "FT-PP-003",
+        "role": "Cementante"
+      },
+      {
         "slug": "pegaxpress-block",
         "name": "Pegaxpress: Block",
         "code": "FT-PR-006",
@@ -4923,6 +5170,14 @@ window.S35_PANEL_DATA = {
         "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Cementante"
+      }
+    ],
+    "jal-pumita": [
+      {
+        "slug": "leveltec-pro",
+        "name": "Leveltec pro",
+        "code": "FT-PP-003",
+        "role": "Agregado"
       }
     ]
   },

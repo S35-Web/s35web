@@ -332,4 +332,32 @@ module.exports = {
       },
     ],
   },
+  'leveltec-pro': {
+    mode: 'plant-lot',
+    packSizeKg: 35,
+    packagingPlantId: 'saco-rafia-general',
+    note: 'Lote de planta FT-PP-003. V1 Leveltec pro (518.2 kg → ~14.81 sacos de 35 kg). PELOS DE FIBRA → fibra-de-polipropileno. TALCO 100 → marmolina-talco-100. JAL CRIBADO → jal-cribado (nuevo; labSlug jal-pumita). CAL → calidra. CEMENTO → cemento-portland-gris. Saco ficha 35 kg.',
+    defaultVersionId: 'v1',
+    versions: [
+      {
+        id: 'v1',
+        name: 'V1',
+        label: 'Arena fina + jal cribado + talco 100',
+        yieldMin: 14,
+        yieldMax: 15,
+        items: [
+          { plantId: 'walocell', amount: 1, unit: 'Kg', role: 'Celulosa' },
+          { plantId: 'resina-rdp740h', amount: 12, unit: 'Kg', role: 'Polímero' },
+          { plantId: 'fibra-de-polipropileno', amount: 0.2, unit: 'Kg', role: 'Fibra' },
+          { plantId: 'arena-cribada-fina', amount: 150, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'marmolina-talco-100', amount: 100, unit: 'Kg', role: 'Carga' },
+          { plantId: 'marmolina-fina', amount: 50, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'jal-cribado', amount: 80, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'calidra', amount: 25, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'mortero', amount: 50, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'cemento-portland-gris', amount: 50, unit: 'Kg', role: 'Cementante' },
+        ],
+      },
+    ],
+  },
 };

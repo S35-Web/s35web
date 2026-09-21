@@ -159,13 +159,16 @@ module.exports = [
   dryMortar({
     product: 'leveltec-pro',
     water: '4.0 L / saco 35 kg',
-    cement: ['cemento-gris'],
-    aggregate: ['arena-silicea-graduada'],
+    cement: ['cemento-gris', 'cal'],
+    aggregate: ['arena-silicea-graduada', 'marmolina-fina', 'jal-pumita'],
     filler: ['carbonato-de-calcio'],
     admixture: [
       ['polimero-redispersable-vae', 'Polímero redispersable'],
       ['celulosa-hpmc', 'Reología de autonivelado (grado baja viscosidad)'],
     ],
+    status: 'lote-planta',
+    note: 'Dosificación de planta por lote (518.2 kg → ~14.81 sacos de 35 kg). PELOS DE FIBRA → fibra-de-polipropileno. TALCO 100 → marmolina-talco-100. JAL CRIBADO → jal-cribado (labSlug jal-pumita). CAL → calidra.',
+    notesOnMix: ['Mortero de planta (plantId mortero) sin ficha de Laboratorio.'],
   }),
   dryMortar({
     product: 'pegaxpress-block',
