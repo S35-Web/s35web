@@ -220,12 +220,16 @@ module.exports = [
   dryMortar({
     product: 'ultraforce',
     water: 'Solo agua',
-    cement: ['cemento-gris', 'cemento-aluminato-de-calcio'],
+    cement: ['cemento-gris', 'cal'],
     aggregate: ['arena-silicea-graduada'],
     filler: ['carbonato-de-calcio'],
-    mineral: ['microsilice'],
-    admixture: TILE_ADMIX,
-    note: 'Tipo C semiflexible. CAC y microsílice entran como mapa funcional, no como receta de saco.',
+    admixture: [
+      ['polimero-redispersable-vae', 'Polímero redispersable'],
+      ['celulosa-hpmc', 'Retención de agua / reología'],
+    ],
+    status: 'lote-planta',
+    note: 'Dosificación de planta por lote (758.6 kg → ~30.34 sacos). CAL → calidra. TALCO NORMAL → marmolina-talco-100 (misma regla FT-PS-001). ARENA DESHIDRATADA → arena-deshidratada.',
+    notesOnMix: ['Mortero de planta (plantId mortero) sin ficha de Laboratorio.'],
   }),
   liquidMix({
     product: 'nanotech-hidrofobico',

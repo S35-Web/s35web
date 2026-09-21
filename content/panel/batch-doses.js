@@ -285,6 +285,31 @@ module.exports = {
       },
     ],
   },
+  ultraforce: {
+    mode: 'plant-lot',
+    packSizeKg: 25,
+    packagingPlantId: 'saco-rafia-general',
+    note: 'Lote de planta FT-AD-003. V1 Pegaxpress Ultraforce (758.6 kg → ~30.34 sacos). CAL → calidra. TALCO NORMAL → marmolina-talco-100 (misma regla FT-PS-001; no hay talco sin malla en catálogo). ARENA DESHIDRATADA → arena-deshidratada.',
+    defaultVersionId: 'v1',
+    versions: [
+      {
+        id: 'v1',
+        name: 'V1',
+        label: 'Arena deshidratada + talco 100',
+        yieldMin: 30,
+        yieldMax: 31,
+        items: [
+          { plantId: 'arena-deshidratada', amount: 412, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'marmolina-talco-100', amount: 100, unit: 'Kg', role: 'Carga' },
+          { plantId: 'cemento-portland-gris', amount: 150, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'mortero', amount: 50, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'calidra', amount: 25, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'resina-rdp740h', amount: 20, unit: 'Kg', role: 'Polímero' },
+          { plantId: 'walocell', amount: 1.6, unit: 'Kg', role: 'Celulosa' },
+        ],
+      },
+    ],
+  },
   'pegaxpress-block': {
     mode: 'plant-lot',
     packSizeKg: 30,
