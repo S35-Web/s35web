@@ -2527,8 +2527,8 @@ window.S35_PANEL_DATA = {
       "family": "Panel System",
       "kind": "seco",
       "water": "6.1 L llana / 7.5 L proyección · saco 25 kg",
-      "status": "mapa-funcional",
-      "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "status": "lote-planta",
+      "note": "Dosificación de planta por lote (841.75 kg → ~33.67 sacos). TALCO NORMAL → marmolina-talco-100 (misma regla FT-PS-001).",
       "image": "/Assets/productos_thumbs/basecoat.jpg",
       "imageAlt": "Saco de 25 kg de Basecoat Plus: Gris",
       "items": [
@@ -2541,10 +2541,10 @@ window.S35_PANEL_DATA = {
           "note": ""
         },
         {
-          "slug": "arena-silicea-graduada",
-          "name": "Arena silícea graduada",
-          "code": "ML-AGG-003",
-          "category": "Agregados",
+          "slug": "marmolina-fina",
+          "name": "Marmolina fina",
+          "code": "ML-FIL-001",
+          "category": "Cargas",
           "role": "Agregado",
           "note": ""
         },
@@ -2586,30 +2586,210 @@ window.S35_PANEL_DATA = {
           "code": "",
           "category": "",
           "role": "Nota de mezcla",
-          "note": "Microfibras de refuerzo: aún no hay ficha de fibra en Laboratorio."
+          "note": "Arbocel → arbocel-celulosa (fibra de celulosa de planta)."
+        },
+        {
+          "slug": null,
+          "name": "",
+          "code": "",
+          "category": "",
+          "role": "Nota de mezcla",
+          "note": "Mortero de planta (plantId mortero) sin ficha de Laboratorio."
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta FT-PS-002. V1 Panel System (841.75 kg → ~33.67 sacos). TALCO NORMAL → marmolina-talco-100 (misma regla FT-PS-001; no hay talco sin malla en catálogo).",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Marmolina fina + talco 100",
+            "yieldMin": 33,
+            "yieldMax": 34,
+            "yieldTheoretical": 33.67,
+            "totalKg": 841.75,
+            "items": [
+              {
+                "plantId": "marmolina-fina",
+                "amount": 400,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "marmolina-talco-100",
+                "amount": 200,
+                "unit": "Kg",
+                "role": "Carga"
+              },
+              {
+                "plantId": "mortero",
+                "amount": 50,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "cemento-portland-gris",
+                "amount": 150,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "calidra",
+                "amount": 25,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "resina-rdp740h",
+                "amount": 15,
+                "unit": "Kg",
+                "role": "Polímero"
+              },
+              {
+                "plantId": "estearato",
+                "amount": 0.25,
+                "unit": "Kg",
+                "role": "Aditivo"
+              },
+              {
+                "plantId": "walocell",
+                "amount": 1,
+                "unit": "Kg",
+                "role": "Celulosa"
+              },
+              {
+                "plantId": "arbocel-celulosa",
+                "amount": 0.5,
+                "unit": "Kg",
+                "role": "Celulosa"
+              }
+            ]
+          }
+        ],
+        "yieldMin": 33,
+        "yieldMax": 34,
+        "yieldTheoretical": 33.67,
+        "totalKg": 841.75,
+        "items": [
+          {
+            "plantId": "marmolina-fina",
+            "amount": 400,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "marmolina-talco-100",
+            "amount": 200,
+            "unit": "Kg",
+            "role": "Carga"
+          },
+          {
+            "plantId": "mortero",
+            "amount": 50,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "cemento-portland-gris",
+            "amount": 150,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "calidra",
+            "amount": 25,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "resina-rdp740h",
+            "amount": 15,
+            "unit": "Kg",
+            "role": "Polímero"
+          },
+          {
+            "plantId": "estearato",
+            "amount": 0.25,
+            "unit": "Kg",
+            "role": "Aditivo"
+          },
+          {
+            "plantId": "walocell",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Celulosa"
+          },
+          {
+            "plantId": "arbocel-celulosa",
+            "amount": 0.5,
+            "unit": "Kg",
+            "role": "Celulosa"
+          }
+        ]
+      },
       "suggested": [
+        {
+          "plantId": "marmolina-fina",
+          "unit": "Kg",
+          "role": "Agregado",
+          "amount": 400
+        },
+        {
+          "plantId": "marmolina-talco-100",
+          "unit": "Kg",
+          "role": "Carga",
+          "amount": 200
+        },
+        {
+          "plantId": "mortero",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 50
+        },
         {
           "plantId": "cemento-portland-gris",
           "unit": "Kg",
-          "role": "Cementante"
+          "role": "Cementante",
+          "amount": 150
         },
         {
-          "plantId": "arena-deshidratada",
+          "plantId": "calidra",
           "unit": "Kg",
-          "role": "Agregado"
+          "role": "Cementante",
+          "amount": 25
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero",
+          "amount": 15
+        },
+        {
+          "plantId": "estearato",
+          "unit": "Kg",
+          "role": "Aditivo",
+          "amount": 0.25
+        },
+        {
+          "plantId": "walocell",
+          "unit": "Kg",
+          "role": "Celulosa",
+          "amount": 1
+        },
+        {
+          "plantId": "arbocel-celulosa",
+          "unit": "Kg",
+          "role": "Celulosa",
+          "amount": 0.5
         },
         {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "resina-rdp740h",
-          "unit": "Kg",
-          "role": "Polímero redispersable"
         },
         {
           "plantId": "kimacell",
@@ -3080,8 +3260,8 @@ window.S35_PANEL_DATA = {
       "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
       "water": "Solo agua",
-      "status": "mapa-funcional",
-      "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "status": "lote-planta",
+      "note": "Dosificación de planta por lote (775 kg → ~25.83 sacos de 30 kg). ARENA → arena-cribada-fina (equivalente genérico). TALCO 100 → marmolina-talco-100.",
       "image": "/Assets/productos_thumbs/pastablock.jpg",
       "imageAlt": "Saco de 30 kg de Pegaxpress: Block",
       "items": [
@@ -3089,6 +3269,14 @@ window.S35_PANEL_DATA = {
           "slug": "cemento-gris",
           "name": "Cemento gris",
           "code": "ML-BND-003",
+          "category": "Cementantes",
+          "role": "Cementante",
+          "note": ""
+        },
+        {
+          "slug": "cal",
+          "name": "Cal",
+          "code": "ML-BND-001",
           "category": "Cementantes",
           "role": "Cementante",
           "note": ""
@@ -3108,38 +3296,106 @@ window.S35_PANEL_DATA = {
           "category": "Cargas",
           "role": "Carga",
           "note": ""
-        },
-        {
-          "slug": "polimero-redispersable-vae",
-          "name": "Polímero redispersable VAE",
-          "code": "ML-ADM-002",
-          "category": "Aditivos",
-          "role": "Polímero redispersable",
-          "note": ""
-        },
-        {
-          "slug": "celulosa-hpmc",
-          "name": "Celulosa HPMC",
-          "code": "ML-ADM-001",
-          "category": "Aditivos",
-          "role": "Retención de agua / reología",
-          "note": ""
-        },
-        {
-          "slug": "eter-de-almidon",
-          "name": "Éter de almidón",
-          "code": "ML-ADM-003",
-          "category": "Aditivos",
-          "role": "Antideslizamiento",
-          "note": ""
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 30,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta FT-PR-006. V1 Pegaxpress Block (775 kg → ~25.83 sacos de 30 kg). ARENA → arena-cribada-fina (mejor equivalente genérico; labSlug arena-silicea-graduada). TALCO 100 → marmolina-talco-100. Saco canónico 30 kg (no 25).",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Arena cribada fina + talco 100",
+            "yieldMin": 25,
+            "yieldMax": 26,
+            "yieldTheoretical": 25.83,
+            "totalKg": 775,
+            "items": [
+              {
+                "plantId": "arena-cribada-fina",
+                "amount": 450,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "marmolina-talco-100",
+                "amount": 100,
+                "unit": "Kg",
+                "role": "Carga"
+              },
+              {
+                "plantId": "calidra",
+                "amount": 50,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "cemento-portland-gris",
+                "amount": 175,
+                "unit": "Kg",
+                "role": "Cementante"
+              }
+            ]
+          }
+        ],
+        "yieldMin": 25,
+        "yieldMax": 26,
+        "yieldTheoretical": 25.83,
+        "totalKg": 775,
+        "items": [
+          {
+            "plantId": "arena-cribada-fina",
+            "amount": 450,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "marmolina-talco-100",
+            "amount": 100,
+            "unit": "Kg",
+            "role": "Carga"
+          },
+          {
+            "plantId": "calidra",
+            "amount": 50,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "cemento-portland-gris",
+            "amount": 175,
+            "unit": "Kg",
+            "role": "Cementante"
+          }
+        ]
+      },
       "suggested": [
+        {
+          "plantId": "arena-cribada-fina",
+          "unit": "Kg",
+          "role": "Agregado",
+          "amount": 450
+        },
+        {
+          "plantId": "marmolina-talco-100",
+          "unit": "Kg",
+          "role": "Carga",
+          "amount": 100
+        },
+        {
+          "plantId": "calidra",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 50
+        },
         {
           "plantId": "cemento-portland-gris",
           "unit": "Kg",
-          "role": "Cementante"
+          "role": "Cementante",
+          "amount": 175
         },
         {
           "plantId": "arena-deshidratada",
@@ -3150,16 +3406,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "resina-rdp740h",
-          "unit": "Kg",
-          "role": "Polímero redispersable"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -3791,6 +4037,12 @@ window.S35_PANEL_DATA = {
         "role": "Agregado"
       },
       {
+        "slug": "basecoat-plus-gris",
+        "name": "Basecoat Plus: Gris",
+        "code": "FT-PS-002",
+        "role": "Agregado"
+      },
+      {
         "slug": "basecoat-plus-blanco",
         "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
@@ -3939,12 +4191,6 @@ window.S35_PANEL_DATA = {
         "role": "Polímero redispersable"
       },
       {
-        "slug": "pegaxpress-block",
-        "name": "Pegaxpress: Block",
-        "code": "FT-PR-006",
-        "role": "Polímero redispersable"
-      },
-      {
         "slug": "ceramico",
         "name": "Pegaxpress: Cerámico",
         "code": "FT-AD-002",
@@ -4025,12 +4271,6 @@ window.S35_PANEL_DATA = {
         "role": "Reología de autonivelado (grado baja viscosidad)"
       },
       {
-        "slug": "pegaxpress-block",
-        "name": "Pegaxpress: Block",
-        "code": "FT-PR-006",
-        "role": "Retención de agua / reología"
-      },
-      {
         "slug": "ceramico",
         "name": "Pegaxpress: Cerámico",
         "code": "FT-AD-002",
@@ -4096,12 +4336,6 @@ window.S35_PANEL_DATA = {
         "slug": "styrobond-pro",
         "name": "Styrobond pro+",
         "code": "FT-PP-001",
-        "role": "Antideslizamiento"
-      },
-      {
-        "slug": "pegaxpress-block",
-        "name": "Pegaxpress: Block",
-        "code": "FT-PR-006",
         "role": "Antideslizamiento"
       },
       {
@@ -4219,12 +4453,6 @@ window.S35_PANEL_DATA = {
         "role": "Agregado"
       },
       {
-        "slug": "basecoat-plus-gris",
-        "name": "Basecoat Plus: Gris",
-        "code": "FT-PS-002",
-        "role": "Agregado"
-      },
-      {
         "slug": "styrobond-pro",
         "name": "Styrobond pro+",
         "code": "FT-PP-001",
@@ -4268,6 +4496,12 @@ window.S35_PANEL_DATA = {
       }
     ],
     "cal": [
+      {
+        "slug": "pegaxpress-block",
+        "name": "Pegaxpress: Block",
+        "code": "FT-PR-006",
+        "role": "Cementante"
+      },
       {
         "slug": "ceramico",
         "name": "Pegaxpress: Cerámico",

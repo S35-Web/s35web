@@ -125,10 +125,15 @@ module.exports = [
     product: 'basecoat-plus-gris',
     water: '6.1 L llana / 7.5 L proyección · saco 25 kg',
     cement: ['cemento-gris'],
-    aggregate: ['arena-silicea-graduada'],
+    aggregate: ['marmolina-fina'],
     filler: ['carbonato-de-calcio'],
     admixture: TILE_ADMIX,
-    notesOnMix: ['Microfibras de refuerzo: aún no hay ficha de fibra en Laboratorio.'],
+    status: 'lote-planta',
+    note: 'Dosificación de planta por lote (841.75 kg → ~33.67 sacos). TALCO NORMAL → marmolina-talco-100 (misma regla FT-PS-001).',
+    notesOnMix: [
+      'Arbocel → arbocel-celulosa (fibra de celulosa de planta).',
+      'Mortero de planta (plantId mortero) sin ficha de Laboratorio.',
+    ],
   }),
   dryMortar({
     product: 'basecoat-plus-blanco',
@@ -165,10 +170,11 @@ module.exports = [
   dryMortar({
     product: 'pegaxpress-block',
     water: 'Solo agua',
-    cement: ['cemento-gris'],
+    cement: ['cemento-gris', 'cal'],
     aggregate: ['arena-silicea-graduada'],
     filler: ['carbonato-de-calcio'],
-    admixture: TILE_ADMIX,
+    status: 'lote-planta',
+    note: 'Dosificación de planta por lote (775 kg → ~25.83 sacos de 30 kg). ARENA → arena-cribada-fina (equivalente genérico). TALCO 100 → marmolina-talco-100.',
   }),
   dryMortar({
     product: 'ceramico',
