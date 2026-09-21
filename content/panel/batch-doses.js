@@ -108,4 +108,29 @@ module.exports = {
       },
     ],
   },
+  'waxtard-extra-anclaje': {
+    mode: 'plant-lot',
+    packSizeKg: 25,
+    packagingPlantId: 'saco-rafia-waxtard',
+    note: 'Lote de planta FT-PR-004. V1 Estucos premium (793 kg → ~31.72 sacos).',
+    defaultVersionId: 'v1',
+    versions: [
+      {
+        id: 'v1',
+        name: 'V1',
+        label: 'Marmolina fina',
+        yieldMin: 31,
+        yieldMax: 32,
+        items: [
+          { plantId: 'marmolina-fina', amount: 350, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'marmolina-talco-100', amount: 200, unit: 'Kg', role: 'Carga' },
+          { plantId: 'cemento-portland-blanco', amount: 200, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'calidra', amount: 25, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'resina-rdp740h', amount: 15, unit: 'Kg', role: 'Polímero' },
+          { plantId: 'estearato', amount: 2, unit: 'Kg', role: 'Aditivo' },
+          { plantId: 'walocell', amount: 1, unit: 'Kg', role: 'Celulosa' },
+        ],
+      },
+    ],
+  },
 };

@@ -2098,8 +2098,8 @@ window.S35_PANEL_DATA = {
       "family": "Estucos premium",
       "kind": "seco",
       "water": "Solo agua, consistencia de trabajo",
-      "status": "mapa-funcional",
-      "note": "Anclaje químico sobre sustrato liso: más polímero y metacaolín que un Waxtard de absorbente. Dosificación de planta pendiente.",
+      "status": "lote-planta",
+      "note": "Dosificación de planta por lote (793 kg → ~31.72 sacos).",
       "image": "/Assets/productos_thumbs/WAXTARD-extra-anclaje.jpg",
       "imageAlt": "Saco de 25 kg de Waxtard Extra Anclaje (EIFS Extra Anclaje)",
       "items": [
@@ -2120,27 +2120,11 @@ window.S35_PANEL_DATA = {
           "note": ""
         },
         {
-          "slug": "arena-silicea-graduada",
-          "name": "Arena silícea graduada",
-          "code": "ML-AGG-003",
-          "category": "Agregados",
-          "role": "Agregado",
-          "note": ""
-        },
-        {
           "slug": "carbonato-de-calcio",
           "name": "Carbonato de calcio",
           "code": "ML-FIL-002",
           "category": "Cargas",
           "role": "Carga",
-          "note": ""
-        },
-        {
-          "slug": "metacaolin",
-          "name": "Metacaolín",
-          "code": "ML-MIN-004",
-          "category": "Minerales",
-          "role": "Mineral funcional",
           "note": ""
         },
         {
@@ -2176,32 +2160,163 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-waxtard",
+        "note": "Lote de planta FT-PR-004. V1 Estucos premium (793 kg → ~31.72 sacos).",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Marmolina fina",
+            "yieldMin": 31,
+            "yieldMax": 32,
+            "yieldTheoretical": 31.72,
+            "totalKg": 793,
+            "items": [
+              {
+                "plantId": "marmolina-fina",
+                "amount": 350,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "marmolina-talco-100",
+                "amount": 200,
+                "unit": "Kg",
+                "role": "Carga"
+              },
+              {
+                "plantId": "cemento-portland-blanco",
+                "amount": 200,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "calidra",
+                "amount": 25,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "resina-rdp740h",
+                "amount": 15,
+                "unit": "Kg",
+                "role": "Polímero"
+              },
+              {
+                "plantId": "estearato",
+                "amount": 2,
+                "unit": "Kg",
+                "role": "Aditivo"
+              },
+              {
+                "plantId": "walocell",
+                "amount": 1,
+                "unit": "Kg",
+                "role": "Celulosa"
+              }
+            ]
+          }
+        ],
+        "yieldMin": 31,
+        "yieldMax": 32,
+        "yieldTheoretical": 31.72,
+        "totalKg": 793,
+        "items": [
+          {
+            "plantId": "marmolina-fina",
+            "amount": 350,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "marmolina-talco-100",
+            "amount": 200,
+            "unit": "Kg",
+            "role": "Carga"
+          },
+          {
+            "plantId": "cemento-portland-blanco",
+            "amount": 200,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "calidra",
+            "amount": 25,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "resina-rdp740h",
+            "amount": 15,
+            "unit": "Kg",
+            "role": "Polímero"
+          },
+          {
+            "plantId": "estearato",
+            "amount": 2,
+            "unit": "Kg",
+            "role": "Aditivo"
+          },
+          {
+            "plantId": "walocell",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Celulosa"
+          }
+        ]
+      },
       "suggested": [
-        {
-          "plantId": "cemento-portland-blanco",
-          "unit": "Kg",
-          "role": "Cementante"
-        },
         {
           "plantId": "marmolina-fina",
           "unit": "Kg",
-          "role": "Agregado"
+          "role": "Agregado",
+          "amount": 350
         },
         {
-          "plantId": "arena-deshidratada",
+          "plantId": "marmolina-talco-100",
           "unit": "Kg",
-          "role": "Agregado"
+          "role": "Carga",
+          "amount": 200
+        },
+        {
+          "plantId": "cemento-portland-blanco",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 200
+        },
+        {
+          "plantId": "calidra",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 25
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero",
+          "amount": 15
+        },
+        {
+          "plantId": "estearato",
+          "unit": "Kg",
+          "role": "Aditivo",
+          "amount": 2
+        },
+        {
+          "plantId": "walocell",
+          "unit": "Kg",
+          "role": "Celulosa",
+          "amount": 1
         },
         {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "resina-rdp740h",
-          "unit": "Kg",
-          "role": "Polímero redispersable"
         },
         {
           "plantId": "kimacell",
@@ -3739,12 +3854,6 @@ window.S35_PANEL_DATA = {
         "role": "Agregado"
       },
       {
-        "slug": "waxtard-extra-anclaje",
-        "name": "Waxtard extra anclaje",
-        "code": "FT-PR-004",
-        "role": "Agregado"
-      },
-      {
         "slug": "basecoat-plus-gris",
         "name": "Basecoat Plus: Gris",
         "code": "FT-PS-002",
@@ -3799,26 +3908,20 @@ window.S35_PANEL_DATA = {
         "role": "Agregado"
       }
     ],
-    "metacaolin": [
-      {
-        "slug": "waxtard-extra-anclaje",
-        "name": "Waxtard extra anclaje",
-        "code": "FT-PR-004",
-        "role": "Mineral funcional"
-      },
-      {
-        "slug": "cemento-plastico-concreto",
-        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
-        "code": "FT-MC-001",
-        "role": "Mineral funcional"
-      }
-    ],
     "arena-de-cuarzo": [
       {
         "slug": "cemento-plastico-concreto",
         "name": "Microconcreto: Concreto aparente (Cemento plástico)",
         "code": "FT-MC-001",
         "role": "Agregado"
+      }
+    ],
+    "metacaolin": [
+      {
+        "slug": "cemento-plastico-concreto",
+        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
+        "code": "FT-MC-001",
+        "role": "Mineral funcional"
       }
     ],
     "oxido-de-hierro-rojo": [
