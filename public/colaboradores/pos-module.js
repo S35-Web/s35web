@@ -327,6 +327,13 @@
     function normalizeClientEmail(raw) {
         return splitClientEmails(raw).join(', ');
     }
+    /** Soft check: each piece looks like an email (no native type=email tooltip). */
+    function isLikelyEmail(e) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(e || ''));
+    }
+    function invalidClientEmails(raw) {
+        return splitClientEmails(raw).filter(function (e) { return !isLikelyEmail(e); });
+    }
     function formatClientEmailsHtml(raw) {
         const emails = splitClientEmails(raw);
         if (!emails.length) return '—';
@@ -3240,13 +3247,19 @@
                 e.preventDefault();
                 const name = toTitleCaseName(document.getElementById('clientName').value);
                 if (!name) return;
+                const emailRaw = document.getElementById('clientEmail').value;
+                const badEmails = invalidClientEmails(emailRaw);
+                if (badEmails.length) {
+                    toast('Email inválido: ' + badEmails[0]);
+                    return;
+                }
                 const wasNew = !editingClientId;
                 const addrEl = document.getElementById('clientAddress');
                 const next = {
                     id: editingClientId || ('cli-' + Date.now().toString(36)),
                     name: name,
                     phone: (document.getElementById('clientPhone').value || '').trim(),
-                    email: normalizeClientEmail(document.getElementById('clientEmail').value),
+                    email: normalizeClientEmail(emailRaw),
                     company: (document.getElementById('clientCompany').value || '').trim(),
                     rfc: (document.getElementById('clientRfc').value || '').trim(),
                     address: addrEl ? String(addrEl.value || '').trim().replace(/\s+/g, ' ') : '',
