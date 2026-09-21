@@ -498,6 +498,41 @@
         .num { font-variant-numeric: tabular-nums; }
         .unit { color: var(--muted); font-weight: 400; }
 
+        /* Clientes: más ancho a Nombre, menos a Email */
+        #clients .clients-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+        #clients .clients-table th:nth-child(1),
+        #clients .clients-table td:nth-child(1) { width: 32%; }
+        #clients .clients-table th:nth-child(2),
+        #clients .clients-table td:nth-child(2) { width: 11%; }
+        #clients .clients-table th:nth-child(3),
+        #clients .clients-table td:nth-child(3) { width: 14%; }
+        #clients .clients-table th:nth-child(4),
+        #clients .clients-table td:nth-child(4) { width: 20%; }
+        #clients .clients-table th:nth-child(5),
+        #clients .clients-table td:nth-child(5) { width: 13%; }
+        #clients .clients-table th:nth-child(6),
+        #clients .clients-table td:nth-child(6) { width: 72px; }
+        #clients .clients-name-cell,
+        #clients .clients-company-cell,
+        #clients .clients-email-line {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #clients .clients-email-cell {
+            vertical-align: top;
+            max-width: 0;
+        }
+        #clients .clients-email-line {
+            line-height: 1.4;
+        }
+        #clients .clients-email-line + .clients-email-line {
+            margin-top: 2px;
+        }
+
         .toolbar {
             display: flex;
             gap: 8px;
@@ -3368,7 +3403,7 @@
                             <button type="button" class="btn primary" id="posClientAddBtn"><i class="fa-solid fa-plus"></i> Alta</button>
                         </div>
                         <div class="table-card">
-                            <table>
+                            <table class="clients-table">
                                 <thead><tr><th>Nombre</th><th>Tipo</th><th>Teléfono</th><th>Email</th><th>RFC</th><th></th></tr></thead>
                                 <tbody id="posClientsBody"></tbody>
                             </table>

@@ -311,6 +311,29 @@
         return String(s == null ? '' : s)
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
+    /** Title case: first letter of each word uppercase, rest lowercase (accents via es locale). */
+    function toTitleCaseName(str) {
+        return String(str || '').trim().toLocaleLowerCase('es').replace(/(^|[\s\-'.])(\S)/g, function (_, sep, ch) {
+            return sep + ch.toLocaleUpperCase('es');
+        });
+    }
+    /** Split multi-email fields on , ; / or whitespace; lowercase each. */
+    function splitClientEmails(raw) {
+        return String(raw || '')
+            .split(/[,;/\s]+/)
+            .map(function (e) { return e.trim().toLowerCase(); })
+            .filter(Boolean);
+    }
+    function normalizeClientEmail(raw) {
+        return splitClientEmails(raw).join(', ');
+    }
+    function formatClientEmailsHtml(raw) {
+        const emails = splitClientEmails(raw);
+        if (!emails.length) return '—';
+        return emails.map(function (e) {
+            return '<div class="clients-email-line" title="' + esc(e) + '">' + esc(e) + '</div>';
+        }).join('');
+    }
     function money(n) {
         return '$' + (Number(n) || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
@@ -1351,9 +1374,9 @@
                     const rfc = String(row.rfc || '').trim().toUpperCase();
                     const next = {
                         id: row.id || ('cli-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
-                        name: String(row.name || '').trim(),
+                        name: toTitleCaseName(row.name),
                         phone: String(row.phone || '').trim(),
-                        email: String(row.email || '').trim(),
+                        email: normalizeClientEmail(row.email),
                         company: String(row.company || '').trim(),
                         rfc: rfc,
                         type: normalizeClientType(row.type),
@@ -2790,12 +2813,13 @@
         }
         tbody.innerHTML = list.map(function (c) {
             const dist = isDistributorClient(c);
+            const displayName = toTitleCaseName(c.name);
             return '<tr>' +
-                '<td><strong>' + esc(c.name) + '</strong>' +
-                (c.company ? '<div class="muted">' + esc(c.company) + '</div>' : '') + '</td>' +
+                '<td class="clients-name-cell"><strong title="' + esc(displayName) + '">' + esc(displayName) + '</strong>' +
+                (c.company ? '<div class="muted clients-company-cell" title="' + esc(c.company) + '">' + esc(c.company) + '</div>' : '') + '</td>' +
                 '<td><span class="badge' + (dist ? ' b-primary' : '') + '">' + esc(clientTypeLabel(c)) + '</span></td>' +
                 '<td>' + esc(c.phone || '—') + '</td>' +
-                '<td>' + esc(c.email || '—') + '</td>' +
+                '<td class="clients-email-cell">' + formatClientEmailsHtml(c.email) + '</td>' +
                 '<td class="muted">' + esc(c.rfc || '—') + '</td>' +
                 '<td><div class="row-actions">' +
                 '<button type="button" class="icon-action" data-edit-client="' + esc(c.id) + '" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>' +
@@ -3185,14 +3209,14 @@
         if (clientForm) {
             clientForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                const name = (document.getElementById('clientName').value || '').trim();
+                const name = toTitleCaseName(document.getElementById('clientName').value);
                 if (!name) return;
                 const wasNew = !editingClientId;
                 const next = {
                     id: editingClientId || ('cli-' + Date.now().toString(36)),
                     name: name,
                     phone: (document.getElementById('clientPhone').value || '').trim(),
-                    email: (document.getElementById('clientEmail').value || '').trim(),
+                    email: normalizeClientEmail(document.getElementById('clientEmail').value),
                     company: (document.getElementById('clientCompany').value || '').trim(),
                     rfc: (document.getElementById('clientRfc').value || '').trim(),
                     type: clientTypeFromForm(),
