@@ -81,4 +81,31 @@ module.exports = {
       },
     ],
   },
+  'waxtard-gris': {
+    mode: 'plant-lot',
+    packSizeKg: 25,
+    packagingPlantId: 'saco-rafia-waxtard',
+    note: 'Lote de planta FT-PR-003. V1 con arena cribada fina (754 kg → ~30 sacos).',
+    defaultVersionId: 'v1',
+    versions: [
+      {
+        id: 'v1',
+        name: 'V1',
+        label: 'Arena cribada fina',
+        yieldMin: 29,
+        yieldMax: 31,
+        items: [
+          { plantId: 'arena-cribada-fina', amount: 350, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'marmolina-talco-100', amount: 200, unit: 'Kg', role: 'Carga' },
+          { plantId: 'cemento-portland-gris', amount: 50, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'mortero', amount: 50, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'calidra', amount: 100, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'resina-rdp740h', amount: 1, unit: 'Kg', role: 'Polímero' },
+          { plantId: 'resina-semitski', amount: 1, unit: 'Kg', role: 'Polímero' },
+          { plantId: 'walocell', amount: 1, unit: 'Kg', role: 'Celulosa' },
+          { plantId: 'estearato', amount: 1, unit: 'Kg', role: 'Aditivo' },
+        ],
+      },
+    ],
+  },
 };

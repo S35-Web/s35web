@@ -91,9 +91,11 @@ module.exports = [
     product: 'waxtard-gris',
     water: '6.0–7.0 L / saco 25 kg',
     cement: ['cemento-gris'],
-    aggregate: ['marmolina-fina'],
-    filler: ['carbonato-de-calcio', 'dolomita'],
+    aggregate: ['arena-silicea-graduada'],
+    filler: ['carbonato-de-calcio'],
     admixture: FINISH_ADMIX,
+    status: 'lote-planta',
+    note: 'Dosificación de planta por lote (754 kg → ~30 sacos).',
   }),
   dryMortar({
     product: 'waxtard-extra-anclaje',

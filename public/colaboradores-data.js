@@ -1831,8 +1831,8 @@ window.S35_PANEL_DATA = {
       "family": "Estucos premium",
       "kind": "seco",
       "water": "6.0–7.0 L / saco 25 kg",
-      "status": "mapa-funcional",
-      "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "status": "lote-planta",
+      "note": "Dosificación de planta por lote (754 kg → ~30 sacos).",
       "image": "/Assets/productos_thumbs/WAXTARD-gris.jpg",
       "imageAlt": "Saco de 25 kg de Waxtard Gris",
       "items": [
@@ -1845,10 +1845,10 @@ window.S35_PANEL_DATA = {
           "note": ""
         },
         {
-          "slug": "marmolina-fina",
-          "name": "Marmolina fina",
-          "code": "ML-FIL-001",
-          "category": "Cargas",
+          "slug": "arena-silicea-graduada",
+          "name": "Arena silícea graduada",
+          "code": "ML-AGG-003",
+          "category": "Agregados",
           "role": "Agregado",
           "note": ""
         },
@@ -1856,14 +1856,6 @@ window.S35_PANEL_DATA = {
           "slug": "carbonato-de-calcio",
           "name": "Carbonato de calcio",
           "code": "ML-FIL-002",
-          "category": "Cargas",
-          "role": "Carga",
-          "note": ""
-        },
-        {
-          "slug": "dolomita",
-          "name": "Dolomita",
-          "code": "ML-FIL-003",
           "category": "Cargas",
           "role": "Carga",
           "note": ""
@@ -1893,15 +1885,197 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-waxtard",
+        "note": "Lote de planta FT-PR-003. V1 con arena cribada fina (754 kg → ~30 sacos).",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Arena cribada fina",
+            "yieldMin": 29,
+            "yieldMax": 31,
+            "yieldTheoretical": 30.16,
+            "totalKg": 754,
+            "items": [
+              {
+                "plantId": "arena-cribada-fina",
+                "amount": 350,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "marmolina-talco-100",
+                "amount": 200,
+                "unit": "Kg",
+                "role": "Carga"
+              },
+              {
+                "plantId": "cemento-portland-gris",
+                "amount": 50,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "mortero",
+                "amount": 50,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "calidra",
+                "amount": 100,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "resina-rdp740h",
+                "amount": 1,
+                "unit": "Kg",
+                "role": "Polímero"
+              },
+              {
+                "plantId": "resina-semitski",
+                "amount": 1,
+                "unit": "Kg",
+                "role": "Polímero"
+              },
+              {
+                "plantId": "walocell",
+                "amount": 1,
+                "unit": "Kg",
+                "role": "Celulosa"
+              },
+              {
+                "plantId": "estearato",
+                "amount": 1,
+                "unit": "Kg",
+                "role": "Aditivo"
+              }
+            ]
+          }
+        ],
+        "yieldMin": 29,
+        "yieldMax": 31,
+        "yieldTheoretical": 30.16,
+        "totalKg": 754,
+        "items": [
+          {
+            "plantId": "arena-cribada-fina",
+            "amount": 350,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "marmolina-talco-100",
+            "amount": 200,
+            "unit": "Kg",
+            "role": "Carga"
+          },
+          {
+            "plantId": "cemento-portland-gris",
+            "amount": 50,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "mortero",
+            "amount": 50,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "calidra",
+            "amount": 100,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "resina-rdp740h",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Polímero"
+          },
+          {
+            "plantId": "resina-semitski",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Polímero"
+          },
+          {
+            "plantId": "walocell",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Celulosa"
+          },
+          {
+            "plantId": "estearato",
+            "amount": 1,
+            "unit": "Kg",
+            "role": "Aditivo"
+          }
+        ]
+      },
       "suggested": [
+        {
+          "plantId": "arena-cribada-fina",
+          "unit": "Kg",
+          "role": "Agregado",
+          "amount": 350
+        },
+        {
+          "plantId": "marmolina-talco-100",
+          "unit": "Kg",
+          "role": "Carga",
+          "amount": 200
+        },
         {
           "plantId": "cemento-portland-gris",
           "unit": "Kg",
-          "role": "Cementante"
+          "role": "Cementante",
+          "amount": 50
         },
         {
-          "plantId": "marmolina-fina",
+          "plantId": "mortero",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 50
+        },
+        {
+          "plantId": "calidra",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 100
+        },
+        {
+          "plantId": "resina-rdp740h",
+          "unit": "Kg",
+          "role": "Polímero",
+          "amount": 1
+        },
+        {
+          "plantId": "resina-semitski",
+          "unit": "Kg",
+          "role": "Polímero",
+          "amount": 1
+        },
+        {
+          "plantId": "walocell",
+          "unit": "Kg",
+          "role": "Celulosa",
+          "amount": 1
+        },
+        {
+          "plantId": "estearato",
+          "unit": "Kg",
+          "role": "Aditivo",
+          "amount": 1
+        },
+        {
+          "plantId": "arena-deshidratada",
           "unit": "Kg",
           "role": "Agregado"
         },
@@ -1909,11 +2083,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "resina-rdp740h",
-          "unit": "Kg",
-          "role": "Polímero redispersable"
         },
         {
           "plantId": "kimacell",
@@ -3130,12 +3299,6 @@ window.S35_PANEL_DATA = {
         "role": "Agregado"
       },
       {
-        "slug": "waxtard-gris",
-        "name": "Waxtard gris",
-        "code": "FT-PR-003",
-        "role": "Agregado"
-      },
-      {
         "slug": "waxtard-extra-anclaje",
         "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
@@ -3568,15 +3731,13 @@ window.S35_PANEL_DATA = {
         "role": "Cementante"
       }
     ],
-    "dolomita": [
+    "arena-silicea-graduada": [
       {
         "slug": "waxtard-gris",
         "name": "Waxtard gris",
         "code": "FT-PR-003",
-        "role": "Carga"
-      }
-    ],
-    "arena-silicea-graduada": [
+        "role": "Agregado"
+      },
       {
         "slug": "waxtard-extra-anclaje",
         "name": "Waxtard extra anclaje",
