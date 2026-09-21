@@ -3697,15 +3697,9 @@
         const maxVal = lv && lv.max != null && lv.max !== '' ? String(lv.max) : '';
         const giftVal = lv && lv.giftPerPallet != null && lv.giftPerPallet !== '' ? String(lv.giftPerPallet) : '';
         return '<div class="promo-level-row" data-promo-level-row role="listitem">' +
-            '<label>Desde' +
-            '<input type="number" min="0" step="1" data-level-min value="' + esc(minVal) + '">' +
-            '</label>' +
-            '<label>Hasta' +
-            '<input type="number" min="0" step="1" data-level-max value="' + esc(maxVal) + '">' +
-            '</label>' +
-            '<label>Regalo por tarima' +
-            '<input type="number" min="0" step="1" data-level-gift value="' + esc(giftVal) + '">' +
-            '</label>' +
+            '<input type="number" min="0" step="1" data-level-min aria-label="Desde" value="' + esc(minVal) + '">' +
+            '<input type="number" min="0" step="1" data-level-max aria-label="Hasta" value="' + esc(maxVal) + '">' +
+            '<input type="number" min="0" step="1" data-level-gift aria-label="Regalo por tarima" value="' + esc(giftVal) + '">' +
             '<button type="button" class="btn ghost danger promo-level-del" data-level-del title="Quitar nivel" aria-label="Quitar nivel">' +
             '<i class="fa-solid fa-trash-can"></i>' +
             '</button>' +
