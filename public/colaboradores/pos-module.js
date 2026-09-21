@@ -3870,7 +3870,7 @@
 
         if (pdSalesSlug !== slug) {
             pdSalesSlug = slug;
-            pdSalesPeriod = 'month';
+            pdSalesPeriod = 'historial';
             pdSalesOffset = 0;
         } else {
             pdSalesSlug = slug;
