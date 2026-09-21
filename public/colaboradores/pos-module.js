@@ -1406,11 +1406,11 @@
                         name: toTitleCaseName(row.name),
                         phone: String(row.phone || '').trim(),
                         email: normalizeClientEmail(row.email),
-                        company: String(row.company || '').trim(),
+                        company: toTitleCaseName(row.company),
                         rfc: rfc,
                         type: normalizeClientType(row.type),
                         source: row.source || 'import',
-                        address: String(row.address || '').trim() || buildFiscalAddress(row.domicilio, row.localidad),
+                        address: toTitleCaseName(String(row.address || '').trim() || buildFiscalAddress(row.domicilio, row.localidad)),
                         updatedAt: now
                     };
                     let idx = rfc && byRfc[rfc] != null ? byRfc[rfc] : (byId[next.id] != null ? byId[next.id] : -1);
@@ -2845,10 +2845,11 @@
         tbody.innerHTML = list.map(function (c) {
             const dist = isDistributorClient(c);
             const displayName = toTitleCaseName(c.name);
-            const addr = clientAddress(c);
+            const displayCompany = toTitleCaseName(c.company);
+            const addr = toTitleCaseName(clientAddress(c));
             return '<tr>' +
                 '<td class="clients-name-cell"><strong title="' + esc(displayName) + '">' + esc(displayName) + '</strong>' +
-                (c.company ? '<div class="muted clients-company-cell" title="' + esc(c.company) + '">' + esc(c.company) + '</div>' : '') +
+                (displayCompany ? '<div class="muted clients-company-cell" title="' + esc(displayCompany) + '">' + esc(displayCompany) + '</div>' : '') +
                 (addr ? '<div class="muted clients-address-cell" title="' + esc(addr) + '">' + esc(addr) + '</div>' : '') +
                 '</td>' +
                 '<td><span class="badge' + (dist ? ' b-primary' : '') + '">' + esc(clientTypeLabel(c)) + '</span></td>' +
@@ -3260,9 +3261,9 @@
                     name: name,
                     phone: (document.getElementById('clientPhone').value || '').trim(),
                     email: normalizeClientEmail(emailRaw),
-                    company: (document.getElementById('clientCompany').value || '').trim(),
+                    company: toTitleCaseName(document.getElementById('clientCompany').value),
                     rfc: (document.getElementById('clientRfc').value || '').trim(),
-                    address: addrEl ? String(addrEl.value || '').trim().replace(/\s+/g, ' ') : '',
+                    address: addrEl ? toTitleCaseName(String(addrEl.value || '').trim().replace(/\s+/g, ' ')) : '',
                     type: clientTypeFromForm(),
                     updatedAt: new Date().toISOString()
                 };
