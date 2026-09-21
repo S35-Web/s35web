@@ -220,6 +220,41 @@
             align-items: center;
             gap: 6px;
         }
+        .topbar-msg-btn {
+            position: relative;
+            width: 34px;
+            height: 34px;
+            display: inline-grid;
+            place-items: center;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .topbar-msg-btn:hover {
+            background: var(--hover);
+        }
+        .topbar-msg-btn .msg-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: var(--text);
+            color: var(--bg);
+            font-size: 10px;
+            font-weight: 650;
+            line-height: 16px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+        .topbar-msg-btn .msg-badge.is-empty {
+            display: none;
+        }
         .user-chip {
             font-size: 12px;
             color: var(--muted);
@@ -2745,9 +2780,6 @@
             position: relative;
             overflow: visible;
         }
-        .cortes-chart-panel {
-            overflow: visible;
-        }
         .cortes-chart svg {
             width: 100%;
             height: auto;
@@ -3162,7 +3194,6 @@
                 <a href="#clients" data-section="clients" title="Clientes"><i class="fa-solid fa-user-group"></i></a>
                 <a href="#salesHistory" data-section="salesHistory" title="Historial de ventas"><i class="fa-solid fa-receipt"></i></a>
                 <a href="#products" data-section="products" title="Productos"><i class="fa-solid fa-box"></i></a>
-                <a href="#messages" data-section="messages" title="Mensajes"><i class="fa-regular fa-envelope"></i></a>
                 <a href="#materials" data-section="materials" title="Materias primas"><i class="fa-solid fa-cubes"></i></a>
                 <a href="#production" data-section="production" title="Producción"><i class="fa-solid fa-industry"></i></a>
             </nav>
@@ -3182,6 +3213,10 @@
                     <kbd>⌘K</kbd>
                 </label>
                 <div class="topbar-actions">
+                    <button type="button" class="topbar-msg-btn" id="topbarMessagesBtn" title="Mensajes" aria-label="Mensajes">
+                        <i class="fa-regular fa-envelope" aria-hidden="true"></i>
+                        <span class="msg-badge is-empty" id="topbarMessagesBadge" aria-hidden="true">0</span>
+                    </button>
                     <span class="user-chip" id="userChip">admin</span>
                 </div>
             </header>
@@ -3202,11 +3237,6 @@
                         <a class="qa-btn" href="/laboratorio/materials" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Laboratorio</a>
                     </div>
                     <div class="kpis">
-                        <div class="kpi">
-                            <div class="label">Mensajes</div>
-                            <div class="val" id="kpiMessages">—</div>
-                            <div class="hint" id="kpiMessagesHint">Bandeja de contacto</div>
-                        </div>
                         <div class="kpi">
                             <div class="label">Fichas</div>
                             <div class="val" id="kpiProducts">0</div>
@@ -4524,7 +4554,13 @@
     if (goProduction) goProduction.addEventListener('click', function (e) { e.preventDefault(); showSection('production'); });
     const goMessages = document.getElementById('goMessages');
     if (goMessages) goMessages.addEventListener('click', function (e) { e.preventDefault(); showSection('messages'); });
-    const goPromosBtn = document.getElementById('goPromosBtn');
+    const topbarMessagesBtn = document.getElementById('topbarMessagesBtn');
+    if (topbarMessagesBtn) {
+        topbarMessagesBtn.addEventListener('click', function () {
+            if (!canAccess('messages')) return;
+            showSection('messages');
+        });
+    }    const goPromosBtn = document.getElementById('goPromosBtn');
     if (goPromosBtn) goPromosBtn.addEventListener('click', function (e) {
         e.preventDefault();
         showSection('promos');
@@ -4673,6 +4709,28 @@
         });
     }
 
+    function setMessagesBadge(count) {
+        const badge = document.getElementById('topbarMessagesBadge');
+        const btn = document.getElementById('topbarMessagesBtn');
+        if (!badge) return;
+        const n = Number(count);
+        const ok = isFinite(n) && n >= 0;
+        if (!ok) {
+            badge.textContent = '—';
+            badge.classList.remove('is-empty');
+            badge.setAttribute('aria-hidden', 'false');
+            if (btn) btn.title = 'Mensajes';
+            return;
+        }
+        badge.textContent = n > 99 ? '99+' : String(n);
+        const empty = n === 0;
+        badge.classList.toggle('is-empty', empty);
+        badge.setAttribute('aria-hidden', empty ? 'true' : 'false');
+        if (btn) {
+            btn.title = n === 0 ? 'Mensajes · bandeja al día' : ('Mensajes · ' + n + ' en bandeja');
+        }
+    }
+
     async function loadMessages() {
         const resp = await fetch('/api/messages', { headers: { Authorization: 'Bearer ' + getToken() } });
         if (resp.status === 401) {
@@ -4681,16 +4739,14 @@
             return;
         }
         if (!resp.ok) {
-            document.getElementById('kpiMessages').textContent = '—';
-            document.getElementById('kpiMessagesHint').textContent = 'No se pudieron cargar';
+            setMessagesBadge(NaN);
             document.getElementById('recentMessages').innerHTML = '<tr><td colspan="4" class="empty">No se pudieron cargar los mensajes</td></tr>';
             document.getElementById('messagesBody').innerHTML = '<tr><td colspan="7" class="empty">No se pudieron cargar los mensajes</td></tr>';
             return;
         }
         const payload = await resp.json();
         allMessages = payload.items || [];
-        document.getElementById('kpiMessages').textContent = allMessages.length;
-        document.getElementById('kpiMessagesHint').textContent = allMessages.length ? 'En bandeja de contacto' : 'Todo al día';
+        setMessagesBadge(allMessages.length);
         refreshGreeting(allMessages.length);
         renderRecent(allMessages);
         renderMessages(allMessages);
@@ -8531,6 +8587,8 @@
         if (goCortesQa) goCortesQa.hidden = !canAccess('cortes');
         const goPromos = document.getElementById('goPromosBtn');
         if (goPromos) goPromos.hidden = !canAccess('promos');
+        const msgBtn = document.getElementById('topbarMessagesBtn');
+        if (msgBtn) msgBtn.hidden = !canAccess('messages');
     }
     applyNavPermissions();
     (function enforceRoleLanding() {
