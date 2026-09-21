@@ -1323,6 +1323,69 @@
     function saveClients() {
         localStorage.setItem(CLIENTS_KEY, JSON.stringify({ items: clients, updatedAt: new Date().toISOString() }));
     }
+    /** Merge catalog from /colaboradores/data/clients-import.json into local clients (by RFC or id). */
+    function importClientsCatalog() {
+        return fetch('/colaboradores/data/clients-import.json', { cache: 'no-store' })
+            .then(function (r) {
+                if (!r.ok) throw new Error('No se pudo leer el catálogo');
+                return r.json();
+            })
+            .then(function (data) {
+                const incoming = (data && Array.isArray(data.items)) ? data.items : [];
+                if (!incoming.length) {
+                    toast('El archivo de importación está vacío');
+                    return { added: 0, updated: 0, total: clients.length };
+                }
+                const byRfc = {};
+                const byId = {};
+                clients.forEach(function (c, i) {
+                    byId[c.id] = i;
+                    const rfc = String(c.rfc || '').trim().toUpperCase();
+                    if (rfc) byRfc[rfc] = i;
+                });
+                let added = 0;
+                let updated = 0;
+                const now = new Date().toISOString();
+                incoming.forEach(function (row) {
+                    if (!row || !row.name) return;
+                    const rfc = String(row.rfc || '').trim().toUpperCase();
+                    const next = {
+                        id: row.id || ('cli-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
+                        name: String(row.name || '').trim(),
+                        phone: String(row.phone || '').trim(),
+                        email: String(row.email || '').trim(),
+                        company: String(row.company || '').trim(),
+                        rfc: rfc,
+                        type: normalizeClientType(row.type),
+                        source: row.source || 'import',
+                        localidad: row.localidad || '',
+                        domicilio: row.domicilio || '',
+                        updatedAt: now
+                    };
+                    let idx = rfc && byRfc[rfc] != null ? byRfc[rfc] : (byId[next.id] != null ? byId[next.id] : -1);
+                    if (idx >= 0) {
+                        const prev = clients[idx];
+                        clients[idx] = Object.assign({}, prev, next, {
+                            id: prev.id,
+                            type: prev.type === 'distributor' ? 'distributor' : next.type,
+                            createdAt: prev.createdAt || now
+                        });
+                        updated += 1;
+                    } else {
+                        next.createdAt = now;
+                        byId[next.id] = clients.length;
+                        if (rfc) byRfc[rfc] = clients.length;
+                        clients.push(next);
+                        added += 1;
+                    }
+                });
+                saveClients();
+                renderClients();
+                fillClientSelect();
+                fillHistoryClientFilter();
+                return { added: added, updated: updated, total: clients.length };
+            });
+    }
     function clientById(id) {
         if (!id) return null;
         return clients.filter(function (c) { return c.id === id; })[0] || null;
@@ -3077,6 +3140,23 @@
         if (clientSearch) clientSearch.addEventListener('input', renderClients);
         const addClient = document.getElementById('posClientAddBtn');
         if (addClient) addClient.addEventListener('click', function () { openClientModal(null); });
+        const importClientsBtn = document.getElementById('posClientImportBtn');
+        if (importClientsBtn) {
+            importClientsBtn.addEventListener('click', function () {
+                if (!confirm('¿Importar el catálogo de clientes (~1000)?\n\nSe agregan los nuevos y se actualizan los que ya existan con el mismo RFC. Los marcados como Distribuidor se conservan.')) return;
+                importClientsBtn.disabled = true;
+                importClientsCatalog()
+                    .then(function (res) {
+                        toast('Importados: +' + res.added + ' · actualizados ' + res.updated + ' · total ' + res.total);
+                    })
+                    .catch(function (err) {
+                        toast((err && err.message) || 'Error al importar');
+                    })
+                    .then(function () {
+                        importClientsBtn.disabled = false;
+                    });
+            });
+        }
         const clientsBody = document.getElementById('posClientsBody');
         if (clientsBody) {
             clientsBody.addEventListener('click', function (e) {
