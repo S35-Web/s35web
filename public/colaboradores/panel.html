@@ -3612,7 +3612,9 @@
                                 <div class="pd-hero-meta" id="pdMeta"></div>
                             </div>
                             <div class="toolbar" style="margin:0">
-                                <a class="btn ghost" id="pdPublicLink" href="/productos" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> Ficha pública</a>
+                                <button type="button" class="btn ghost" id="pdNextProduct" title="Ir al siguiente producto">
+                                    Siguiente producto <i class="fa-solid fa-arrow-right"></i>
+                                </button>
                             </div>
                         </div>
                         <div class="seg-control pd-tabs" id="pdTabs" role="tablist" aria-label="Secciones del producto">
@@ -6368,6 +6370,32 @@
         }
     }
 
+    function hubProductSlugsInOrder() {
+        return hubCatalog().map(function (p) { return p.slug; });
+    }
+
+    function nextHubProductSlug(slug) {
+        const list = hubProductSlugsInOrder();
+        if (!list.length) return null;
+        const idx = list.indexOf(slug);
+        if (idx < 0) return list[0];
+        return list[(idx + 1) % list.length];
+    }
+
+    function syncNextProductButton(slug) {
+        const btn = document.getElementById('pdNextProduct');
+        if (!btn) return;
+        const next = nextHubProductSlug(slug);
+        const list = hubProductSlugsInOrder();
+        btn.disabled = !next || list.length < 2;
+        if (!next || list.length < 2) {
+            btn.title = 'No hay más productos';
+            return;
+        }
+        const nextItem = hubCatalog().filter(function (p) { return p.slug === next; })[0];
+        btn.title = nextItem ? ('Siguiente: ' + nextItem.name) : 'Siguiente producto';
+    }
+
     function showProductList(opts) {
         opts = opts || {};
         hubProductSlug = null;
@@ -6400,16 +6428,7 @@
             '<span>' + esc(item.family || PRODUCT_UNCATEGORIZED_LABEL) + '</span>' +
             (item.hasFicha ? '<span class="badge b-success">Ficha</span>' : '<span class="badge">Sin ficha</span>');
 
-        const pub = document.getElementById('pdPublicLink');
-        if (pub) {
-            if (item.hasFicha) {
-                pub.href = '/productos/' + encodeURIComponent(slug);
-                pub.style.display = '';
-            } else {
-                pub.href = '/productos';
-                pub.style.display = 'none';
-            }
-        }
+        syncNextProductButton(slug);
 
         const fin = finishedStock[slug] || { stock: 0 };
         const pres = item.presentations || [];
@@ -6540,6 +6559,15 @@
         }
         const back = document.getElementById('productsBackBtn');
         if (back) back.addEventListener('click', function () { showProductList(); });
+        const nextBtn = document.getElementById('pdNextProduct');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function () {
+                if (!hubProductSlug) return;
+                const next = nextHubProductSlug(hubProductSlug);
+                if (!next || next === hubProductSlug) return;
+                openProductHub(next, { tab: hubProductTab });
+            });
+        }
         const tabs = document.getElementById('pdTabs');
         if (tabs) {
             tabs.addEventListener('click', function (e) {
