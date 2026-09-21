@@ -3740,8 +3740,8 @@ window.S35_PANEL_DATA = {
       "family": "Pegaxpress: Adhesivos",
       "kind": "seco",
       "water": "Solo agua",
-      "status": "mapa-funcional",
-      "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "status": "lote-planta",
+      "note": "Dosificación de planta por lote (750.6 kg → ~30.02 sacos). CAL → calidra. ARENA DESHIDRATADA → arena-deshidratada.",
       "image": "/Assets/productos_thumbs/piso-sobre-piso.jpg",
       "imageAlt": "Saco de 25 kg de Pegaxpress Piso sobre piso",
       "items": [
@@ -3749,6 +3749,14 @@ window.S35_PANEL_DATA = {
           "slug": "cemento-gris",
           "name": "Cemento gris",
           "code": "ML-BND-003",
+          "category": "Cementantes",
+          "role": "Cementante",
+          "note": ""
+        },
+        {
+          "slug": "cal",
+          "name": "Cal",
+          "code": "ML-BND-001",
           "category": "Cementantes",
           "role": "Cementante",
           "note": ""
@@ -3762,11 +3770,11 @@ window.S35_PANEL_DATA = {
           "note": ""
         },
         {
-          "slug": "carbonato-de-calcio",
-          "name": "Carbonato de calcio",
-          "code": "ML-FIL-002",
+          "slug": "marmolina-fina",
+          "name": "Marmolina fina",
+          "code": "ML-FIL-001",
           "category": "Cargas",
-          "role": "Carga",
+          "role": "Agregado",
           "note": ""
         },
         {
@@ -3786,35 +3794,166 @@ window.S35_PANEL_DATA = {
           "note": ""
         },
         {
-          "slug": "eter-de-almidon",
-          "name": "Éter de almidón",
-          "code": "ML-ADM-003",
-          "category": "Aditivos",
-          "role": "Antideslizamiento",
-          "note": ""
+          "slug": null,
+          "name": "",
+          "code": "",
+          "category": "",
+          "role": "Nota de mezcla",
+          "note": "Mortero de planta (plantId mortero) sin ficha de Laboratorio."
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta FT-AD-004. V1 Pegaxpress Piso sobre piso (750.6 kg → ~30.02 sacos). CAL → calidra. ARENA DESHIDRATADA → arena-deshidratada.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Arena deshidratada + marmolina fina",
+            "yieldMin": 30,
+            "yieldMax": 30,
+            "yieldTheoretical": 30.02,
+            "totalKg": 750.6,
+            "items": [
+              {
+                "plantId": "arena-deshidratada",
+                "amount": 412,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "marmolina-fina",
+                "amount": 100,
+                "unit": "Kg",
+                "role": "Agregado"
+              },
+              {
+                "plantId": "cemento-portland-gris",
+                "amount": 150,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "mortero",
+                "amount": 50,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "calidra",
+                "amount": 25,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "resina-rdp740h",
+                "amount": 12,
+                "unit": "Kg",
+                "role": "Polímero"
+              },
+              {
+                "plantId": "walocell",
+                "amount": 1.6,
+                "unit": "Kg",
+                "role": "Celulosa"
+              }
+            ]
+          }
+        ],
+        "yieldMin": 30,
+        "yieldMax": 30,
+        "yieldTheoretical": 30.02,
+        "totalKg": 750.6,
+        "items": [
+          {
+            "plantId": "arena-deshidratada",
+            "amount": 412,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "marmolina-fina",
+            "amount": 100,
+            "unit": "Kg",
+            "role": "Agregado"
+          },
+          {
+            "plantId": "cemento-portland-gris",
+            "amount": 150,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "mortero",
+            "amount": 50,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "calidra",
+            "amount": 25,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "resina-rdp740h",
+            "amount": 12,
+            "unit": "Kg",
+            "role": "Polímero"
+          },
+          {
+            "plantId": "walocell",
+            "amount": 1.6,
+            "unit": "Kg",
+            "role": "Celulosa"
+          }
+        ]
+      },
       "suggested": [
-        {
-          "plantId": "cemento-portland-gris",
-          "unit": "Kg",
-          "role": "Cementante"
-        },
         {
           "plantId": "arena-deshidratada",
           "unit": "Kg",
-          "role": "Agregado"
+          "role": "Agregado",
+          "amount": 412
         },
         {
-          "plantId": "marmolina-talco-200",
+          "plantId": "marmolina-fina",
           "unit": "Kg",
-          "role": "Carga"
+          "role": "Agregado",
+          "amount": 100
+        },
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 150
+        },
+        {
+          "plantId": "mortero",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 50
+        },
+        {
+          "plantId": "calidra",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 25
         },
         {
           "plantId": "resina-rdp740h",
           "unit": "Kg",
-          "role": "Polímero redispersable"
+          "role": "Polímero",
+          "amount": 12
+        },
+        {
+          "plantId": "walocell",
+          "unit": "Kg",
+          "role": "Celulosa",
+          "amount": 1.6
         },
         {
           "plantId": "kimacell",
@@ -4047,6 +4186,12 @@ window.S35_PANEL_DATA = {
         "name": "Basecoat Plus: Blanco absoluto",
         "code": "FT-PS-001",
         "role": "Agregado"
+      },
+      {
+        "slug": "pegaxpress-psp",
+        "name": "Pegaxpress: Piso sobre piso",
+        "code": "FT-AD-004",
+        "role": "Agregado"
       }
     ],
     "carbonato-de-calcio": [
@@ -4120,12 +4265,6 @@ window.S35_PANEL_DATA = {
         "slug": "porcelanico-universal",
         "name": "Pegaxpress: Porcelánico universal",
         "code": "FT-AD-001",
-        "role": "Carga"
-      },
-      {
-        "slug": "pegaxpress-psp",
-        "name": "Pegaxpress: Piso sobre piso",
-        "code": "FT-AD-004",
         "role": "Carga"
       },
       {
@@ -4345,12 +4484,6 @@ window.S35_PANEL_DATA = {
         "role": "Antideslizamiento"
       },
       {
-        "slug": "pegaxpress-psp",
-        "name": "Pegaxpress: Piso sobre piso",
-        "code": "FT-AD-004",
-        "role": "Antideslizamiento"
-      },
-      {
         "slug": "ultraforce",
         "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
@@ -4506,6 +4639,12 @@ window.S35_PANEL_DATA = {
         "slug": "ceramico",
         "name": "Pegaxpress: Cerámico",
         "code": "FT-AD-002",
+        "role": "Cementante"
+      },
+      {
+        "slug": "pegaxpress-psp",
+        "name": "Pegaxpress: Piso sobre piso",
+        "code": "FT-AD-004",
         "role": "Cementante"
       }
     ],

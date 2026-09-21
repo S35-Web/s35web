@@ -235,6 +235,31 @@ module.exports = {
       },
     ],
   },
+  'pegaxpress-psp': {
+    mode: 'plant-lot',
+    packSizeKg: 25,
+    packagingPlantId: 'saco-rafia-general',
+    note: 'Lote de planta FT-AD-004. V1 Pegaxpress Piso sobre piso (750.6 kg → ~30.02 sacos). CAL → calidra. ARENA DESHIDRATADA → arena-deshidratada.',
+    defaultVersionId: 'v1',
+    versions: [
+      {
+        id: 'v1',
+        name: 'V1',
+        label: 'Arena deshidratada + marmolina fina',
+        yieldMin: 30,
+        yieldMax: 30,
+        items: [
+          { plantId: 'arena-deshidratada', amount: 412, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'marmolina-fina', amount: 100, unit: 'Kg', role: 'Agregado' },
+          { plantId: 'cemento-portland-gris', amount: 150, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'mortero', amount: 50, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'calidra', amount: 25, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'resina-rdp740h', amount: 12, unit: 'Kg', role: 'Polímero' },
+          { plantId: 'walocell', amount: 1.6, unit: 'Kg', role: 'Celulosa' },
+        ],
+      },
+    ],
+  },
   'pegaxpress-block': {
     mode: 'plant-lot',
     packSizeKg: 30,

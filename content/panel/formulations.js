@@ -202,10 +202,15 @@ module.exports = [
   dryMortar({
     product: 'pegaxpress-psp',
     water: 'Solo agua',
-    cement: ['cemento-gris'],
-    aggregate: ['arena-silicea-graduada'],
-    filler: ['carbonato-de-calcio'],
-    admixture: TILE_ADMIX,
+    cement: ['cemento-gris', 'cal'],
+    aggregate: ['arena-silicea-graduada', 'marmolina-fina'],
+    admixture: [
+      ['polimero-redispersable-vae', 'Polímero redispersable'],
+      ['celulosa-hpmc', 'Retención de agua / reología'],
+    ],
+    status: 'lote-planta',
+    note: 'Dosificación de planta por lote (750.6 kg → ~30.02 sacos). CAL → calidra. ARENA DESHIDRATADA → arena-deshidratada.',
+    notesOnMix: ['Mortero de planta (plantId mortero) sin ficha de Laboratorio.'],
   }),
   dryMortar({
     product: 'ultraforce',
