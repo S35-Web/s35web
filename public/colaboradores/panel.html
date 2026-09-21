@@ -2269,6 +2269,7 @@
         .lot-ticket-totals .v { font-weight: 600; text-align: right; }
 
         /* —— Cortes (Midday-style reports) —— */
+        .page-head,
         .cortes-head {
             display: flex;
             align-items: flex-start;
@@ -2277,7 +2278,14 @@
             flex-wrap: wrap;
             margin-bottom: 18px;
         }
+        .page-head .page-sub,
         .cortes-head .page-sub { margin-bottom: 0; }
+        .page-head-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
         .cortes-range {
             display: flex;
             align-items: center;
@@ -3047,7 +3055,6 @@
                 <a href="#clients" data-section="clients" title="Clientes"><i class="fa-solid fa-user-group"></i></a>
                 <a href="#salesHistory" data-section="salesHistory" title="Historial de ventas"><i class="fa-solid fa-receipt"></i></a>
                 <a href="#products" data-section="products" title="Productos"><i class="fa-solid fa-box"></i></a>
-                <a href="#promos" data-section="promos" title="Códigos de promo"><i class="fa-solid fa-percent"></i></a>
                 <a href="#messages" data-section="messages" title="Mensajes"><i class="fa-regular fa-envelope"></i></a>
                 <a href="#materials" data-section="materials" title="Materias primas"><i class="fa-solid fa-cubes"></i></a>
                 <a href="#production" data-section="production" title="Producción"><i class="fa-solid fa-industry"></i></a>
@@ -3341,8 +3348,17 @@
                 </section>
 
                 <section id="clients" class="section">
-                    <h1 class="page-title">Clientes</h1>
-                    <p class="page-sub">Agenda de clientes y distribuidores para vincular ventas.</p>
+                    <div class="page-head">
+                        <div>
+                            <h1 class="page-title">Clientes</h1>
+                            <p class="page-sub">Agenda de clientes y distribuidores para vincular ventas.</p>
+                        </div>
+                        <div class="page-head-actions">
+                            <button type="button" class="btn" id="goPromosBtn" title="Códigos de promoción">
+                                <i class="fa-solid fa-percent" aria-hidden="true"></i> Promos
+                            </button>
+                        </div>
+                    </div>
                     <div class="card">
                         <div class="toolbar">
                             <input id="posClientSearch" class="search" type="search" placeholder="Buscar nombre, teléfono, email o RFC">
@@ -3358,8 +3374,17 @@
                 </section>
 
                 <section id="promos" class="section">
-                    <h1 class="page-title">Códigos de promo</h1>
-                    <p class="page-sub">Genera y gestiona códigos. Bonificación por tarimas (regalo), descuento % o fijo por unidad en el carrito.</p>
+                    <div class="page-head">
+                        <div>
+                            <h1 class="page-title">Códigos de promo</h1>
+                            <p class="page-sub">Genera y gestiona códigos. Bonificación por tarimas (regalo), descuento % o fijo por unidad en el carrito.</p>
+                        </div>
+                        <div class="page-head-actions">
+                            <button type="button" class="btn ghost" id="promosBackToClientsBtn" title="Volver a clientes">
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Volver a clientes
+                            </button>
+                        </div>
+                    </div>
                     <div class="card">
                         <div class="toolbar">
                             <span class="muted" style="font-size:12px">Seed: <strong>80MAS5</strong> · programa distribuidores multi-nivel</span>
@@ -4345,7 +4370,11 @@
         document.querySelectorAll('.section').forEach(function (el) { el.classList.toggle('active', el.id === id); });
         document.querySelectorAll('.nav a[data-section]').forEach(function (el) {
             const sec = el.getAttribute('data-section');
-            el.classList.toggle('active', sec === id || (id === 'products' && (sec === 'prices' || sec === 'catalog' || sec === 'formulas')));
+            el.classList.toggle('active',
+                sec === id
+                || (id === 'products' && (sec === 'prices' || sec === 'catalog' || sec === 'formulas'))
+                || (id === 'promos' && sec === 'clients')
+            );
         });
         sidebar.classList.remove('open');
         if (id === 'products' && typeof openProductHub === 'function') {
@@ -4379,6 +4408,16 @@
     if (goProduction) goProduction.addEventListener('click', function (e) { e.preventDefault(); showSection('production'); });
     const goMessages = document.getElementById('goMessages');
     if (goMessages) goMessages.addEventListener('click', function (e) { e.preventDefault(); showSection('messages'); });
+    const goPromosBtn = document.getElementById('goPromosBtn');
+    if (goPromosBtn) goPromosBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        showSection('promos');
+    });
+    const promosBackToClientsBtn = document.getElementById('promosBackToClientsBtn');
+    if (promosBackToClientsBtn) promosBackToClientsBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        showSection('clients');
+    });
 
     const themeBtn = document.getElementById('themeBtn');
     function applyTheme(theme) {
@@ -8348,6 +8387,8 @@
         });
         const goCortesQa = document.getElementById('goCortes');
         if (goCortesQa) goCortesQa.hidden = !canAccess('cortes');
+        const goPromos = document.getElementById('goPromosBtn');
+        if (goPromos) goPromos.hidden = !canAccess('promos');
     }
     applyNavPermissions();
     (function enforceRoleLanding() {
