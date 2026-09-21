@@ -112,14 +112,13 @@ module.exports = [
     product: 'cemento-plastico-concreto',
     water: 'Solo agua, consistencia de llana',
     cement: ['cemento-gris'],
-    aggregate: ['marmolina-fina', 'arena-de-cuarzo'],
     filler: ['carbonato-de-calcio'],
-    mineral: ['metacaolin'],
     admixture: [
       ['polimero-redispersable-vae', 'Polímero redispersable'],
       ['celulosa-hpmc', 'Retención de agua / reología'],
     ],
-    pigment: ['oxido-de-hierro-rojo'],
+    status: 'lote-planta',
+    note: 'Dosificación de planta por lote (529.5 kg → ~21.18 sacos). TALCO 200 → marmolina-talco-200 (malla 200).',
     notesOnMix: ['Tono Dolphin Fin: el gris pulido sale del cemento y la carga, no de un colorante de recubrimiento.'],
   }),
   dryMortar({

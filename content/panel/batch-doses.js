@@ -133,4 +133,28 @@ module.exports = {
       },
     ],
   },
+  'cemento-plastico-concreto': {
+    mode: 'plant-lot',
+    packSizeKg: 25,
+    packagingPlantId: 'saco-rafia-general',
+    note: 'Lote de planta FT-MC-001. V1 Microconcreto concreto aparente (529.5 kg → ~21.18 sacos).',
+    defaultVersionId: 'v1',
+    versions: [
+      {
+        id: 'v1',
+        name: 'V1',
+        label: 'Marmolina talco 200',
+        yieldMin: 21,
+        yieldMax: 22,
+        items: [
+          { plantId: 'marmolina-talco-200', amount: 300, unit: 'Kg', role: 'Carga' },
+          { plantId: 'cemento-portland-gris', amount: 200, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'calidra', amount: 12.5, unit: 'Kg', role: 'Cementante' },
+          { plantId: 'resina-rdp740h', amount: 15, unit: 'Kg', role: 'Polímero' },
+          { plantId: 'walocell', amount: 1.5, unit: 'Kg', role: 'Celulosa' },
+          { plantId: 'estearato', amount: 0.5, unit: 'Kg', role: 'Aditivo' },
+        ],
+      },
+    ],
+  },
 };

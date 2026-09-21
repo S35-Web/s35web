@@ -2332,8 +2332,8 @@ window.S35_PANEL_DATA = {
       "family": "Microconcretos",
       "kind": "seco",
       "water": "Solo agua, consistencia de llana",
-      "status": "mapa-funcional",
-      "note": "Mapa de materias primas por función. La dosificación de planta es información propietaria.",
+      "status": "lote-planta",
+      "note": "Dosificación de planta por lote (529.5 kg → ~21.18 sacos). TALCO 200 → marmolina-talco-200 (malla 200).",
       "image": "/Assets/productos_thumbs/cemento-plastico.jpg",
       "imageAlt": "Saco de 25 kg de Microconcreto: Concreto aparente (Cemento plástico)",
       "items": [
@@ -2346,35 +2346,11 @@ window.S35_PANEL_DATA = {
           "note": ""
         },
         {
-          "slug": "marmolina-fina",
-          "name": "Marmolina fina",
-          "code": "ML-FIL-001",
-          "category": "Cargas",
-          "role": "Agregado",
-          "note": ""
-        },
-        {
-          "slug": "arena-de-cuarzo",
-          "name": "Arena de cuarzo",
-          "code": "ML-AGG-005",
-          "category": "Agregados",
-          "role": "Agregado",
-          "note": ""
-        },
-        {
           "slug": "carbonato-de-calcio",
           "name": "Carbonato de calcio",
           "code": "ML-FIL-002",
           "category": "Cargas",
           "role": "Carga",
-          "note": ""
-        },
-        {
-          "slug": "metacaolin",
-          "name": "Metacaolín",
-          "code": "ML-MIN-004",
-          "category": "Minerales",
-          "role": "Mineral funcional",
           "note": ""
         },
         {
@@ -2394,14 +2370,6 @@ window.S35_PANEL_DATA = {
           "note": ""
         },
         {
-          "slug": "oxido-de-hierro-rojo",
-          "name": "Óxido de hierro rojo",
-          "code": "ML-PIG-002",
-          "category": "Pigmentos",
-          "role": "Pigmento",
-          "note": ""
-        },
-        {
           "slug": null,
           "name": "",
           "code": "",
@@ -2410,27 +2378,140 @@ window.S35_PANEL_DATA = {
           "note": "Tono Dolphin Fin: el gris pulido sale del cemento y la carga, no de un colorante de recubrimiento."
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta FT-MC-001. V1 Microconcreto concreto aparente (529.5 kg → ~21.18 sacos).",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Marmolina talco 200",
+            "yieldMin": 21,
+            "yieldMax": 22,
+            "yieldTheoretical": 21.18,
+            "totalKg": 529.5,
+            "items": [
+              {
+                "plantId": "marmolina-talco-200",
+                "amount": 300,
+                "unit": "Kg",
+                "role": "Carga"
+              },
+              {
+                "plantId": "cemento-portland-gris",
+                "amount": 200,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "calidra",
+                "amount": 12.5,
+                "unit": "Kg",
+                "role": "Cementante"
+              },
+              {
+                "plantId": "resina-rdp740h",
+                "amount": 15,
+                "unit": "Kg",
+                "role": "Polímero"
+              },
+              {
+                "plantId": "walocell",
+                "amount": 1.5,
+                "unit": "Kg",
+                "role": "Celulosa"
+              },
+              {
+                "plantId": "estearato",
+                "amount": 0.5,
+                "unit": "Kg",
+                "role": "Aditivo"
+              }
+            ]
+          }
+        ],
+        "yieldMin": 21,
+        "yieldMax": 22,
+        "yieldTheoretical": 21.18,
+        "totalKg": 529.5,
+        "items": [
+          {
+            "plantId": "marmolina-talco-200",
+            "amount": 300,
+            "unit": "Kg",
+            "role": "Carga"
+          },
+          {
+            "plantId": "cemento-portland-gris",
+            "amount": 200,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "calidra",
+            "amount": 12.5,
+            "unit": "Kg",
+            "role": "Cementante"
+          },
+          {
+            "plantId": "resina-rdp740h",
+            "amount": 15,
+            "unit": "Kg",
+            "role": "Polímero"
+          },
+          {
+            "plantId": "walocell",
+            "amount": 1.5,
+            "unit": "Kg",
+            "role": "Celulosa"
+          },
+          {
+            "plantId": "estearato",
+            "amount": 0.5,
+            "unit": "Kg",
+            "role": "Aditivo"
+          }
+        ]
+      },
       "suggested": [
-        {
-          "plantId": "cemento-portland-gris",
-          "unit": "Kg",
-          "role": "Cementante"
-        },
-        {
-          "plantId": "marmolina-fina",
-          "unit": "Kg",
-          "role": "Agregado"
-        },
         {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
-          "role": "Carga"
+          "role": "Carga",
+          "amount": 300
+        },
+        {
+          "plantId": "cemento-portland-gris",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 200
+        },
+        {
+          "plantId": "calidra",
+          "unit": "Kg",
+          "role": "Cementante",
+          "amount": 12.5
         },
         {
           "plantId": "resina-rdp740h",
           "unit": "Kg",
-          "role": "Polímero redispersable"
+          "role": "Polímero",
+          "amount": 15
+        },
+        {
+          "plantId": "walocell",
+          "unit": "Kg",
+          "role": "Celulosa",
+          "amount": 1.5
+        },
+        {
+          "plantId": "estearato",
+          "unit": "Kg",
+          "role": "Aditivo",
+          "amount": 0.5
         },
         {
           "plantId": "kimacell",
@@ -3418,12 +3499,6 @@ window.S35_PANEL_DATA = {
         "name": "Waxtard extra anclaje",
         "code": "FT-PR-004",
         "role": "Agregado"
-      },
-      {
-        "slug": "cemento-plastico-concreto",
-        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
-        "code": "FT-MC-001",
-        "role": "Agregado"
       }
     ],
     "carbonato-de-calcio": [
@@ -3906,30 +3981,6 @@ window.S35_PANEL_DATA = {
         "name": "Pegaxpress: Ultraforce",
         "code": "FT-AD-003",
         "role": "Agregado"
-      }
-    ],
-    "arena-de-cuarzo": [
-      {
-        "slug": "cemento-plastico-concreto",
-        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
-        "code": "FT-MC-001",
-        "role": "Agregado"
-      }
-    ],
-    "metacaolin": [
-      {
-        "slug": "cemento-plastico-concreto",
-        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
-        "code": "FT-MC-001",
-        "role": "Mineral funcional"
-      }
-    ],
-    "oxido-de-hierro-rojo": [
-      {
-        "slug": "cemento-plastico-concreto",
-        "name": "Microconcreto: Concreto aparente (Cemento plástico)",
-        "code": "FT-MC-001",
-        "role": "Pigmento"
       }
     ],
     "caolin": [
