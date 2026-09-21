@@ -970,6 +970,33 @@
                 '" text-anchor="middle">' + esc(lab) + '</text>';
         }
 
+        function tipTitle(i) {
+            const lab = cur.buckets[i].label;
+            if (period === 'historial') return String(lab);
+            if (period === 'year') return lab + ' · ' + bounds.start.getFullYear();
+            if (period === 'month') {
+                return 'Día ' + lab + ' · ' + bounds.start.toLocaleDateString('es-MX', { month: 'short', year: 'numeric' });
+            }
+            if (period === 'week') return lab;
+            return lab;
+        }
+
+        let hits = '';
+        let dots = '';
+        const hitW = n <= 1 ? plotW : plotW / Math.max(n - 1, 1);
+        for (let i = 0; i < n; i++) {
+            const x = ptX(i);
+            const y = ptY(cur.buckets[i].amount);
+            const half = hitW / 2;
+            const hx = Math.max(padL, x - half);
+            const hw = Math.min(W - padR, x + half) - hx;
+            hits += '<rect class="hit-zone" data-idx="' + i + '" x="' + hx.toFixed(1) +
+                '" y="' + padT + '" width="' + Math.max(hw, 8).toFixed(1) +
+                '" height="' + plotH + '" fill="transparent"/>';
+            dots += '<circle class="dot-cur" data-idx="' + i + '" cx="' + x.toFixed(1) +
+                '" cy="' + y.toFixed(1) + '" r="3.5" />';
+        }
+
         const defs =
             '<defs>' +
             '<pattern id="' + esc(hatchId) + '" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">' +
@@ -979,13 +1006,66 @@
 
         const emptyNote = hasData ? '' : '<div class="cortes-chart-empty">Sin ventas en este ritmo</div>';
         host.innerHTML = emptyNote +
+            '<div class="cortes-chart-tip" hidden></div>' +
             '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
             defs + grid + yLabels +
             (hasData ? '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + esc(hatchId) + ')"/>' : '') +
             (showPrev && prevLine ? '<path class="line-prev" d="' + prevLine + '"/>' : '') +
             '<path class="line-cur" d="' + curLine + '"/>' +
+            '<line class="guide-line" hidden x1="0" y1="' + padT + '" x2="0" y2="' + baseY + '"/>' +
+            dots +
+            hits +
             xLabels +
             '</svg>';
+
+        const tipEl = host.querySelector('.cortes-chart-tip');
+        const guideEl = host.querySelector('.guide-line');
+        const svgEl = host.querySelector('svg');
+        function hideTip() {
+            if (tipEl) tipEl.hidden = true;
+            if (guideEl) guideEl.setAttribute('hidden', '');
+            host.querySelectorAll('.dot-cur.is-active').forEach(function (el) {
+                el.classList.remove('is-active');
+            });
+        }
+        function showTip(idx, clientX) {
+            if (!tipEl || !svgEl || idx < 0 || idx >= n) return;
+            const amt = Number(cur.buckets[idx].amount) || 0;
+            const prevAmt = showPrev && prev.buckets[idx] ? (Number(prev.buckets[idx].amount) || 0) : null;
+            let html = '<div class="tip-label">' + esc(tipTitle(idx)) + '</div>' +
+                '<div class="tip-val">' + money(amt) + '</div>';
+            if (prevAmt != null) {
+                html += '<div class="tip-prev">Anterior · ' + money(prevAmt) + '</div>';
+            }
+            tipEl.innerHTML = html;
+            tipEl.hidden = false;
+
+            const hostRect = host.getBoundingClientRect();
+            const tipW = tipEl.offsetWidth || 120;
+            let left = clientX - hostRect.left - tipW / 2;
+            left = Math.max(8, Math.min(left, hostRect.width - tipW - 8));
+            tipEl.style.left = left + 'px';
+            tipEl.style.top = '8px';
+
+            const x = ptX(idx);
+            if (guideEl) {
+                guideEl.removeAttribute('hidden');
+                guideEl.setAttribute('x1', x.toFixed(1));
+                guideEl.setAttribute('x2', x.toFixed(1));
+            }
+            host.querySelectorAll('.dot-cur').forEach(function (el) {
+                el.classList.toggle('is-active', Number(el.getAttribute('data-idx')) === idx);
+            });
+        }
+        host.onmouseleave = hideTip;
+        host.querySelectorAll('.hit-zone').forEach(function (zone) {
+            zone.addEventListener('mousemove', function (e) {
+                showTip(Number(zone.getAttribute('data-idx')), e.clientX);
+            });
+            zone.addEventListener('mouseenter', function (e) {
+                showTip(Number(zone.getAttribute('data-idx')), e.clientX);
+            });
+        });
     }
 
     function renderCortesChart(period, bounds, list, prevBounds, prevList) {

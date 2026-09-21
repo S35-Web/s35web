@@ -2761,6 +2761,7 @@
             stroke-width: 1.75;
             stroke-linejoin: round;
             stroke-linecap: round;
+            pointer-events: none;
         }
         .cortes-chart .line-prev {
             fill: none;
@@ -2769,23 +2770,76 @@
             stroke-dasharray: 4 3;
             stroke-linejoin: round;
             stroke-linecap: round;
+            pointer-events: none;
         }
         .cortes-chart .area-hatch {
             fill: url(#cortesHatch);
             stroke: none;
+            pointer-events: none;
         }
         #pdSalesChart .area-hatch {
             fill: url(#pdSalesHatch);
         }
-        .cortes-chart .axis-label {
-            fill: var(--muted);
-            font-size: 10px;
-            font-family: var(--font);
-        }
+        .cortes-chart .axis-label,
         .cortes-chart .y-label {
             fill: var(--muted);
             font-size: 10px;
             font-family: var(--font);
+            pointer-events: none;
+        }
+        .cortes-chart .hit-zone {
+            cursor: crosshair;
+        }
+        .cortes-chart .dot-cur {
+            fill: var(--text);
+            stroke: var(--panel);
+            stroke-width: 1.5;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.12s ease;
+        }
+        .cortes-chart .dot-cur.is-active {
+            opacity: 1;
+        }
+        .cortes-chart .guide-line {
+            stroke: var(--border);
+            stroke-width: 1;
+            stroke-dasharray: 2 3;
+            pointer-events: none;
+        }
+        .cortes-chart-tip {
+            position: absolute;
+            z-index: 3;
+            min-width: 96px;
+            max-width: 220px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: var(--text);
+            color: var(--bg);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+            pointer-events: none;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+        .cortes-chart-tip .tip-label {
+            opacity: 0.72;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+        .cortes-chart-tip .tip-val {
+            font-weight: 650;
+            font-variant-numeric: tabular-nums;
+            font-size: 14px;
+        }
+        .cortes-chart-tip .tip-prev {
+            margin-top: 4px;
+            opacity: 0.7;
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
+        }
+        [data-theme="dark"] .cortes-chart-tip {
+            background: #f5f5f5;
+            color: #111;
         }
         .prod-formula-chart {
             position: relative;
