@@ -517,10 +517,15 @@
         #clients .clients-table td:nth-child(6) { width: 72px; }
         #clients .clients-name-cell,
         #clients .clients-company-cell,
+        #clients .clients-address-cell,
         #clients .clients-email-line {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+        #clients .clients-address-cell {
+            font-size: 11px;
+            margin-top: 2px;
         }
         #clients .clients-email-cell {
             vertical-align: top;
@@ -752,6 +757,7 @@
         .form-grid .field-label { font-size: 12px; color: var(--muted); }
         .form-grid input:not([type="range"]),
         .form-grid select,
+        .form-grid textarea,
         .formula-meta input,
         .formula-meta select,
         .formula-pack-fill input,
@@ -765,8 +771,17 @@
             padding: 0 10px;
             outline: none;
         }
+        .form-grid textarea {
+            height: auto;
+            min-height: 64px;
+            padding: 8px 10px;
+            resize: vertical;
+            line-height: 1.4;
+            font: inherit;
+        }
         .form-grid input:not([type="range"]):focus,
         .form-grid select:focus,
+        .form-grid textarea:focus,
         .formula-meta input:focus,
         .formula-meta select:focus,
         .formula-pack-fill input:focus,
@@ -3777,6 +3792,9 @@
                     </label>
                     <label>RFC (opcional)
                         <input id="clientRfc" type="text" autocomplete="off">
+                    </label>
+                    <label>Dirección fiscal
+                        <textarea id="clientAddress" rows="2" autocomplete="street-address" placeholder="Calle, colonia, C.P., localidad"></textarea>
                     </label>
                 </div>
                 <div class="modal-actions">

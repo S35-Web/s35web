@@ -334,6 +334,23 @@
             return '<div class="clients-email-line" title="' + esc(e) + '">' + esc(e) + '</div>';
         }).join('');
     }
+    /** Dirección fiscal: DOMICILIO + LOCALIDAD (si no está ya en el domicilio). */
+    function buildFiscalAddress(domicilio, localidad) {
+        const dom = String(domicilio || '').trim().replace(/\s+/g, ' ');
+        const loc = String(localidad || '').trim().replace(/\s+/g, ' ');
+        if (!dom && !loc) return '';
+        if (!dom) return loc;
+        if (!loc) return dom;
+        if (dom.toLocaleLowerCase('es').indexOf(loc.toLocaleLowerCase('es')) !== -1) return dom;
+        return dom + ', ' + loc;
+    }
+    /** Campo canónico `address`; migra `domicilio`/`localidad` legacy. */
+    function clientAddress(c) {
+        if (!c) return '';
+        const direct = String(c.address || '').trim();
+        if (direct) return direct;
+        return buildFiscalAddress(c.domicilio, c.localidad);
+    }
     function money(n) {
         return '$' + (Number(n) || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
@@ -1337,7 +1354,12 @@
             const raw = JSON.parse(localStorage.getItem(CLIENTS_KEY) || 'null');
             if (raw && Array.isArray(raw.items)) {
                 return raw.items.map(function (c) {
-                    return Object.assign({}, c, { type: normalizeClientType(c.type || c.kind) });
+                    const next = Object.assign({}, c, { type: normalizeClientType(c.type || c.kind) });
+                    const addr = clientAddress(next);
+                    if (addr) next.address = addr;
+                    delete next.domicilio;
+                    delete next.localidad;
+                    return next;
                 });
             }
         } catch (_) {}
@@ -1381,18 +1403,20 @@
                         rfc: rfc,
                         type: normalizeClientType(row.type),
                         source: row.source || 'import',
-                        localidad: row.localidad || '',
-                        domicilio: row.domicilio || '',
+                        address: String(row.address || '').trim() || buildFiscalAddress(row.domicilio, row.localidad),
                         updatedAt: now
                     };
                     let idx = rfc && byRfc[rfc] != null ? byRfc[rfc] : (byId[next.id] != null ? byId[next.id] : -1);
                     if (idx >= 0) {
                         const prev = clients[idx];
-                        clients[idx] = Object.assign({}, prev, next, {
+                        const merged = Object.assign({}, prev, next, {
                             id: prev.id,
                             type: prev.type === 'distributor' ? 'distributor' : next.type,
                             createdAt: prev.createdAt || now
                         });
+                        delete merged.domicilio;
+                        delete merged.localidad;
+                        clients[idx] = merged;
                         updated += 1;
                     } else {
                         next.createdAt = now;
@@ -1902,7 +1926,7 @@
     }
 
     function clientPickerHaystack(c) {
-        return [c.name, c.company, c.phone, c.email, c.rfc]
+        return [c.name, c.company, c.phone, c.email, c.rfc, clientAddress(c)]
             .map(function (v) { return String(v || '').toLowerCase(); })
             .join(' ');
     }
@@ -2801,7 +2825,7 @@
         if (!tbody) return;
         const q = (document.getElementById('posClientSearch') && document.getElementById('posClientSearch').value || '').toLowerCase().trim();
         const list = clients.filter(function (c) {
-            return !q || [c.name, c.phone, c.email, c.company, c.rfc].some(function (v) {
+            return !q || [c.name, c.phone, c.email, c.company, c.rfc, clientAddress(c)].some(function (v) {
                 return String(v || '').toLowerCase().includes(q);
             });
         }).sort(function (a, b) {
@@ -2814,9 +2838,12 @@
         tbody.innerHTML = list.map(function (c) {
             const dist = isDistributorClient(c);
             const displayName = toTitleCaseName(c.name);
+            const addr = clientAddress(c);
             return '<tr>' +
                 '<td class="clients-name-cell"><strong title="' + esc(displayName) + '">' + esc(displayName) + '</strong>' +
-                (c.company ? '<div class="muted clients-company-cell" title="' + esc(c.company) + '">' + esc(c.company) + '</div>' : '') + '</td>' +
+                (c.company ? '<div class="muted clients-company-cell" title="' + esc(c.company) + '">' + esc(c.company) + '</div>' : '') +
+                (addr ? '<div class="muted clients-address-cell" title="' + esc(addr) + '">' + esc(addr) + '</div>' : '') +
+                '</td>' +
                 '<td><span class="badge' + (dist ? ' b-primary' : '') + '">' + esc(clientTypeLabel(c)) + '</span></td>' +
                 '<td>' + esc(c.phone || '—') + '</td>' +
                 '<td class="clients-email-cell">' + formatClientEmailsHtml(c.email) + '</td>' +
@@ -2851,6 +2878,8 @@
         document.getElementById('clientEmail').value = client ? (client.email || '') : '';
         document.getElementById('clientCompany').value = client ? (client.company || '') : '';
         document.getElementById('clientRfc').value = client ? (client.rfc || '') : '';
+        const addrEl = document.getElementById('clientAddress');
+        if (addrEl) addrEl.value = client ? clientAddress(client) : '';
         setClientTypeForm(client ? (client.type || client.kind) : 'client');
         const modal = document.getElementById('clientModal');
         modal.classList.add('show');
@@ -3212,6 +3241,7 @@
                 const name = toTitleCaseName(document.getElementById('clientName').value);
                 if (!name) return;
                 const wasNew = !editingClientId;
+                const addrEl = document.getElementById('clientAddress');
                 const next = {
                     id: editingClientId || ('cli-' + Date.now().toString(36)),
                     name: name,
@@ -3219,12 +3249,17 @@
                     email: normalizeClientEmail(document.getElementById('clientEmail').value),
                     company: (document.getElementById('clientCompany').value || '').trim(),
                     rfc: (document.getElementById('clientRfc').value || '').trim(),
+                    address: addrEl ? String(addrEl.value || '').trim().replace(/\s+/g, ' ') : '',
                     type: clientTypeFromForm(),
                     updatedAt: new Date().toISOString()
                 };
                 const idx = clients.findIndex(function (c) { return c.id === next.id; });
-                if (idx >= 0) clients[idx] = Object.assign({}, clients[idx], next);
-                else {
+                if (idx >= 0) {
+                    const merged = Object.assign({}, clients[idx], next);
+                    delete merged.domicilio;
+                    delete merged.localidad;
+                    clients[idx] = merged;
+                } else {
                     next.createdAt = next.updatedAt;
                     clients.push(next);
                 }
