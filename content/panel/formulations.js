@@ -84,6 +84,8 @@ module.exports = [
     filler: ['carbonato-de-calcio'],
     admixture: FINISH_ADMIX,
     pigment: ['dioxido-de-titanio'],
+    status: 'lote-planta',
+    note: 'Dosificación de planta por lote (729 kg → ~29 sacos).',
   }),
   dryMortar({
     product: 'waxtard-gris',
