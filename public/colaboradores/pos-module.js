@@ -414,7 +414,7 @@
         const sale = saleById(id);
         if (!sale) return;
         ensureSaleNote(sale);
-        saveSales();
+        if (!isHistoricalImportSale(sale)) saveSales();
         openSaleNoteModal(sale);
     }
 
@@ -551,7 +551,14 @@
 
     function saleById(id) {
         if (!id) return null;
-        return sales.filter(function (s) { return s.id === id; })[0] || null;
+        let i;
+        for (i = 0; i < sales.length; i++) {
+            if (sales[i].id === id) return sales[i];
+        }
+        for (i = 0; i < historicalSales.length; i++) {
+            if (historicalSales[i].id === id) return historicalSales[i];
+        }
+        return null;
     }
 
     function persistNoteShareContacts(sale) {
@@ -1441,6 +1448,22 @@
 
     // —— Sales ——
     let sales = [];
+    /** Ventas históricas (import v3): solo en memoria; no caben en localStorage (~26 MB). */
+    let historicalSales = [];
+    let analyticsSalesCache = null;
+
+    function invalidateAnalyticsSalesCache() {
+        analyticsSalesCache = null;
+    }
+
+    function salesForAnalytics() {
+        if (!historicalSales.length) return sales;
+        if (!analyticsSalesCache) {
+            analyticsSalesCache = historicalSales.concat(sales);
+        }
+        return analyticsSalesCache;
+    }
+
     function loadSales() {
         try {
             const raw = JSON.parse(localStorage.getItem(SALES_KEY) || 'null');
@@ -1449,6 +1472,7 @@
         return [];
     }
     function saveSales() {
+        invalidateAnalyticsSalesCache();
         localStorage.setItem(SALES_KEY, JSON.stringify({ items: sales, updatedAt: new Date().toISOString() }));
     }
 
@@ -1554,9 +1578,9 @@
             });
     }
 
-    /** Import synthetic tickets from historical-sales-import.json (v2: por mes). */
-    const HIST_SALES_FLAG = 's35_hist_sales_imported_v2';
-    const HIST_SALES_FLAG_LEGACY = 's35_hist_sales_imported_v1';
+    /** Import synthetic tickets from historical-sales-import.json (v3: por nota). */
+    const HIST_SALES_FLAG = 's35_hist_sales_imported_v3';
+    const HIST_SALES_FLAG_LEGACY = ['s35_hist_sales_imported_v1', 's35_hist_sales_imported_v2'];
 
     function isHistoricalImportSale(s) {
         if (!s) return false;
@@ -1568,13 +1592,41 @@
     function purgeHistoricalImportSales() {
         const before = sales.length;
         sales = sales.filter(function (s) { return !isHistoricalImportSale(s); });
+        if (before !== sales.length) {
+            invalidateAnalyticsSalesCache();
+            saveSales();
+        }
         return before - sales.length;
+    }
+
+    function normalizeHistoricalSale(row) {
+        if (!row || !row.id || !Array.isArray(row.items) || !row.items.length) return null;
+        return {
+            id: row.id,
+            folio: row.folio || row.id,
+            createdAt: row.createdAt,
+            clientId: row.clientId || null,
+            client: row.client || null,
+            customer: row.customer || 'Histórico',
+            paymentMethod: row.paymentMethod || 'transferencia',
+            billing: row.billing || 'sin_facturar',
+            items: row.items,
+            total: Number(row.total) || 0,
+            user: row.user || 'import-historico',
+            meta: row.meta || { source: 'old-panel' }
+        };
+    }
+
+    function refreshHistoricalAnalyticsUi() {
+        renderCortes();
+        if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
+        renderDashboardRadar();
     }
 
     function importHistoricalSales(opts) {
         opts = opts || {};
-        const force = !!opts.force;
-        return fetch('/colaboradores/data/historical-sales-import.json', { cache: 'no-store' })
+        const migrate = !!opts.force || !!opts.migrate;
+        return fetch('/colaboradores/data/historical-sales-import.json', { cache: 'default' })
             .then(function (r) {
                 if (!r.ok) throw new Error('No se pudo leer el histórico de ventas');
                 return r.json();
@@ -1582,67 +1634,43 @@
             .then(function (data) {
                 const incoming = (data && Array.isArray(data.items)) ? data.items : [];
                 if (!incoming.length) {
-                    return { added: 0, updated: 0, removed: 0, total: sales.length, skipped: true };
+                    return { added: 0, removed: 0, total: historicalSales.length, skipped: true };
                 }
                 let removed = 0;
                 let hadLegacyFlag = false;
-                try { hadLegacyFlag = !!localStorage.getItem(HIST_SALES_FLAG_LEGACY); } catch (_) {}
+                try {
+                    hadLegacyFlag = HIST_SALES_FLAG_LEGACY.some(function (k) {
+                        return !!localStorage.getItem(k);
+                    });
+                } catch (_) {}
                 const importVersion = Number((data && data.importVersion) || (data && data.version) || 1);
-                if (force || importVersion >= 2 || hadLegacyFlag) {
+                if (migrate || importVersion >= 2 || hadLegacyFlag) {
                     removed = purgeHistoricalImportSales();
                 }
-                const byId = {};
-                sales.forEach(function (s, i) { byId[s.id] = i; });
-                let added = 0;
-                let updated = 0;
-                incoming.forEach(function (row) {
-                    if (!row || !row.id || !Array.isArray(row.items) || !row.items.length) return;
-                    const next = {
-                        id: row.id,
-                        folio: row.folio || row.id,
-                        createdAt: row.createdAt,
-                        clientId: row.clientId || null,
-                        client: row.client || null,
-                        customer: row.customer || 'Histórico',
-                        paymentMethod: row.paymentMethod || 'transferencia',
-                        billing: row.billing || 'sin_facturar',
-                        items: row.items,
-                        total: Number(row.total) || 0,
-                        user: row.user || 'import-historico',
-                        meta: row.meta || { source: 'old-panel' }
-                    };
-                    if (byId[next.id] != null) {
-                        if (force) {
-                            sales[byId[next.id]] = next;
-                            updated += 1;
-                        }
-                    } else {
-                        byId[next.id] = sales.length;
-                        sales.push(next);
-                        added += 1;
-                    }
-                });
-                if (added || updated) {
-                    saveSales();
-                    renderHistory();
-                    renderCortes();
-                    updatePosKpis();
-                }
+                historicalSales = incoming.map(normalizeHistoricalSale).filter(Boolean);
+                invalidateAnalyticsSalesCache();
+                refreshHistoricalAnalyticsUi();
                 try {
                     localStorage.setItem(HIST_SALES_FLAG, new Date().toISOString());
-                    localStorage.removeItem(HIST_SALES_FLAG_LEGACY);
+                    HIST_SALES_FLAG_LEGACY.forEach(function (k) {
+                        localStorage.removeItem(k);
+                    });
                 } catch (_) {}
-                return { added: added, updated: updated, removed: removed, total: sales.length };
+                return {
+                    added: historicalSales.length,
+                    removed: removed,
+                    total: historicalSales.length,
+                    importVersion: importVersion
+                };
             });
     }
     function ensureHistoricalSalesImport() {
-        let needsImport = true;
+        let needsMigration = false;
         try {
-            needsImport = !localStorage.getItem(HIST_SALES_FLAG)
-                || !!localStorage.getItem(HIST_SALES_FLAG_LEGACY);
+            needsMigration = !localStorage.getItem(HIST_SALES_FLAG)
+                || HIST_SALES_FLAG_LEGACY.some(function (k) { return !!localStorage.getItem(k); });
         } catch (_) {}
-        if (!needsImport) return;
-        importHistoricalSales({ force: true }).catch(function () { /* silencioso en arranque */ });
+        importHistoricalSales({ migrate: needsMigration }).catch(function () { /* silencioso en arranque */ });
     }
 
     function clientById(id) {
@@ -3016,8 +3044,9 @@
 
         const bounds = periodBounds(cortesPeriod, cortesOffset);
         const prevBounds = isHist ? null : periodBounds(cortesPeriod, cortesOffset - 1);
-        const list = salesInRange(sales, bounds.start, bounds.end);
-        const prevList = isHist ? [] : salesInRange(sales, prevBounds.start, prevBounds.end);
+        const analytics = salesForAnalytics();
+        const list = salesInRange(analytics, bounds.start, bounds.end);
+        const prevList = isHist ? [] : salesInRange(analytics, prevBounds.start, prevBounds.end);
         const total = sumTotals(list);
         const prevTotal = sumTotals(prevList);
         const tickets = list.length;
@@ -3115,7 +3144,9 @@
                 const sorted = list.slice().sort(function (a, b) {
                     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
                 });
-                listHost.innerHTML = sorted.map(function (s) {
+                const cap = 200;
+                const shown = sorted.length > cap ? sorted.slice(0, cap) : sorted;
+                listHost.innerHTML = shown.map(function (s) {
                     const d = new Date(s.createdAt);
                     const clientLabel = saleClientLabel(s);
                     const itemsPreview = saleItemsPreview(s);
@@ -3135,7 +3166,10 @@
                         '</div>' +
                         '<div class="cortes-invoice-amt">' + money(s.total) + '</div>' +
                         '</div>';
-                }).join('');
+                }).join('') +
+                (sorted.length > cap
+                    ? '<div class="cortes-invoice-empty muted">Mostrando ' + cap + ' de ' + sorted.length + ' tickets</div>'
+                    : '');
             }
         }
 
@@ -4013,7 +4047,7 @@
     }
 
     function productHasAnySales(keys) {
-        return sales.some(function (s) {
+        return salesForAnalytics().some(function (s) {
             const c = productContribution(s, keys);
             return c.qty > 0 || c.amount > 0;
         });
@@ -4112,8 +4146,9 @@
         if (isHist) pdSalesOffset = 0;
         const bounds = periodBounds(pdSalesPeriod, pdSalesOffset);
         const prevBounds = isHist ? null : periodBounds(pdSalesPeriod, pdSalesOffset - 1);
-        const periodSales = salesInRange(sales, bounds.start, bounds.end);
-        const prevPeriodSales = isHist ? [] : salesInRange(sales, prevBounds.start, prevBounds.end);
+        const analytics = salesForAnalytics();
+        const periodSales = salesInRange(analytics, bounds.start, bounds.end);
+        const prevPeriodSales = isHist ? [] : salesInRange(analytics, prevBounds.start, prevBounds.end);
         const curSeries = productRhythmSeries(periodSales, keys);
         const prevSeries = productRhythmSeries(prevPeriodSales, keys);
 
@@ -4140,7 +4175,7 @@
             '<div class="pd-sales-head">' +
             '<div>' +
             '<p class="pd-section-label">Ventas</p>' +
-            '<p class="page-sub" style="margin:0">Ritmo y clientes de este producto · POS local</p>' +
+            '<p class="page-sub" style="margin:0">Ritmo y clientes · POS + histórico</p>' +
             '</div>' +
             '<div class="cortes-range pd-sales-range">' +
             '<button type="button" class="cortes-nav-btn" data-pd-sales-prev title="Periodo anterior" aria-label="Periodo anterior"' +

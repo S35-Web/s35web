@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 /**
  * Genera public/colaboradores/data/historical-sales-import.json
- * desde notas_lineas (fecha real) + product-name-map.json.
- *
- * Un ticket sintético por slug × mes (createdAt = día 1 del mes).
+ * desde notas_lineas (1 ticket = 1 nota/recibo, fecha y hora real).
  */
 'use strict';
 
@@ -42,21 +40,41 @@ function round2(n) {
   return Math.round(Number(n) * 100) / 100;
 }
 
-function slugShort(slug, max) {
-  max = max || 12;
-  const s = String(slug || '').replace(/[^a-z0-9-]/gi, '');
-  return s.length <= max ? s : s.slice(0, max);
-}
-
-function monthKey(dateStr) {
-  return String(dateStr || '').slice(0, 7);
-}
-
 function readLinesCsv(filePath) {
   if (!fs.existsSync(filePath)) {
-    throw new Error('No se encontró el CSV de líneas: ' + filePath);
+    throw new Error(
+      'No se encontró el CSV de líneas: ' + filePath +
+      '\nExporta notas_lineas desde el panel viejo o pásalo como argumento.'
+    );
   }
   return fs.readFileSync(filePath, 'utf8').trim().split(/\r?\n/);
+}
+
+/** ISO local (sin Z) para que el navegador respete hora de planta en vistas Día. */
+function createdAtLocal(dateStr, timeStr) {
+  const d = String(dateStr || '').trim();
+  const t = String(timeStr || '12:00:00').trim();
+  const parts = t.split(':');
+  const hh = parts[0] || '12';
+  const mm = parts[1] || '00';
+  const ss = parts[2] || '00';
+  return d + 'T' + hh.padStart(2, '0') + ':' + mm.padStart(2, '0') + ':' + ss.padStart(2, '0');
+}
+
+function mergeLineItems(items) {
+  const byProduct = {};
+  items.forEach(function (it) {
+    const key = it.product;
+    if (!byProduct[key]) {
+      byProduct[key] = Object.assign({}, it);
+      return;
+    }
+    const prev = byProduct[key];
+    prev.qty = round2(prev.qty + it.qty);
+    prev.lineTotal = round2(prev.lineTotal + it.lineTotal);
+    prev.price = prev.qty > 0 ? round2(prev.lineTotal / prev.qty) : prev.price;
+  });
+  return Object.keys(byProduct).map(function (k) { return byProduct[k]; });
 }
 
 function build() {
@@ -65,18 +83,19 @@ function build() {
   const buckets = new Set(mapData.buckets_non_sellable || []);
 
   const rows = readLinesCsv(linesPath);
-  const groups = {};
+  const receipts = {};
   let skippedLines = 0;
   let skippedAmount = 0;
 
   for (let i = 1; i < rows.length; i++) {
     const r = parseCsvLine(rows[i]);
+    const receiptId = String(r[0] || '').trim();
     const date = r[1];
-    const ym = monthKey(date);
-    if (!ym || ym.length < 7) continue;
+    const time = r[2];
+    if (!receiptId || !date) continue;
 
     const name = r[7];
-    const qty = Number(r[9]) || 0;
+    const qty = Number(r[8]) || 0;
     const lineTotal = Number(r[11]) || 0;
     if (!lineTotal) continue;
 
@@ -87,58 +106,66 @@ function build() {
       continue;
     }
 
-    const key = slug + '|' + ym;
-    if (!groups[key]) {
-      groups[key] = { slug: slug, ym: ym, year: ym.slice(0, 4), month: ym.slice(5, 7), qty: 0, amount: 0 };
+    if (!receipts[receiptId]) {
+      receipts[receiptId] = {
+        receiptId: receiptId,
+        transactionId: String(r[5] || '').trim(),
+        date: date,
+        time: time,
+        lines: [],
+      };
     }
-    groups[key].qty += qty;
-    groups[key].amount += lineTotal;
+    receipts[receiptId].lines.push({
+      product: slug,
+      name: slug,
+      code: '',
+      unit: 'Pza',
+      price: qty > 0 ? round2(lineTotal / qty) : round2(lineTotal),
+      qty: round2(qty),
+      lineTotal: round2(lineTotal),
+    });
   }
 
-  const items = Object.keys(groups)
-    .map(function (k) { return groups[k]; })
-    .filter(function (g) { return g.amount > 0; })
+  const items = Object.keys(receipts)
+    .map(function (id) { return receipts[id]; })
+    .filter(function (rcpt) { return rcpt.lines.length > 0; })
     .sort(function (a, b) {
-      return a.ym.localeCompare(b.ym) || a.slug.localeCompare(b.slug);
+      const ta = createdAtLocal(a.date, a.time);
+      const tb = createdAtLocal(b.date, b.time);
+      return ta.localeCompare(tb) || Number(a.receiptId) - Number(b.receiptId);
     })
-    .map(function (g) {
-      const qty = round2(g.qty);
-      const total = round2(g.amount);
-      const price = qty > 0 ? round2(total / qty) : total;
-      const id = 'sale-hist-' + g.slug + '-' + g.ym;
-      const folio = 'HIST-' + g.ym + '-' + slugShort(g.slug, 10);
-      const createdAt = g.year + '-' + g.month + '-01T12:00:00.000Z';
+    .map(function (rcpt) {
+      const merged = mergeLineItems(rcpt.lines);
+      const total = round2(merged.reduce(function (n, it) { return n + it.lineTotal; }, 0));
+      const y = Number(rcpt.date.slice(0, 4));
+      const m = Number(rcpt.date.slice(5, 7));
+      const d = Number(rcpt.date.slice(8, 10));
       return {
-        id: id,
-        folio: folio,
-        createdAt: createdAt,
+        id: 'sale-hist-rcpt-' + rcpt.receiptId,
+        folio: 'HIST-R' + rcpt.receiptId,
+        createdAt: createdAtLocal(rcpt.date, rcpt.time),
         customer: 'Histórico importado',
         paymentMethod: 'transferencia',
         billing: 'sin_facturar',
-        items: [{
-          product: g.slug,
-          name: g.slug,
-          code: '',
-          unit: 'Pza',
-          price: price,
-          qty: qty,
-          lineTotal: total,
-        }],
+        items: merged,
         total: total,
         user: 'import-historico',
         meta: {
           source: 'old-panel',
-          kind: 'product-month',
-          year: Number(g.year),
-          month: Number(g.month),
+          kind: 'receipt',
+          receiptId: Number(rcpt.receiptId) || rcpt.receiptId,
+          transactionId: rcpt.transactionId || null,
+          year: y,
+          month: m,
+          day: d,
         },
       };
     });
 
   const payload = {
-    version: 2,
-    importVersion: 2,
-    note: 'Tickets sintéticos por producto y mes (fecha real del panel viejo). Importar una vez; v2 reemplaza tickets anuales v1.',
+    version: 3,
+    importVersion: 3,
+    note: 'Un ticket por nota de venta del panel viejo (fecha y hora reales). v3 reemplaza agregados mensuales v1/v2.',
     generatedAt: new Date().toISOString().slice(0, 10),
     source: path.basename(linesPath),
     items: items,
@@ -151,9 +178,10 @@ function build() {
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
   fs.writeFileSync(OUT_PATH, JSON.stringify(payload));
+  const mb = (Buffer.byteLength(JSON.stringify(payload)) / (1024 * 1024)).toFixed(2);
   console.log(
-    'historical-sales-import.json:',
-    items.length, 'tickets · skipped', skippedLines, 'lines ·',
+    'historical-sales-import.json v3:',
+    items.length, 'notas ·', mb, 'MB · skipped', skippedLines, 'lines ·',
     round2(skippedAmount), 'MXN sin mapear'
   );
 }
