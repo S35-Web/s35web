@@ -1539,6 +1539,13 @@
     function sumTotals(list) {
         return list.reduce(function (n, s) { return n + (Number(s.total) || 0); }, 0);
     }
+    /** Días calendario del periodo (mín. 1) para promedio diario. */
+    function calendarDaysInBounds(bounds) {
+        if (!bounds || !bounds.start || !bounds.end) return 1;
+        const ms = bounds.end.getTime() - bounds.start.getTime();
+        if (!isFinite(ms) || ms <= 0) return 1;
+        return Math.max(1, Math.round(ms / 86400000));
+    }
     function pctDelta(cur, prev) {
         if (!prev) return null;
         return ((cur - prev) / prev) * 100;
