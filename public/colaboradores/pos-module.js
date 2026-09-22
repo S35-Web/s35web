@@ -593,7 +593,9 @@
             '<div class="row"><span class="k">Facturación</span><span class="v">' + esc(billLabel(sale.billing)) + '</span></div>' +
             (saleReceiptId(sale)
                 ? '<div class="row"><span class="k">Referencia</span><span class="v">' + esc('HIST-R' + saleReceiptId(sale)) + '</span></div>'
-                : '') +
+                : (sale.meta && sale.meta.kind === 'invoice' && sale.meta.invoiceFolio != null
+                    ? '<div class="row"><span class="k">Factura</span><span class="v">' + esc('CFDI-' + sale.meta.invoiceFolio) + '</span></div>'
+                    : '')) +
             '</div>' +
             '<table class="sale-note-lines">' +
             '<thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Importe</th></tr></thead>' +
