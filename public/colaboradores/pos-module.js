@@ -2387,13 +2387,14 @@
     }
 
     /** Import synthetic tickets from historical-sales-import.json (v3: por nota). */
-    const HIST_SALES_FLAG = 's35_hist_sales_imported_v6';
+    const HIST_SALES_FLAG = 's35_hist_sales_imported_v7';
     const HIST_SALES_FLAG_LEGACY = [
         's35_hist_sales_imported_v1',
         's35_hist_sales_imported_v2',
         's35_hist_sales_imported_v3',
         's35_hist_sales_imported_v4',
-        's35_hist_sales_imported_v5'
+        's35_hist_sales_imported_v5',
+        's35_hist_sales_imported_v6'
     ];
 
     function isHistoricalImportSale(s) {
@@ -2405,9 +2406,10 @@
 
     function isExcludedHistoricalStore(sale) {
         if (!sale || !sale.meta) return false;
-        if (sale.meta.storeName === 'Cotizador') return true;
+        const name = sale.meta.storeName;
+        if (name === 'Cotizador' || name === 'Mochis') return true;
         const sid = sale.meta.storeId;
-        return sid === 32 || sid === '32';
+        return sid === 32 || sid === '32' || sid === 36 || sid === '36';
     }
 
     function purgeHistoricalImportSales() {
