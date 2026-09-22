@@ -1226,7 +1226,8 @@ window.S35_PANEL_DATA = {
       "unit": "",
       "minStock": 0,
       "category": "polymer",
-      "labSlug": null
+      "labSlug": null,
+      "unitCost": 0
     },
     {
       "id": "antiespumante",
@@ -1234,7 +1235,8 @@ window.S35_PANEL_DATA = {
       "unit": "",
       "minStock": 0,
       "category": "chemical",
-      "labSlug": null
+      "labSlug": null,
+      "unitCost": 0
     },
     {
       "id": "arbocel-celulosa",
@@ -1242,7 +1244,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 20,
       "category": "cellulose",
-      "labSlug": null
+      "labSlug": null,
+      "unitCost": 146.8
     },
     {
       "id": "arena-cribada-fina",
@@ -1250,7 +1253,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 1000,
       "category": "mineral",
-      "labSlug": "arena-silicea-graduada"
+      "labSlug": "arena-silicea-graduada",
+      "unitCost": 0.4
     },
     {
       "id": "arena-cribada-gruesa",
@@ -1258,7 +1262,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 2000,
       "category": "mineral",
-      "labSlug": "arena-de-rio"
+      "labSlug": "arena-de-rio",
+      "unitCost": 0
     },
     {
       "id": "arena-deshidratada",
@@ -1266,7 +1271,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 2000,
       "category": "mineral",
-      "labSlug": "arena-silicea-graduada"
+      "labSlug": "arena-silicea-graduada",
+      "unitCost": 0
     },
     {
       "id": "calidra",
@@ -1274,7 +1280,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 500,
       "category": "aglutinante",
-      "labSlug": "cal"
+      "labSlug": "cal",
+      "unitCost": 3.52
     },
     {
       "id": "cemento-portland-gris",
@@ -1282,7 +1289,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 1000,
       "category": "aglutinante",
-      "labSlug": "cemento-gris"
+      "labSlug": "cemento-gris",
+      "unitCost": 4.2
     },
     {
       "id": "cemento-portland-blanco",
@@ -1290,7 +1298,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 250,
       "category": "aglutinante",
-      "labSlug": "cemento-blanco"
+      "labSlug": "cemento-blanco",
+      "unitCost": 9.31
     },
     {
       "id": "cubeta-19l",
@@ -1298,7 +1307,8 @@ window.S35_PANEL_DATA = {
       "unit": "Pza",
       "minStock": 100,
       "category": "packaging",
-      "labSlug": null
+      "labSlug": null,
+      "unitCost": 0
     },
     {
       "id": "estearato",
@@ -1306,7 +1316,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 20,
       "category": "chemical",
-      "labSlug": null
+      "labSlug": null,
+      "unitCost": 47.2
     },
     {
       "id": "formol",
@@ -1314,7 +1325,8 @@ window.S35_PANEL_DATA = {
       "unit": "",
       "minStock": 0,
       "category": "chemical",
-      "labSlug": null
+      "labSlug": null,
+      "unitCost": 0
     },
     {
       "id": "fibra-de-polipropileno",
@@ -1322,7 +1334,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 20,
       "category": "fiber",
-      "labSlug": null
+      "labSlug": null,
+      "unitCost": 100
     },
     {
       "id": "jal-cribado",
@@ -1330,7 +1343,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 500,
       "category": "mineral",
-      "labSlug": "jal-pumita"
+      "labSlug": "jal-pumita",
+      "unitCost": 0.5
     },
     {
       "id": "kimacell",
@@ -1338,7 +1352,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 60,
       "category": "cellulose",
-      "labSlug": "celulosa-hpmc"
+      "labSlug": "celulosa-hpmc",
+      "unitCost": 0
     },
     {
       "id": "walocell",
@@ -1346,7 +1361,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 20,
       "category": "cellulose",
-      "labSlug": "celulosa-hpmc"
+      "labSlug": "celulosa-hpmc",
+      "unitCost": 146.8
     },
     {
       "id": "marmolina-gruesa",
@@ -1354,7 +1370,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 1000,
       "category": "mineral",
-      "labSlug": "marmolina-fina"
+      "labSlug": "marmolina-fina",
+      "unitCost": 1.53
     },
     {
       "id": "marmolina-estandar",
@@ -1362,7 +1379,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 1000,
       "category": "mineral",
-      "labSlug": "marmolina-fina"
+      "labSlug": "marmolina-fina",
+      "unitCost": 0
     },
     {
       "id": "marmolina-talco-100",
@@ -1370,7 +1388,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 1000,
       "category": "mineral",
-      "labSlug": "carbonato-de-calcio"
+      "labSlug": "carbonato-de-calcio",
+      "unitCost": 1.59
     },
     {
       "id": "marmolina-talco-200",
@@ -1378,7 +1397,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 4000,
       "category": "mineral",
-      "labSlug": "carbonato-de-calcio"
+      "labSlug": "carbonato-de-calcio",
+      "unitCost": 1.83
     },
     {
       "id": "marmolina-talco-300",
@@ -1386,7 +1406,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 2000,
       "category": "mineral",
-      "labSlug": "carbonato-de-calcio"
+      "labSlug": "carbonato-de-calcio",
+      "unitCost": 2.13
     },
     {
       "id": "marmolina-fina",
@@ -1394,7 +1415,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 1000,
       "category": "mineral",
-      "labSlug": "marmolina-fina"
+      "labSlug": "marmolina-fina",
+      "unitCost": 1.59
     },
     {
       "id": "mortero",
@@ -1402,7 +1424,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 200,
       "category": "aglutinante",
-      "labSlug": null
+      "labSlug": null,
+      "unitCost": 3.79
     },
     {
       "id": "quimex-95",
@@ -1410,7 +1433,8 @@ window.S35_PANEL_DATA = {
       "unit": "",
       "minStock": 0,
       "category": "chemical",
-      "labSlug": null
+      "labSlug": null,
+      "unitCost": 0
     },
     {
       "id": "resina-aprapole-p150",
@@ -1418,7 +1442,8 @@ window.S35_PANEL_DATA = {
       "unit": "",
       "minStock": 0,
       "category": "polymer",
-      "labSlug": "polimero-redispersable-vae"
+      "labSlug": "polimero-redispersable-vae",
+      "unitCost": 0
     },
     {
       "id": "resina-dlp-2001",
@@ -1426,7 +1451,8 @@ window.S35_PANEL_DATA = {
       "unit": "",
       "minStock": 0,
       "category": "polymer",
-      "labSlug": "polimero-redispersable-vae"
+      "labSlug": "polimero-redispersable-vae",
+      "unitCost": 0
     },
     {
       "id": "resina-rdp740h",
@@ -1434,7 +1460,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 125,
       "category": "polymer",
-      "labSlug": "polimero-redispersable-vae"
+      "labSlug": "polimero-redispersable-vae",
+      "unitCost": 61.75
     },
     {
       "id": "resina-semitski",
@@ -1442,7 +1469,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 25,
       "category": "polymer",
-      "labSlug": "polimero-redispersable-vae"
+      "labSlug": "polimero-redispersable-vae",
+      "unitCost": 275
     },
     {
       "id": "saco-rafia-waxtard",
@@ -1450,7 +1478,8 @@ window.S35_PANEL_DATA = {
       "unit": "Pza",
       "minStock": 5000,
       "category": "packaging",
-      "labSlug": null
+      "labSlug": null,
+      "unitCost": 0
     },
     {
       "id": "saco-rafia-general",
@@ -1458,7 +1487,8 @@ window.S35_PANEL_DATA = {
       "unit": "Pza",
       "minStock": 5000,
       "category": "packaging",
-      "labSlug": null
+      "labSlug": null,
+      "unitCost": 0
     },
     {
       "id": "yeso-maximo",
@@ -1466,7 +1496,8 @@ window.S35_PANEL_DATA = {
       "unit": "",
       "minStock": 0,
       "category": "aglutinante",
-      "labSlug": "yeso"
+      "labSlug": "yeso",
+      "unitCost": 0
     },
     {
       "id": "yeso-sayro",
@@ -1474,7 +1505,8 @@ window.S35_PANEL_DATA = {
       "unit": "Kg",
       "minStock": 500,
       "category": "aglutinante",
-      "labSlug": "yeso"
+      "labSlug": "yeso",
+      "unitCost": 0
     }
   ],
   "recipes": [

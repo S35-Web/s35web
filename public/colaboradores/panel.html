@@ -4511,6 +4511,24 @@
     function seedInventory() {
         return (data.plantMaterials || []).map(normalizeItem);
     }
+    /** Bump al actualizar catálogo de costos desde planta (sobrescribe unitCost del seed). */
+    const PLANT_COSTS_FLAG = 's35_plant_unit_costs_v1';
+    function applySeedUnitCosts(saved, seed, force) {
+        const seedById = {};
+        seed.forEach(function (m) { seedById[m.id] = m; });
+        let changed = false;
+        saved.forEach(function (m) {
+            const s = seedById[m.id];
+            if (!s || !(s.unitCost > 0)) return;
+            if (force || !(m.unitCost > 0)) {
+                if (m.unitCost !== s.unitCost) {
+                    m.unitCost = s.unitCost;
+                    changed = true;
+                }
+            }
+        });
+        return changed;
+    }
     let persistNormalized = false;
     function loadInventory() {
         const seed = seedInventory();
@@ -4531,9 +4549,14 @@
                         persistNormalized = true;
                     }
                 });
+                let forceCosts = false;
+                try { forceCosts = !localStorage.getItem(PLANT_COSTS_FLAG); } catch (_) {}
+                if (applySeedUnitCosts(saved, seed, forceCosts)) persistNormalized = true;
+                try { localStorage.setItem(PLANT_COSTS_FLAG, new Date().toISOString()); } catch (_) {}
                 return saved;
             }
         } catch (_) {}
+        try { localStorage.setItem(PLANT_COSTS_FLAG, new Date().toISOString()); } catch (_) {}
         return seed;
     }
     function saveInventory(list) {

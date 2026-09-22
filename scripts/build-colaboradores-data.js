@@ -207,6 +207,7 @@ const inventory = plantMaterials.map(function (m) {
     minStock: Number(m.minStock) || 0,
     category: m.category || '',
     labSlug: m.labSlug || null,
+    unitCost: Math.max(0, Math.round((Number(m.unitCost) || 0) * 100) / 100)
   };
 });
 
