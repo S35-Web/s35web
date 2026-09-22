@@ -1546,16 +1546,61 @@
         if (!isFinite(ms) || ms <= 0) return 1;
         return Math.max(1, Math.round(ms / 86400000));
     }
+    /**
+     * Si el periodo actual aún no termina (offset 0), corta el fin al inicio
+     * de mañana local para no contar días futuros vacíos.
+     */
+    function effectiveBoundsThroughNow(bounds, now) {
+        now = now || new Date();
+        if (!bounds || !bounds.start || !bounds.end) return bounds;
+        const cap = addDays(startOfLocalDay(now), 1);
+        if (bounds.end.getTime() <= cap.getTime()) return bounds;
+        if (bounds.start.getTime() >= cap.getTime()) return bounds;
+        return { start: bounds.start, end: cap };
+    }
+    /**
+     * Periodo anterior comparable: mismo tramo transcurrido
+     * (ej. 1 ene–22 sep 2026 vs 1 ene–22 sep 2025).
+     * Solo aplica al periodo “en curso” (offset 0).
+     */
+    function likeForLikePrevBounds(period, curBounds, offset, now) {
+        now = now || new Date();
+        const rawPrev = periodBounds(period, offset - 1, now);
+        if (offset !== 0 || period === 'historial' || !curBounds) return rawPrev;
+
+        let elapsed;
+        if (period === 'day') {
+            elapsed = Math.max(0, now.getTime() - curBounds.start.getTime());
+        } else {
+            const curEff = effectiveBoundsThroughNow(curBounds, now);
+            elapsed = Math.max(0, curEff.end.getTime() - curEff.start.getTime());
+        }
+        const prevEnd = new Date(rawPrev.start.getTime() + elapsed);
+        if (prevEnd.getTime() >= rawPrev.end.getTime()) return rawPrev;
+        if (prevEnd.getTime() <= rawPrev.start.getTime()) {
+            return { start: rawPrev.start, end: new Date(rawPrev.start.getTime() + 60000) };
+        }
+        return { start: rawPrev.start, end: prevEnd };
+    }
     function pctDelta(cur, prev) {
         if (!prev) return null;
         return ((cur - prev) / prev) * 100;
     }
-    function formatDelta(cur, prev) {
+    function formatDelta(cur, prev, opts) {
+        opts = opts || {};
+        let label = 'vs periodo anterior';
+        if (opts.likeForLike) {
+            if (opts.period === 'year') label = 'vs mismo tramo año anterior';
+            else if (opts.period === 'month') label = 'vs mismos días del mes anterior';
+            else if (opts.period === 'week') label = 'vs mismos días semana anterior';
+            else if (opts.period === 'day') label = 'vs misma hora día anterior';
+            else label = 'vs mismo tramo periodo anterior';
+        }
         if (prev == null || (prev === 0 && cur === 0)) return 'Sin ventas en el periodo anterior';
-        if (prev === 0) return 'vs periodo anterior · ' + money(prev) + ' → nuevo';
+        if (prev === 0) return label + ' · ' + money(prev) + ' → nuevo';
         const d = pctDelta(cur, prev);
         const sign = d > 0 ? '+' : '';
-        return 'vs periodo anterior · ' + money(prev) + ' (' + sign + d.toFixed(0) + '%)';
+        return label + ' · ' + money(prev) + ' (' + sign + d.toFixed(0) + '%)';
     }
 
     function emptyRhythmBuckets(period, bounds) {
