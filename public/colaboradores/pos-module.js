@@ -553,6 +553,14 @@
             return '<span class="hist-receipt">' + esc(rid) +
                 '<span class="sub">' + esc(store ? store : 'Recibo · panel viejo') + '</span></span>';
         }
+        const kind = sale && sale.meta && sale.meta.kind;
+        if (kind === 'invoice' || (sale.folio && String(sale.folio).indexOf('CFDI-') === 0)) {
+            const inv = (sale.meta && sale.meta.invoiceFolio != null)
+                ? String(sale.meta.invoiceFolio)
+                : String(sale.folio || '').replace(/^CFDI-/i, '');
+            return '<span class="hist-receipt">' + esc(inv || sale.folio || '—') +
+                '<span class="sub">Factura CFDI</span></span>';
+        }
         return '<span class="hist-receipt">' + esc(sale.folio || '—') +
             (sale.folio ? '<span class="sub">Folio POS</span>' : '') + '</span>';
     }

@@ -1,6 +1,6 @@
 {
-  "version": 3,
-  "note": "Notas del panel viejo capturadas después del cierre del export histórico. Horas reales de expedición.",
+  "version": 4,
+  "note": "Catch-up: notas panel + facturas CFDI Ricbor (fecha/hora del timbre).",
   "generatedAt": "2026-09-22",
   "items": [
     {
@@ -165,6 +165,544 @@
         "year": 2026,
         "month": 9,
         "day": 22
+      }
+    },
+    {
+      "id": "sale-cfdi-12201",
+      "folio": "CFDI-12201",
+      "createdAt": "2026-01-30T11:30:25",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.45,
+          "qty": 1074.0,
+          "lineTotal": 198099.71
+        }
+      ],
+      "total": 198099.71,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12201,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 170775.61,
+        "year": 2026,
+        "month": 1,
+        "day": 30
+      }
+    },
+    {
+      "id": "sale-cfdi-12202",
+      "folio": "CFDI-12202",
+      "createdAt": "2026-01-30T11:39:01",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.5,
+          "qty": 1084.0,
+          "lineTotal": 200000.0
+        }
+      ],
+      "total": 200000.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12202,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 172413.79,
+        "year": 2026,
+        "month": 1,
+        "day": 30
+      }
+    },
+    {
+      "id": "sale-cfdi-12204",
+      "folio": "CFDI-12204",
+      "createdAt": "2026-01-30T11:43:01",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Estuco Hidrófugo Interior S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 197.84,
+          "qty": 712.0,
+          "lineTotal": 140858.6
+        }
+      ],
+      "total": 140858.6,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12204,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 121429.83,
+        "year": 2026,
+        "month": 1,
+        "day": 30
+      }
+    },
+    {
+      "id": "sale-cfdi-12275",
+      "folio": "CFDI-12275",
+      "createdAt": "2026-02-27T13:10:21",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.5,
+          "qty": 813.0,
+          "lineTotal": 150000.01
+        }
+      ],
+      "total": 150000.01,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12275,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 129310.35,
+        "year": 2026,
+        "month": 2,
+        "day": 27
+      }
+    },
+    {
+      "id": "sale-cfdi-12277",
+      "folio": "CFDI-12277",
+      "createdAt": "2026-02-27T13:19:01",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.61,
+          "qty": 1300.0,
+          "lineTotal": 240000.01
+        }
+      ],
+      "total": 240000.01,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12277,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 206896.56,
+        "year": 2026,
+        "month": 2,
+        "day": 27
+      }
+    },
+    {
+      "id": "sale-cfdi-12278",
+      "folio": "CFDI-12278",
+      "createdAt": "2026-02-27T13:28:20",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.65,
+          "qty": 3663.0,
+          "lineTotal": 676368.77
+        }
+      ],
+      "total": 676368.77,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12278,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 583076.53,
+        "year": 2026,
+        "month": 2,
+        "day": 27
+      }
+    },
+    {
+      "id": "sale-cfdi-12330",
+      "folio": "CFDI-12330",
+      "createdAt": "2026-03-26T15:22:01",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 700.0,
+          "lineTotal": 129108.0
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Interior S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 197.8,
+          "qty": 700.0,
+          "lineTotal": 138460.04
+        }
+      ],
+      "total": 267568.04,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12330,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 230662.1,
+        "year": 2026,
+        "month": 3,
+        "day": 26
+      }
+    },
+    {
+      "id": "sale-cfdi-12332",
+      "folio": "CFDI-12332",
+      "createdAt": "2026-03-27T10:56:48",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 365.0,
+          "lineTotal": 67320.6
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Interior S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 197.8,
+          "qty": 873.0,
+          "lineTotal": 172679.46
+        }
+      ],
+      "total": 240000.06,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12332,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 206896.6,
+        "year": 2026,
+        "month": 3,
+        "day": 27
+      }
+    },
+    {
+      "id": "sale-cfdi-12582",
+      "folio": "CFDI-12582",
+      "createdAt": "2026-07-24T13:36:30",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 2031.0,
+          "lineTotal": 267568.0
+        }
+      ],
+      "total": 267568.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12582,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 230662.07,
+        "year": 2026,
+        "month": 7,
+        "day": 24
+      }
+    },
+    {
+      "id": "sale-cfdi-12583",
+      "folio": "CFDI-12583",
+      "createdAt": "2026-07-24T13:49:29",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "por_cobrar",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 800.0,
+          "lineTotal": 105392.0
+        }
+      ],
+      "total": 105392.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12583,
+        "formaPago": "99",
+        "metodoPago": "PPD",
+        "subTotal": 90855.17,
+        "year": 2026,
+        "month": 7,
+        "day": 24
+      }
+    },
+    {
+      "id": "sale-cfdi-12584",
+      "folio": "CFDI-12584",
+      "createdAt": "2026-07-24T14:01:53",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "por_cobrar",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 800.0,
+          "lineTotal": 105392.0
+        }
+      ],
+      "total": 105392.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12584,
+        "formaPago": "99",
+        "metodoPago": "PPD",
+        "subTotal": 90855.17,
+        "year": 2026,
+        "month": 7,
+        "day": 24
+      }
+    },
+    {
+      "id": "sale-cfdi-12594",
+      "folio": "CFDI-12594",
+      "createdAt": "2026-07-29T13:39:19",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "por_cobrar",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 900.0,
+          "lineTotal": 118565.99
+        }
+      ],
+      "total": 118565.99,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12594,
+        "formaPago": "99",
+        "metodoPago": "PPD",
+        "subTotal": 102212.06,
+        "year": 2026,
+        "month": 7,
+        "day": 29
+      }
+    },
+    {
+      "id": "sale-cfdi-12612",
+      "folio": "CFDI-12612",
+      "createdAt": "2026-08-06T12:45:58",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "por_cobrar",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 800.0,
+          "lineTotal": 105392.0
+        }
+      ],
+      "total": 105392.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12612,
+        "formaPago": "99",
+        "metodoPago": "PPD",
+        "subTotal": 90855.17,
+        "year": 2026,
+        "month": 8,
+        "day": 6
       }
     }
   ]
