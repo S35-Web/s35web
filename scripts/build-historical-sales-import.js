@@ -10,10 +10,17 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const DEFAULT_LINES = path.join(ROOT, 'content/panel/analysis/notas_lineas_20260921_151210.csv');
+const DEFAULT_RECEIPTS = path.join(ROOT, 'content/panel/analysis/notas_recibos_20260921_151210.csv');
 const MAP_PATH = path.join(ROOT, 'content/panel/product-name-map.json');
 const OUT_PATH = path.join(ROOT, 'public/colaboradores/data/historical-sales-import.json');
 
+/** Nombres conocidos de tiendas del panel viejo (store_id → etiqueta). */
+const STORE_NAMES = {
+  '32': 'Cotizador',
+};
+
 const linesPath = process.argv[2] || DEFAULT_LINES;
+const receiptsPath = process.argv[3] || DEFAULT_RECEIPTS;
 
 function parseCsvLine(line) {
   const out = [];
@@ -50,6 +57,25 @@ function readLinesCsv(filePath) {
   return fs.readFileSync(filePath, 'utf8').trim().split(/\r?\n/);
 }
 
+/** Map receipt_id → store_id from notas_recibos CSV (optional). */
+function readReceiptStores(filePath) {
+  const map = Object.create(null);
+  if (!filePath || !fs.existsSync(filePath)) return map;
+  const rows = fs.readFileSync(filePath, 'utf8').trim().split(/\r?\n/);
+  if (rows.length < 2) return map;
+  const header = parseCsvLine(rows[0]).map(function (h) { return String(h || '').trim().toLowerCase(); });
+  const iRid = header.indexOf('receipt_id');
+  const iStore = header.indexOf('store_id');
+  if (iRid < 0 || iStore < 0) return map;
+  for (let i = 1; i < rows.length; i++) {
+    const r = parseCsvLine(rows[i]);
+    const rid = String(r[iRid] || '').trim();
+    const sid = String(r[iStore] || '').trim();
+    if (rid && sid) map[rid] = sid;
+  }
+  return map;
+}
+
 /** ISO local (sin Z) para que el navegador respete hora de planta en vistas Día. */
 function createdAtLocal(dateStr, timeStr) {
   const d = String(dateStr || '').trim();
@@ -83,6 +109,7 @@ function build() {
   const buckets = new Set(mapData.buckets_non_sellable || []);
 
   const rows = readLinesCsv(linesPath);
+  const storeByReceipt = readReceiptStores(receiptsPath);
   const receipts = {};
   let skippedLines = 0;
   let skippedAmount = 0;
@@ -140,6 +167,24 @@ function build() {
       const y = Number(rcpt.date.slice(0, 4));
       const m = Number(rcpt.date.slice(5, 7));
       const d = Number(rcpt.date.slice(8, 10));
+      const storeIdRaw = storeByReceipt[rcpt.receiptId];
+      const storeId = storeIdRaw
+        ? (Number(storeIdRaw) || storeIdRaw)
+        : null;
+      const storeName = storeIdRaw && STORE_NAMES[String(storeIdRaw)]
+        ? STORE_NAMES[String(storeIdRaw)]
+        : null;
+      const meta = {
+        source: 'old-panel',
+        kind: 'receipt',
+        receiptId: Number(rcpt.receiptId) || rcpt.receiptId,
+        transactionId: rcpt.transactionId || null,
+        year: y,
+        month: m,
+        day: d,
+      };
+      if (storeId != null && storeId !== '') meta.storeId = storeId;
+      if (storeName) meta.storeName = storeName;
       return {
         id: 'sale-hist-rcpt-' + rcpt.receiptId,
         folio: 'HIST-R' + rcpt.receiptId,
@@ -150,29 +195,24 @@ function build() {
         items: merged,
         total: total,
         user: 'import-historico',
-        meta: {
-          source: 'old-panel',
-          kind: 'receipt',
-          receiptId: Number(rcpt.receiptId) || rcpt.receiptId,
-          transactionId: rcpt.transactionId || null,
-          year: y,
-          month: m,
-          day: d,
-        },
+        meta: meta,
       };
     });
 
   const payload = {
-    version: 3,
-    importVersion: 3,
-    note: 'Un ticket por nota de venta del panel viejo (fecha y hora reales). v3 reemplaza agregados mensuales v1/v2.',
+    version: 4,
+    importVersion: 4,
+    note: 'Un ticket por nota (fecha/hora reales). Incluye storeId; tienda 32 = Cotizador.',
     generatedAt: new Date().toISOString().slice(0, 10),
     source: path.basename(linesPath),
+    storeNames: STORE_NAMES,
     items: items,
     stats: {
       tickets: items.length,
       skippedLines: skippedLines,
       skippedAmount: round2(skippedAmount),
+      withStore: items.filter(function (it) { return it.meta && it.meta.storeId != null; }).length,
+      cotizador: items.filter(function (it) { return it.meta && it.meta.storeName === 'Cotizador'; }).length,
     },
   };
 
@@ -180,9 +220,10 @@ function build() {
   fs.writeFileSync(OUT_PATH, JSON.stringify(payload));
   const mb = (Buffer.byteLength(JSON.stringify(payload)) / (1024 * 1024)).toFixed(2);
   console.log(
-    'historical-sales-import.json v3:',
+    'historical-sales-import.json v4:',
     items.length, 'notas ·', mb, 'MB · skipped', skippedLines, 'lines ·',
-    round2(skippedAmount), 'MXN sin mapear'
+    round2(skippedAmount), 'MXN sin mapear ·',
+    'store', payload.stats.withStore, '· Cotizador', payload.stats.cotizador
   );
 }
 

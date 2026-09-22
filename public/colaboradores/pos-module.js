@@ -526,6 +526,20 @@
         return m2 ? m2[1] : '';
     }
 
+    function saleStoreName(sale) {
+        if (!sale || !sale.meta) return '';
+        const name = sale.meta.storeName;
+        if (name) return String(name);
+        return '';
+    }
+
+    function saleOriginLabel(sale) {
+        const store = saleStoreName(sale);
+        if (store) return store;
+        if (isHistoricalImportSale(sale)) return 'Histórico';
+        return sale.user || 'POS';
+    }
+
     function saleReceiptLabel(sale) {
         const rid = saleReceiptId(sale);
         if (rid) return 'Recibo ' + rid;
@@ -534,9 +548,10 @@
 
     function saleReceiptCellHtml(sale) {
         const rid = saleReceiptId(sale);
+        const store = saleStoreName(sale);
         if (rid) {
             return '<span class="hist-receipt">' + esc(rid) +
-                '<span class="sub">Recibo · panel viejo</span></span>';
+                '<span class="sub">' + esc(store ? store : 'Recibo · panel viejo') + '</span></span>';
         }
         return '<span class="hist-receipt">' + esc(sale.folio || '—') +
             (sale.folio ? '<span class="sub">Folio POS</span>' : '') + '</span>';
@@ -555,12 +570,16 @@
                 '</tr>';
         }).join('');
         const receiptLabel = saleReceiptLabel(sale);
+        const store = saleStoreName(sale);
         return '<div class="sale-note-brand">' +
             '<div class="mark">S-35<span>Midday</span></div>' +
             '<div class="folio">' + esc(receiptLabel) + '</div>' +
             '</div>' +
             '<div class="sale-note-meta">' +
             '<div class="row"><span class="k">Fecha</span><span class="v">' + esc(formatSaleDateTime(sale.createdAt)) + '</span></div>' +
+            (store
+                ? '<div class="row"><span class="k">Sucursal</span><span class="v">' + esc(store) + '</span></div>'
+                : '') +
             '<div class="row"><span class="k">Cliente</span><span class="v">' + esc(saleClientLabel(sale)) + '</span></div>' +
             '<div class="row"><span class="k">Pago</span><span class="v">' + esc(payLabel(sale.paymentMethod)) + '</span></div>' +
             '<div class="row"><span class="k">Facturación</span><span class="v">' + esc(billLabel(sale.billing)) + '</span></div>' +
@@ -2351,8 +2370,8 @@
     }
 
     /** Import synthetic tickets from historical-sales-import.json (v3: por nota). */
-    const HIST_SALES_FLAG = 's35_hist_sales_imported_v3';
-    const HIST_SALES_FLAG_LEGACY = ['s35_hist_sales_imported_v1', 's35_hist_sales_imported_v2'];
+    const HIST_SALES_FLAG = 's35_hist_sales_imported_v4';
+    const HIST_SALES_FLAG_LEGACY = ['s35_hist_sales_imported_v1', 's35_hist_sales_imported_v2', 's35_hist_sales_imported_v3'];
 
     function isHistoricalImportSale(s) {
         if (!s) return false;
@@ -2591,6 +2610,7 @@
             rid,
             rid ? ('recibo ' + rid) : '',
             rid ? ('hist-r' + rid) : '',
+            saleStoreName(s),
             s.folio,
             s.customer,
             s.paymentMethod,
@@ -2641,7 +2661,7 @@
                 const dateStr = isNaN(d) ? '' : d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
                 const itemsN = (s.items || []).reduce(function (n, it) { return n + (Number(it.qty) || 0); }, 0);
                 const clientLabel = saleClientLabel(s);
-                const origin = isHistoricalImportSale(s) ? 'Histórico' : (s.user || 'POS');
+                const origin = saleOriginLabel(s);
                 return '<tr>' +
                     '<td class="muted">' + esc(dateStr) + '</td>' +
                     '<td>' + saleReceiptCellHtml(s) + '</td>' +
@@ -4133,7 +4153,8 @@
                             '<div class="sub">' + esc(relativeSaleSub(d)) +
                             (saleReceiptId(s)
                                 ? ' · Recibo ' + esc(saleReceiptId(s))
-                                : (s.folio ? ' · ' + esc(s.folio) : '')) + '</div>' +
+                                : (s.folio ? ' · ' + esc(s.folio) : '')) +
+                            (saleStoreName(s) ? ' · ' + esc(saleStoreName(s)) : '') + '</div>' +
                         '</div>' +
                         '<div class="cortes-invoice-pills">' +
                             '<span class="cortes-pill">' + esc(payLabel(s.paymentMethod)) + '</span>' +
