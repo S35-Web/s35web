@@ -4103,14 +4103,22 @@
 
         const bounds = periodBounds(cortesPeriod, cortesOffset);
         const prevBounds = isHist ? null : periodBounds(cortesPeriod, cortesOffset - 1);
+        const comparePrevBounds = isHist
+            ? null
+            : likeForLikePrevBounds(cortesPeriod, bounds, cortesOffset);
+        const likeForLike = !isHist && cortesOffset === 0 && cortesPeriod !== 'historial';
         const analytics = salesForAnalytics();
         const list = salesInRange(analytics, bounds.start, bounds.end);
         const prevList = isHist ? [] : salesInRange(analytics, prevBounds.start, prevBounds.end);
+        const comparePrevList = isHist
+            ? []
+            : salesInRange(analytics, comparePrevBounds.start, comparePrevBounds.end);
         const total = sumTotals(list);
-        const prevTotal = sumTotals(prevList);
+        const prevTotal = sumTotals(comparePrevList);
         const tickets = list.length;
         const avg = tickets ? total / tickets : 0;
-        const dailyAvg = total / calendarDaysInBounds(bounds);
+        const daysBounds = likeForLike ? effectiveBoundsThroughNow(bounds) : bounds;
+        const dailyAvg = total / calendarDaysInBounds(daysBounds);
 
         const rangeLabel = document.getElementById('cortesRangeLabel');
         if (rangeLabel) {
@@ -4142,7 +4150,10 @@
         if (hintEl) {
             hintEl.textContent = isHist
                 ? 'Vista completa · todos los años con ventas'
-                : formatDelta(total, prevTotal);
+                : formatDelta(total, prevTotal, {
+                    likeForLike: likeForLike,
+                    period: cortesPeriod
+                });
         }
 
         const legendHost = document.querySelector('#cortes .cortes-chart-legend');
