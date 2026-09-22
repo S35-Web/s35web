@@ -728,6 +728,272 @@
         }
         return String(start.getFullYear());
     }
+
+    const MONTH_SHORT = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const WEEKDAY_SHORT = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+    let periodRangePickerCtx = null;
+    let periodRangePickerView = null;
+
+    function periodOffsetFromDate(period, target, now) {
+        now = now || new Date();
+        const t = new Date(target.getTime());
+        if (period === 'day') {
+            return Math.round((startOfLocalDay(t).getTime() - startOfLocalDay(now).getTime()) / 86400000);
+        }
+        if (period === 'week') {
+            return Math.round((startOfWeekMonday(t).getTime() - startOfWeekMonday(now).getTime()) / (7 * 86400000));
+        }
+        if (period === 'month') {
+            const base = startOfMonth(now);
+            return (t.getFullYear() - base.getFullYear()) * 12 + (t.getMonth() - base.getMonth());
+        }
+        if (period === 'year') {
+            return t.getFullYear() - now.getFullYear();
+        }
+        return 0;
+    }
+
+    function isFuturePeriodDate(period, target, now) {
+        return periodOffsetFromDate(period, target, now) > 0;
+    }
+
+    function sameLocalDay(a, b) {
+        return startOfLocalDay(a).getTime() === startOfLocalDay(b).getTime();
+    }
+
+    function sameLocalMonth(a, b) {
+        return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
+    }
+
+    function getPeriodRangeContext(kind) {
+        if (kind === 'pdSales') {
+            return {
+                kind: 'pdSales',
+                period: pdSalesPeriod,
+                offset: pdSalesOffset,
+                setOffset: function (next) {
+                    pdSalesOffset = next;
+                    if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
+                },
+                isDisabled: pdSalesPeriod === 'historial'
+            };
+        }
+        return {
+            kind: 'cortes',
+            period: cortesPeriod,
+            offset: cortesOffset,
+            setOffset: function (next) {
+                cortesOffset = next;
+                renderCortes();
+            },
+            isDisabled: cortesPeriod === 'historial'
+        };
+    }
+
+    function closePeriodRangePicker() {
+        const pop = document.getElementById('periodRangePopover');
+        if (pop) pop.hidden = true;
+        document.querySelectorAll('[data-period-range-trigger]').forEach(function (btn) {
+            btn.setAttribute('aria-expanded', 'false');
+        });
+        periodRangePickerCtx = null;
+        periodRangePickerView = null;
+    }
+
+    function positionPeriodRangePicker(trigger) {
+        const pop = document.getElementById('periodRangePopover');
+        if (!pop || !trigger) return;
+        pop.hidden = false;
+        const r = trigger.getBoundingClientRect();
+        const w = pop.offsetWidth || 240;
+        const left = Math.max(8, Math.min(r.left + r.width / 2 - w / 2, window.innerWidth - w - 8));
+        const top = r.bottom + 6;
+        const maxTop = window.innerHeight - pop.offsetHeight - 8;
+        pop.style.left = left + 'px';
+        pop.style.top = Math.min(top, maxTop) + 'px';
+    }
+
+    function applyPeriodRangeSelection(targetDate) {
+        if (!periodRangePickerCtx) return;
+        const ctx = periodRangePickerCtx;
+        if (isFuturePeriodDate(ctx.period, targetDate)) return;
+        ctx.setOffset(periodOffsetFromDate(ctx.period, targetDate));
+        closePeriodRangePicker();
+    }
+
+    function renderPeriodRangePickerMonth(ctx, bounds) {
+        const now = new Date();
+        const viewYear = periodRangePickerView.year;
+        const selected = bounds.start;
+        let html = '<div class="prp-head">' +
+            '<button type="button" class="prp-nav" data-prp-nav="year-prev" aria-label="Año anterior"><i class="fa-solid fa-chevron-left"></i></button>' +
+            '<span class="prp-title">' + esc(String(viewYear)) + '</span>' +
+            '<button type="button" class="prp-nav" data-prp-nav="year-next" aria-label="Año siguiente"><i class="fa-solid fa-chevron-right"></i></button>' +
+            '</div><div class="prp-grid months">';
+        for (let m = 0; m < 12; m++) {
+            const d = new Date(viewYear, m, 1);
+            const future = isFuturePeriodDate('month', d, now);
+            const active = sameLocalMonth(d, selected);
+            html += '<button type="button" class="prp-opt' + (active ? ' active' : '') + '"' +
+                (future ? ' disabled' : '') +
+                ' data-prp-month="' + m + '">' + esc(MONTH_SHORT[m]) + '</button>';
+        }
+        return html + '</div>';
+    }
+
+    function renderPeriodRangePickerYear(ctx, bounds) {
+        const span = salesYearSpan(salesForAnalytics());
+        const selectedYear = bounds.start.getFullYear();
+        const nowY = new Date().getFullYear();
+        let html = '<div class="prp-head"><span class="prp-title">Año</span></div><div class="prp-grid years">';
+        for (let y = span.max; y >= span.min; y--) {
+            const d = new Date(y, 0, 1);
+            const future = y > nowY;
+            const active = y === selectedYear;
+            html += '<button type="button" class="prp-opt' + (active ? ' active' : '') + '"' +
+                (future ? ' disabled' : '') +
+                ' data-prp-year="' + y + '">' + esc(String(y)) + '</button>';
+        }
+        return html + '</div>';
+    }
+
+    function renderPeriodRangePickerCalendar(ctx, bounds) {
+        const now = new Date();
+        const viewYear = periodRangePickerView.year;
+        const viewMonth = periodRangePickerView.month;
+        const selectedStart = bounds.start;
+        const selectedEnd = addDays(bounds.end, -1);
+        const monthStart = new Date(viewYear, viewMonth, 1);
+        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+        const lead = (monthStart.getDay() + 6) % 7;
+        const title = monthStart.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+        let html = '<div class="prp-head">' +
+            '<button type="button" class="prp-nav" data-prp-nav="month-prev" aria-label="Mes anterior"><i class="fa-solid fa-chevron-left"></i></button>' +
+            '<span class="prp-title">' + esc(title) + '</span>' +
+            '<button type="button" class="prp-nav" data-prp-nav="month-next" aria-label="Mes siguiente"><i class="fa-solid fa-chevron-right"></i></button>' +
+            '</div><div class="prp-grid weekdays">';
+        WEEKDAY_SHORT.forEach(function (wd) {
+            html += '<span class="prp-wd">' + wd + '</span>';
+        });
+        html += '</div><div class="prp-grid days">';
+        for (let i = 0; i < lead; i++) {
+            html += '<span class="prp-opt empty"></span>';
+        }
+        for (let day = 1; day <= daysInMonth; day++) {
+            const d = new Date(viewYear, viewMonth, day);
+            const future = isFuturePeriodDate(ctx.period, d, now);
+            let cls = 'prp-opt';
+            if (ctx.period === 'day' && sameLocalDay(d, selectedStart)) cls += ' active';
+            if (ctx.period === 'week') {
+                if (d >= selectedStart && d <= selectedEnd) cls += ' in-week';
+                if (sameLocalDay(d, selectedStart)) cls += ' active';
+            }
+            html += '<button type="button" class="' + cls + '"' +
+                (future ? ' disabled' : '') +
+                ' data-prp-day="' + day + '">' + esc(String(day)) + '</button>';
+        }
+        return html + '</div>';
+    }
+
+    function renderPeriodRangePickerContent() {
+        const pop = document.getElementById('periodRangePopover');
+        if (!pop || !periodRangePickerCtx) return;
+        const ctx = periodRangePickerCtx;
+        const bounds = periodBounds(ctx.period, ctx.offset);
+        if (!periodRangePickerView) {
+            periodRangePickerView = { year: bounds.start.getFullYear(), month: bounds.start.getMonth() };
+        }
+        if (ctx.period === 'month') {
+            pop.innerHTML = renderPeriodRangePickerMonth(ctx, bounds);
+        } else if (ctx.period === 'year') {
+            pop.innerHTML = renderPeriodRangePickerYear(ctx, bounds);
+        } else {
+            pop.innerHTML = renderPeriodRangePickerCalendar(ctx, bounds);
+        }
+    }
+
+    function openPeriodRangePicker(trigger) {
+        const kind = trigger.getAttribute('data-period-range-trigger');
+        if (!kind) return;
+        const ctx = getPeriodRangeContext(kind);
+        if (ctx.isDisabled) return;
+        const pop = document.getElementById('periodRangePopover');
+        if (!pop) return;
+        if (periodRangePickerCtx && periodRangePickerCtx.kind === kind && !pop.hidden) {
+            closePeriodRangePicker();
+            return;
+        }
+        closePeriodRangePicker();
+        periodRangePickerCtx = ctx;
+        const bounds = periodBounds(ctx.period, ctx.offset);
+        periodRangePickerView = { year: bounds.start.getFullYear(), month: bounds.start.getMonth() };
+        renderPeriodRangePickerContent();
+        trigger.setAttribute('aria-expanded', 'true');
+        positionPeriodRangePicker(trigger);
+    }
+
+    function bindPeriodRangePicker() {
+        if (bindPeriodRangePicker.done) return;
+        bindPeriodRangePicker.done = true;
+        document.addEventListener('click', function (e) {
+            const trigger = e.target.closest('[data-period-range-trigger]');
+            if (trigger) {
+                e.preventDefault();
+                e.stopPropagation();
+                openPeriodRangePicker(trigger);
+                return;
+            }
+            const pop = document.getElementById('periodRangePopover');
+            if (!pop || pop.hidden) return;
+            const inside = e.target.closest('#periodRangePopover');
+            if (!inside) {
+                closePeriodRangePicker();
+                return;
+            }
+            const nav = e.target.closest('[data-prp-nav]');
+            if (nav && periodRangePickerView) {
+                const action = nav.getAttribute('data-prp-nav');
+                if (action === 'year-prev') periodRangePickerView.year -= 1;
+                else if (action === 'year-next') periodRangePickerView.year += 1;
+                else if (action === 'month-prev') {
+                    periodRangePickerView.month -= 1;
+                    if (periodRangePickerView.month < 0) {
+                        periodRangePickerView.month = 11;
+                        periodRangePickerView.year -= 1;
+                    }
+                } else if (action === 'month-next') {
+                    periodRangePickerView.month += 1;
+                    if (periodRangePickerView.month > 11) {
+                        periodRangePickerView.month = 0;
+                        periodRangePickerView.year += 1;
+                    }
+                }
+                renderPeriodRangePickerContent();
+                return;
+            }
+            const monthBtn = e.target.closest('[data-prp-month]');
+            if (monthBtn && periodRangePickerCtx) {
+                const m = Number(monthBtn.getAttribute('data-prp-month'));
+                applyPeriodRangeSelection(new Date(periodRangePickerView.year, m, 1));
+                return;
+            }
+            const yearBtn = e.target.closest('[data-prp-year]');
+            if (yearBtn && periodRangePickerCtx) {
+                applyPeriodRangeSelection(new Date(Number(yearBtn.getAttribute('data-prp-year')), 0, 1));
+                return;
+            }
+            const dayBtn = e.target.closest('[data-prp-day]');
+            if (dayBtn && periodRangePickerCtx && periodRangePickerView) {
+                const d = new Date(periodRangePickerView.year, periodRangePickerView.month, Number(dayBtn.getAttribute('data-prp-day')));
+                applyPeriodRangeSelection(d);
+            }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closePeriodRangePicker();
+        });
+        window.addEventListener('resize', closePeriodRangePicker);
+    }
+
     function salesInRange(list, start, end) {
         return list.filter(function (s) {
             const t = new Date(s.createdAt).getTime();
@@ -3053,7 +3319,15 @@
         const avg = tickets ? total / tickets : 0;
 
         const rangeLabel = document.getElementById('cortesRangeLabel');
-        if (rangeLabel) rangeLabel.textContent = formatPeriodLabel(cortesPeriod, bounds.start, bounds.end);
+        if (rangeLabel) {
+            rangeLabel.textContent = formatPeriodLabel(cortesPeriod, bounds.start, bounds.end);
+            rangeLabel.disabled = isHist;
+            rangeLabel.title = isHist ? 'Historial completo' : 'Elegir ' + (
+                cortesPeriod === 'day' ? 'día' :
+                cortesPeriod === 'week' ? 'semana' :
+                cortesPeriod === 'month' ? 'mes' : 'año'
+            );
+        }
 
         const nextBtn = document.getElementById('cortesNext');
         if (nextBtn) nextBtn.disabled = isHist || cortesOffset >= 0;
@@ -3352,6 +3626,7 @@
     }
 
     function bind() {
+        bindPeriodRangePicker();
         const chips = document.getElementById('posFamilyChips');
         if (chips) {
             chips.addEventListener('click', function (e) {
@@ -3581,6 +3856,7 @@
                 if (!btn) return;
                 const next = btn.getAttribute('data-period');
                 if (!next || next === cortesPeriod) return;
+                closePeriodRangePicker();
                 cortesPeriod = next;
                 cortesOffset = 0;
                 renderCortes();
@@ -4086,6 +4362,7 @@
             if (periodBtn) {
                 const next = periodBtn.getAttribute('data-pd-sales-period');
                 if (['day', 'week', 'month', 'year', 'historial'].indexOf(next) < 0) return;
+                closePeriodRangePicker();
                 pdSalesPeriod = next;
                 pdSalesOffset = 0;
                 renderProductSalesAnalytics(pdSalesSlug);
@@ -4180,7 +4457,10 @@
             '<div class="cortes-range pd-sales-range">' +
             '<button type="button" class="cortes-nav-btn" data-pd-sales-prev title="Periodo anterior" aria-label="Periodo anterior"' +
             (isHist ? ' disabled' : '') + '><i class="fa-solid fa-chevron-left"></i></button>' +
-            '<span class="cortes-range-label" id="pdSalesRangeLabel">' + esc(formatPeriodLabel(pdSalesPeriod, bounds.start, bounds.end)) + '</span>' +
+            '<button type="button" class="cortes-range-label" id="pdSalesRangeLabel" data-period-range-trigger="pdSales"' +
+            (isHist ? ' disabled' : ' aria-haspopup="dialog" aria-expanded="false"') +
+            ' title="' + esc(isHist ? 'Historial completo' : 'Elegir periodo') + '">' +
+            esc(formatPeriodLabel(pdSalesPeriod, bounds.start, bounds.end)) + '</button>' +
             '<button type="button" class="cortes-nav-btn" data-pd-sales-next title="Periodo siguiente" aria-label="Periodo siguiente"' +
             (canGoNext ? '' : ' disabled') + '><i class="fa-solid fa-chevron-right"></i></button>' +
             '<button type="button" class="cortes-today-btn" data-pd-sales-reset' + (isHist ? ' disabled' : '') + '>Actual</button>' +

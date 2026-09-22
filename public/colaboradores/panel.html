@@ -2484,13 +2484,109 @@
             align-items: center;
             gap: 6px;
         }
+        .cortes-range-picker-wrap { position: relative; }
         .cortes-range-label {
             min-width: 160px;
             text-align: center;
             font-size: 13px;
             font-weight: 500;
             color: var(--text);
-            padding: 0 4px;
+            padding: 4px 8px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            cursor: pointer;
+        }
+        .cortes-range-label:hover:not(:disabled) { background: var(--hover); }
+        .cortes-range-label:disabled { cursor: default; opacity: .55; }
+        .cortes-range-label[aria-expanded="true"] {
+            background: var(--hover);
+            box-shadow: inset 0 0 0 1px var(--border);
+        }
+        .period-range-popover {
+            position: fixed;
+            z-index: 220;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-modal);
+            padding: 10px 12px 12px;
+            min-width: 232px;
+            max-width: 280px;
+        }
+        .period-range-popover[hidden] { display: none !important; }
+        .period-range-popover .prp-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .period-range-popover .prp-title {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .period-range-popover .prp-nav {
+            width: 28px;
+            height: 28px;
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--text);
+            cursor: pointer;
+        }
+        .period-range-popover .prp-nav:hover { background: var(--hover); }
+        .period-range-popover .prp-nav:disabled { opacity: .35; cursor: not-allowed; }
+        .period-range-popover .prp-grid {
+            display: grid;
+            gap: 4px;
+        }
+        .period-range-popover .prp-grid.months { grid-template-columns: repeat(3, 1fr); }
+        .period-range-popover .prp-grid.years { grid-template-columns: repeat(3, 1fr); max-height: 220px; overflow: auto; }
+        .period-range-popover .prp-grid.weekdays {
+            grid-template-columns: repeat(7, 1fr);
+            margin-bottom: 2px;
+        }
+        .period-range-popover .prp-grid.days { grid-template-columns: repeat(7, 1fr); }
+        .period-range-popover .prp-wd {
+            text-align: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            padding: 2px 0;
+        }
+        .period-range-popover .prp-opt {
+            min-height: 30px;
+            padding: 4px 6px;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .period-range-popover .prp-opt:hover:not(:disabled) { background: var(--hover); }
+        .period-range-popover .prp-opt.active {
+            background: var(--accent-soft, rgba(59, 130, 246, .12));
+            border-color: var(--accent, #3b82f6);
+            font-weight: 600;
+        }
+        .period-range-popover .prp-opt.in-week {
+            background: var(--bg-soft);
+        }
+        .period-range-popover .prp-opt:disabled {
+            opacity: .32;
+            cursor: not-allowed;
+        }
+        .period-range-popover .prp-opt.empty {
+            visibility: hidden;
+            pointer-events: none;
         }
         .cortes-nav-btn {
             width: 32px; height: 32px;
@@ -3685,7 +3781,9 @@
                         </div>
                         <div class="cortes-range">
                             <button type="button" class="cortes-nav-btn" id="cortesPrev" title="Periodo anterior" aria-label="Periodo anterior"><i class="fa-solid fa-chevron-left"></i></button>
-                            <span class="cortes-range-label" id="cortesRangeLabel">Hoy</span>
+                            <div class="cortes-range-picker-wrap">
+                                <button type="button" class="cortes-range-label" id="cortesRangeLabel" data-period-range-trigger="cortes" aria-haspopup="dialog" aria-expanded="false" title="Elegir periodo">Hoy</button>
+                            </div>
                             <button type="button" class="cortes-nav-btn" id="cortesNext" title="Periodo siguiente" aria-label="Periodo siguiente"><i class="fa-solid fa-chevron-right"></i></button>
                             <button type="button" class="cortes-today-btn" id="cortesReset">Actual</button>
                         </div>
@@ -8786,6 +8884,7 @@
     if (goCortes) goCortes.addEventListener('click', function (e) { e.preventDefault(); showSection('cortes'); });
 
     </script>
+    <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
     <script src="/colaboradores/pos-module.js"></script>
 </body>
 </html>
