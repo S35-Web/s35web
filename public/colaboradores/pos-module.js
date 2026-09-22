@@ -365,7 +365,17 @@
     function payLabel(v) {
         if (v === 'tarjeta') return 'Tarjeta';
         if (v === 'transferencia') return 'Transferencia';
+        if (v === 'por_cobrar') return 'Por cobrar';
         return 'Efectivo';
+    }
+    function isPendingCollection(sale) {
+        return !!(sale && (sale.paymentMethod || '') === 'por_cobrar');
+    }
+    function payMethodKeys() {
+        return ['efectivo', 'tarjeta', 'transferencia', 'por_cobrar'];
+    }
+    function isValidPayMethod(v) {
+        return payMethodKeys().indexOf(v) >= 0;
     }
     function billLabel(v) {
         return v === 'facturado' ? 'Facturado' : 'Sin facturar';
@@ -778,7 +788,7 @@
             '<label class="span-2">Cliente' + saleNoteClientPickerHtml(sale) + '</label>' +
             '<label class="span-2">Nombre en nota (si no hay cliente)<input type="text" id="sneCustomer" value="' + esc(sale.customer || '') + '" placeholder="Mostrador o nombre libre"></label>' +
             '<label>Pago<select id="snePay">' +
-            [['efectivo', 'Efectivo'], ['tarjeta', 'Tarjeta'], ['transferencia', 'Transferencia']].map(function (p) {
+            [['efectivo', 'Efectivo'], ['tarjeta', 'Tarjeta'], ['transferencia', 'Transferencia'], ['por_cobrar', 'Por cobrar']].map(function (p) {
                 return '<option value="' + p[0] + '"' + (pay === p[0] ? ' selected' : '') + '>' + p[1] + '</option>';
             }).join('') +
             '</select></label>' +
@@ -858,7 +868,7 @@
             toast('Agrega al menos una línea');
             return null;
         }
-        if (['efectivo', 'tarjeta', 'transferencia'].indexOf(pay) < 0) {
+        if (!isValidPayMethod(pay)) {
             toast('Método de pago inválido');
             return null;
         }
@@ -958,6 +968,7 @@
         updatePosKpis();
         renderDashboardRadar();
         toast('Ticket actualizado · ' + saleReceiptLabel(sale));
+        renderCobranza();
     }
 
     function syncSaleNoteDeleteVisibility() {
@@ -2385,6 +2396,7 @@
         if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
         renderDashboardRadar();
         renderHistory();
+        renderCobranza();
     }
 
     function mergeHistoricalSalesById(rows, opts) {
@@ -3863,7 +3875,7 @@
         if (!cart.length) return;
         const paymentMethod = selectedPay();
         const billing = selectedBilling();
-        if (['tarjeta', 'efectivo', 'transferencia'].indexOf(paymentMethod) < 0) {
+        if (!isValidPayMethod(paymentMethod)) {
             toast('Elige método de pago');
             return;
         }
@@ -3958,6 +3970,7 @@
         if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
         toast('Venta ' + ticket.folio + ' · ' + payLabel(paymentMethod) + ' · ' + billLabel(billing));
         openSaleNoteModal(ticket);
+        renderCobranza();
     }
 
     function renderBreakdownRows(containerId, barId, rows, total) {
@@ -4041,7 +4054,7 @@
 
         renderCortesChart(cortesPeriod, bounds, list, prevBounds, prevList);
 
-        const payKeys = ['efectivo', 'tarjeta', 'transferencia'];
+        const payKeys = payMethodKeys();
         const payRows = payKeys.map(function (k) {
             const amount = list.reduce(function (n, s) {
                 return n + ((s.paymentMethod || 'efectivo') === k ? (Number(s.total) || 0) : 0);
@@ -4054,9 +4067,11 @@
             { key: 'facturado_efectivo', bill: 'facturado', pay: 'efectivo', label: 'Facturado · efectivo' },
             { key: 'facturado_tarjeta', bill: 'facturado', pay: 'tarjeta', label: 'Facturado · tarjeta' },
             { key: 'facturado_transferencia', bill: 'facturado', pay: 'transferencia', label: 'Facturado · transferencia' },
+            { key: 'facturado_por_cobrar', bill: 'facturado', pay: 'por_cobrar', label: 'Facturado · por cobrar' },
             { key: 'sin_facturar_efectivo', bill: 'sin_facturar', pay: 'efectivo', label: 'Sin facturar · efectivo' },
             { key: 'sin_facturar_tarjeta', bill: 'sin_facturar', pay: 'tarjeta', label: 'Sin facturar · tarjeta' },
-            { key: 'sin_facturar_transferencia', bill: 'sin_facturar', pay: 'transferencia', label: 'Sin facturar · transferencia' }
+            { key: 'sin_facturar_transferencia', bill: 'sin_facturar', pay: 'transferencia', label: 'Sin facturar · transferencia' },
+            { key: 'sin_facturar_por_cobrar', bill: 'sin_facturar', pay: 'por_cobrar', label: 'Sin facturar · por cobrar' }
         ];
         const billRows = billCombos.map(function (b) {
             const amount = list.reduce(function (n, s) {
@@ -5307,7 +5322,232 @@
         });
     }
 
-    // —— Admin: gestión de códigos (sección #promos) ——
+    // —— Cobranza (notas por cobrar) ——
+    let cobranzaActiveKey = null;
+
+    function pendingCollectionSales() {
+        return salesForAnalytics().filter(isPendingCollection);
+    }
+
+    function cobranzaClientKey(sale) {
+        if (sale.clientId) return 'id:' + sale.clientId;
+        const name = String(sale.customer || saleClientLabel(sale) || 'Mostrador').trim().toLowerCase();
+        return 'name:' + name;
+    }
+
+    function groupPendingByClient() {
+        const map = {};
+        pendingCollectionSales().forEach(function (s) {
+            const key = cobranzaClientKey(s);
+            if (!map[key]) {
+                map[key] = {
+                    key: key,
+                    clientId: s.clientId || null,
+                    name: saleClientLabel(s),
+                    amount: 0,
+                    tickets: [],
+                };
+            }
+            map[key].amount += Number(s.total) || 0;
+            map[key].tickets.push(s);
+        });
+        Object.keys(map).forEach(function (k) {
+            map[k].tickets.sort(function (a, b) {
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            });
+        });
+        return Object.keys(map).map(function (k) { return map[k]; })
+            .sort(function (a, b) { return b.amount - a.amount || a.name.localeCompare(b.name, 'es'); });
+    }
+
+    function updateCobranzaCollectBar() {
+        const boxes = document.querySelectorAll('#cobranzaDetailBody input[data-cobranza-sale]:checked');
+        let total = 0;
+        boxes.forEach(function (cb) {
+            total += Number(cb.getAttribute('data-amount')) || 0;
+        });
+        const n = boxes.length;
+        const totalEl = document.getElementById('cobranzaSelectedTotal');
+        const countEl = document.getElementById('cobranzaSelectedCount');
+        const btn = document.getElementById('cobranzaCollectBtn');
+        if (totalEl) totalEl.textContent = money(total);
+        if (countEl) countEl.textContent = n + (n === 1 ? ' nota' : ' notas');
+        if (btn) btn.disabled = n === 0;
+        const all = document.getElementById('cobranzaSelectAll');
+        const allBoxes = document.querySelectorAll('#cobranzaDetailBody input[data-cobranza-sale]');
+        if (all && allBoxes.length) {
+            all.checked = n === allBoxes.length;
+            all.indeterminate = n > 0 && n < allBoxes.length;
+        }
+    }
+
+    function openCobranzaDetail(key) {
+        const groups = groupPendingByClient();
+        const group = groups.filter(function (g) { return g.key === key; })[0];
+        const card = document.getElementById('cobranzaDetailCard');
+        const body = document.getElementById('cobranzaDetailBody');
+        const title = document.getElementById('cobranzaDetailTitle');
+        const sub = document.getElementById('cobranzaDetailSub');
+        if (!card || !body || !group) return;
+        cobranzaActiveKey = key;
+        if (title) title.textContent = group.name;
+        if (sub) {
+            sub.textContent = group.tickets.length + ' nota' + (group.tickets.length === 1 ? '' : 's') +
+                ' · saldo ' + money(group.amount);
+        }
+        body.innerHTML = group.tickets.map(function (s) {
+            const d = new Date(s.createdAt);
+            const dateStr = isNaN(d) ? '' : d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+            return '<tr>' +
+                '<td><input type="checkbox" data-cobranza-sale="' + esc(s.id) + '" data-amount="' + esc(String(Number(s.total) || 0)) + '"></td>' +
+                '<td class="muted">' + esc(dateStr) + '</td>' +
+                '<td>' + saleReceiptCellHtml(s) + '</td>' +
+                '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing)) + '</span></td>' +
+                '<td class="num">' + money(s.total) + '</td>' +
+                '</tr>';
+        }).join('');
+        card.hidden = false;
+        const all = document.getElementById('cobranzaSelectAll');
+        if (all) {
+            all.checked = false;
+            all.indeterminate = false;
+        }
+        updateCobranzaCollectBar();
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function closeCobranzaDetail() {
+        cobranzaActiveKey = null;
+        const card = document.getElementById('cobranzaDetailCard');
+        if (card) card.hidden = true;
+        const body = document.getElementById('cobranzaDetailBody');
+        if (body) body.innerHTML = '';
+    }
+
+    function collectSelectedCobranza() {
+        const payEl = document.getElementById('cobranzaCollectPay');
+        const pay = payEl ? payEl.value : 'efectivo';
+        if (!isValidPayMethod(pay) || pay === 'por_cobrar') {
+            toast('Elige efectivo, tarjeta o transferencia');
+            return;
+        }
+        const boxes = document.querySelectorAll('#cobranzaDetailBody input[data-cobranza-sale]:checked');
+        if (!boxes.length) {
+            toast('Selecciona al menos una nota');
+            return;
+        }
+        const ids = [];
+        boxes.forEach(function (cb) { ids.push(cb.getAttribute('data-cobranza-sale')); });
+        let amount = 0;
+        ids.forEach(function (id) {
+            const sale = saleById(id);
+            if (!sale || !isPendingCollection(sale)) return;
+            amount += Number(sale.total) || 0;
+            sale.paymentMethod = pay;
+            if (!sale.meta) sale.meta = {};
+            sale.meta.collectedAt = new Date().toISOString();
+            sale.meta.collectedPay = pay;
+            persistSaleRecord(sale);
+        });
+        toast('Cobro registrado · ' + money(amount) + ' · ' + payLabel(pay));
+        const prevKey = cobranzaActiveKey;
+        renderCobranza();
+        renderHistory();
+        renderCortes();
+        updatePosKpis();
+        renderDashboardRadar();
+        if (prevKey) {
+            const still = groupPendingByClient().some(function (g) { return g.key === prevKey; });
+            if (still) openCobranzaDetail(prevKey);
+            else closeCobranzaDetail();
+        }
+    }
+
+    function renderCobranza() {
+        const body = document.getElementById('cobranzaBody');
+        if (!body) return;
+        const q = (document.getElementById('cobranzaSearch') && document.getElementById('cobranzaSearch').value || '').toLowerCase().trim();
+        let groups = groupPendingByClient();
+        if (q) {
+            groups = groups.filter(function (g) {
+                if (String(g.name || '').toLowerCase().indexOf(q) >= 0) return true;
+                return g.tickets.some(function (s) {
+                    const rid = saleReceiptId(s);
+                    return (rid && rid.indexOf(q) >= 0) ||
+                        String(s.folio || '').toLowerCase().indexOf(q) >= 0;
+                });
+            });
+        }
+        const allPending = pendingCollectionSales();
+        const totalAmount = allPending.reduce(function (n, s) { return n + (Number(s.total) || 0); }, 0);
+        const totalEl = document.getElementById('cobranzaTotal');
+        const ticketsEl = document.getElementById('cobranzaTickets');
+        const clientsEl = document.getElementById('cobranzaClients');
+        if (totalEl) totalEl.textContent = money(totalAmount);
+        if (ticketsEl) ticketsEl.textContent = String(allPending.length);
+        if (clientsEl) clientsEl.textContent = String(groupPendingByClient().length);
+
+        if (!groups.length) {
+            body.innerHTML = '<tr><td colspan="4" class="empty">' +
+                (q ? 'Sin resultados' : 'Nadie debe · no hay notas por cobrar') +
+                '</td></tr>';
+            if (cobranzaActiveKey) closeCobranzaDetail();
+            return;
+        }
+        body.innerHTML = groups.map(function (g) {
+            return '<tr data-cobranza-key="' + esc(g.key) + '">' +
+                '<td>' + esc(g.name) + '</td>' +
+                '<td class="num">' + g.tickets.length + '</td>' +
+                '<td class="num">' + money(g.amount) + '</td>' +
+                '<td><button type="button" class="btn" data-cobranza-open="' + esc(g.key) + '">Ver notas</button></td>' +
+                '</tr>';
+        }).join('');
+        if (cobranzaActiveKey && !groups.some(function (g) { return g.key === cobranzaActiveKey; })) {
+            closeCobranzaDetail();
+        } else if (cobranzaActiveKey) {
+            openCobranzaDetail(cobranzaActiveKey);
+        }
+    }
+
+    function bindCobranza() {
+        if (bindCobranza.done) return;
+        bindCobranza.done = true;
+        const search = document.getElementById('cobranzaSearch');
+        if (search) {
+            search.addEventListener('input', function () {
+                renderCobranza();
+            });
+        }
+        const body = document.getElementById('cobranzaBody');
+        if (body) {
+            body.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-cobranza-open]');
+                if (!btn) return;
+                openCobranzaDetail(btn.getAttribute('data-cobranza-open'));
+            });
+        }
+        const detailBody = document.getElementById('cobranzaDetailBody');
+        if (detailBody) {
+            detailBody.addEventListener('change', function (e) {
+                if (e.target && e.target.matches('input[data-cobranza-sale]')) {
+                    updateCobranzaCollectBar();
+                }
+            });
+        }
+        const selectAll = document.getElementById('cobranzaSelectAll');
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                document.querySelectorAll('#cobranzaDetailBody input[data-cobranza-sale]').forEach(function (cb) {
+                    cb.checked = selectAll.checked;
+                });
+                updateCobranzaCollectBar();
+            });
+        }
+        const closeBtn = document.getElementById('cobranzaDetailClose');
+        if (closeBtn) closeBtn.addEventListener('click', closeCobranzaDetail);
+        const collectBtn = document.getElementById('cobranzaCollectBtn');
+        if (collectBtn) collectBtn.addEventListener('click', collectSelectedCobranza);
+    }
     function renderPromosAdmin() {
         const body = document.getElementById('promosTableBody');
         if (!body) return;
@@ -5685,6 +5925,8 @@
             renderPrices();
         } else if (id === 'promos') {
             renderPromosAdmin();
+        } else if (id === 'cobranza') {
+            renderCobranza();
         }
     }
 
@@ -5698,6 +5940,7 @@
         ensurePromoSeeds();
         ensureHistoricalSalesImport();
         bind();
+        bindCobranza();
         renderChips();
         renderProducts();
         fillClientSelect();
@@ -5706,6 +5949,7 @@
         renderHistory();
         renderCortes();
         renderClients();
+        renderCobranza();
         renderPriceChips();
         renderPrices();
         renderPromosAdmin();
@@ -5739,6 +5983,7 @@
             renderDashboardRadar: renderDashboardRadar,
             openCortesPeriod: openCortesPeriod,
             importHistoricalSales: importHistoricalSales,
+            renderCobranza: renderCobranza,
             baseUnitPrice: baseUnitPrice,
             unitFor: unitFor,
             getPromoCodes: function () { return promoCodes.slice(); },

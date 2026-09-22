@@ -1649,6 +1649,11 @@
             gap: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;
         }
         .seg.two { grid-template-columns: 1fr 1fr; }
+        .seg.seg-pay { grid-template-columns: 1fr 1fr; }
+        .seg.seg-pay label { font-size: 11px; padding: 8px 4px; }
+        .seg.seg-pay label:nth-child(2) { border-right: none; }
+        .seg.seg-pay label:nth-child(3),
+        .seg.seg-pay label:nth-child(4) { border-top: 1px solid var(--border); }
         .seg label {
             display: grid; place-items: center; padding: 8px 6px;
             font-size: 12px; cursor: pointer; border-right: 1px solid var(--border);
@@ -3384,14 +3389,17 @@
         .cortes-bar .seg-efectivo { background: var(--text); }
         .cortes-bar .seg-tarjeta { background: #737373; }
         .cortes-bar .seg-transferencia { background: #a3a3a3; }
+        .cortes-bar .seg-por_cobrar { background: #b45309; }
         .cortes-bar .seg-facturado { background: var(--text); }
         .cortes-bar .seg-sin_facturar { background: #a3a3a3; }
         .cortes-bar .seg-facturado_efectivo { background: #171717; }
         .cortes-bar .seg-facturado_tarjeta { background: #404040; }
         .cortes-bar .seg-facturado_transferencia { background: #737373; }
+        .cortes-bar .seg-facturado_por_cobrar { background: #92400e; }
         .cortes-bar .seg-sin_facturar_efectivo { background: #a3a3a3; }
         .cortes-bar .seg-sin_facturar_tarjeta { background: #c4c4c4; }
         .cortes-bar .seg-sin_facturar_transferencia { background: #d4d4d4; }
+        .cortes-bar .seg-sin_facturar_por_cobrar { background: #d97706; }
         .cortes-rows { display: flex; flex-direction: column; gap: 8px; }
         .cortes-row {
             display: flex;
@@ -3416,12 +3424,44 @@
         .cortes-row .dot.tarjeta { background: #737373; }
         .cortes-row .dot.transferencia,
         .cortes-row .dot.sin_facturar { background: #a3a3a3; }
+        .cortes-row .dot.por_cobrar,
+        .cortes-row .dot.facturado_por_cobrar { background: #b45309; }
+        .cortes-row .dot.sin_facturar_por_cobrar { background: #d97706; }
         .cortes-row .dot.facturado_efectivo { background: #171717; }
         .cortes-row .dot.facturado_tarjeta { background: #404040; }
         .cortes-row .dot.facturado_transferencia { background: #737373; }
         .cortes-row .dot.sin_facturar_efectivo { background: #a3a3a3; }
         .cortes-row .dot.sin_facturar_tarjeta { background: #c4c4c4; }
         .cortes-row .dot.sin_facturar_transferencia { background: #d4d4d4; }
+        .cobranza-collect {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            border-top: 1px solid var(--border);
+        }
+        .cobranza-collect-sum {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            font-size: 13px;
+        }
+        .cobranza-collect-sum strong {
+            font-size: 16px;
+            font-variant-numeric: tabular-nums;
+        }
+        .cobranza-collect-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+        .cobranza-collect-actions select {
+            height: 34px;
+            min-width: 140px;
+        }
         .cortes-row .amt { font-weight: 500; color: var(--text); white-space: nowrap; }
         .cortes-row .name {
             overflow: hidden;
@@ -3579,6 +3619,7 @@
                 <a href="#venta" data-section="venta" title="Venta"><i class="fa-solid fa-cash-register"></i></a>
                 <a href="#cortes" data-section="cortes" title="Cortes"><i class="fa-solid fa-chart-simple"></i></a>
                 <a href="#clients" data-section="clients" title="Clientes"><i class="fa-solid fa-user-group"></i></a>
+                <a href="#cobranza" data-section="cobranza" title="Cobranza"><i class="fa-solid fa-hand-holding-dollar"></i></a>
                 <a href="#salesHistory" data-section="salesHistory" title="Historial de ventas"><i class="fa-solid fa-receipt"></i></a>
                 <a href="#products" data-section="products" title="Productos"><i class="fa-solid fa-box"></i></a>
                 <a href="#materials" data-section="materials" title="Materias primas"><i class="fa-solid fa-cubes"></i></a>
@@ -3837,10 +3878,11 @@
                                     </div>
                                     <div>
                                         <div class="field-label">Método de pago</div>
-                                        <div class="seg">
+                                        <div class="seg seg-pay">
                                             <label><input type="radio" name="payMethod" value="efectivo" checked> Efectivo</label>
                                             <label><input type="radio" name="payMethod" value="tarjeta"> Tarjeta</label>
                                             <label><input type="radio" name="payMethod" value="transferencia"> Transfer.</label>
+                                            <label><input type="radio" name="payMethod" value="por_cobrar"> Por cobrar</label>
                                         </div>
                                     </div>
                                     <div>
@@ -3868,6 +3910,9 @@
                             <p class="page-sub">Agenda de clientes y distribuidores para vincular ventas.</p>
                         </div>
                         <div class="page-head-actions">
+                            <button type="button" class="btn" id="goCobranzaBtn" title="Cobranza">
+                                <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i> Cobranza
+                            </button>
                             <button type="button" class="btn" id="goPromosBtn" title="Códigos de promoción">
                                 <i class="fa-solid fa-percent" aria-hidden="true"></i> Promos
                             </button>
@@ -3886,6 +3931,94 @@
                                 <thead><tr><th>Nombre</th><th>Tipo</th><th>Teléfono</th><th>Email</th><th>RFC</th><th></th></tr></thead>
                                 <tbody id="posClientsBody"></tbody>
                             </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="cobranza" class="section">
+                    <div class="page-head">
+                        <div>
+                            <h1 class="page-title">Cobranza</h1>
+                            <p class="page-sub">Notas pendientes (por cobrar) · total adeudado y detalle por cliente.</p>
+                        </div>
+                        <div class="page-head-actions">
+                            <button type="button" class="btn ghost" id="cobranzaBackToClientsBtn" title="Volver a clientes">
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Clientes
+                            </button>
+                        </div>
+                    </div>
+                    <div class="kpis" style="margin-bottom:16px">
+                        <div class="kpi">
+                            <div class="label">Total por cobrar</div>
+                            <div class="val" id="cobranzaTotal">$0.00</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Notas pendientes</div>
+                            <div class="val" id="cobranzaTickets">0</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Clientes con saldo</div>
+                            <div class="val" id="cobranzaClients">0</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="toolbar">
+                            <input id="cobranzaSearch" class="search" type="search" placeholder="Buscar cliente o recibo" autocomplete="off">
+                        </div>
+                        <div class="table-card">
+                            <table class="clients-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th class="num">Notas</th>
+                                        <th class="num">Saldo</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cobranzaBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card" id="cobranzaDetailCard" hidden style="margin-top:14px">
+                        <div class="page-head" style="margin-bottom:12px">
+                            <div>
+                                <h3 style="margin:0" id="cobranzaDetailTitle">Notas pendientes</h3>
+                                <p class="page-sub" id="cobranzaDetailSub" style="margin:4px 0 0">Selecciona notas y registra el cobro.</p>
+                            </div>
+                            <div class="page-head-actions">
+                                <button type="button" class="btn" id="cobranzaDetailClose">Cerrar</button>
+                            </div>
+                        </div>
+                        <div class="table-card">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:36px"><input type="checkbox" id="cobranzaSelectAll" title="Seleccionar todas"></th>
+                                        <th>Fecha</th>
+                                        <th>Recibo</th>
+                                        <th>Facturación</th>
+                                        <th class="num">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cobranzaDetailBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="cobranza-collect" id="cobranzaCollectBar">
+                            <div class="cobranza-collect-sum">
+                                <span class="muted">Seleccionado</span>
+                                <strong id="cobranzaSelectedTotal">$0.00</strong>
+                                <span class="muted" id="cobranzaSelectedCount">0 notas</span>
+                            </div>
+                            <div class="cobranza-collect-actions">
+                                <select id="cobranzaCollectPay" class="customer-input" aria-label="Forma de cobro">
+                                    <option value="efectivo">Efectivo</option>
+                                    <option value="tarjeta">Tarjeta</option>
+                                    <option value="transferencia">Transferencia</option>
+                                </select>
+                                <button type="button" class="btn primary" id="cobranzaCollectBtn" disabled>
+                                    <i class="fa-solid fa-check"></i> Registrar cobro
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -4863,13 +4996,13 @@
         sidebar.classList.toggle('open');
     });
 
-    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'clients', 'promos', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
+    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'clients', 'cobranza', 'promos', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
     const LEGACY_TO_PRODUCTS = { prices: true, catalog: true, formulas: true };
 
     /* Roles / permisos — deben existir ANTES de showSection (evita TDZ en ROLE_PERMS). */
     const ROLE_PERMS = {
         admin: ['*'],
-        ventas: ['dashboard', 'venta', 'clients', 'salesHistory', 'cortes', 'products', 'prices', 'materials']
+        ventas: ['dashboard', 'venta', 'clients', 'cobranza', 'salesHistory', 'cortes', 'products', 'prices', 'materials']
     };
     let currentRole = 'admin';
     try {
@@ -4955,6 +5088,8 @@
                 sec === id
                 || (id === 'products' && (sec === 'prices' || sec === 'catalog' || sec === 'formulas'))
                 || (id === 'promos' && sec === 'clients')
+                || (id === 'cobranza' && sec === 'cobranza')
+                || (id === 'cobranza' && sec === 'clients')
             );
         });
         sidebar.classList.remove('open');
@@ -5039,6 +5174,16 @@
     if (goPromosBtn) goPromosBtn.addEventListener('click', function (e) {
         e.preventDefault();
         showSection('promos');
+    });
+    const goCobranzaBtn = document.getElementById('goCobranzaBtn');
+    if (goCobranzaBtn) goCobranzaBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        showSection('cobranza');
+    });
+    const cobranzaBackToClientsBtn = document.getElementById('cobranzaBackToClientsBtn');
+    if (cobranzaBackToClientsBtn) cobranzaBackToClientsBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        showSection('clients');
     });
     const promosBackToClientsBtn = document.getElementById('promosBackToClientsBtn');
     if (promosBackToClientsBtn) promosBackToClientsBtn.addEventListener('click', function (e) {
@@ -9084,6 +9229,8 @@
         if (goCortesQa) goCortesQa.hidden = !canAccess('cortes');
         const goPromos = document.getElementById('goPromosBtn');
         if (goPromos) goPromos.hidden = !canAccess('promos');
+        const goCobranza = document.getElementById('goCobranzaBtn');
+        if (goCobranza) goCobranza.hidden = !canAccess('cobranza');
         const msgBtn = document.getElementById('topbarMessagesBtn');
         if (msgBtn) msgBtn.hidden = !canAccess('messages');
     }
