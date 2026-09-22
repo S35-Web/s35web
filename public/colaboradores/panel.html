@@ -700,6 +700,62 @@
             outline: none;
         }
         .search:focus { border-color: var(--border-strong); }
+        .hist-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .hist-filters label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .hist-filters input[type="date"],
+        .hist-filters select {
+            height: 34px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 10px;
+            font-size: 13px;
+        }
+        .hist-pager {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 14px 12px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .hist-pager .hist-pager-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .hist-pager .hist-page-label {
+            min-width: 88px;
+            text-align: center;
+            color: var(--text);
+            font-weight: 500;
+        }
+        .hist-receipt {
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+        .hist-receipt .sub {
+            display: block;
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--muted);
+        }
 
         /* Author display: rules otherwise beat the UA [hidden] stylesheet */
         [hidden] { display: none !important; }
@@ -3763,32 +3819,51 @@
 
                 <section id="salesHistory" class="section">
                     <h1 class="page-title">Historial de ventas</h1>
-                    <p class="page-sub">Tickets y notas de venta guardados en este navegador.</p>
+                    <p class="page-sub">POS local + notas históricas · busca por número de recibo (p. ej. 64055).</p>
                     <div class="card">
                         <div class="toolbar">
-                            <input id="posHistorySearch" class="search" type="search" placeholder="Buscar folio, cliente o producto">
+                            <input id="posHistorySearch" class="search" type="search" placeholder="Recibo, folio, cliente o producto" autocomplete="off">
                             <select id="posHistoryClientFilter" class="customer-input" style="max-width:220px;flex:0 0 auto">
                                 <option value="all">Todos los clientes</option>
                             </select>
-                            <button type="button" class="btn" id="posClearHistoryBtn">Vaciar historial</button>
+                            <button type="button" class="btn" id="posClearHistoryBtn" title="Solo borra ventas del POS de este navegador">Vaciar POS local</button>
+                        </div>
+                        <div class="hist-filters">
+                            <label>Desde <input type="date" id="posHistoryFrom"></label>
+                            <label>Hasta <input type="date" id="posHistoryTo"></label>
+                            <label>Por página
+                                <select id="posHistoryPageSize" aria-label="Elementos por página">
+                                    <option value="20" selected>20</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </label>
                         </div>
                         <div class="table-card">
                             <table>
                                 <thead>
                                     <tr>
                                         <th>Fecha</th>
-                                        <th>Folio</th>
+                                        <th>Recibo</th>
                                         <th>Cliente</th>
                                         <th>Pago</th>
                                         <th>Facturación</th>
                                         <th>Ítems</th>
                                         <th>Total</th>
-                                        <th>Usuario</th>
+                                        <th>Origen</th>
                                         <th></th>
                                     </tr>
                                 </thead>
                                 <tbody id="posHistoryBody"></tbody>
                             </table>
+                            <div class="hist-pager" id="posHistoryPager" hidden>
+                                <span id="posHistoryPagerMeta"></span>
+                                <div class="hist-pager-nav">
+                                    <button type="button" class="cortes-nav-btn" id="posHistoryPrev" title="Página anterior" aria-label="Página anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                                    <span class="hist-page-label" id="posHistoryPageLabel">1 / 1</span>
+                                    <button type="button" class="cortes-nav-btn" id="posHistoryNext" title="Página siguiente" aria-label="Página siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>

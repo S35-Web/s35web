@@ -460,6 +460,35 @@
         ].join('\n');
     }
 
+    function saleReceiptId(sale) {
+        if (!sale) return '';
+        if (sale.meta && sale.meta.receiptId != null && sale.meta.receiptId !== '') {
+            return String(sale.meta.receiptId);
+        }
+        const folio = String(sale.folio || '');
+        const m = folio.match(/^HIST-R(\d+)$/i);
+        if (m) return m[1];
+        const id = String(sale.id || '');
+        const m2 = id.match(/sale-hist-rcpt-(\d+)/i);
+        return m2 ? m2[1] : '';
+    }
+
+    function saleReceiptLabel(sale) {
+        const rid = saleReceiptId(sale);
+        if (rid) return 'Recibo ' + rid;
+        return sale.folio || sale.id || '—';
+    }
+
+    function saleReceiptCellHtml(sale) {
+        const rid = saleReceiptId(sale);
+        if (rid) {
+            return '<span class="hist-receipt">' + esc(rid) +
+                '<span class="sub">Recibo · panel viejo</span></span>';
+        }
+        return '<span class="hist-receipt">' + esc(sale.folio || '—') +
+            (sale.folio ? '<span class="sub">Folio POS</span>' : '') + '</span>';
+    }
+
     function buildNoteHtml(sale) {
         const items = sale.items || [];
         const rows = items.map(function (it) {
@@ -472,15 +501,19 @@
                 '<td class="num">' + money(line) + '</td>' +
                 '</tr>';
         }).join('');
+        const receiptLabel = saleReceiptLabel(sale);
         return '<div class="sale-note-brand">' +
             '<div class="mark">S-35<span>Midday</span></div>' +
-            '<div class="folio">' + esc(sale.folio || '') + '</div>' +
+            '<div class="folio">' + esc(receiptLabel) + '</div>' +
             '</div>' +
             '<div class="sale-note-meta">' +
             '<div class="row"><span class="k">Fecha</span><span class="v">' + esc(formatSaleDateTime(sale.createdAt)) + '</span></div>' +
             '<div class="row"><span class="k">Cliente</span><span class="v">' + esc(saleClientLabel(sale)) + '</span></div>' +
             '<div class="row"><span class="k">Pago</span><span class="v">' + esc(payLabel(sale.paymentMethod)) + '</span></div>' +
             '<div class="row"><span class="k">Facturación</span><span class="v">' + esc(billLabel(sale.billing)) + '</span></div>' +
+            (saleReceiptId(sale)
+                ? '<div class="row"><span class="k">Referencia</span><span class="v">' + esc('HIST-R' + saleReceiptId(sale)) + '</span></div>'
+                : '') +
             '</div>' +
             '<table class="sale-note-lines">' +
             '<thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Importe</th></tr></thead>' +
@@ -496,7 +529,9 @@
     function syncSaleNoteDeleteVisibility() {
         const delBtn = document.getElementById('saleNoteDelete');
         if (!delBtn) return;
-        if (isAdminRole()) delBtn.removeAttribute('hidden');
+        const sale = saleById(activeNoteSaleId);
+        const canDelete = isAdminRole() && sale && !isHistoricalImportSale(sale);
+        if (canDelete) delBtn.removeAttribute('hidden');
         else delBtn.setAttribute('hidden', '');
     }
 
@@ -510,7 +545,7 @@
         const emailEl = document.getElementById('saleNoteEmail');
         const modal = document.getElementById('saleNoteModal');
         if (doc) doc.innerHTML = buildNoteHtml(sale);
-        if (title) title.textContent = 'Nota de venta · ' + (sale.folio || '');
+        if (title) title.textContent = 'Nota de venta · ' + saleReceiptLabel(sale);
         const phone = (sale.client && sale.client.phone) || (sale.note && sale.note.sharePhone) || '';
         const email = (sale.client && sale.client.email) || (sale.note && sale.note.shareEmail) || '';
         if (phoneEl) phoneEl.value = phone;
@@ -1887,6 +1922,7 @@
         renderCortes();
         if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
         renderDashboardRadar();
+        renderHistory();
     }
 
     function importHistoricalSales(opts) {
@@ -1983,6 +2019,133 @@
     let familyFilter = 'all';
     let priceFamilyFilter = 'all';
     let historyClientFilter = 'all';
+    let historyPage = 1;
+    let historyPageSize = 20;
+    let historySearchTimer = null;
+
+    function historyDateInputBounds(id) {
+        const el = document.getElementById(id);
+        const raw = el && el.value ? String(el.value).trim() : '';
+        if (!raw) return null;
+        const parts = raw.split('-');
+        if (parts.length !== 3) return null;
+        const y = Number(parts[0]);
+        const m = Number(parts[1]);
+        const d = Number(parts[2]);
+        if (!y || !m || !d) return null;
+        return { y: y, m: m, d: d };
+    }
+
+    function saleMatchesHistoryFilters(s, q, fromB, toB) {
+        if (historyClientFilter !== 'all') {
+            if (historyClientFilter === 'walkin') {
+                if (s.clientId) return false;
+            } else if (s.clientId !== historyClientFilter) return false;
+        }
+        if (fromB || toB) {
+            const t = new Date(s.createdAt);
+            if (isNaN(t.getTime())) return false;
+            if (fromB) {
+                const start = new Date(fromB.y, fromB.m - 1, fromB.d);
+                if (t < start) return false;
+            }
+            if (toB) {
+                const end = new Date(toB.y, toB.m - 1, toB.d + 1);
+                if (t >= end) return false;
+            }
+        }
+        if (!q) return true;
+        const rid = saleReceiptId(s);
+        const hay = [
+            rid,
+            rid ? ('recibo ' + rid) : '',
+            rid ? ('hist-r' + rid) : '',
+            s.folio,
+            s.customer,
+            s.paymentMethod,
+            s.billing,
+            s.user,
+            s.client && s.client.name,
+            s.client && s.client.company
+        ].concat((s.items || []).map(function (it) { return it.name; }))
+            .join(' ').toLowerCase();
+        return hay.indexOf(q) >= 0;
+    }
+
+    function filteredHistorySales() {
+        const q = (document.getElementById('posHistorySearch') && document.getElementById('posHistorySearch').value || '').toLowerCase().trim();
+        const fromB = historyDateInputBounds('posHistoryFrom');
+        const toB = historyDateInputBounds('posHistoryTo');
+        return salesForAnalytics().filter(function (s) {
+            return saleMatchesHistoryFilters(s, q, fromB, toB);
+        }).sort(function (a, b) {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+    }
+
+    function renderHistory() {
+        const tbody = document.getElementById('posHistoryBody');
+        if (!tbody) return;
+        const list = filteredHistorySales();
+        const sizeEl = document.getElementById('posHistoryPageSize');
+        if (sizeEl) {
+            const nextSize = Number(sizeEl.value) || 20;
+            if (nextSize !== historyPageSize) {
+                historyPageSize = nextSize;
+                historyPage = 1;
+            }
+        }
+        const total = list.length;
+        const pages = Math.max(1, Math.ceil(total / historyPageSize) || 1);
+        if (historyPage > pages) historyPage = pages;
+        if (historyPage < 1) historyPage = 1;
+        const start = (historyPage - 1) * historyPageSize;
+        const pageItems = list.slice(start, start + historyPageSize);
+
+        if (!total) {
+            tbody.innerHTML = '<tr><td colspan="9" class="empty">Sin ventas con estos filtros</td></tr>';
+        } else {
+            tbody.innerHTML = pageItems.map(function (s) {
+                const d = new Date(s.createdAt);
+                const dateStr = isNaN(d) ? '' : d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+                const itemsN = (s.items || []).reduce(function (n, it) { return n + (Number(it.qty) || 0); }, 0);
+                const clientLabel = saleClientLabel(s);
+                const origin = isHistoricalImportSale(s) ? 'Histórico' : (s.user || 'POS');
+                return '<tr>' +
+                    '<td class="muted">' + esc(dateStr) + '</td>' +
+                    '<td>' + saleReceiptCellHtml(s) + '</td>' +
+                    '<td>' + esc(clientLabel) + '</td>' +
+                    '<td><span class="badge">' + esc(payLabel(s.paymentMethod)) + '</span></td>' +
+                    '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing)) + '</span></td>' +
+                    '<td class="num">' + itemsN + '</td>' +
+                    '<td class="num">' + money(s.total) + '</td>' +
+                    '<td class="muted">' + esc(origin) + '</td>' +
+                    '<td><div class="row-actions">' +
+                    '<button type="button" class="icon-action" data-open-note="' + esc(s.id) + '" title="Ver nota de venta"><i class="fa-solid fa-receipt"></i></button>' +
+                    '</div></td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        const pager = document.getElementById('posHistoryPager');
+        const meta = document.getElementById('posHistoryPagerMeta');
+        const pageLabel = document.getElementById('posHistoryPageLabel');
+        const prevBtn = document.getElementById('posHistoryPrev');
+        const nextBtn = document.getElementById('posHistoryNext');
+        if (pager) pager.hidden = total === 0;
+        if (meta) {
+            if (!total) {
+                meta.textContent = '';
+            } else {
+                const from = start + 1;
+                const to = Math.min(start + historyPageSize, total);
+                meta.textContent = from + '–' + to + ' de ' + total.toLocaleString('es-MX') + ' tickets';
+            }
+        }
+        if (pageLabel) pageLabel.textContent = historyPage + ' / ' + pages;
+        if (prevBtn) prevBtn.disabled = historyPage <= 1;
+        if (nextBtn) nextBtn.disabled = historyPage >= pages;
+    }
     let editingClientId = null;
     /** Índice de línea del carrito cuyo precio unitario se está editando (staff). */
     let editingPriceIdx = null;
@@ -3428,7 +3591,10 @@
                     return '<div class="cortes-invoice-row" role="button" tabindex="0" data-open-note="' + esc(s.id) + '" title="Ver nota de venta">' +
                         '<div class="cortes-invoice-date">' +
                             '<div class="d">' + esc(formatInvoiceDate(d)) + '</div>' +
-                            '<div class="sub">' + esc(relativeSaleSub(d)) + (s.folio ? ' · ' + esc(s.folio) : '') + '</div>' +
+                            '<div class="sub">' + esc(relativeSaleSub(d)) +
+                            (saleReceiptId(s)
+                                ? ' · Recibo ' + esc(saleReceiptId(s))
+                                : (s.folio ? ' · ' + esc(s.folio) : '')) + '</div>' +
                         '</div>' +
                         '<div class="cortes-invoice-pills">' +
                             '<span class="cortes-pill">' + esc(payLabel(s.paymentMethod)) + '</span>' +
@@ -3452,47 +3618,6 @@
             btn.classList.toggle('active', active);
             btn.setAttribute('aria-selected', active ? 'true' : 'false');
         });
-    }
-
-    function renderHistory() {
-        const tbody = document.getElementById('posHistoryBody');
-        if (!tbody) return;
-        const q = (document.getElementById('posHistorySearch') && document.getElementById('posHistorySearch').value || '').toLowerCase().trim();
-        const list = sales.filter(function (s) {
-            if (historyClientFilter !== 'all') {
-                if (historyClientFilter === 'walkin') {
-                    if (s.clientId) return false;
-                } else if (s.clientId !== historyClientFilter) return false;
-            }
-            if (!q) return true;
-            const hay = [s.folio, s.customer, s.paymentMethod, s.billing, s.client && s.client.name, s.client && s.client.company]
-                .concat((s.items || []).map(function (it) { return it.name; }))
-                .join(' ').toLowerCase();
-            return hay.includes(q);
-        });
-        if (!list.length) {
-            tbody.innerHTML = '<tr><td colspan="9" class="empty">Sin ventas todavía</td></tr>';
-            return;
-        }
-        tbody.innerHTML = list.map(function (s) {
-            const d = new Date(s.createdAt);
-            const dateStr = isNaN(d) ? '' : d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
-            const itemsN = (s.items || []).reduce(function (n, it) { return n + it.qty; }, 0);
-            const clientLabel = saleClientLabel(s);
-            return '<tr>' +
-                '<td class="muted">' + esc(dateStr) + '</td>' +
-                '<td>' + esc(s.folio) + '</td>' +
-                '<td>' + esc(clientLabel) + '</td>' +
-                '<td><span class="badge">' + esc(payLabel(s.paymentMethod)) + '</span></td>' +
-                '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing)) + '</span></td>' +
-                '<td class="num">' + itemsN + '</td>' +
-                '<td class="num">' + money(s.total) + '</td>' +
-                '<td class="muted">' + esc(s.user || '') + '</td>' +
-                '<td><div class="row-actions">' +
-                '<button type="button" class="icon-action" data-open-note="' + esc(s.id) + '" title="Ver nota de venta"><i class="fa-solid fa-receipt"></i></button>' +
-                '</div></td>' +
-                '</tr>';
-        }).join('');
     }
 
     function fillHistoryClientFilter() {
@@ -3784,11 +3909,51 @@
         bindPromoAdmin();
 
         const histSearch = document.getElementById('posHistorySearch');
-        if (histSearch) histSearch.addEventListener('input', renderHistory);
+        if (histSearch) {
+            histSearch.addEventListener('input', function () {
+                clearTimeout(historySearchTimer);
+                historySearchTimer = setTimeout(function () {
+                    historyPage = 1;
+                    renderHistory();
+                }, 180);
+            });
+        }
         const histFilter = document.getElementById('posHistoryClientFilter');
         if (histFilter) {
             histFilter.addEventListener('change', function () {
                 historyClientFilter = histFilter.value || 'all';
+                historyPage = 1;
+                renderHistory();
+            });
+        }
+        ['posHistoryFrom', 'posHistoryTo'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('change', function () {
+                historyPage = 1;
+                renderHistory();
+            });
+        });
+        const histPageSize = document.getElementById('posHistoryPageSize');
+        if (histPageSize) {
+            histPageSize.addEventListener('change', function () {
+                historyPageSize = Number(histPageSize.value) || 20;
+                historyPage = 1;
+                renderHistory();
+            });
+        }
+        const histPrev = document.getElementById('posHistoryPrev');
+        if (histPrev) {
+            histPrev.addEventListener('click', function () {
+                if (historyPage <= 1) return;
+                historyPage -= 1;
+                renderHistory();
+            });
+        }
+        const histNext = document.getElementById('posHistoryNext');
+        if (histNext) {
+            histNext.addEventListener('click', function () {
+                historyPage += 1;
                 renderHistory();
             });
         }
@@ -3819,9 +3984,10 @@
         if (clearHist) {
             clearHist.addEventListener('click', function () {
                 if (!sales.length) return;
-                if (!confirm('¿Eliminar todo el historial de ventas?')) return;
+                if (!confirm('¿Eliminar las ventas del POS de este navegador? El histórico importado no se borra.')) return;
                 sales = [];
                 saveSales();
+                historyPage = 1;
                 renderHistory();
                 renderCortes();
                 if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
