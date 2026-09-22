@@ -1220,7 +1220,7 @@
         let start;
         let end;
         if (period === 'historial') {
-            const span = salesYearSpan(sales);
+            const span = salesYearSpan(salesForAnalytics());
             start = new Date(span.min, 0, 1);
             end = new Date(span.max + 1, 0, 1);
         } else if (period === 'week') {
