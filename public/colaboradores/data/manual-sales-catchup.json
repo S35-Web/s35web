@@ -1,170 +1,1008 @@
 {
-  "version": 4,
-  "note": "Catch-up: notas panel + facturas CFDI Ricbor (fecha/hora del timbre).",
+  "version": 5,
+  "note": "Catch-up: notas panel + CFDI Ricbor 2025/2026 (sin factura cancelada 11984).",
   "generatedAt": "2026-09-22",
   "items": [
     {
-      "id": "sale-hist-rcpt-64056",
-      "folio": "HIST-R64056",
-      "createdAt": "2026-09-21T15:12:00",
-      "customer": "Mostrador",
-      "paymentMethod": "efectivo",
-      "billing": "sin_facturar",
+      "id": "sale-cfdi-11667",
+      "folio": "CFDI-11667",
+      "createdAt": "2025-07-29T16:51:01",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
       "items": [
         {
-          "product": "waxtard-extra-anclaje",
-          "name": "Waxtard Extra Anclaje S-35®",
+          "product": "pegaxpress-block",
+          "name": "Pastablock S-35®",
           "code": "",
           "unit": "Pza",
-          "price": 335,
-          "qty": 2,
-          "lineTotal": 670
+          "price": 115.88,
+          "qty": 140.0,
+          "lineTotal": 16223.19
+        }
+      ],
+      "total": 16223.19,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11667,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 13985.51,
+        "year": 2025,
+        "month": 7,
+        "day": 29
+      }
+    },
+    {
+      "id": "sale-cfdi-11668",
+      "folio": "CFDI-11668",
+      "createdAt": "2025-07-29T17:38:34",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 140.0,
+          "lineTotal": 16223.19
+        }
+      ],
+      "total": 16223.19,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11668,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 13985.51,
+        "year": 2025,
+        "month": 7,
+        "day": 29
+      }
+    },
+    {
+      "id": "sale-cfdi-11681",
+      "folio": "CFDI-11681",
+      "createdAt": "2025-07-31T15:34:46",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 85.0,
+          "lineTotal": 9849.8
+        }
+      ],
+      "total": 9849.8,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11681,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 8491.21,
+        "year": 2025,
+        "month": 7,
+        "day": 31
+      }
+    },
+    {
+      "id": "sale-cfdi-11675",
+      "folio": "CFDI-11675",
+      "createdAt": "2025-07-31T15:43:29",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 225.0,
+          "lineTotal": 26073.0
+        }
+      ],
+      "total": 26073.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11675,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 22476.72,
+        "year": 2025,
+        "month": 7,
+        "day": 31
+      }
+    },
+    {
+      "id": "sale-cfdi-11676",
+      "folio": "CFDI-11676",
+      "createdAt": "2025-07-31T15:51:19",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 225.0,
+          "lineTotal": 26073.0
+        }
+      ],
+      "total": 26073.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11676,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 22476.72,
+        "year": 2025,
+        "month": 7,
+        "day": 31
+      }
+    },
+    {
+      "id": "sale-cfdi-11677",
+      "folio": "CFDI-11677",
+      "createdAt": "2025-07-31T15:52:26",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 430.0,
+          "lineTotal": 49828.4
+        }
+      ],
+      "total": 49828.4,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11677,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 42955.52,
+        "year": 2025,
+        "month": 7,
+        "day": 31
+      }
+    },
+    {
+      "id": "sale-cfdi-11678",
+      "folio": "CFDI-11678",
+      "createdAt": "2025-07-31T15:53:20",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 430.0,
+          "lineTotal": 49828.4
+        }
+      ],
+      "total": 49828.4,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11678,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 42955.52,
+        "year": 2025,
+        "month": 7,
+        "day": 31
+      }
+    },
+    {
+      "id": "sale-cfdi-11679",
+      "folio": "CFDI-11679",
+      "createdAt": "2025-07-31T15:53:32",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 430.0,
+          "lineTotal": 49828.4
+        }
+      ],
+      "total": 49828.4,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11679,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 42955.52,
+        "year": 2025,
+        "month": 7,
+        "day": 31
+      }
+    },
+    {
+      "id": "sale-cfdi-11680",
+      "folio": "CFDI-11680",
+      "createdAt": "2025-07-31T15:53:46",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 430.0,
+          "lineTotal": 49828.4
+        }
+      ],
+      "total": 49828.4,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11680,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 42955.52,
+        "year": 2025,
+        "month": 7,
+        "day": 31
+      }
+    },
+    {
+      "id": "sale-cfdi-11715",
+      "folio": "CFDI-11715",
+      "createdAt": "2025-08-12T14:31:17",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 270.0,
+          "lineTotal": 31287.6
+        }
+      ],
+      "total": 31287.6,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11715,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 26972.07,
+        "year": 2025,
+        "month": 8,
+        "day": 12
+      }
+    },
+    {
+      "id": "sale-cfdi-11795",
+      "folio": "CFDI-11795",
+      "createdAt": "2025-09-01T13:45:49",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "efectivo",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 210.01,
+          "qty": 3.0,
+          "lineTotal": 630.01
+        }
+      ],
+      "total": 630.01,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11795,
+        "formaPago": "01",
+        "metodoPago": "PUE",
+        "subTotal": 543.11,
+        "year": 2025,
+        "month": 9,
+        "day": 1
+      }
+    },
+    {
+      "id": "sale-cfdi-11985",
+      "folio": "CFDI-11985",
+      "createdAt": "2025-10-31T17:30:10",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Estuco Hidrófugo Interior S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 197.8,
+          "qty": 426.0,
+          "lineTotal": 84262.78
         },
         {
-          "product": "adhesivo-darawell",
-          "name": "Darawell 1L S-35®",
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
           "code": "",
           "unit": "Pza",
-          "price": 90,
-          "qty": 1,
-          "lineTotal": 90
-        }
-      ],
-      "total": 760,
-      "user": "import-historico",
-      "meta": {
-        "source": "old-panel",
-        "kind": "receipt",
-        "receiptId": 64056,
-        "noteSuffix": "a-6",
-        "observations": "Mostr efe",
-        "year": 2026,
-        "month": 9,
-        "day": 21
-      }
-    },
-    {
-      "id": "sale-hist-rcpt-64057",
-      "folio": "HIST-R64057",
-      "createdAt": "2026-09-21T15:16:00",
-      "customer": "Mostrador",
-      "paymentMethod": "efectivo",
-      "billing": "sin_facturar",
-      "items": [
-        {
-          "product": "microconcreto-blanco-pulido",
-          "name": "Microconcreto Blanco S-35® (25KG)",
-          "code": "",
-          "unit": "Pza",
-          "price": 360,
-          "qty": 1,
-          "lineTotal": 360
-        }
-      ],
-      "total": 360,
-      "user": "import-historico",
-      "meta": {
-        "source": "old-panel",
-        "kind": "receipt",
-        "receiptId": 64057,
-        "noteSuffix": "a-7",
-        "observations": "Mostr efe",
-        "year": 2026,
-        "month": 9,
-        "day": 21
-      }
-    },
-    {
-      "id": "sale-hist-rcpt-64058",
-      "folio": "HIST-R64058",
-      "createdAt": "2026-09-21T15:32:00",
-      "customer": "Mostrador",
-      "paymentMethod": "tarjeta",
-      "billing": "sin_facturar",
-      "items": [
+          "price": 184.44,
+          "qty": 57.0,
+          "lineTotal": 10513.08
+        },
         {
           "product": "pegaxpress-block",
           "name": "Pastablock PRO S-35®",
           "code": "",
           "unit": "Pza",
-          "price": 130,
-          "qty": 1,
-          "lineTotal": 130
+          "price": 115.88,
+          "qty": 960.0,
+          "lineTotal": 111244.74
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Estuco Hidrófugo Interior S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 197.8,
+          "qty": 318.0,
+          "lineTotal": 62900.39
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 42.0,
+          "lineTotal": 7746.48
+        },
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock PRO S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 720.0,
+          "lineTotal": 83433.56
         }
       ],
-      "total": 130,
+      "total": 360101.03,
       "user": "import-historico",
       "meta": {
-        "source": "old-panel",
-        "kind": "receipt",
-        "receiptId": 64058,
-        "noteSuffix": "a-8",
-        "observations": "Mostr tarjeta",
-        "year": 2026,
-        "month": 9,
-        "day": 21
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11985,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 310431.92,
+        "year": 2025,
+        "month": 10,
+        "day": 31
       }
     },
     {
-      "id": "sale-hist-rcpt-64059",
-      "folio": "HIST-R64059",
-      "createdAt": "2026-09-21T16:23:00",
-      "customer": "Jesús Ramón Domínguez Ramírez",
-      "paymentMethod": "tarjeta",
-      "billing": "sin_facturar",
+      "id": "sale-cfdi-11986",
+      "folio": "CFDI-11986",
+      "createdAt": "2025-10-31T17:45:49",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
       "items": [
         {
           "product": "waxtard-blanco-perla",
-          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "name": "Estuco Hidrófugo Interior S-35®",
           "code": "",
           "unit": "Pza",
-          "price": 210,
-          "qty": 5,
-          "lineTotal": 1050
+          "price": 197.8,
+          "qty": 426.0,
+          "lineTotal": 84262.78
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 57.0,
+          "lineTotal": 10513.08
+        },
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock PRO S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 960.0,
+          "lineTotal": 111244.74
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Estuco Hidrófugo Interior S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 197.8,
+          "qty": 318.0,
+          "lineTotal": 62900.39
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 42.0,
+          "lineTotal": 7746.48
+        },
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock PRO S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 720.0,
+          "lineTotal": 83433.56
         }
       ],
-      "total": 1050,
+      "total": 360101.03,
       "user": "import-historico",
       "meta": {
-        "source": "old-panel",
-        "kind": "receipt",
-        "receiptId": 64059,
-        "noteSuffix": "a-9",
-        "observations": "Mostr f y tarjeta",
-        "year": 2026,
-        "month": 9,
-        "day": 21
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11986,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 310431.92,
+        "year": 2025,
+        "month": 10,
+        "day": 31
       }
     },
     {
-      "id": "sale-hist-rcpt-64060",
-      "folio": "HIST-R64060",
-      "createdAt": "2026-09-22T08:51:00",
-      "customer": "Mostrador",
-      "paymentMethod": "efectivo",
-      "billing": "sin_facturar",
+      "id": "sale-cfdi-11987",
+      "folio": "CFDI-11987",
+      "createdAt": "2025-10-31T17:47:45",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
       "items": [
         {
           "product": "waxtard-blanco-perla",
-          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "name": "Estuco Hidrófugo Interior S-35®",
           "code": "",
           "unit": "Pza",
-          "price": 210,
-          "qty": 1,
-          "lineTotal": 210
+          "price": 197.8,
+          "qty": 426.0,
+          "lineTotal": 84262.78
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 57.0,
+          "lineTotal": 10513.08
+        },
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock PRO S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 960.0,
+          "lineTotal": 111244.74
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Estuco Hidrófugo Interior S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 197.8,
+          "qty": 318.0,
+          "lineTotal": 62900.39
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 42.0,
+          "lineTotal": 7746.48
+        },
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock PRO S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 720.0,
+          "lineTotal": 83433.56
         }
       ],
-      "total": 210,
+      "total": 360101.03,
       "user": "import-historico",
       "meta": {
-        "source": "old-panel",
-        "kind": "receipt",
-        "receiptId": 64060,
-        "noteSuffix": "a-1",
-        "observations": "MOSTRE EFE",
-        "year": 2026,
-        "month": 9,
-        "day": 22
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11987,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 310431.92,
+        "year": 2025,
+        "month": 10,
+        "day": 31
+      }
+    },
+    {
+      "id": "sale-cfdi-11988",
+      "folio": "CFDI-11988",
+      "createdAt": "2025-10-31T17:48:32",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Estuco Hidrófugo Interior S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 197.8,
+          "qty": 280.0,
+          "lineTotal": 55383.99
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 280.0,
+          "lineTotal": 51643.2
+        },
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock PRO S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 115.88,
+          "qty": 1060.0,
+          "lineTotal": 122839.16
+        },
+        {
+          "product": "basecoat-plus-blanco",
+          "name": "Aplanado Base PRO+ S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 161.4,
+          "qty": 70.0,
+          "lineTotal": 11297.99
+        }
+      ],
+      "total": 241164.34,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 11988,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 207900.3,
+        "year": 2025,
+        "month": 10,
+        "day": 31
+      }
+    },
+    {
+      "id": "sale-cfdi-12139",
+      "folio": "CFDI-12139",
+      "createdAt": "2025-12-30T13:45:59",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Estuco Hidrófugo Interior S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 197.8,
+          "qty": 1777.0,
+          "lineTotal": 351490.6
+        }
+      ],
+      "total": 351490.6,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12139,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 303009.14,
+        "year": 2025,
+        "month": 12,
+        "day": 30
+      }
+    },
+    {
+      "id": "sale-cfdi-12141",
+      "folio": "CFDI-12141",
+      "createdAt": "2025-12-30T14:01:12",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 600.0,
+          "lineTotal": 110664.0
+        }
+      ],
+      "total": 110664.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12141,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 95400.0,
+        "year": 2025,
+        "month": 12,
+        "day": 30
+      }
+    },
+    {
+      "id": "sale-cfdi-12143",
+      "folio": "CFDI-12143",
+      "createdAt": "2025-12-30T14:01:36",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 900.0,
+          "lineTotal": 165996.0
+        }
+      ],
+      "total": 165996.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12143,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 143100.0,
+        "year": 2025,
+        "month": 12,
+        "day": 30
+      }
+    },
+    {
+      "id": "sale-cfdi-12144",
+      "folio": "CFDI-12144",
+      "createdAt": "2025-12-30T14:01:46",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Estuco Hidrófugo Interior S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 197.8,
+          "qty": 1500.0,
+          "lineTotal": 296700.0
+        }
+      ],
+      "total": 296700.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12144,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 255775.86,
+        "year": 2025,
+        "month": 12,
+        "day": 30
+      }
+    },
+    {
+      "id": "sale-cfdi-12142",
+      "folio": "CFDI-12142",
+      "createdAt": "2025-12-30T14:01:55",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 1857.0,
+          "lineTotal": 342505.08
+        }
+      ],
+      "total": 342505.08,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12142,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 295263.0,
+        "year": 2025,
+        "month": 12,
+        "day": 30
+      }
+    },
+    {
+      "id": "sale-cfdi-12140",
+      "folio": "CFDI-12140",
+      "createdAt": "2025-12-30T14:01:59",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "rfc": "CRI1103157P8",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Hidrófugo Premium S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 184.44,
+          "qty": 305.0,
+          "lineTotal": 56254.2
+        }
+      ],
+      "total": 56254.2,
+      "user": "import-historico",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12140,
+        "formaPago": "03",
+        "metodoPago": "PUE",
+        "subTotal": 48495.0,
+        "year": 2025,
+        "month": 12,
+        "day": 30
       }
     },
     {
@@ -704,6 +1542,173 @@
         "month": 8,
         "day": 6
       }
+    },
+    {
+      "id": "sale-hist-rcpt-64056",
+      "folio": "HIST-R64056",
+      "createdAt": "2026-09-21T15:12:00",
+      "customer": "Mostrador",
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 2,
+          "lineTotal": 670
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "Darawell 1L S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 90,
+          "qty": 1,
+          "lineTotal": 90
+        }
+      ],
+      "total": 760,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64056,
+        "noteSuffix": "a-6",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 9,
+        "day": 21
+      }
+    },
+    {
+      "id": "sale-hist-rcpt-64057",
+      "folio": "HIST-R64057",
+      "createdAt": "2026-09-21T15:16:00",
+      "customer": "Mostrador",
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 1,
+          "lineTotal": 360
+        }
+      ],
+      "total": 360,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64057,
+        "noteSuffix": "a-7",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 9,
+        "day": 21
+      }
+    },
+    {
+      "id": "sale-hist-rcpt-64058",
+      "folio": "HIST-R64058",
+      "createdAt": "2026-09-21T15:32:00",
+      "customer": "Mostrador",
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock PRO S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 130,
+          "qty": 1,
+          "lineTotal": 130
+        }
+      ],
+      "total": 130,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64058,
+        "noteSuffix": "a-8",
+        "observations": "Mostr tarjeta",
+        "year": 2026,
+        "month": 9,
+        "day": 21
+      }
+    },
+    {
+      "id": "sale-hist-rcpt-64059",
+      "folio": "HIST-R64059",
+      "createdAt": "2026-09-21T16:23:00",
+      "customer": "Jesús Ramón Domínguez Ramírez",
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 5,
+          "lineTotal": 1050
+        }
+      ],
+      "total": 1050,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64059,
+        "noteSuffix": "a-9",
+        "observations": "Mostr f y tarjeta",
+        "year": 2026,
+        "month": 9,
+        "day": 21
+      }
+    },
+    {
+      "id": "sale-hist-rcpt-64060",
+      "folio": "HIST-R64060",
+      "createdAt": "2026-09-22T08:51:00",
+      "customer": "Mostrador",
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64060,
+        "noteSuffix": "a-1",
+        "observations": "MOSTRE EFE",
+        "year": 2026,
+        "month": 9,
+        "day": 22
+      }
     }
+  ],
+  "skippedCancelled": [
+    "11984"
   ]
 }
