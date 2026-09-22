@@ -2583,6 +2583,198 @@
         const kpiTH = document.getElementById('posKpiTodayHint');
         if (kpiT) kpiT.textContent = money(todayTotal);
         if (kpiTH) kpiTH.textContent = today.length + (today.length === 1 ? ' venta' : ' ventas');
+        renderDashboardRadar();
+    }
+
+    /** Regla fija: variación vs ayer (mismo día calendario −1). */
+    function formatDashDelta(cur, prev) {
+        if (prev == null || (prev === 0 && cur === 0)) {
+            return { text: '—', hint: 'vs ayer · sin ventas', cls: '' };
+        }
+        if (prev === 0) {
+            return { text: 'nuevo', hint: 'vs ayer · ' + money(0), cls: 'up' };
+        }
+        const d = pctDelta(cur, prev);
+        const sign = d > 0 ? '+' : '';
+        return {
+            text: sign + d.toFixed(0) + '%',
+            hint: 'vs ayer · ' + money(prev),
+            cls: d > 0 ? 'up' : (d < 0 ? 'down' : '')
+        };
+    }
+
+    function productAmountInSales(list, keys) {
+        let amount = 0;
+        list.forEach(function (s) {
+            amount += productContribution(s, keys).amount;
+        });
+        return amount;
+    }
+
+    /** Ventana fija: últimos 7 días (incl. hoy) vs los 7 anteriores. */
+    function dashMoverWindows(now) {
+        now = now || new Date();
+        const today = startOfLocalDay(now);
+        const recentStart = addDays(today, -6);
+        const recentEnd = addDays(today, 1);
+        const prevStart = addDays(recentStart, -7);
+        const prevEnd = recentStart;
+        return {
+            recent: { start: recentStart, end: recentEnd },
+            prev: { start: prevStart, end: prevEnd }
+        };
+    }
+
+    function computeDashMovers(limitEach) {
+        limitEach = limitEach || 3;
+        const win = dashMoverWindows();
+        const recentSales = salesInRange(sales, win.recent.start, win.recent.end);
+        const prevSales = salesInRange(sales, win.prev.start, win.prev.end);
+        const recipes = getRecipes();
+        const seen = {};
+        const rows = [];
+        recipes.forEach(function (r) {
+            const slug = r.product;
+            if (!slug || seen[slug]) return;
+            seen[slug] = true;
+            const keys = productMatchKeys(slug);
+            const cur = productAmountInSales(recentSales, keys);
+            const prev = productAmountInSales(prevSales, keys);
+            if (cur === 0 && prev === 0) return;
+            let pct = null;
+            if (prev > 0) pct = ((cur - prev) / prev) * 100;
+            else if (cur > 0) pct = Infinity;
+            rows.push({
+                slug: slug,
+                name: r.name || slug,
+                cur: cur,
+                prev: prev,
+                pct: pct,
+                delta: cur - prev
+            });
+        });
+        const rises = rows.filter(function (r) { return r.delta > 0; })
+            .sort(function (a, b) {
+                if (a.pct === Infinity && b.pct !== Infinity) return -1;
+                if (b.pct === Infinity && a.pct !== Infinity) return 1;
+                return (b.pct || 0) - (a.pct || 0) || b.delta - a.delta;
+            })
+            .slice(0, limitEach);
+        const falls = rows.filter(function (r) { return r.delta < 0; })
+            .sort(function (a, b) {
+                return (a.pct || 0) - (b.pct || 0) || a.delta - b.delta;
+            })
+            .slice(0, limitEach);
+        return rises.concat(falls);
+    }
+
+    function computeDashStaleProducts(limit) {
+        limit = limit || 3;
+        const win = dashMoverWindows();
+        const recentSales = salesInRange(sales, win.recent.start, win.recent.end);
+        const recipes = getRecipes();
+        const out = [];
+        const seen = {};
+        recipes.forEach(function (r) {
+            const slug = r.product;
+            if (!slug || seen[slug]) return;
+            seen[slug] = true;
+            const keys = productMatchKeys(slug);
+            if (!productHasAnySales(keys)) return;
+            if (productAmountInSales(recentSales, keys) > 0) return;
+            out.push({ slug: slug, name: r.name || slug });
+        });
+        return out.slice(0, limit);
+    }
+
+    function renderDashboardRadar() {
+        const salesEl = document.getElementById('dashSalesToday');
+        if (!salesEl) return;
+
+        const todayBounds = periodBounds('day', 0);
+        const ydayBounds = periodBounds('day', -1);
+        const todayList = salesInRange(sales, todayBounds.start, todayBounds.end);
+        const ydayList = salesInRange(sales, ydayBounds.start, ydayBounds.end);
+        const todayTotal = sumTotals(todayList);
+        const ydayTotal = sumTotals(ydayList);
+        const delta = formatDashDelta(todayTotal, ydayTotal);
+
+        salesEl.textContent = money(todayTotal);
+        const ticketsEl = document.getElementById('dashTicketsToday');
+        if (ticketsEl) ticketsEl.textContent = String(todayList.length);
+        const deltaEl = document.getElementById('dashDeltaToday');
+        if (deltaEl) {
+            deltaEl.textContent = delta.text;
+            deltaEl.classList.remove('up', 'down');
+            if (delta.cls) deltaEl.classList.add(delta.cls);
+        }
+        const hintEl = document.getElementById('dashDeltaHint');
+        if (hintEl) hintEl.textContent = delta.hint;
+
+        const moversEl = document.getElementById('dashMovers');
+        if (moversEl) {
+            const movers = computeDashMovers(3);
+            if (!movers.length) {
+                moversEl.innerHTML = '<div class="dash-empty">Sin movimiento reciente en el historial de ventas.</div>';
+            } else {
+                moversEl.innerHTML = movers.map(function (m) {
+                    const up = m.delta > 0;
+                    const pctLabel = m.pct === Infinity
+                        ? 'nuevo'
+                        : ((m.pct > 0 ? '+' : '') + (m.pct != null ? m.pct.toFixed(0) : '0') + '%');
+                    const icon = up ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+                    return '<button type="button" class="dash-row" data-open-product="' + esc(m.slug) + '">' +
+                        '<div class="left"><span class="name">' + esc(m.name) + '</span></div>' +
+                        '<span class="amt ' + (up ? 'up' : 'down') + '">' +
+                        '<i class="fa-solid ' + icon + '" aria-hidden="true"></i>' +
+                        esc(pctLabel) +
+                        '</span></button>';
+                }).join('');
+            }
+        }
+
+        const attnEl = document.getElementById('dashAttention');
+        if (attnEl) {
+            const items = [];
+            const lowStock = (window.S35PanelAPI && typeof window.S35PanelAPI.getLowStockMaterials === 'function')
+                ? window.S35PanelAPI.getLowStockMaterials()
+                : [];
+            lowStock.forEach(function (m) {
+                if (items.length >= 5) return;
+                const unit = m.unit ? (' ' + m.unit) : '';
+                items.push({
+                    action: 'materials',
+                    target: '',
+                    name: 'Stock bajo · ' + (m.name || m.id),
+                    meta: 'libre ' + (Number(m.free) || 0) + unit + ' · mín. ' + (Number(m.minStock) || 0)
+                });
+            });
+            computeDashStaleProducts(5 - items.length).forEach(function (p) {
+                items.push({
+                    action: 'product',
+                    target: p.slug,
+                    name: 'Sin movimiento · ' + p.name,
+                    meta: '0 ventas en 7 días'
+                });
+            });
+            if (!items.length) {
+                attnEl.innerHTML = '<div class="dash-empty">Nada urgente por ahora.</div>';
+            } else {
+                attnEl.innerHTML = items.map(function (it) {
+                    return '<button type="button" class="dash-row" data-dash-action="' + esc(it.action) + '"' +
+                        (it.target ? ' data-dash-target="' + esc(it.target) + '"' : '') + '>' +
+                        '<div class="left"><span class="name">' + esc(it.name) + '</span></div>' +
+                        '<span class="meta">' + esc(it.meta) + '</span></button>';
+                }).join('');
+            }
+        }
+    }
+
+    function openCortesPeriod(period) {
+        if (['day', 'week', 'month', 'year', 'historial'].indexOf(period) < 0) return;
+        cortesPeriod = period;
+        cortesOffset = 0;
+        renderCortes();
     }
 
     function addToCart(slug) {
@@ -4351,6 +4543,8 @@
             renderHistory();
         } else if (id === 'cortes') {
             renderCortes();
+        } else if (id === 'dashboard') {
+            renderDashboardRadar();
         } else if (id === 'prices' || id === 'products') {
             renderPriceChips();
             renderPrices();
@@ -4407,6 +4601,8 @@
             resetPricesToDefaults: resetPricesToDefaults,
             priceEditorHtml: priceEditorHtml,
             renderProductSalesAnalytics: renderProductSalesAnalytics,
+            renderDashboardRadar: renderDashboardRadar,
+            openCortesPeriod: openCortesPeriod,
             importHistoricalSales: importHistoricalSales,
             baseUnitPrice: baseUnitPrice,
             unitFor: unitFor,
