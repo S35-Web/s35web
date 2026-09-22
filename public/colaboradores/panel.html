@@ -935,6 +935,21 @@
         .formula-line select option { color: #111; }
         .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
         .stock-low { color: var(--danger); }
+        .mat-inventory-total {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px 12px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .mat-inventory-total .val {
+            font-weight: 600;
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+        }
 
         .formula-meta {
             display: grid;
@@ -3522,9 +3537,10 @@
                         <div class="chips" id="matChips"></div>
                         <div class="table-card">
                             <table class="inventory">
-                                <thead><tr><th>Nombre</th><th>Existencia</th><th>Mínimo</th><th></th></tr></thead>
+                                <thead><tr><th>Nombre</th><th>Existencia</th><th>Costo unit.</th><th>Valor</th><th>Mínimo</th><th></th></tr></thead>
                                 <tbody id="matBody"></tbody>
                             </table>
+                            <div class="mat-inventory-total" id="matInventoryTotal" hidden></div>
                         </div>
                     </div>
                 </section>
@@ -4206,6 +4222,9 @@
                     <label>Existencia
                         <input id="plantStock" type="number" min="0" step="any" required value="0">
                     </label>
+                    <label>Costo unitario (MXN)
+                        <input id="plantUnitCost" type="number" min="0" step="0.01" value="0" inputmode="decimal" placeholder="0.00">
+                    </label>
                     <label>Mínimo aceptable
                         <input id="plantMin" type="number" min="0" step="1" required value="0">
                     </label>
@@ -4485,7 +4504,8 @@
             category: normalizeCategory(m.category),
             labSlug: m.labSlug || null,
             isPackaging: m.isPackaging === true || normalizeCategory(m.category) === 'packaging',
-            consumeOnConfirm: m.consumeOnConfirm === true
+            consumeOnConfirm: m.consumeOnConfirm === true,
+            unitCost: Math.max(0, Math.round((Number(m.unitCost) || 0) * 100) / 100)
         };
     }
     function seedInventory() {
@@ -4871,6 +4891,19 @@
         return String(s == null ? '' : s)
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
+    function moneyMx(n) {
+        const v = Math.round((Number(n) || 0) * 100) / 100;
+        return '$' + v.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function materialInventoryValue(m) {
+        return (Number(m.stock) || 0) * (Number(m.unitCost) || 0);
+    }
+    function materialUnitCostCell(m) {
+        const cost = Number(m.unitCost) || 0;
+        if (!cost) return '<span class="muted">—</span>';
+        const unit = m.unit ? (' <span class="muted">/ ' + esc(m.unit) + '</span>') : '';
+        return moneyMx(cost) + unit;
+    }
     function formatRecipeNote(note) {
         return esc(note).replace(
             /(\d+(?:\.\d+)?\s*kg\s*(?:→|->|—|–|-)\s*~?\d+(?:\.\d+)?\s*sacos)/gi,
@@ -5090,6 +5123,7 @@
     function renderMaterials() {
         const tbody = document.getElementById('matBody');
         const list = filteredInventory();
+        let totalValue = 0;
         tbody.innerHTML = list.map(function (m) {
             const lab = m.labSlug
                 ? '<div class="muted"><a class="link" href="/laboratorio/materials/' + esc(m.labSlug) + '" target="_blank">Ficha</a></div>'
@@ -5102,15 +5136,36 @@
                     ? '<div class="muted" style="font-size:11px">libre ' + esc(String(free)) +
                         ' · res. ' + esc(String(reserved)) + '</div>'
                     : '');
+            const value = materialInventoryValue(m);
+            totalValue += value;
+            const valueCell = (Number(m.unitCost) || 0) > 0
+                ? moneyMx(value)
+                : '<span class="muted">—</span>';
             return '<tr data-plant="' + esc(m.id) + '">' +
                 '<td>' + esc(displayName(m)) + lab + '</td>' +
                 '<td class="num' + (low ? ' stock-low' : '') + '">' + stockCell + '</td>' +
+                '<td class="num">' + materialUnitCostCell(m) + '</td>' +
+                '<td class="num">' + valueCell + '</td>' +
                 '<td class="num">' + esc(String(m.minStock)) + '</td>' +
                 '<td><div class="row-actions">' +
                 '<button type="button" class="icon-action" data-edit="' + esc(m.id) + '" title="Editar" aria-label="Editar"><i class="fa-solid fa-pen-to-square"></i></button>' +
                 '<button type="button" class="icon-action danger" data-del="' + esc(m.id) + '" title="Eliminar" aria-label="Eliminar"><i class="fa-solid fa-trash-can"></i></button>' +
                 '</div></td></tr>';
-        }).join('') || '<tr><td colspan="4" class="empty">Sin resultados</td></tr>';
+        }).join('') || '<tr><td colspan="6" class="empty">Sin resultados</td></tr>';
+        const totalEl = document.getElementById('matInventoryTotal');
+        if (totalEl) {
+            if (!list.length) {
+                totalEl.hidden = true;
+                totalEl.innerHTML = '';
+            } else {
+                totalEl.hidden = false;
+                const filterNote = list.length !== inventory.length
+                    ? (' · ' + list.length + ' de ' + inventory.length + ' materiales')
+                    : '';
+                totalEl.innerHTML = '<span>Valor en inventario' + esc(filterNote) + '</span>' +
+                    '<span class="val">' + moneyMx(totalValue) + '</span>';
+            }
+        }
         updateDashExtras();
     }
     function matCountRowHtml(m) {
@@ -5373,6 +5428,7 @@
         document.getElementById('plantName').value = item ? item.name : '';
         document.getElementById('plantUnit').value = item ? (item.unit || '') : 'Kg';
         document.getElementById('plantStock').value = item ? item.stock : 0;
+        document.getElementById('plantUnitCost').value = item ? (Number(item.unitCost) || 0) : 0;
         document.getElementById('plantMin').value = item ? item.minStock : 0;
         document.getElementById('plantCategory').value = item ? normalizeCategory(item.category) : (plantFamilies[0] && plantFamilies[0].id) || UNCATEGORIZED_ID;
         plantLab.value = item && item.labSlug ? item.labSlug : '';
@@ -5405,6 +5461,7 @@
             .replace(/^-+|-+$/g, '') + '-' + Date.now().toString(36);
     }
     document.getElementById('plantMin').addEventListener('focus', function () { this.select(); });
+    document.getElementById('plantUnitCost').addEventListener('focus', function () { this.select(); });
     document.getElementById('matAddBtn').addEventListener('click', function () { openPlantModal(null); });
     document.getElementById('plantModalClose').addEventListener('click', closePlantModal);
     document.getElementById('plantModalCancel').addEventListener('click', closePlantModal);
@@ -5419,18 +5476,19 @@
         const id = document.getElementById('plantId').value;
         const prev = id ? inventory.filter(function (m) { return m.id === id; })[0] : null;
         const stock = Math.max(0, Number(document.getElementById('plantStock').value) || 0);
-        const next = {
+        const next = normalizeItem({
             id: id || slugifyPlant(document.getElementById('plantName').value),
             name: normalizeName(document.getElementById('plantName').value),
             unit: normalizeUnit(document.getElementById('plantUnit').value),
             stock: stock,
             reserved: Math.min(stock, prev ? materialReserved(prev) : 0),
             minStock: Math.max(0, Number(document.getElementById('plantMin').value) || 0),
+            unitCost: Math.max(0, Number(document.getElementById('plantUnitCost').value) || 0),
             category: normalizeCategory(document.getElementById('plantCategory').value),
             labSlug: plantLab.value || null,
             isPackaging: prev ? !!prev.isPackaging : false,
             consumeOnConfirm: prev ? !!prev.consumeOnConfirm : false
-        };
+        });
         if (!next.name) return;
         const idx = inventory.findIndex(function (m) { return m.id === next.id; });
         if (idx >= 0) inventory[idx] = next;
