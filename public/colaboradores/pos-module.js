@@ -13,6 +13,7 @@
         'waxtard-basecoat-gris-plus': 'basecoat-plus-gris'
     };
     const SALES_KEY = 's35_pos_sales';
+    const SALE_EDITS_KEY = 's35_sale_edits_v1';
     const CLIENTS_KEY = 's35_pos_clients';
     const FINISHED_KEY = 's35_finished_stock';
     const PROMO_CODES_KEY = 's35_promo_codes_v1';
@@ -379,6 +380,48 @@
     }
 
     let activeNoteSaleId = null;
+    let saleNoteEditing = false;
+
+    function loadSaleEditsMap() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(SALE_EDITS_KEY) || 'null');
+            if (raw && raw.byId && typeof raw.byId === 'object') return raw.byId;
+        } catch (_) {}
+        return {};
+    }
+    function saveSaleEditsMap(byId) {
+        localStorage.setItem(SALE_EDITS_KEY, JSON.stringify({
+            byId: byId || {},
+            updatedAt: new Date().toISOString()
+        }));
+    }
+    function putSaleEdit(id, patch) {
+        if (!id || !patch) return;
+        const map = loadSaleEditsMap();
+        map[id] = Object.assign({}, map[id] || {}, patch, { editedAt: new Date().toISOString() });
+        saveSaleEditsMap(map);
+    }
+    function applySaleEditPatch(sale) {
+        if (!sale || !sale.id) return sale;
+        const patch = loadSaleEditsMap()[sale.id];
+        if (!patch || patch.deleted) return sale;
+        const next = Object.assign({}, sale, patch);
+        if (patch.items) next.items = patch.items;
+        if (patch.meta || sale.meta) {
+            next.meta = Object.assign({}, sale.meta || {}, patch.meta || {});
+        }
+        if (patch.client) next.client = patch.client;
+        if (patch.note && sale.note) {
+            next.note = Object.assign({}, sale.note, patch.note);
+        } else if (patch.note) {
+            next.note = patch.note;
+        }
+        return next;
+    }
+    function isSaleEditDeleted(id) {
+        const patch = loadSaleEditsMap()[id];
+        return !!(patch && patch.deleted);
+    }
 
     function formatSaleDateTime(iso) {
         const d = new Date(iso);
@@ -526,11 +569,260 @@
         return !!(window.S35PanelAPI && window.S35PanelAPI.role === 'admin');
     }
 
+    function toDatetimeLocalValue(iso) {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return '';
+        const pad = function (n) { return String(n).padStart(2, '0'); };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+            'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
+    function fromDatetimeLocalValue(raw) {
+        if (!raw) return new Date().toISOString().slice(0, 19);
+        const d = new Date(raw);
+        if (isNaN(d.getTime())) return new Date().toISOString().slice(0, 19);
+        const pad = function (n) { return String(n).padStart(2, '0'); };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+            'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+    }
+
+    function catalogProductOptionsHtml(selected) {
+        const list = pricedCatalog().slice().sort(function (a, b) {
+            return String(a.name || '').localeCompare(String(b.name || ''), 'es');
+        });
+        return '<option value="">Producto…</option>' + list.map(function (p) {
+            const sel = p.id === selected ? ' selected' : '';
+            return '<option value="' + esc(p.id) + '"' + sel + '>' + esc(p.name) + '</option>';
+        }).join('');
+    }
+
+    function saleNoteLineRowHtml(it, idx) {
+        it = it || {};
+        const qty = Number(it.qty) || 0;
+        const price = Number(it.price) || 0;
+        const line = it.lineTotal != null ? Number(it.lineTotal) : qty * price;
+        return '<tr data-sne-idx="' + idx + '">' +
+            '<td><select class="sne-product" data-sne-field="product">' + catalogProductOptionsHtml(it.product || '') + '</select></td>' +
+            '<td><input type="text" data-sne-field="name" value="' + esc(it.name || '') + '" placeholder="Descripción"></td>' +
+            '<td class="num"><input class="sne-qty" type="number" min="0" step="any" data-sne-field="qty" value="' + esc(String(qty)) + '"></td>' +
+            '<td class="num"><input class="sne-price" type="number" min="0" step="0.01" data-sne-field="price" value="' + esc(String(price)) + '"></td>' +
+            '<td class="num sne-line">' + money(line) + '</td>' +
+            '<td><button type="button" class="icon-action danger" data-sne-remove title="Quitar línea"><i class="fa-solid fa-trash-can"></i></button></td>' +
+            '</tr>';
+    }
+
+    function saleNoteClientOptionsHtml(sale) {
+        const currentId = sale.clientId || '';
+        const opts = ['<option value="">Mostrador / sin cliente</option>'].concat(
+            clients.slice().sort(function (a, b) {
+                return String(a.name).localeCompare(String(b.name), 'es');
+            }).map(function (c) {
+                const sel = c.id === currentId ? ' selected' : '';
+                return '<option value="' + esc(c.id) + '"' + sel + '>' + esc(clientDisplay(c)) + '</option>';
+            })
+        );
+        return opts.join('');
+    }
+
+    function renderSaleNoteEditForm(sale) {
+        const host = document.getElementById('saleNoteEdit');
+        if (!host || !sale) return;
+        const rid = saleReceiptId(sale);
+        const pay = sale.paymentMethod || 'efectivo';
+        const bill = sale.billing || 'sin_facturar';
+        const items = (sale.items && sale.items.length) ? sale.items : [{ product: '', name: '', qty: 1, price: 0 }];
+        host.innerHTML =
+            '<div class="form-grid">' +
+            '<label>Recibo / folio<input type="text" id="sneFolio" value="' + esc(rid ? ('Recibo ' + rid) : (sale.folio || '')) + '" readonly></label>' +
+            '<label>Fecha y hora<input type="datetime-local" id="sneCreatedAt" value="' + esc(toDatetimeLocalValue(sale.createdAt)) + '"></label>' +
+            '<label class="span-2">Cliente<select id="sneClientId">' + saleNoteClientOptionsHtml(sale) + '</select></label>' +
+            '<label class="span-2">Nombre en nota (si no hay cliente)<input type="text" id="sneCustomer" value="' + esc(sale.customer || '') + '" placeholder="Mostrador o nombre libre"></label>' +
+            '<label>Pago<select id="snePay">' +
+            [['efectivo', 'Efectivo'], ['tarjeta', 'Tarjeta'], ['transferencia', 'Transferencia']].map(function (p) {
+                return '<option value="' + p[0] + '"' + (pay === p[0] ? ' selected' : '') + '>' + p[1] + '</option>';
+            }).join('') +
+            '</select></label>' +
+            '<label>Facturación<select id="sneBill">' +
+            [['sin_facturar', 'Sin facturar'], ['facturado', 'Facturado']].map(function (b) {
+                return '<option value="' + b[0] + '"' + (bill === b[0] ? ' selected' : '') + '>' + b[1] + '</option>';
+            }).join('') +
+            '</select></label>' +
+            '</div>' +
+            '<div style="overflow:auto">' +
+            '<table class="sne-lines"><thead><tr>' +
+            '<th>Producto</th><th>Descripción</th><th class="num">Cant.</th><th class="num">P/U</th><th class="num">Importe</th><th></th>' +
+            '</tr></thead><tbody id="sneLinesBody">' +
+            items.map(function (it, i) { return saleNoteLineRowHtml(it, i); }).join('') +
+            '</tbody></table></div>' +
+            '<div><button type="button" class="btn" id="sneAddLine"><i class="fa-solid fa-plus"></i> Línea</button></div>' +
+            '<div class="sne-total-row"><span class="muted">Total</span><span class="val" id="sneTotal">' + money(sale.total) + '</span></div>' +
+            '<div class="sale-note-edit-actions">' +
+            '<button type="button" class="btn" id="sneCancel">Cancelar</button>' +
+            '<button type="button" class="btn primary" id="sneSave"><i class="fa-solid fa-check"></i> Guardar cambios</button>' +
+            '</div>';
+        refreshSaleNoteEditTotals();
+    }
+
+    function refreshSaleNoteEditTotals() {
+        const body = document.getElementById('sneLinesBody');
+        const totalEl = document.getElementById('sneTotal');
+        if (!body || !totalEl) return;
+        let total = 0;
+        body.querySelectorAll('tr').forEach(function (tr) {
+            const qty = Number((tr.querySelector('[data-sne-field="qty"]') || {}).value) || 0;
+            const price = Number((tr.querySelector('[data-sne-field="price"]') || {}).value) || 0;
+            const line = qty * price;
+            total += line;
+            const cell = tr.querySelector('.sne-line');
+            if (cell) cell.textContent = money(line);
+        });
+        totalEl.textContent = money(total);
+    }
+
+    function collectSaleNoteEditForm() {
+        const sale = saleById(activeNoteSaleId);
+        if (!sale) return null;
+        const clientId = (document.getElementById('sneClientId') || {}).value || '';
+        const client = clientId ? clientById(clientId) : null;
+        const customerRaw = ((document.getElementById('sneCustomer') || {}).value || '').trim();
+        const pay = (document.getElementById('snePay') || {}).value || 'efectivo';
+        const bill = (document.getElementById('sneBill') || {}).value || 'sin_facturar';
+        const createdAt = fromDatetimeLocalValue((document.getElementById('sneCreatedAt') || {}).value);
+        const body = document.getElementById('sneLinesBody');
+        const items = [];
+        if (body) {
+            body.querySelectorAll('tr').forEach(function (tr) {
+                const product = ((tr.querySelector('[data-sne-field="product"]') || {}).value || '').trim();
+                let name = ((tr.querySelector('[data-sne-field="name"]') || {}).value || '').trim();
+                const qty = Math.max(0, Number((tr.querySelector('[data-sne-field="qty"]') || {}).value) || 0);
+                const price = Math.max(0, Number((tr.querySelector('[data-sne-field="price"]') || {}).value) || 0);
+                if (!qty && !price && !name && !product) return;
+                if (!name && product) {
+                    const cat = pricedCatalog().filter(function (p) { return p.id === product; })[0];
+                    name = cat ? cat.name : product;
+                }
+                if (!name) name = product || 'Ítem';
+                const cat = product ? pricedCatalog().filter(function (p) { return p.id === product; })[0] : null;
+                items.push({
+                    product: product || name,
+                    name: name,
+                    code: cat ? (cat.code || '') : '',
+                    unit: cat ? (cat.kind === 'liquido' ? (cat.unitLabel || 'L') : 'Pza') : 'Pza',
+                    price: Math.round(price * 100) / 100,
+                    qty: Math.round(qty * 1000) / 1000,
+                    lineTotal: Math.round(qty * price * 100) / 100
+                });
+            });
+        }
+        if (!items.length) {
+            toast('Agrega al menos una línea');
+            return null;
+        }
+        if (['efectivo', 'tarjeta', 'transferencia'].indexOf(pay) < 0) {
+            toast('Método de pago inválido');
+            return null;
+        }
+        if (['facturado', 'sin_facturar'].indexOf(bill) < 0) {
+            toast('Facturación inválida');
+            return null;
+        }
+        const clientSnapshot = client ? {
+            id: client.id,
+            name: client.name,
+            phone: client.phone || '',
+            email: client.email || '',
+            company: client.company || '',
+            rfc: client.rfc || '',
+            type: normalizeClientType(client.type || client.kind)
+        } : null;
+        const total = items.reduce(function (n, it) { return n + (Number(it.lineTotal) || 0); }, 0);
+        return {
+            createdAt: createdAt,
+            clientId: client ? client.id : null,
+            client: clientSnapshot,
+            customer: client ? clientDisplay(client) : (customerRaw || 'Mostrador'),
+            paymentMethod: pay,
+            billing: bill,
+            items: items,
+            total: Math.round(total * 100) / 100
+        };
+    }
+
+    function persistSaleRecord(sale) {
+        if (!sale || !sale.id) return false;
+        let i;
+        for (i = 0; i < sales.length; i++) {
+            if (sales[i].id === sale.id) {
+                sales[i] = sale;
+                saveSales();
+                return true;
+            }
+        }
+        for (i = 0; i < historicalSales.length; i++) {
+            if (historicalSales[i].id === sale.id) {
+                historicalSales[i] = sale;
+                putSaleEdit(sale.id, {
+                    createdAt: sale.createdAt,
+                    clientId: sale.clientId,
+                    client: sale.client,
+                    customer: sale.customer,
+                    paymentMethod: sale.paymentMethod,
+                    billing: sale.billing,
+                    items: sale.items,
+                    total: sale.total,
+                    note: sale.note || null,
+                    meta: sale.meta || null
+                });
+                invalidateAnalyticsSalesCache();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function setSaleNoteMode(editing) {
+        saleNoteEditing = !!editing;
+        const modal = document.getElementById('saleNoteModal');
+        const doc = document.getElementById('saleNoteDoc');
+        const edit = document.getElementById('saleNoteEdit');
+        const share = document.getElementById('saleNoteShareBlock');
+        const editBtn = document.getElementById('saleNoteEditBtn');
+        if (modal) modal.classList.toggle('is-editing', saleNoteEditing);
+        if (doc) doc.hidden = saleNoteEditing;
+        if (edit) edit.hidden = !saleNoteEditing;
+        if (share) share.hidden = saleNoteEditing;
+        if (editBtn) editBtn.hidden = saleNoteEditing;
+        if (saleNoteEditing) {
+            const sale = saleById(activeNoteSaleId);
+            if (sale) renderSaleNoteEditForm(sale);
+        }
+    }
+
+    function saveSaleNoteEdit() {
+        const sale = saleById(activeNoteSaleId);
+        if (!sale) return;
+        const patch = collectSaleNoteEditForm();
+        if (!patch) return;
+        Object.assign(sale, patch);
+        ensureSaleNote(sale);
+        if (!persistSaleRecord(sale)) {
+            toast('No se pudo guardar el ticket');
+            return;
+        }
+        setSaleNoteMode(false);
+        openSaleNoteModal(sale);
+        renderHistory();
+        renderCortes();
+        if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
+        updatePosKpis();
+        renderDashboardRadar();
+        toast('Ticket actualizado · ' + saleReceiptLabel(sale));
+    }
+
     function syncSaleNoteDeleteVisibility() {
         const delBtn = document.getElementById('saleNoteDelete');
         if (!delBtn) return;
         const sale = saleById(activeNoteSaleId);
-        const canDelete = isAdminRole() && sale && !isHistoricalImportSale(sale);
+        const canDelete = isAdminRole() && !!sale && !saleNoteEditing;
         if (canDelete) delBtn.removeAttribute('hidden');
         else delBtn.setAttribute('hidden', '');
     }
@@ -539,12 +831,26 @@
         if (!sale) return;
         ensureSaleNote(sale);
         activeNoteSaleId = sale.id;
+        saleNoteEditing = false;
         const doc = document.getElementById('saleNoteDoc');
         const title = document.getElementById('saleNoteModalTitle');
         const phoneEl = document.getElementById('saleNotePhone');
         const emailEl = document.getElementById('saleNoteEmail');
         const modal = document.getElementById('saleNoteModal');
-        if (doc) doc.innerHTML = buildNoteHtml(sale);
+        const edit = document.getElementById('saleNoteEdit');
+        const share = document.getElementById('saleNoteShareBlock');
+        const editBtn = document.getElementById('saleNoteEditBtn');
+        if (doc) {
+            doc.hidden = false;
+            doc.innerHTML = buildNoteHtml(sale);
+        }
+        if (edit) {
+            edit.hidden = true;
+            edit.innerHTML = '';
+        }
+        if (share) share.hidden = false;
+        if (editBtn) editBtn.hidden = false;
+        if (modal) modal.classList.remove('is-editing');
         if (title) title.textContent = 'Nota de venta · ' + saleReceiptLabel(sale);
         const phone = (sale.client && sale.client.phone) || (sale.note && sale.note.sharePhone) || '';
         const email = (sale.client && sale.client.email) || (sale.note && sale.note.shareEmail) || '';
@@ -559,9 +865,12 @@
     function closeSaleNoteModal() {
         const modal = document.getElementById('saleNoteModal');
         if (!modal) return;
-        modal.classList.remove('show');
+        saleNoteEditing = false;
+        modal.classList.remove('show', 'is-editing');
         modal.setAttribute('aria-hidden', 'true');
         activeNoteSaleId = null;
+        const edit = document.getElementById('saleNoteEdit');
+        if (edit) edit.innerHTML = '';
     }
 
     function deleteActiveSaleNote() {
@@ -572,16 +881,24 @@
         const id = activeNoteSaleId;
         const sale = saleById(id);
         if (!sale) return;
-        const folio = sale.folio || '';
+        const label = saleReceiptLabel(sale);
         if (!confirm('¿Eliminar esta venta? No se puede deshacer')) return;
-        sales = sales.filter(function (s) { return s.id !== id; });
-        saveSales();
+        const wasHist = isHistoricalImportSale(sale);
+        if (wasHist) {
+            historicalSales = historicalSales.filter(function (s) { return s.id !== id; });
+            putSaleEdit(id, { deleted: true });
+            invalidateAnalyticsSalesCache();
+        } else {
+            sales = sales.filter(function (s) { return s.id !== id; });
+            saveSales();
+        }
         closeSaleNoteModal();
         renderHistory();
         renderCortes();
         if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
         updatePosKpis();
-        toast(folio ? ('Venta ' + folio + ' eliminada') : 'Venta eliminada');
+        renderDashboardRadar();
+        toast(label ? ('Venta ' + label + ' eliminada') : 'Venta eliminada');
     }
 
     function saleById(id) {
@@ -604,7 +921,7 @@
         sale.note.sharePhone = phoneEl ? (phoneEl.value || '').trim() : '';
         sale.note.shareEmail = emailEl ? (emailEl.value || '').trim() : '';
         sale.note.lastSharedAt = new Date().toISOString();
-        saveSales();
+        persistSaleRecord(sale);
     }
 
     function shareNoteWhatsApp() {
@@ -1902,7 +2219,8 @@
 
     function normalizeHistoricalSale(row) {
         if (!row || !row.id || !Array.isArray(row.items) || !row.items.length) return null;
-        return {
+        if (isSaleEditDeleted(row.id)) return null;
+        const base = {
             id: row.id,
             folio: row.folio || row.id,
             createdAt: row.createdAt,
@@ -1916,6 +2234,7 @@
             user: row.user || 'import-historico',
             meta: row.meta || { source: 'old-panel' }
         };
+        return applySaleEditPatch(base);
     }
 
     function refreshHistoricalAnalyticsUi() {
@@ -4059,6 +4378,64 @@
         const noteDelete = document.getElementById('saleNoteDelete');
         if (noteDelete) noteDelete.addEventListener('click', deleteActiveSaleNote);
         syncSaleNoteDeleteVisibility();
+
+        const noteEditBtn = document.getElementById('saleNoteEditBtn');
+        if (noteEditBtn) {
+            noteEditBtn.addEventListener('click', function () {
+                if (!activeNoteSaleId) return;
+                setSaleNoteMode(true);
+                syncSaleNoteDeleteVisibility();
+            });
+        }
+        const saleNoteEditHost = document.getElementById('saleNoteEdit');
+        if (saleNoteEditHost) {
+            saleNoteEditHost.addEventListener('click', function (e) {
+                if (e.target.closest('#sneCancel')) {
+                    setSaleNoteMode(false);
+                    const sale = saleById(activeNoteSaleId);
+                    if (sale) openSaleNoteModal(sale);
+                    return;
+                }
+                if (e.target.closest('#sneSave')) {
+                    saveSaleNoteEdit();
+                    return;
+                }
+                if (e.target.closest('#sneAddLine')) {
+                    const body = document.getElementById('sneLinesBody');
+                    if (!body) return;
+                    const idx = body.querySelectorAll('tr').length;
+                    body.insertAdjacentHTML('beforeend', saleNoteLineRowHtml({ product: '', name: '', qty: 1, price: 0 }, idx));
+                    refreshSaleNoteEditTotals();
+                    return;
+                }
+                const rm = e.target.closest('[data-sne-remove]');
+                if (rm) {
+                    const tr = rm.closest('tr');
+                    if (tr) tr.remove();
+                    refreshSaleNoteEditTotals();
+                }
+            });
+            saleNoteEditHost.addEventListener('input', function (e) {
+                if (e.target.closest('[data-sne-field="qty"], [data-sne-field="price"]')) {
+                    refreshSaleNoteEditTotals();
+                }
+            });
+            saleNoteEditHost.addEventListener('change', function (e) {
+                const sel = e.target.closest('[data-sne-field="product"]');
+                if (!sel) return;
+                const tr = sel.closest('tr');
+                if (!tr) return;
+                const cat = pricedCatalog().filter(function (p) { return p.id === sel.value; })[0];
+                const nameInput = tr.querySelector('[data-sne-field="name"]');
+                const priceInput = tr.querySelector('[data-sne-field="price"]');
+                if (cat && nameInput) nameInput.value = cat.name || '';
+                if (cat && priceInput && !(Number(priceInput.value) > 0)) {
+                    const list = typeof unitPrice === 'function' ? unitPrice(cat.id, 1) : 0;
+                    if (list > 0) priceInput.value = String(list);
+                }
+                refreshSaleNoteEditTotals();
+            });
+        }
 
         const periodTabs = document.getElementById('cortesPeriodTabs');
         if (periodTabs) {

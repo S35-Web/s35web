@@ -1813,11 +1813,101 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: max-width .15s ease;
+        }
+        #saleNoteModal.is-editing .modal-card {
+            max-width: min(720px, calc(100vw - 24px));
         }
         #saleNoteModal .modal-body {
             overflow: auto;
             flex: 1;
             min-height: 0;
+        }
+        #saleNoteModal .modal-head-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sale-note-edit {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 2px 0 8px;
+        }
+        .sale-note-edit .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 12px;
+        }
+        .sale-note-edit label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .sale-note-edit label.span-2 { grid-column: 1 / -1; }
+        .sale-note-edit input,
+        .sale-note-edit select {
+            height: 34px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 10px;
+            font-size: 13px;
+        }
+        .sale-note-edit .sne-lines {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .sale-note-edit .sne-lines th {
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            padding: 4px 6px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sale-note-edit .sne-lines th.num,
+        .sale-note-edit .sne-lines td.num { text-align: right; }
+        .sale-note-edit .sne-lines td {
+            padding: 6px 4px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border);
+        }
+        .sale-note-edit .sne-lines input,
+        .sale-note-edit .sne-lines select {
+            width: 100%;
+            min-width: 0;
+            height: 32px;
+        }
+        .sale-note-edit .sne-lines .sne-qty { max-width: 72px; }
+        .sale-note-edit .sne-lines .sne-price { max-width: 96px; }
+        .sale-note-edit .sne-total-row {
+            display: flex;
+            justify-content: flex-end;
+            align-items: baseline;
+            gap: 10px;
+            padding-top: 4px;
+            font-size: 14px;
+        }
+        .sale-note-edit .sne-total-row .val {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            font-size: 18px;
+        }
+        .sale-note-edit-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-end;
+            padding-top: 4px;
+        }
+        @media (max-width: 640px) {
+            .sale-note-edit .form-grid { grid-template-columns: 1fr; }
+            .sale-note-edit label.span-2 { grid-column: auto; }
         }
         .sale-note-doc {
             padding: 4px 2px 8px;
@@ -1999,6 +2089,9 @@
             #saleNoteModal .sale-note-hint,
             #saleNoteModal .sale-note-share-fields,
             #saleNoteModal .sale-note-actions,
+            #saleNoteModal #saleNoteEdit,
+            #saleNoteModal #saleNoteEditBtn,
+            #saleNoteModal #saleNoteShareBlock,
             #lotTicketModal .modal-head,
             #lotTicketModal .lot-ticket-actions,
             #lotTicketModal .lot-confirm-fields,
@@ -4189,25 +4282,31 @@
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="saleNoteModalTitle">
             <div class="modal-head">
                 <strong id="saleNoteModalTitle">Nota de venta</strong>
-                <button id="saleNoteModalClose" class="btn" type="button">Cerrar</button>
+                <div class="modal-head-actions">
+                    <button type="button" class="btn" id="saleNoteEditBtn"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+                    <button id="saleNoteModalClose" class="btn" type="button">Cerrar</button>
+                </div>
             </div>
             <div class="modal-body">
                 <div id="saleNoteDoc" class="sale-note-doc"></div>
-                <p class="sale-note-hint">Se abre WhatsApp o el correo de este dispositivo. No hay envío automático desde el servidor.</p>
-                <div class="sale-note-share-fields">
-                    <label>Teléfono WhatsApp
-                        <input id="saleNotePhone" class="customer-input" type="tel" inputmode="tel" placeholder="Ej. 6671234567" autocomplete="off">
-                    </label>
-                    <label>Correo
-                        <input id="saleNoteEmail" class="customer-input" type="email" inputmode="email" placeholder="cliente@correo.com" autocomplete="off">
-                    </label>
-                </div>
-                <div class="sale-note-actions">
-                    <button type="button" class="btn wa" id="saleNoteWhatsApp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
-                    <button type="button" class="btn" id="saleNoteEmailBtn"><i class="fa-solid fa-envelope"></i> Correo</button>
-                    <button type="button" class="btn" id="saleNoteCopy"><i class="fa-solid fa-copy"></i> Copiar</button>
-                    <button type="button" class="btn primary" id="saleNotePrint"><i class="fa-solid fa-print"></i> Imprimir</button>
-                    <button type="button" class="btn danger" id="saleNoteDelete" hidden><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+                <div id="saleNoteEdit" class="sale-note-edit" hidden></div>
+                <div id="saleNoteShareBlock">
+                    <p class="sale-note-hint">Se abre WhatsApp o el correo de este dispositivo. No hay envío automático desde el servidor.</p>
+                    <div class="sale-note-share-fields">
+                        <label>Teléfono WhatsApp
+                            <input id="saleNotePhone" class="customer-input" type="tel" inputmode="tel" placeholder="Ej. 6671234567" autocomplete="off">
+                        </label>
+                        <label>Correo
+                            <input id="saleNoteEmail" class="customer-input" type="email" inputmode="email" placeholder="cliente@correo.com" autocomplete="off">
+                        </label>
+                    </div>
+                    <div class="sale-note-actions">
+                        <button type="button" class="btn wa" id="saleNoteWhatsApp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+                        <button type="button" class="btn" id="saleNoteEmailBtn"><i class="fa-solid fa-envelope"></i> Correo</button>
+                        <button type="button" class="btn" id="saleNoteCopy"><i class="fa-solid fa-copy"></i> Copiar</button>
+                        <button type="button" class="btn primary" id="saleNotePrint"><i class="fa-solid fa-print"></i> Imprimir</button>
+                        <button type="button" class="btn danger" id="saleNoteDelete" hidden><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+                    </div>
                 </div>
             </div>
         </div>
