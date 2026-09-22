@@ -3907,14 +3907,19 @@
         }).filter(function (r) { return r.amount > 0; });
         renderBreakdownRows('cortesPayRows', 'cortesPayBar', payRows, total);
 
-        const billKeys = [
-            { key: 'facturado', label: 'Facturado' },
-            { key: 'sin_facturar', label: 'Sin facturar' }
+        const billCombos = [
+            { key: 'facturado_efectivo', bill: 'facturado', pay: 'efectivo', label: 'Facturado · efectivo' },
+            { key: 'facturado_tarjeta', bill: 'facturado', pay: 'tarjeta', label: 'Facturado · tarjeta' },
+            { key: 'facturado_transferencia', bill: 'facturado', pay: 'transferencia', label: 'Facturado · transferencia' },
+            { key: 'sin_facturar_efectivo', bill: 'sin_facturar', pay: 'efectivo', label: 'Sin facturar · efectivo' },
+            { key: 'sin_facturar_tarjeta', bill: 'sin_facturar', pay: 'tarjeta', label: 'Sin facturar · tarjeta' },
+            { key: 'sin_facturar_transferencia', bill: 'sin_facturar', pay: 'transferencia', label: 'Sin facturar · transferencia' }
         ];
-        const billRows = billKeys.map(function (b) {
+        const billRows = billCombos.map(function (b) {
             const amount = list.reduce(function (n, s) {
                 const bill = s.billing || 'sin_facturar';
-                return n + (bill === b.key ? (Number(s.total) || 0) : 0);
+                const pay = s.paymentMethod || 'efectivo';
+                return n + (bill === b.bill && pay === b.pay ? (Number(s.total) || 0) : 0);
             }, 0);
             return { key: b.key, label: b.label, amount: amount };
         }).filter(function (r) { return r.amount > 0; });
