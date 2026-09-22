@@ -94,13 +94,24 @@
             z-index: 40;
         }
         .sidebar-logo {
-            width: 32px; height: 32px;
-            display: grid; place-items: center;
-            margin-bottom: 18px;
+            width: 36px;
+            height: 36px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 18px;
+            padding: 0;
             text-decoration: none;
             border-radius: var(--radius-sm);
+            box-sizing: border-box;
         }
-        .sidebar-logo img { height: 18px; width: auto; filter: none; }
+        .sidebar-logo img {
+            height: 12px;
+            width: auto;
+            max-width: 28px;
+            object-fit: contain;
+            display: block;
+            filter: none;
+        }
         [data-theme="dark"] .sidebar-logo img { filter: invert(1); }
         .nav {
             display: flex;
