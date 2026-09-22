@@ -19,6 +19,9 @@ const STORE_NAMES = {
   '32': 'Cotizador',
 };
 
+/** Tiendas excluidas del import (p. ej. Cotizador = cotizaciones, no ventas reales). */
+const EXCLUDED_STORE_IDS = new Set(['32']);
+
 const linesPath = process.argv[2] || DEFAULT_LINES;
 const receiptsPath = process.argv[3] || DEFAULT_RECEIPTS;
 
@@ -156,6 +159,10 @@ function build() {
   const items = Object.keys(receipts)
     .map(function (id) { return receipts[id]; })
     .filter(function (rcpt) { return rcpt.lines.length > 0; })
+    .filter(function (rcpt) {
+      const sid = storeByReceipt[rcpt.receiptId];
+      return !sid || !EXCLUDED_STORE_IDS.has(String(sid));
+    })
     .sort(function (a, b) {
       const ta = createdAtLocal(a.date, a.time);
       const tb = createdAtLocal(b.date, b.time);
@@ -200,19 +207,22 @@ function build() {
     });
 
   const payload = {
-    version: 4,
-    importVersion: 4,
-    note: 'Un ticket por nota (fecha/hora reales). Incluye storeId; tienda 32 = Cotizador.',
+    version: 5,
+    importVersion: 5,
+    note: 'Un ticket por nota (fecha/hora reales). Excluye Cotizador (store 32).',
     generatedAt: new Date().toISOString().slice(0, 10),
     source: path.basename(linesPath),
     storeNames: STORE_NAMES,
+    excludedStoreIds: Array.from(EXCLUDED_STORE_IDS),
     items: items,
     stats: {
       tickets: items.length,
       skippedLines: skippedLines,
       skippedAmount: round2(skippedAmount),
       withStore: items.filter(function (it) { return it.meta && it.meta.storeId != null; }).length,
-      cotizador: items.filter(function (it) { return it.meta && it.meta.storeName === 'Cotizador'; }).length,
+      excludedCotizador: Object.keys(receipts).filter(function (id) {
+        return EXCLUDED_STORE_IDS.has(String(storeByReceipt[id] || ''));
+      }).length,
     },
   };
 
@@ -220,10 +230,10 @@ function build() {
   fs.writeFileSync(OUT_PATH, JSON.stringify(payload));
   const mb = (Buffer.byteLength(JSON.stringify(payload)) / (1024 * 1024)).toFixed(2);
   console.log(
-    'historical-sales-import.json v4:',
+    'historical-sales-import.json v5:',
     items.length, 'notas ·', mb, 'MB · skipped', skippedLines, 'lines ·',
     round2(skippedAmount), 'MXN sin mapear ·',
-    'store', payload.stats.withStore, '· Cotizador', payload.stats.cotizador
+    'excluido Cotizador', payload.stats.excludedCotizador
   );
 }
 

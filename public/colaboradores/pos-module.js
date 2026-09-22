@@ -2370,14 +2370,26 @@
     }
 
     /** Import synthetic tickets from historical-sales-import.json (v3: por nota). */
-    const HIST_SALES_FLAG = 's35_hist_sales_imported_v4';
-    const HIST_SALES_FLAG_LEGACY = ['s35_hist_sales_imported_v1', 's35_hist_sales_imported_v2', 's35_hist_sales_imported_v3'];
+    const HIST_SALES_FLAG = 's35_hist_sales_imported_v5';
+    const HIST_SALES_FLAG_LEGACY = [
+        's35_hist_sales_imported_v1',
+        's35_hist_sales_imported_v2',
+        's35_hist_sales_imported_v3',
+        's35_hist_sales_imported_v4'
+    ];
 
     function isHistoricalImportSale(s) {
         if (!s) return false;
         if (s.user === 'import-historico') return true;
         const src = s.meta && s.meta.source;
         return src === 'old-panel';
+    }
+
+    function isExcludedHistoricalStore(sale) {
+        if (!sale || !sale.meta) return false;
+        if (sale.meta.storeName === 'Cotizador') return true;
+        const sid = sale.meta.storeId;
+        return sid === 32 || sid === '32';
     }
 
     function purgeHistoricalImportSales() {
@@ -2393,6 +2405,7 @@
     function normalizeHistoricalSale(row) {
         if (!row || !row.id || !Array.isArray(row.items) || !row.items.length) return null;
         if (isSaleEditDeleted(row.id)) return null;
+        if (isExcludedHistoricalStore(row)) return null;
         const base = {
             id: row.id,
             folio: row.folio || row.id,
