@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "note": "Notas del panel viejo capturadas después del cierre del export histórico (2026-09-21). Horas reales de expedición.",
+  "version": 3,
+  "note": "Notas del panel viejo capturadas después del cierre del export histórico. Horas reales de expedición.",
   "generatedAt": "2026-09-22",
   "items": [
     {
@@ -134,6 +134,37 @@
         "year": 2026,
         "month": 9,
         "day": 21
+      }
+    },
+    {
+      "id": "sale-hist-rcpt-64060",
+      "folio": "HIST-R64060",
+      "createdAt": "2026-09-22T08:51:00",
+      "customer": "Mostrador",
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64060,
+        "noteSuffix": "a-1",
+        "observations": "MOSTRE EFE",
+        "year": 2026,
+        "month": 9,
+        "day": 22
       }
     }
   ]
