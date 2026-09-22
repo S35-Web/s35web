@@ -20,8 +20,8 @@ const STORE_NAMES = {
   '36': 'Mochis',
 };
 
-/** Tiendas excluidas del import (p. ej. Cotizador = cotizaciones, no ventas reales). */
-const EXCLUDED_STORE_IDS = new Set(['32']);
+/** Tiendas excluidas del import (cotizaciones / no ventas de planta). */
+const EXCLUDED_STORE_IDS = new Set(['32', '36']);
 
 const linesPath = process.argv[2] || DEFAULT_LINES;
 const receiptsPath = process.argv[3] || DEFAULT_RECEIPTS;
@@ -210,7 +210,7 @@ function build() {
   const payload = {
     version: 5,
     importVersion: 5,
-    note: 'Un ticket por nota (fecha/hora reales). Excluye Cotizador (store 32).',
+    note: 'Un ticket por nota (fecha/hora reales). Excluye Cotizador (32) y Mochis (36).',
     generatedAt: new Date().toISOString().slice(0, 10),
     source: path.basename(linesPath),
     storeNames: STORE_NAMES,
@@ -221,7 +221,7 @@ function build() {
       skippedLines: skippedLines,
       skippedAmount: round2(skippedAmount),
       withStore: items.filter(function (it) { return it.meta && it.meta.storeId != null; }).length,
-      excludedCotizador: Object.keys(receipts).filter(function (id) {
+      excludedByStore: Object.keys(receipts).filter(function (id) {
         return EXCLUDED_STORE_IDS.has(String(storeByReceipt[id] || ''));
       }).length,
     },
@@ -231,10 +231,10 @@ function build() {
   fs.writeFileSync(OUT_PATH, JSON.stringify(payload));
   const mb = (Buffer.byteLength(JSON.stringify(payload)) / (1024 * 1024)).toFixed(2);
   console.log(
-    'historical-sales-import.json v5:',
+    'historical-sales-import.json v7:',
     items.length, 'notas ·', mb, 'MB · skipped', skippedLines, 'lines ·',
     round2(skippedAmount), 'MXN sin mapear ·',
-    'excluido Cotizador', payload.stats.excludedCotizador
+    'excluidas tiendas', payload.stats.excludedByStore
   );
 }
 
