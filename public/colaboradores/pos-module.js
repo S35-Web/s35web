@@ -610,22 +610,163 @@
             '</tr>';
     }
 
-    function saleNoteClientOptionsHtml(sale) {
+    function saleNoteClientPickerHtml(sale) {
         const currentId = sale.clientId || '';
-        const opts = ['<option value="">Mostrador / sin cliente</option>'].concat(
-            clients.slice().sort(function (a, b) {
-                return String(a.name).localeCompare(String(b.name), 'es');
-            }).map(function (c) {
-                const sel = c.id === currentId ? ' selected' : '';
-                return '<option value="' + esc(c.id) + '"' + sel + '>' + esc(clientDisplay(c)) + '</option>';
-            })
+        const client = currentId ? clientById(currentId) : null;
+        const label = client ? clientDisplay(client) : 'Mostrador / sin cliente';
+        const badge = client
+            ? ('<span class="pos-client-trigger-badge' + (isDistributorClient(client) ? ' is-dist' : '') + '" id="sneClientTriggerBadge">' +
+                esc(clientTypeLabel(client)) + '</span>')
+            : '<span class="pos-client-trigger-badge" id="sneClientTriggerBadge" hidden></span>';
+        return '<div class="pos-client-picker" id="sneClientPicker">' +
+            '<input type="hidden" id="sneClientId" value="' + esc(currentId) + '" autocomplete="off">' +
+            '<button type="button" class="pos-client-trigger" id="sneClientTrigger"' +
+            ' aria-haspopup="listbox" aria-expanded="false" aria-controls="sneClientPickerList">' +
+            '<span class="pos-client-trigger-text">' +
+            '<span class="pos-client-trigger-label" id="sneClientTriggerLabel">' + esc(label) + '</span>' +
+            badge +
+            '</span>' +
+            '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>' +
+            '</button>' +
+            '<div class="pos-client-popover" id="sneClientPopover" hidden role="dialog" aria-label="Buscar cliente">' +
+            '<div class="pos-client-search-wrap">' +
+            '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>' +
+            '<input type="search" id="sneClientPickerSearch" class="pos-client-search"' +
+            ' placeholder="Nombre, empresa, teléfono, email o RFC" autocomplete="off"' +
+            ' aria-autocomplete="list" aria-controls="sneClientPickerList">' +
+            '</div>' +
+            '<div class="pos-client-list" id="sneClientPickerList" role="listbox"></div>' +
+            '</div></div>';
+    }
+
+    let sneClientPickerOpen = false;
+    let sneClientPickerActiveIdx = -1;
+
+    function syncSneClientTrigger() {
+        const labelEl = document.getElementById('sneClientTriggerLabel');
+        const badgeEl = document.getElementById('sneClientTriggerBadge');
+        const hid = document.getElementById('sneClientId');
+        if (!labelEl || !hid) return;
+        const client = clientById(hid.value || '');
+        if (!client) {
+            labelEl.textContent = 'Mostrador / sin cliente';
+            if (badgeEl) {
+                badgeEl.hidden = true;
+                badgeEl.textContent = '';
+                badgeEl.classList.remove('is-dist');
+            }
+            return;
+        }
+        labelEl.textContent = clientDisplay(client);
+        if (badgeEl) {
+            badgeEl.hidden = false;
+            badgeEl.textContent = clientTypeLabel(client);
+            badgeEl.classList.toggle('is-dist', isDistributorClient(client));
+        }
+    }
+
+    function filteredSneClients() {
+        const q = (document.getElementById('sneClientPickerSearch') &&
+            document.getElementById('sneClientPickerSearch').value || '').toLowerCase().trim();
+        return clients.slice().sort(function (a, b) {
+            return String(a.name).localeCompare(String(b.name), 'es');
+        }).filter(function (c) {
+            return !q || clientPickerHaystack(c).includes(q);
+        });
+    }
+
+    function renderSneClientPickerList() {
+        const listEl = document.getElementById('sneClientPickerList');
+        const hid = document.getElementById('sneClientId');
+        if (!listEl) return;
+        const current = hid ? hid.value : '';
+        const list = filteredSneClients();
+        const q = (document.getElementById('sneClientPickerSearch') &&
+            document.getElementById('sneClientPickerSearch').value || '').trim();
+        const rows = [];
+        rows.push(
+            '<button type="button" class="pos-client-option' + (!current ? ' is-selected' : '') +
+            '" role="option" data-sne-client-id="" aria-selected="' + (!current ? 'true' : 'false') + '">' +
+            '<span class="pos-client-option-name">Mostrador / sin cliente</span>' +
+            '<span class="badge">Mostrador</span>' +
+            '</button>'
         );
-        return opts.join('');
+        list.forEach(function (c) {
+            const dist = isDistributorClient(c);
+            const metaParts = [c.company, c.phone, c.email, c.rfc].filter(Boolean);
+            const metaHtml = metaParts.map(function (part) {
+                return highlightClientMatch(part, q);
+            }).join(' · ');
+            rows.push(
+                '<button type="button" class="pos-client-option' +
+                (current === c.id ? ' is-selected' : '') +
+                '" role="option" data-sne-client-id="' + esc(c.id) + '" aria-selected="' +
+                (current === c.id ? 'true' : 'false') + '">' +
+                '<span class="pos-client-option-name">' + highlightClientMatch(c.name, q) + '</span>' +
+                '<span class="badge' + (dist ? ' b-primary' : '') + '">' + esc(clientTypeLabel(c)) + '</span>' +
+                (metaHtml ? '<span class="pos-client-option-meta">' + metaHtml + '</span>' : '') +
+                '</button>'
+            );
+        });
+        if (!list.length && q) {
+            listEl.innerHTML = rows[0] + '<div class="pos-client-option-empty">Sin coincidencias</div>';
+        } else {
+            listEl.innerHTML = rows.join('');
+        }
+        const options = listEl.querySelectorAll('.pos-client-option');
+        if (sneClientPickerActiveIdx < 0 || sneClientPickerActiveIdx >= options.length) {
+            sneClientPickerActiveIdx = 0;
+        }
+        options.forEach(function (opt, i) {
+            opt.classList.toggle('is-active', i === sneClientPickerActiveIdx);
+        });
+        const active = options[sneClientPickerActiveIdx];
+        if (active && typeof active.scrollIntoView === 'function') {
+            active.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    function openSneClientPicker() {
+        const pop = document.getElementById('sneClientPopover');
+        const trigger = document.getElementById('sneClientTrigger');
+        const search = document.getElementById('sneClientPickerSearch');
+        if (!pop || sneClientPickerOpen) return;
+        sneClientPickerOpen = true;
+        pop.hidden = false;
+        if (trigger) trigger.setAttribute('aria-expanded', 'true');
+        if (search) search.value = '';
+        sneClientPickerActiveIdx = 0;
+        renderSneClientPickerList();
+        requestAnimationFrame(function () {
+            if (search) search.focus();
+        });
+    }
+
+    function closeSneClientPicker() {
+        const pop = document.getElementById('sneClientPopover');
+        const trigger = document.getElementById('sneClientTrigger');
+        if (!sneClientPickerOpen) return;
+        sneClientPickerOpen = false;
+        if (pop) pop.hidden = true;
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        sneClientPickerActiveIdx = -1;
+    }
+
+    function setSneClientId(id) {
+        const hid = document.getElementById('sneClientId');
+        if (hid) hid.value = id || '';
+        syncSneClientTrigger();
+        const customerEl = document.getElementById('sneCustomer');
+        const client = id ? clientById(id) : null;
+        if (customerEl && client) customerEl.value = clientDisplay(client);
+        closeSneClientPicker();
     }
 
     function renderSaleNoteEditForm(sale) {
         const host = document.getElementById('saleNoteEdit');
         if (!host || !sale) return;
+        sneClientPickerOpen = false;
+        sneClientPickerActiveIdx = -1;
         const rid = saleReceiptId(sale);
         const pay = sale.paymentMethod || 'efectivo';
         const bill = sale.billing || 'sin_facturar';
@@ -634,7 +775,7 @@
             '<div class="form-grid">' +
             '<label>Recibo / folio<input type="text" id="sneFolio" value="' + esc(rid ? ('Recibo ' + rid) : (sale.folio || '')) + '" readonly></label>' +
             '<label>Fecha y hora<input type="datetime-local" id="sneCreatedAt" value="' + esc(toDatetimeLocalValue(sale.createdAt)) + '"></label>' +
-            '<label class="span-2">Cliente<select id="sneClientId">' + saleNoteClientOptionsHtml(sale) + '</select></label>' +
+            '<label class="span-2">Cliente' + saleNoteClientPickerHtml(sale) + '</label>' +
             '<label class="span-2">Nombre en nota (si no hay cliente)<input type="text" id="sneCustomer" value="' + esc(sale.customer || '') + '" placeholder="Mostrador o nombre libre"></label>' +
             '<label>Pago<select id="snePay">' +
             [['efectivo', 'Efectivo'], ['tarjeta', 'Tarjeta'], ['transferencia', 'Transferencia']].map(function (p) {
@@ -781,6 +922,7 @@
 
     function setSaleNoteMode(editing) {
         saleNoteEditing = !!editing;
+        if (!saleNoteEditing) closeSneClientPicker();
         const modal = document.getElementById('saleNoteModal');
         const doc = document.getElementById('saleNoteDoc');
         const edit = document.getElementById('saleNoteEdit');
@@ -865,6 +1007,7 @@
     function closeSaleNoteModal() {
         const modal = document.getElementById('saleNoteModal');
         if (!modal) return;
+        closeSneClientPicker();
         saleNoteEditing = false;
         modal.classList.remove('show', 'is-editing');
         modal.setAttribute('aria-hidden', 'true');
@@ -4407,6 +4550,18 @@
         const saleNoteEditHost = document.getElementById('saleNoteEdit');
         if (saleNoteEditHost) {
             saleNoteEditHost.addEventListener('click', function (e) {
+                if (e.target.closest('#sneClientTrigger')) {
+                    e.preventDefault();
+                    if (sneClientPickerOpen) closeSneClientPicker();
+                    else openSneClientPicker();
+                    return;
+                }
+                const sneOpt = e.target.closest('[data-sne-client-id]');
+                if (sneOpt && saleNoteEditHost.contains(sneOpt)) {
+                    e.preventDefault();
+                    setSneClientId(sneOpt.getAttribute('data-sne-client-id') || '');
+                    return;
+                }
                 if (e.target.closest('#sneCancel')) {
                     setSaleNoteMode(false);
                     const sale = saleById(activeNoteSaleId);
@@ -4433,8 +4588,34 @@
                 }
             });
             saleNoteEditHost.addEventListener('input', function (e) {
+                if (e.target && e.target.id === 'sneClientPickerSearch') {
+                    sneClientPickerActiveIdx = 0;
+                    renderSneClientPickerList();
+                    return;
+                }
                 if (e.target.closest('[data-sne-field="qty"], [data-sne-field="price"]')) {
                     refreshSaleNoteEditTotals();
+                }
+            });
+            saleNoteEditHost.addEventListener('keydown', function (e) {
+                if (!e.target || e.target.id !== 'sneClientPickerSearch' || !sneClientPickerOpen) return;
+                const listEl = document.getElementById('sneClientPickerList');
+                const options = listEl ? listEl.querySelectorAll('.pos-client-option') : [];
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    sneClientPickerActiveIdx = Math.min(options.length - 1, sneClientPickerActiveIdx + 1);
+                    renderSneClientPickerList();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    sneClientPickerActiveIdx = Math.max(0, sneClientPickerActiveIdx - 1);
+                    renderSneClientPickerList();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const opt = options[sneClientPickerActiveIdx];
+                    if (opt) setSneClientId(opt.getAttribute('data-sne-client-id') || '');
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeSneClientPicker();
                 }
             });
             saleNoteEditHost.addEventListener('change', function (e) {
@@ -4453,6 +4634,12 @@
                 refreshSaleNoteEditTotals();
             });
         }
+        document.addEventListener('mousedown', function (e) {
+            if (!sneClientPickerOpen) return;
+            const picker = document.getElementById('sneClientPicker');
+            if (picker && picker.contains(e.target)) return;
+            closeSneClientPicker();
+        });
 
         const periodTabs = document.getElementById('cortesPeriodTabs');
         if (periodTabs) {

@@ -1898,12 +1898,15 @@
             font-variant-numeric: tabular-nums;
             font-size: 18px;
         }
-        .sale-note-edit-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: flex-end;
-            padding-top: 4px;
+        .sale-note-edit .pos-client-picker { width: 100%; }
+        .sale-note-edit .pos-client-popover {
+            bottom: auto;
+            top: calc(100% + 6px);
+            width: 100%;
+            max-height: min(320px, 40vh);
+        }
+        .sale-note-edit .form-grid label.span-2 > .pos-client-picker {
+            margin-top: 0;
         }
         @media (max-width: 640px) {
             .sale-note-edit .form-grid { grid-template-columns: 1fr; }
@@ -4037,7 +4040,7 @@
                         </div>
                         <div class="cortes-panel">
                             <h3>Facturación</h3>
-                            <p class="panel-sub">Por monto</p>
+                            <p class="panel-sub">Facturación × pago · solo con monto</p>
                             <div class="cortes-bar" id="cortesBillBar" aria-hidden="true"></div>
                             <div class="cortes-rows" id="cortesBillRows"></div>
                         </div>
