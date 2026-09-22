@@ -1925,6 +1925,41 @@
         renderHistory();
     }
 
+    function mergeHistoricalSalesById(rows) {
+        if (!rows || !rows.length) return 0;
+        const byId = {};
+        historicalSales.forEach(function (s, i) { byId[s.id] = i; });
+        let added = 0;
+        rows.forEach(function (row) {
+            const next = normalizeHistoricalSale(row);
+            if (!next) return;
+            if (byId[next.id] != null) {
+                historicalSales[byId[next.id]] = next;
+            } else {
+                byId[next.id] = historicalSales.length;
+                historicalSales.push(next);
+                added += 1;
+            }
+        });
+        if (added || rows.length) invalidateAnalyticsSalesCache();
+        return added;
+    }
+
+    function importManualSalesCatchup() {
+        return fetch('/colaboradores/data/manual-sales-catchup.json', { cache: 'no-store' })
+            .then(function (r) {
+                if (!r.ok) return { added: 0, skipped: true };
+                return r.json();
+            })
+            .then(function (data) {
+                const incoming = (data && Array.isArray(data.items)) ? data.items : [];
+                if (!incoming.length) return { added: 0, skipped: true };
+                const added = mergeHistoricalSalesById(incoming);
+                refreshHistoricalAnalyticsUi();
+                return { added: added, total: historicalSales.length };
+            });
+    }
+
     function importHistoricalSales(opts) {
         opts = opts || {};
         const migrate = !!opts.force || !!opts.migrate;
@@ -1951,7 +1986,6 @@
                 }
                 historicalSales = incoming.map(normalizeHistoricalSale).filter(Boolean);
                 invalidateAnalyticsSalesCache();
-                refreshHistoricalAnalyticsUi();
                 try {
                     localStorage.setItem(HIST_SALES_FLAG, new Date().toISOString());
                     HIST_SALES_FLAG_LEGACY.forEach(function (k) {
@@ -1964,6 +1998,15 @@
                     total: historicalSales.length,
                     importVersion: importVersion
                 };
+            })
+            .then(function (result) {
+                return importManualSalesCatchup().then(function () {
+                    refreshHistoricalAnalyticsUi();
+                    return result;
+                }).catch(function () {
+                    refreshHistoricalAnalyticsUi();
+                    return result;
+                });
             });
     }
     function ensureHistoricalSalesImport() {
@@ -1972,7 +2015,9 @@
             needsMigration = !localStorage.getItem(HIST_SALES_FLAG)
                 || HIST_SALES_FLAG_LEGACY.some(function (k) { return !!localStorage.getItem(k); });
         } catch (_) {}
-        importHistoricalSales({ migrate: needsMigration }).catch(function () { /* silencioso en arranque */ });
+        importHistoricalSales({ migrate: needsMigration }).catch(function () {
+            importManualSalesCatchup().catch(function () { /* silencioso */ });
+        });
     }
 
     function clientById(id) {
