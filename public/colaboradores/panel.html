@@ -409,11 +409,119 @@
         }
         .dash-status { margin: 0; color: var(--muted); font-size: 14px; }
 
+        .dash-radar {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            margin-bottom: 28px;
+            max-width: 720px;
+        }
+        .dash-block-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .dash-block h2 {
+            margin: 0;
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: -0.01em;
+        }
+        .dash-block-sub {
+            margin: -4px 0 10px;
+            font-size: 12px;
+        }
+        .dash-block-link {
+            border: none;
+            background: none;
+            padding: 0;
+            color: var(--muted);
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .dash-block-link:hover { color: var(--text); }
+        .dash-signals {
+            cursor: pointer;
+        }
+        .dash-signals:focus-visible {
+            outline: 2px solid var(--text);
+            outline-offset: 2px;
+        }
+        .dash-signals .kpi .val.up { color: var(--success); }
+        .dash-signals .kpi .val.down { color: var(--danger); }
+        .dash-list {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: var(--panel);
+        }
+        .dash-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--text);
+            background: transparent;
+            border-left: none;
+            border-right: none;
+            border-top: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .dash-row:last-child { border-bottom: none; }
+        .dash-row:hover { background: var(--hover); }
+        .dash-row:focus-visible {
+            outline: 2px solid var(--text);
+            outline-offset: -2px;
+        }
+        .dash-row .left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+        .dash-row .name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .dash-row .meta {
+            color: var(--muted);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .dash-row .amt {
+            font-weight: 500;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dash-row .amt.up { color: var(--success); }
+        .dash-row .amt.down { color: var(--danger); }
+        .dash-row .amt i { font-size: 11px; }
+        .dash-empty {
+            padding: 14px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
         .quick-actions {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 24px;
+            margin-bottom: 8px;
         }
         .qa-btn {
             display: inline-flex;
@@ -3225,63 +3333,52 @@
                 <section id="dashboard" class="section active">
                     <div class="dash-hero">
                         <h1 class="dash-greet" id="dashGreet">Buenas</h1>
-                        <p class="dash-status" id="dashStatus">Panel interno de operación S-35.</p>
+                        <p class="dash-status" id="dashStatus">Radar del día · ventas de este navegador.</p>
                     </div>
+
+                    <div class="dash-radar" id="dashRadar">
+                        <div class="dash-block" id="dashSignalsBlock">
+                            <div class="dash-block-head">
+                                <h2>Señales de hoy</h2>
+                                <button type="button" class="dash-block-link" id="dashGoCortesDay">Ver corte del día</button>
+                            </div>
+                            <div class="kpis dash-signals" id="dashSignals" role="button" tabindex="0" title="Abrir corte del día" aria-label="Señales de hoy: abrir corte del día">
+                                <div class="kpi">
+                                    <div class="label">Ventas hoy</div>
+                                    <div class="val" id="dashSalesToday">$0.00</div>
+                                </div>
+                                <div class="kpi">
+                                    <div class="label">Tickets hoy</div>
+                                    <div class="val" id="dashTicketsToday">0</div>
+                                </div>
+                                <div class="kpi">
+                                    <div class="label">Variación</div>
+                                    <div class="val" id="dashDeltaToday">—</div>
+                                    <div class="hint" id="dashDeltaHint">vs ayer</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dash-block">
+                            <div class="dash-block-head">
+                                <h2>Productos en movimiento</h2>
+                            </div>
+                            <p class="dash-block-sub muted">Últimos 7 días vs 7 anteriores</p>
+                            <div class="dash-list" id="dashMovers"></div>
+                        </div>
+
+                        <div class="dash-block">
+                            <div class="dash-block-head">
+                                <h2>Atención</h2>
+                            </div>
+                            <div class="dash-list" id="dashAttention"></div>
+                        </div>
+                    </div>
+
                     <div class="quick-actions">
                         <button type="button" class="qa-btn" id="goVenta"><i class="fa-solid fa-cash-register"></i> Venta</button>
                         <button type="button" class="qa-btn" id="goCortes"><i class="fa-solid fa-chart-simple"></i> Cortes</button>
                         <button type="button" class="qa-btn" id="goProducts"><i class="fa-solid fa-box"></i> Productos</button>
-                        <button type="button" class="qa-btn" id="goProduction"><i class="fa-solid fa-industry"></i> Registrar producción</button>
-                        <button type="button" class="qa-btn" id="goMaterials"><i class="fa-solid fa-cubes"></i> Inventario</button>
-                        <a class="qa-btn" href="/productos" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Catálogo público</a>
-                        <a class="qa-btn" href="/laboratorio/materials" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> Laboratorio</a>
-                    </div>
-                    <div class="kpis">
-                        <div class="kpi">
-                            <div class="label">Fichas</div>
-                            <div class="val" id="kpiProducts">0</div>
-                            <div class="hint">Productos publicados</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="label">Materias primas</div>
-                            <div class="val" id="kpiMaterials">0</div>
-                            <div class="hint">Inventario de planta</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="label">Formulaciones</div>
-                            <div class="val" id="kpiRecipes">0</div>
-                            <div class="hint">Recetas listas / total</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="label">Producción</div>
-                            <div class="val" id="kpiFinished">0</div>
-                            <div class="hint">Unidades terminadas</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="label">Alertas stock</div>
-                            <div class="val" id="kpiLowStock">0</div>
-                            <div class="hint">Bajo mínimo</div>
-                        </div>
-                    </div>
-                    <div class="grid">
-                        <div class="card span-8">
-                            <h3>Mensajes recientes</h3>
-                            <div class="table-card">
-                                <table>
-                                    <thead><tr><th>Fecha</th><th>Nombre</th><th>Empresa</th><th>Mensaje</th></tr></thead>
-                                    <tbody id="recentMessages"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="card span-4">
-                            <h3>Accesos</h3>
-                            <div class="shortcuts">
-                                <a class="shortcut" href="/productos" target="_blank">Índice de fichas <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
-                                <a class="shortcut" href="#messages" id="goMessages">Ver todos los mensajes</a>
-                                <a class="shortcut" href="/laboratorio/materials" target="_blank">Materiales lab <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
-                                <a class="shortcut" href="/#contacto" target="_blank">Formulario público <i class="fa-solid fa-arrow-up-right-from-square muted"></i></a>
-                            </div>
-                        </div>
                     </div>
                 </section>
 
@@ -4119,16 +4216,12 @@
         if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
         return (parts[0][0] + parts[1][0]).toUpperCase();
     }
-    function refreshGreeting(msgCount) {
+    function refreshGreeting() {
         const display = panelUserName.charAt(0).toUpperCase() + panelUserName.slice(1);
         document.getElementById('dashGreet').textContent = greetingForNow() + ', ' + display;
         document.getElementById('userAvatar').textContent = initialsFrom(panelUserName);
         const status = document.getElementById('dashStatus');
-        if (typeof msgCount === 'number') {
-            if (msgCount === 0) status.textContent = 'Estás al día. No hay mensajes pendientes.';
-            else if (msgCount === 1) status.textContent = 'Tienes 1 mensaje de contacto por revisar.';
-            else status.textContent = 'Tienes ' + msgCount + ' mensajes de contacto en la bandeja.';
-        }
+        if (status) status.textContent = 'Radar del día · ventas de este navegador.';
     }
     refreshGreeting();
 
@@ -4403,25 +4496,33 @@
     }
     let finishedStock = loadFinished();
 
-    function updateDashExtras() {
-        let finishedTotal = 0;
-        Object.keys(finishedStock).forEach(function (slug) {
-            finishedTotal += Number(finishedStock[slug].stock) || 0;
-        });
-        document.getElementById('kpiFinished').textContent = finishedTotal;
-        const low = inventory.filter(function (m) {
+    function lowStockMaterials() {
+        return inventory.filter(function (m) {
             return m.minStock > 0 && materialFreeStock(m) < m.minStock;
-        }).length;
-        document.getElementById('kpiLowStock').textContent = low;
+        }).map(function (m) {
+            return {
+                id: m.id,
+                name: displayName(m),
+                free: materialFreeStock(m),
+                minStock: m.minStock,
+                unit: m.unit || ''
+            };
+        });
+    }
+
+    function refreshDashboardRadar() {
+        if (window.S35PosModule && typeof window.S35PosModule.renderDashboardRadar === 'function') {
+            window.S35PosModule.renderDashboardRadar();
+        }
+    }
+
+    function updateDashExtras() {
+        refreshDashboardRadar();
     }
 
     function updateMaterialKpi() {
-        document.getElementById('kpiMaterials').textContent = inventory.length;
         updateDashExtras();
     }
-    document.getElementById('kpiProducts').textContent = data.products.length;
-    updateMaterialKpi();
-    document.getElementById('kpiRecipes').textContent = (data.recipes || []).length;
 
     const sidebar = document.getElementById('sidebar');
     document.getElementById('menuBtn').addEventListener('click', function () {
@@ -4532,6 +4633,7 @@
         }
         if (!opts.skipHash) syncPanelHash();
         if (window.S35PosModule && window.S35PosModule.onSectionShow) window.S35PosModule.onSectionShow(id);
+        if (id === 'dashboard') refreshDashboardRadar();
     }
     document.querySelectorAll('.nav a[data-section]').forEach(function (a) {
         a.addEventListener('click', function (e) {
@@ -4548,19 +4650,58 @@
         hubProductTab = 'resumen';
         showSection('products');
     });
-    const goMaterials = document.getElementById('goMaterials');
-    if (goMaterials) goMaterials.addEventListener('click', function (e) { e.preventDefault(); showSection('materials'); });
-    const goProduction = document.getElementById('goProduction');
-    if (goProduction) goProduction.addEventListener('click', function (e) { e.preventDefault(); showSection('production'); });
-    const goMessages = document.getElementById('goMessages');
-    if (goMessages) goMessages.addEventListener('click', function (e) { e.preventDefault(); showSection('messages'); });
+    function openCortesDayFromDash() {
+        if (window.S35PosModule && typeof window.S35PosModule.openCortesPeriod === 'function') {
+            window.S35PosModule.openCortesPeriod('day');
+        }
+        showSection('cortes');
+    }
+    const dashSignals = document.getElementById('dashSignals');
+    if (dashSignals) {
+        dashSignals.addEventListener('click', function () { openCortesDayFromDash(); });
+        dashSignals.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openCortesDayFromDash();
+            }
+        });
+    }
+    const dashGoCortesDay = document.getElementById('dashGoCortesDay');
+    if (dashGoCortesDay) {
+        dashGoCortesDay.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            openCortesDayFromDash();
+        });
+    }
+    const dashMovers = document.getElementById('dashMovers');
+    if (dashMovers) {
+        dashMovers.addEventListener('click', function (e) {
+            const row = e.target.closest('[data-open-product]');
+            if (!row) return;
+            openProductHub(row.getAttribute('data-open-product'));
+        });
+    }
+    const dashAttention = document.getElementById('dashAttention');
+    if (dashAttention) {
+        dashAttention.addEventListener('click', function (e) {
+            const row = e.target.closest('[data-dash-action]');
+            if (!row) return;
+            const action = row.getAttribute('data-dash-action');
+            const target = row.getAttribute('data-dash-target') || '';
+            if (action === 'materials') showSection('materials');
+            else if (action === 'production') showSection('production');
+            else if (action === 'product' && target) openProductHub(target);
+        });
+    }
     const topbarMessagesBtn = document.getElementById('topbarMessagesBtn');
     if (topbarMessagesBtn) {
         topbarMessagesBtn.addEventListener('click', function () {
             if (!canAccess('messages')) return;
             showSection('messages');
         });
-    }    const goPromosBtn = document.getElementById('goPromosBtn');
+    }
+    const goPromosBtn = document.getElementById('goPromosBtn');
     if (goPromosBtn) goPromosBtn.addEventListener('click', function (e) {
         e.preventDefault();
         showSection('promos');
@@ -4669,20 +4810,6 @@
     let allMessages = [];
     const msgIndex = new Map();
 
-    function renderRecent(list) {
-        const tbody = document.getElementById('recentMessages');
-        const slice = list.slice(0, 6);
-        if (!slice.length) {
-            tbody.innerHTML = '<tr><td colspan="4" class="empty">Sin mensajes todavía</td></tr>';
-            return;
-        }
-        tbody.innerHTML = slice.map(function (m) {
-            const created = m.createdAt ? new Date(m.createdAt) : null;
-            const short = String(m.mensaje || '').slice(0, 90);
-            return '<tr><td class="muted">' + (created ? formatRelativeDate(created) : '') + '</td><td>' + esc(m.nombre) + '</td><td>' + esc(m.empresa) + '</td><td>' + esc(short) + (short.length === 90 ? '…' : '') + '</td></tr>';
-        }).join('');
-    }
-
     function renderMessages(list) {
         const tbody = document.getElementById('messagesBody');
         if (!list.length) {
@@ -4740,15 +4867,13 @@
         }
         if (!resp.ok) {
             setMessagesBadge(NaN);
-            document.getElementById('recentMessages').innerHTML = '<tr><td colspan="4" class="empty">No se pudieron cargar los mensajes</td></tr>';
             document.getElementById('messagesBody').innerHTML = '<tr><td colspan="7" class="empty">No se pudieron cargar los mensajes</td></tr>';
             return;
         }
         const payload = await resp.json();
         allMessages = payload.items || [];
         setMessagesBadge(allMessages.length);
-        refreshGreeting(allMessages.length);
-        renderRecent(allMessages);
+        refreshGreeting();
         renderMessages(allMessages);
     }
 
@@ -8628,6 +8753,13 @@
             if (hubProductSlug && window.S35PosModule && window.S35PosModule.renderProductSalesAnalytics) {
                 window.S35PosModule.renderProductSalesAnalytics(hubProductSlug);
             }
+            refreshDashboardRadar();
+        },
+        getLowStockMaterials: function () {
+            return typeof lowStockMaterials === 'function' ? lowStockMaterials() : [];
+        },
+        getFinishedStockMap: function () {
+            return finishedStock || {};
         },
         onProductFamiliesChanged: function () {
             if (productsFamilyFilter !== 'all' && productsFamilyFilter !== PRODUCT_UNCATEGORIZED_ID) {
