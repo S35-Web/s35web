@@ -7,6 +7,7 @@
     "build": "node scripts/validate-research.js && node scripts/validate-product-sync.js && node scripts/build-materialab.js && node scripts/build-products.js && node scripts/build-colaboradores-data.js",
     "build:products": "node scripts/build-products.js",
     "build:panel": "node scripts/build-colaboradores-data.js",
+    "build:historical-sales": "node scripts/build-historical-sales-import.js",
     "validate:research": "node scripts/validate-research.js",
     "validate:product-sync": "node scripts/validate-product-sync.js",
     "start": "echo 'Static site'",

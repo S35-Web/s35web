@@ -1554,8 +1554,23 @@
             });
     }
 
-    /** Import yearly synthetic tickets from historical-sales-import.json (idempotent by sale id). */
-    const HIST_SALES_FLAG = 's35_hist_sales_imported_v1';
+    /** Import synthetic tickets from historical-sales-import.json (v2: por mes). */
+    const HIST_SALES_FLAG = 's35_hist_sales_imported_v2';
+    const HIST_SALES_FLAG_LEGACY = 's35_hist_sales_imported_v1';
+
+    function isHistoricalImportSale(s) {
+        if (!s) return false;
+        if (s.user === 'import-historico') return true;
+        const src = s.meta && s.meta.source;
+        return src === 'old-panel';
+    }
+
+    function purgeHistoricalImportSales() {
+        const before = sales.length;
+        sales = sales.filter(function (s) { return !isHistoricalImportSale(s); });
+        return before - sales.length;
+    }
+
     function importHistoricalSales(opts) {
         opts = opts || {};
         const force = !!opts.force;
@@ -1567,7 +1582,14 @@
             .then(function (data) {
                 const incoming = (data && Array.isArray(data.items)) ? data.items : [];
                 if (!incoming.length) {
-                    return { added: 0, updated: 0, total: sales.length, skipped: true };
+                    return { added: 0, updated: 0, removed: 0, total: sales.length, skipped: true };
+                }
+                let removed = 0;
+                let hadLegacyFlag = false;
+                try { hadLegacyFlag = !!localStorage.getItem(HIST_SALES_FLAG_LEGACY); } catch (_) {}
+                const importVersion = Number((data && data.importVersion) || (data && data.version) || 1);
+                if (force || importVersion >= 2 || hadLegacyFlag) {
+                    removed = purgeHistoricalImportSales();
                 }
                 const byId = {};
                 sales.forEach(function (s, i) { byId[s.id] = i; });
@@ -1606,15 +1628,21 @@
                     renderCortes();
                     updatePosKpis();
                 }
-                try { localStorage.setItem(HIST_SALES_FLAG, new Date().toISOString()); } catch (_) {}
-                return { added: added, updated: updated, total: sales.length };
+                try {
+                    localStorage.setItem(HIST_SALES_FLAG, new Date().toISOString());
+                    localStorage.removeItem(HIST_SALES_FLAG_LEGACY);
+                } catch (_) {}
+                return { added: added, updated: updated, removed: removed, total: sales.length };
             });
     }
     function ensureHistoricalSalesImport() {
+        let needsImport = true;
         try {
-            if (localStorage.getItem(HIST_SALES_FLAG)) return;
+            needsImport = !localStorage.getItem(HIST_SALES_FLAG)
+                || !!localStorage.getItem(HIST_SALES_FLAG_LEGACY);
         } catch (_) {}
-        importHistoricalSales({ force: false }).catch(function () { /* silencioso en arranque */ });
+        if (!needsImport) return;
+        importHistoricalSales({ force: true }).catch(function () { /* silencioso en arranque */ });
     }
 
     function clientById(id) {
