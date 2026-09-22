@@ -4062,6 +4062,7 @@
         const prevTotal = sumTotals(prevList);
         const tickets = list.length;
         const avg = tickets ? total / tickets : 0;
+        const dailyAvg = total / calendarDaysInBounds(bounds);
 
         const rangeLabel = document.getElementById('cortesRangeLabel');
         if (rangeLabel) {
@@ -4087,6 +4088,8 @@
         if (ticketsEl) ticketsEl.textContent = String(tickets);
         const avgEl = document.getElementById('cortesAvg');
         if (avgEl) avgEl.textContent = money(avg);
+        const dailyEl = document.getElementById('cortesDailyAvg');
+        if (dailyEl) dailyEl.textContent = money(dailyAvg);
         const hintEl = document.getElementById('cortesCompareHint');
         if (hintEl) {
             hintEl.textContent = isHist
