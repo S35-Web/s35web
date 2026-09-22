@@ -2244,14 +2244,25 @@
         renderHistory();
     }
 
-    function mergeHistoricalSalesById(rows) {
+    function mergeHistoricalSalesById(rows, opts) {
+        opts = opts || {};
+        const forceTimes = !!opts.forceTimes;
         if (!rows || !rows.length) return 0;
         const byId = {};
         historicalSales.forEach(function (s, i) { byId[s.id] = i; });
         let added = 0;
+        const edits = forceTimes ? loadSaleEditsMap() : null;
+        let editsChanged = false;
         rows.forEach(function (row) {
             const next = normalizeHistoricalSale(row);
             if (!next) return;
+            if (forceTimes && row.createdAt) {
+                next.createdAt = row.createdAt;
+                if (edits && edits[next.id] && !edits[next.id].deleted) {
+                    edits[next.id].createdAt = row.createdAt;
+                    editsChanged = true;
+                }
+            }
             if (byId[next.id] != null) {
                 historicalSales[byId[next.id]] = next;
             } else {
@@ -2260,6 +2271,7 @@
                 added += 1;
             }
         });
+        if (editsChanged) saveSaleEditsMap(edits);
         if (added || rows.length) invalidateAnalyticsSalesCache();
         return added;
     }
@@ -2273,7 +2285,7 @@
             .then(function (data) {
                 const incoming = (data && Array.isArray(data.items)) ? data.items : [];
                 if (!incoming.length) return { added: 0, skipped: true };
-                const added = mergeHistoricalSalesById(incoming);
+                const added = mergeHistoricalSalesById(incoming, { forceTimes: true });
                 refreshHistoricalAnalyticsUi();
                 return { added: added, total: historicalSales.length };
             });

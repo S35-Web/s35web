@@ -1,12 +1,12 @@
 {
-  "version": 1,
-  "note": "Notas del panel viejo capturadas después del cierre del export histórico (2026-09-21).",
+  "version": 2,
+  "note": "Notas del panel viejo capturadas después del cierre del export histórico (2026-09-21). Horas reales de expedición.",
   "generatedAt": "2026-09-22",
   "items": [
     {
       "id": "sale-hist-rcpt-64056",
       "folio": "HIST-R64056",
-      "createdAt": "2026-09-21T18:10:00",
+      "createdAt": "2026-09-21T15:12:00",
       "customer": "Mostrador",
       "paymentMethod": "efectivo",
       "billing": "sin_facturar",
@@ -46,7 +46,7 @@
     {
       "id": "sale-hist-rcpt-64057",
       "folio": "HIST-R64057",
-      "createdAt": "2026-09-21T18:20:00",
+      "createdAt": "2026-09-21T15:16:00",
       "customer": "Mostrador",
       "paymentMethod": "efectivo",
       "billing": "sin_facturar",
@@ -77,7 +77,7 @@
     {
       "id": "sale-hist-rcpt-64058",
       "folio": "HIST-R64058",
-      "createdAt": "2026-09-21T18:35:00",
+      "createdAt": "2026-09-21T15:32:00",
       "customer": "Mostrador",
       "paymentMethod": "tarjeta",
       "billing": "sin_facturar",
@@ -108,7 +108,7 @@
     {
       "id": "sale-hist-rcpt-64059",
       "folio": "HIST-R64059",
-      "createdAt": "2026-09-21T18:50:00",
+      "createdAt": "2026-09-21T16:23:00",
       "customer": "Jesús Ramón Domínguez Ramírez",
       "paymentMethod": "tarjeta",
       "billing": "sin_facturar",
