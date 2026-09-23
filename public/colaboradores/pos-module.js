@@ -2171,17 +2171,21 @@
             }
 
             // Título del periodo solo en multi-ciudad (en single va dentro del tip del punto)
+            let axisBottom = 2;
             if (multiCity) {
                 const titleEl = document.createElement('div');
                 titleEl.className = 'cortes-chart-tip tip-axis';
                 titleEl.innerHTML = '<div class="tip-label">' + esc(tipTitle(idx)) + '</div>';
                 tipsHost.appendChild(titleEl);
                 const titleW = titleEl.offsetWidth || 80;
+                const titleH = titleEl.offsetHeight || 22;
                 let titleLeft = ox + px * scaleX - titleW / 2;
                 titleLeft = Math.max(4, Math.min(titleLeft, hostRect.width - titleW - 4));
+                const titleTop = Math.max(2, oy + padT * scaleY - titleH - 4);
                 titleEl.style.left = titleLeft + 'px';
-                titleEl.style.top = Math.max(2, oy + padT * scaleY - titleEl.offsetHeight - 4) + 'px';
+                titleEl.style.top = titleTop + 'px';
                 titleEl.style.transform = 'none';
+                axisBottom = titleTop + titleH + 4;
             }
 
             const boxes = [];
@@ -2194,7 +2198,7 @@
                 const w = el.offsetWidth || 100;
                 const h = el.offsetHeight || 40;
                 let left = ox + px * scaleX - w / 2;
-                let top = oy + m.y * scaleY - h - 10;
+                let top = Math.max(axisBottom, oy + m.y * scaleY - h - 10);
                 boxes.push({ el: el, left: left, top: top, w: w, h: h });
             });
             placeTips(boxes);
