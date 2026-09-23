@@ -1946,18 +1946,19 @@
         /* —— POS cart line items —— */
         .cart-item {
             display: grid;
-            grid-template-columns: 48px minmax(0, 1fr) auto;
+            grid-template-columns: 92px minmax(0, 1fr) auto;
             gap: 4px 12px;
-            padding: 12px 2px;
+            padding: 8px 2px 8px 0;
             border-bottom: 1px solid var(--border);
             align-items: start;
         }
         .cart-item:last-child { border-bottom: none; }
         .cart-item .ci-thumb {
             grid-row: 1 / span 3;
-            align-self: center;
-            width: 48px;
-            height: 48px;
+            align-self: stretch;
+            width: 92px;
+            min-height: 92px;
+            margin-block: -8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1974,7 +1975,7 @@
             display: block;
         }
         .cart-item .ci-thumb-fallback {
-            font-size: 9px;
+            font-size: 11px;
             font-weight: 500;
             color: var(--muted);
             letter-spacing: 0.04em;
