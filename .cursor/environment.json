@@ -1,0 +1,11 @@
+{
+  "name": "S-35 Technology website",
+  "install": "npm ci && npm run build",
+  "terminals": [
+    {
+      "name": "dev-server",
+      "command": "node server-local-simple.js"
+    }
+  ],
+  "ports": [3000]
+}
