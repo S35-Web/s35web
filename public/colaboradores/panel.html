@@ -2928,6 +2928,58 @@
         }
         .pd-hero h1 { margin: 0; }
         .pd-hero-meta { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 6px; font-size: 13px; color: var(--muted); }
+        .client-dash-hero {
+            align-items: center;
+        }
+        .client-dash-debt {
+            width: 36px;
+            height: 36px;
+            color: var(--warning, #b45309);
+            opacity: 0.85;
+        }
+        .client-dash-debt:hover {
+            opacity: 1;
+            background: var(--hover);
+        }
+        .client-dash-grid {
+            display: grid;
+            grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+        }
+        @media (max-width: 960px) {
+            .client-dash-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .client-dash-form-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .client-dash-meta {
+            margin: 12px 0 0;
+            font-size: 12px;
+        }
+        .client-dash-sidebits {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 14px;
+            margin: 10px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .client-dash-sidebits .bit strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+        .clients-table tbody tr[data-open-client] {
+            cursor: pointer;
+        }
+        .clients-table tbody tr[data-open-client]:hover {
+            background: var(--hover);
+        }
         .pd-tabs { margin-bottom: 16px; }
         .pd-tab-panel[hidden] { display: none !important; }
         .pd-summary-grid {
@@ -4105,33 +4157,173 @@
                 </section>
 
                 <section id="clients" class="section">
-                    <div class="page-head">
-                        <div>
-                            <h1 class="page-title">Clientes</h1>
-                            <p class="page-sub">Agenda de clientes y distribuidores para vincular ventas.</p>
+                    <div id="clientsListView">
+                        <div class="page-head">
+                            <div>
+                                <h1 class="page-title">Clientes</h1>
+                                <p class="page-sub">Agenda de clientes y distribuidores para vincular ventas.</p>
+                            </div>
+                            <div class="page-head-actions">
+                                <button type="button" class="btn" id="goCobranzaBtn" title="Cobranza">
+                                    <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i> Cobranza
+                                </button>
+                                <button type="button" class="btn" id="goPromosBtn" title="Códigos de promoción">
+                                    <i class="fa-solid fa-percent" aria-hidden="true"></i> Promos
+                                </button>
+                            </div>
                         </div>
-                        <div class="page-head-actions">
-                            <button type="button" class="btn" id="goCobranzaBtn" title="Cobranza">
-                                <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i> Cobranza
-                            </button>
-                            <button type="button" class="btn" id="goPromosBtn" title="Códigos de promoción">
-                                <i class="fa-solid fa-percent" aria-hidden="true"></i> Promos
-                            </button>
+                        <div class="card">
+                            <div class="toolbar">
+                                <input id="posClientSearch" class="search" type="search" placeholder="Buscar nombre, teléfono, email o RFC">
+                                <button type="button" class="btn" id="posClientImportBtn" title="Importar catálogo de clientes">
+                                    <i class="fa-solid fa-file-import" aria-hidden="true"></i> Importar
+                                </button>
+                                <button type="button" class="btn primary" id="posClientAddBtn"><i class="fa-solid fa-plus"></i> Alta</button>
+                            </div>
+                            <div class="table-card">
+                                <table class="clients-table">
+                                    <thead><tr><th>Nombre</th><th>Tipo</th><th>Teléfono</th><th>Email</th><th>RFC</th><th></th></tr></thead>
+                                    <tbody id="posClientsBody"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                    <div class="card">
-                        <div class="toolbar">
-                            <input id="posClientSearch" class="search" type="search" placeholder="Buscar nombre, teléfono, email o RFC">
-                            <button type="button" class="btn" id="posClientImportBtn" title="Importar catálogo de clientes">
-                                <i class="fa-solid fa-file-import" aria-hidden="true"></i> Importar
-                            </button>
-                            <button type="button" class="btn primary" id="posClientAddBtn"><i class="fa-solid fa-plus"></i> Alta</button>
+
+                    <div id="clientsDetailView" hidden>
+                        <button type="button" class="pd-back" id="clientsBackBtn"><i class="fa-solid fa-arrow-left"></i> Volver a clientes</button>
+                        <div class="pd-hero client-dash-hero">
+                            <div>
+                                <h1 class="page-title" id="cdNameTitle">Cliente</h1>
+                                <div class="pd-hero-meta" id="cdHeroMeta"></div>
+                            </div>
+                            <div class="toolbar" style="margin:0;gap:8px">
+                                <button type="button" class="icon-action client-dash-debt" id="cdDebtBtn" hidden title="Ver cobranza" aria-label="Ver cobranza">
+                                    <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="table-card">
-                            <table class="clients-table">
-                                <thead><tr><th>Nombre</th><th>Tipo</th><th>Teléfono</th><th>Email</th><th>RFC</th><th></th></tr></thead>
-                                <tbody id="posClientsBody"></tbody>
-                            </table>
+
+                        <div class="client-dash-grid">
+                            <div class="card client-dash-data">
+                                <p class="pd-section-label">Datos</p>
+                                <form id="cdForm" class="client-dash-form">
+                                    <div class="form-grid">
+                                        <div class="field-block">
+                                            <span class="field-label">Tipo</span>
+                                            <div class="seg-control" id="cdTypeSeg" role="tablist" aria-label="Tipo de cliente">
+                                                <button type="button" role="tab" data-cd-type="client" class="active" aria-selected="true">Cliente</button>
+                                                <button type="button" role="tab" data-cd-type="distributor" aria-selected="false">Distribuidor</button>
+                                            </div>
+                                        </div>
+                                        <label>Nombre
+                                            <input id="cdName" type="text" required autocomplete="off">
+                                        </label>
+                                        <label>Teléfono
+                                            <input id="cdPhone" type="tel" autocomplete="off">
+                                        </label>
+                                        <label>Email
+                                            <input id="cdEmail" type="text" inputmode="email" autocomplete="off" placeholder="varios: separados por coma">
+                                        </label>
+                                        <label>Empresa
+                                            <input id="cdCompany" type="text" autocomplete="off">
+                                        </label>
+                                        <label>RFC (opcional)
+                                            <input id="cdRfc" type="text" autocomplete="off">
+                                        </label>
+                                        <label>Dirección fiscal
+                                            <textarea id="cdAddress" rows="2" autocomplete="street-address" placeholder="Calle, colonia, C.P., localidad"></textarea>
+                                        </label>
+                                    </div>
+                                    <div class="client-dash-form-actions">
+                                        <button type="button" class="btn danger" id="cdDeleteBtn"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+                                        <button type="submit" class="btn primary">Guardar</button>
+                                    </div>
+                                </form>
+                                <p class="muted client-dash-meta" id="cdMetaLine"></p>
+                            </div>
+
+                            <div class="client-dash-analytics">
+                                <div class="pd-sales-block" style="margin:0;border:none;padding:0;background:transparent">
+                                    <div class="pd-sales-head">
+                                        <div>
+                                            <p class="pd-section-label">Compras</p>
+                                            <p class="page-sub" style="margin:0" id="cdSalesHint">Ritmo por producto · POS + histórico</p>
+                                        </div>
+                                        <div class="cortes-range pd-sales-range">
+                                            <button type="button" class="cortes-nav-btn" id="cdPrev" title="Periodo anterior" aria-label="Periodo anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                                            <button type="button" class="cortes-range-label" id="cdRangeLabel" data-period-range-trigger="clientDash" aria-haspopup="dialog" aria-expanded="false" title="Elegir periodo">Hoy</button>
+                                            <button type="button" class="cortes-nav-btn" id="cdNext" title="Periodo siguiente" aria-label="Periodo siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                                            <button type="button" class="cortes-today-btn" id="cdReset">Actual</button>
+                                        </div>
+                                    </div>
+                                    <div class="seg-control" id="cdPeriodTabs" role="tablist" aria-label="Periodo de compras del cliente" style="margin-bottom:14px">
+                                        <button type="button" role="tab" data-cd-period="day" class="active" aria-selected="true">Día</button>
+                                        <button type="button" role="tab" data-cd-period="week" aria-selected="false">Semana</button>
+                                        <button type="button" role="tab" data-cd-period="month" aria-selected="false">Mes</button>
+                                        <button type="button" role="tab" data-cd-period="year" aria-selected="false">Año</button>
+                                        <button type="button" role="tab" data-cd-period="historial" aria-selected="false">Historial</button>
+                                    </div>
+                                    <div class="pd-summary-grid pd-sales-kpis" id="cdKpis">
+                                        <div class="pd-stat"><div class="label">Monto</div><div class="val" id="cdKpiAmount">$0.00</div></div>
+                                        <div class="pd-stat"><div class="label">Tickets</div><div class="val" id="cdKpiTickets">0</div></div>
+                                        <div class="pd-stat"><div class="label">Ticket promedio</div><div class="val" id="cdKpiAvg">$0.00</div></div>
+                                        <div class="pd-stat"><div class="label">Unidades</div><div class="val" id="cdKpiUnits">0</div></div>
+                                    </div>
+                                    <div class="cortes-chart-panel">
+                                        <div class="cortes-chart-head">
+                                            <div>
+                                                <h3>Ritmo de compras</h3>
+                                                <p class="panel-sub" id="cdChartSub">Por hora · 7:00–19:00</p>
+                                            </div>
+                                            <div class="cortes-chart-head-right">
+                                                <div class="cortes-chart-legend" id="cdChartLegend" aria-hidden="true"></div>
+                                            </div>
+                                        </div>
+                                        <div class="cortes-chart" id="cdChart" role="img" aria-label="Gráfica de compras del cliente"></div>
+                                    </div>
+                                    <div class="client-dash-sidebits" id="cdSideBits"></div>
+                                    <div class="card" style="margin-top:14px">
+                                        <div class="card-head">
+                                            <h3>Productos comprados</h3>
+                                            <span class="muted" id="cdProductsCount">0</span>
+                                        </div>
+                                        <div class="table-card">
+                                            <table class="clients-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Producto</th>
+                                                        <th class="num">Unidades</th>
+                                                        <th class="num">Monto</th>
+                                                        <th class="num">%</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="cdProductsBody"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="card" style="margin-top:14px">
+                                        <div class="card-head">
+                                            <h3>Últimas compras</h3>
+                                            <span class="muted" id="cdSalesCount">0</span>
+                                        </div>
+                                        <div class="table-card">
+                                            <table class="clients-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Fecha</th>
+                                                        <th>Recibo</th>
+                                                        <th>Pago</th>
+                                                        <th>Ciudad</th>
+                                                        <th class="num">Total</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="cdSalesBody"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -9508,6 +9700,7 @@
     })();
 
     window.S35PanelAPI = {
+        showSection: showSection,
         getFinishedQty: function (slug) {
             const fin = finishedStock[slug];
             return fin ? (Number(fin.stock) || 0) : 0;
@@ -9570,6 +9763,6 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260922-prodmov"></script>
+    <script src="/colaboradores/pos-module.js?v=20260922-clientdash"></script>
 </body>
 </html>

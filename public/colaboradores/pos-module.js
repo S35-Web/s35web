@@ -312,6 +312,10 @@
     let productsMovOffset = 0;
     let productsMovFamily = 'all';
     let productsMovBound = false;
+    let clientDashId = null;
+    let clientDashPeriod = 'year';
+    let clientDashOffset = 0;
+    let clientDashBound = false;
     const PRODUCT_LINE_PALETTE = [
         '#171717', '#1565c0', '#2e7d32', '#c41626', '#e65100',
         '#6a1b9a', '#00838f', '#ad1457', '#455a64', '#5d4037',
@@ -1428,6 +1432,18 @@
                     renderProductsMovementsChart();
                 },
                 isDisabled: productsMovPeriod === 'historial'
+            };
+        }
+        if (kind === 'clientDash') {
+            return {
+                kind: 'clientDash',
+                period: clientDashPeriod,
+                offset: clientDashOffset,
+                setOffset: function (next) {
+                    clientDashOffset = next;
+                    if (clientDashId) renderClientDashboard(clientDashId);
+                },
+                isDisabled: clientDashPeriod === 'historial'
             };
         }
         return {
@@ -4471,6 +4487,7 @@
         renderCortes();
         if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
         renderProductsMovementsChart();
+        if (clientDashId) renderClientDashboard(clientDashId);
     }
 
     function renderCortes() {
@@ -4786,20 +4803,469 @@
             const displayName = toTitleCaseName(c.name);
             const displayCompany = toTitleCaseName(c.company);
             const addr = toTitleCaseName(clientAddress(c));
-            return '<tr>' +
+            const pending = clientPendingGroup(c);
+            return '<tr data-open-client="' + esc(c.id) + '">' +
                 '<td class="clients-name-cell"><strong title="' + esc(displayName) + '">' + esc(displayName) + '</strong>' +
                 (displayCompany ? '<div class="muted clients-company-cell" title="' + esc(displayCompany) + '">' + esc(displayCompany) + '</div>' : '') +
                 (addr ? '<div class="muted clients-address-cell" title="' + esc(addr) + '">' + esc(addr) + '</div>' : '') +
                 '</td>' +
-                '<td><span class="badge' + (dist ? ' b-primary' : '') + '">' + esc(clientTypeLabel(c)) + '</span></td>' +
+                '<td><span class="badge' + (dist ? ' b-primary' : '') + '">' + esc(clientTypeLabel(c)) + '</span>' +
+                (pending && pending.amount > 0
+                    ? ' <i class="fa-solid fa-hand-holding-dollar muted" style="opacity:.7;margin-left:4px" title="Saldo pendiente"></i>'
+                    : '') +
+                '</td>' +
                 '<td>' + esc(c.phone || '—') + '</td>' +
                 '<td class="clients-email-cell">' + formatClientEmailsHtml(c.email) + '</td>' +
                 '<td class="muted">' + esc(c.rfc || '—') + '</td>' +
                 '<td><div class="row-actions">' +
-                '<button type="button" class="icon-action" data-edit-client="' + esc(c.id) + '" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>' +
+                '<button type="button" class="icon-action" data-open-client="' + esc(c.id) + '" title="Abrir"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>' +
                 '<button type="button" class="icon-action danger" data-del-client="' + esc(c.id) + '" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>' +
                 '</div></td></tr>';
         }).join('');
+    }
+
+    function salesForClient(client) {
+        if (!client) return [];
+        const id = client.id;
+        const nameKey = String(client.name || '').trim().toLowerCase();
+        return salesForAnalytics().filter(function (s) {
+            if (id && s.clientId === id) return true;
+            if (!s.clientId && nameKey) {
+                const n = String(s.customer || (s.client && s.client.name) || '').trim().toLowerCase();
+                return n && n === nameKey;
+            }
+            return false;
+        });
+    }
+
+    function clientPendingGroup(client) {
+        if (!client) return null;
+        const groups = groupPendingByClient();
+        let g = groups.filter(function (x) {
+            return x.clientId === client.id || x.key === ('id:' + client.id);
+        })[0];
+        if (g) return g;
+        const nameKey = 'name:' + String(client.name || '').trim().toLowerCase();
+        return groups.filter(function (x) { return x.key === nameKey; })[0] || null;
+    }
+
+    function buildClientProductSeries(periodSales) {
+        const catalog = catalogProductsForMovements();
+        const series = [];
+        catalog.forEach(function (p, i) {
+            const list = productRhythmSeries(periodSales, productMatchKeys(p.slug));
+            if (!list.length) return;
+            let qty = 0;
+            let amount = 0;
+            list.forEach(function (row) {
+                qty += Number(row.qty) || 0;
+                amount += Number(row.total) || 0;
+            });
+            if (!(qty > 0 || amount > 0)) return;
+            series.push({
+                key: p.slug,
+                label: p.name,
+                color: PRODUCT_LINE_PALETTE[i % PRODUCT_LINE_PALETTE.length],
+                list: list,
+                qty: qty,
+                amount: amount
+            });
+        });
+        series.sort(function (a, b) { return b.amount - a.amount || a.label.localeCompare(b.label, 'es'); });
+        return series;
+    }
+
+    function clientPayBreakdown(periodSales) {
+        const map = { efectivo: 0, tarjeta: 0, transferencia: 0, por_cobrar: 0 };
+        periodSales.forEach(function (s) {
+            const k = isValidPayMethod(s.paymentMethod) ? s.paymentMethod : 'efectivo';
+            map[k] = (map[k] || 0) + (Number(s.total) || 0);
+        });
+        return map;
+    }
+
+    function clientCityBreakdown(periodSales) {
+        const map = {};
+        periodSales.forEach(function (s) {
+            const city = resolveSaleCity(s);
+            map[city] = (map[city] || 0) + (Number(s.total) || 0);
+        });
+        return Object.keys(map).map(function (id) {
+            return { id: id, label: cityLabel(id), amount: map[id] };
+        }).sort(function (a, b) { return b.amount - a.amount; });
+    }
+
+    function setCdTypeForm(type) {
+        const t = normalizeClientType(type);
+        const seg = document.getElementById('cdTypeSeg');
+        if (!seg) return;
+        seg.querySelectorAll('button[data-cd-type]').forEach(function (btn) {
+            const on = btn.getAttribute('data-cd-type') === t;
+            btn.classList.toggle('active', on);
+            btn.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+    }
+    function cdTypeFromForm() {
+        const active = document.querySelector('#cdTypeSeg button.active');
+        return normalizeClientType(active && active.getAttribute('data-cd-type'));
+    }
+
+    function fillClientDashboardForm(client) {
+        if (!client) return;
+        const title = document.getElementById('cdNameTitle');
+        if (title) title.textContent = toTitleCaseName(client.name) || 'Cliente';
+        const meta = document.getElementById('cdHeroMeta');
+        if (meta) {
+            meta.innerHTML =
+                '<span class="badge' + (isDistributorClient(client) ? ' b-primary' : '') + '">' + esc(clientTypeLabel(client)) + '</span>' +
+                (client.company ? '<span>' + esc(toTitleCaseName(client.company)) + '</span>' : '') +
+                (client.phone ? '<span>' + esc(client.phone) + '</span>' : '');
+        }
+        document.getElementById('cdName').value = client.name || '';
+        document.getElementById('cdPhone').value = client.phone || '';
+        document.getElementById('cdEmail').value = client.email || '';
+        document.getElementById('cdCompany').value = client.company || '';
+        document.getElementById('cdRfc').value = client.rfc || '';
+        const addrEl = document.getElementById('cdAddress');
+        if (addrEl) addrEl.value = clientAddress(client);
+        setCdTypeForm(client.type || client.kind || 'client');
+        const metaLine = document.getElementById('cdMetaLine');
+        if (metaLine) {
+            const created = client.createdAt ? new Date(client.createdAt) : null;
+            metaLine.textContent = created && !isNaN(created)
+                ? ('Alta · ' + created.toLocaleDateString('es-MX', { dateStyle: 'medium' }))
+                : '';
+        }
+    }
+
+    function saveClientDashboardForm() {
+        if (!clientDashId) return;
+        const name = toTitleCaseName(document.getElementById('cdName').value);
+        if (!name) return;
+        const emailRaw = document.getElementById('cdEmail').value;
+        const badEmails = invalidClientEmails(emailRaw);
+        if (badEmails.length) {
+            toast('Email inválido: ' + badEmails[0]);
+            return;
+        }
+        const addrEl = document.getElementById('cdAddress');
+        const next = {
+            id: clientDashId,
+            name: name,
+            phone: (document.getElementById('cdPhone').value || '').trim(),
+            email: normalizeClientEmail(emailRaw),
+            company: toTitleCaseName(document.getElementById('cdCompany').value),
+            rfc: (document.getElementById('cdRfc').value || '').trim(),
+            address: addrEl ? toTitleCaseName(String(addrEl.value || '').trim().replace(/\s+/g, ' ')) : '',
+            type: cdTypeFromForm(),
+            updatedAt: new Date().toISOString()
+        };
+        const idx = clients.findIndex(function (c) { return c.id === next.id; });
+        if (idx < 0) return;
+        const merged = Object.assign({}, clients[idx], next);
+        delete merged.domicilio;
+        delete merged.localidad;
+        clients[idx] = merged;
+        saveClients();
+        fillClientSelect();
+        fillHistoryClientFilter();
+        applyCartTierPrices();
+        renderProducts();
+        renderCart();
+        renderClients();
+        renderClientDashboard(clientDashId);
+        toast('Cliente actualizado');
+    }
+
+    function openClientDashboard(id) {
+        const client = clientById(id);
+        if (!client) return;
+        clientDashId = id;
+        const listView = document.getElementById('clientsListView');
+        const detailView = document.getElementById('clientsDetailView');
+        if (listView) listView.hidden = true;
+        if (detailView) detailView.hidden = false;
+        renderClientDashboard(id);
+    }
+
+    function closeClientDashboard() {
+        clientDashId = null;
+        const listView = document.getElementById('clientsListView');
+        const detailView = document.getElementById('clientsDetailView');
+        if (listView) listView.hidden = false;
+        if (detailView) detailView.hidden = true;
+        renderClients();
+    }
+
+    function openCobranzaForClient(clientId) {
+        const client = clientById(clientId);
+        const group = clientPendingGroup(client);
+        if (!group) return;
+        if (window.S35PanelAPI && typeof window.S35PanelAPI.showSection === 'function') {
+            window.S35PanelAPI.showSection('cobranza');
+        } else {
+            const link = document.querySelector('.nav a[data-section="cobranza"]');
+            if (link) link.click();
+        }
+        setTimeout(function () {
+            openCobranzaDetail(group.key);
+        }, 60);
+    }
+
+    function bindClientDashboardControls() {
+        if (clientDashBound) return;
+        clientDashBound = true;
+        const back = document.getElementById('clientsBackBtn');
+        if (back) back.addEventListener('click', function () { closeClientDashboard(); });
+        const debt = document.getElementById('cdDebtBtn');
+        if (debt) {
+            debt.addEventListener('click', function () {
+                if (clientDashId) openCobranzaForClient(clientDashId);
+            });
+        }
+        const form = document.getElementById('cdForm');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                saveClientDashboardForm();
+            });
+        }
+        const typeSeg = document.getElementById('cdTypeSeg');
+        if (typeSeg) {
+            typeSeg.addEventListener('click', function (e) {
+                const btn = e.target.closest('button[data-cd-type]');
+                if (!btn) return;
+                e.preventDefault();
+                setCdTypeForm(btn.getAttribute('data-cd-type'));
+            });
+        }
+        const del = document.getElementById('cdDeleteBtn');
+        if (del) {
+            del.addEventListener('click', function () {
+                if (!clientDashId) return;
+                const c = clientById(clientDashId);
+                if (!c) return;
+                if (!confirm('¿Eliminar «' + c.name + '»?')) return;
+                clients = clients.filter(function (x) { return x.id !== clientDashId; });
+                saveClients();
+                closeClientDashboard();
+                fillClientSelect();
+                fillHistoryClientFilter();
+                applyCartTierPrices();
+                renderProducts();
+                renderCart();
+                toast('Cliente eliminado');
+            });
+        }
+        const tabs = document.getElementById('cdPeriodTabs');
+        if (tabs) {
+            tabs.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-cd-period]');
+                if (!btn) return;
+                const next = btn.getAttribute('data-cd-period');
+                if (!next || next === clientDashPeriod) return;
+                clientDashPeriod = next;
+                if (clientDashPeriod === 'historial') clientDashOffset = 0;
+                if (clientDashId) renderClientDashboard(clientDashId);
+            });
+        }
+        const prev = document.getElementById('cdPrev');
+        if (prev) {
+            prev.addEventListener('click', function () {
+                if (clientDashPeriod === 'historial') return;
+                clientDashOffset -= 1;
+                if (clientDashId) renderClientDashboard(clientDashId);
+            });
+        }
+        const next = document.getElementById('cdNext');
+        if (next) {
+            next.addEventListener('click', function () {
+                if (clientDashPeriod === 'historial' || clientDashOffset >= 0) return;
+                clientDashOffset += 1;
+                if (clientDashId) renderClientDashboard(clientDashId);
+            });
+        }
+        const reset = document.getElementById('cdReset');
+        if (reset) {
+            reset.addEventListener('click', function () {
+                if (clientDashPeriod === 'historial') return;
+                clientDashOffset = 0;
+                if (clientDashId) renderClientDashboard(clientDashId);
+            });
+        }
+        const salesBody = document.getElementById('cdSalesBody');
+        if (salesBody) {
+            salesBody.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-open-note]');
+                if (!btn) return;
+                openSaleNoteById(btn.getAttribute('data-open-note'));
+            });
+        }
+    }
+
+    function renderClientDashboard(id) {
+        const host = document.getElementById('clientsDetailView');
+        if (!host || host.hidden) return;
+        const client = clientById(id || clientDashId);
+        if (!client) {
+            closeClientDashboard();
+            return;
+        }
+        clientDashId = client.id;
+        bindClientDashboardControls();
+        fillClientDashboardForm(client);
+
+        const pending = clientPendingGroup(client);
+        const debtBtn = document.getElementById('cdDebtBtn');
+        if (debtBtn) {
+            const show = !!(pending && pending.amount > 0);
+            debtBtn.hidden = !show;
+            if (show) {
+                debtBtn.title = 'Saldo ' + money(pending.amount) + ' · ver cobranza';
+            }
+        }
+
+        const isHist = clientDashPeriod === 'historial';
+        if (isHist) clientDashOffset = 0;
+        const bounds = periodBounds(clientDashPeriod, clientDashOffset);
+        const allSales = salesForClient(client);
+        const periodSales = salesInRange(allSales, bounds.start, bounds.end);
+        const series = buildClientProductSeries(periodSales);
+
+        let amount = 0;
+        let units = 0;
+        periodSales.forEach(function (s) {
+            amount += Number(s.total) || 0;
+        });
+        series.forEach(function (s) { units += s.qty; });
+        const tickets = periodSales.length;
+        const avg = tickets ? amount / tickets : 0;
+
+        const setTxt = function (eid, v) {
+            const el = document.getElementById(eid);
+            if (el) el.textContent = v;
+        };
+        setTxt('cdKpiAmount', money(amount));
+        setTxt('cdKpiTickets', String(tickets));
+        setTxt('cdKpiAvg', tickets ? money(avg) : '—');
+        setTxt('cdKpiUnits', formatUnits(units).replace(/ u$/, ''));
+
+        const rangeLabel = document.getElementById('cdRangeLabel');
+        if (rangeLabel) {
+            rangeLabel.textContent = formatPeriodLabel(clientDashPeriod, bounds.start, bounds.end);
+            rangeLabel.disabled = isHist;
+            rangeLabel.title = isHist ? 'Historial completo' : 'Elegir periodo';
+        }
+        const prevBtn = document.getElementById('cdPrev');
+        const nextBtn = document.getElementById('cdNext');
+        const resetBtn = document.getElementById('cdReset');
+        if (prevBtn) prevBtn.disabled = isHist;
+        if (nextBtn) nextBtn.disabled = isHist || clientDashOffset >= 0;
+        if (resetBtn) resetBtn.disabled = isHist || clientDashOffset === 0;
+        document.querySelectorAll('#cdPeriodTabs [data-cd-period]').forEach(function (btn) {
+            const on = btn.getAttribute('data-cd-period') === clientDashPeriod;
+            btn.classList.toggle('active', on);
+            btn.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+
+        const hint = document.getElementById('cdSalesHint');
+        if (hint) {
+            const last = allSales.slice().sort(function (a, b) {
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            })[0];
+            if (!allSales.length) {
+                hint.textContent = 'Sin compras registradas';
+            } else if (last) {
+                const d = new Date(last.createdAt);
+                hint.textContent = 'Última compra · ' +
+                    (isNaN(d) ? '—' : d.toLocaleDateString('es-MX', { dateStyle: 'medium' }));
+            }
+        }
+
+        const payMap = clientPayBreakdown(periodSales);
+        const cities = clientCityBreakdown(periodSales);
+        const side = document.getElementById('cdSideBits');
+        if (side) {
+            const payBits = payMethodKeys().filter(function (k) { return payMap[k] > 0; })
+                .map(function (k) {
+                    return '<span class="bit">' + esc(payLabel(k)) + ' <strong>' + money(payMap[k]) + '</strong></span>';
+                }).join('');
+            const cityBits = cities.slice(0, 3).map(function (c) {
+                return '<span class="bit">' + esc(c.label) + ' <strong>' + money(c.amount) + '</strong></span>';
+            }).join('');
+            side.innerHTML = (payBits || cityBits)
+                ? (payBits + (payBits && cityBits ? ' · ' : '') + cityBits)
+                : '';
+        }
+
+        const legend = document.getElementById('cdChartLegend');
+        if (legend) {
+            legend.innerHTML = series.map(function (s) {
+                return '<span class="leg"><span class="swatch" style="background:' + esc(s.color) +
+                    ';border-color:' + esc(s.color) + '"></span> ' + esc(s.label) + '</span>';
+            }).join('');
+        }
+
+        let merged = [];
+        series.forEach(function (s) { merged = merged.concat(s.list || []); });
+        renderRhythmChart({
+            host: document.getElementById('cdChart'),
+            subEl: document.getElementById('cdChartSub'),
+            hatchId: 'clientDashHatch',
+            period: clientDashPeriod,
+            bounds: bounds,
+            list: merged,
+            prevBounds: null,
+            prevList: [],
+            citySeries: series.length ? series : null,
+            showUnits: true,
+            seriesHint: 'por producto'
+        });
+
+        const prodBody = document.getElementById('cdProductsBody');
+        const prodCount = document.getElementById('cdProductsCount');
+        if (prodCount) prodCount.textContent = String(series.length);
+        if (prodBody) {
+            if (!series.length) {
+                prodBody.innerHTML = '<tr><td colspan="4" class="empty">Sin productos en este periodo</td></tr>';
+            } else {
+                const totalAmt = series.reduce(function (s, r) { return s + r.amount; }, 0) || 1;
+                prodBody.innerHTML = series.map(function (r) {
+                    const pct = Math.round((r.amount / totalAmt) * 100);
+                    return '<tr>' +
+                        '<td>' + esc(r.label) + '</td>' +
+                        '<td class="num">' + esc(formatUnits(r.qty).replace(/ u$/, '')) + '</td>' +
+                        '<td class="num">' + money(r.amount) + '</td>' +
+                        '<td class="num muted">' + pct + '%</td>' +
+                        '</tr>';
+                }).join('');
+            }
+        }
+
+        const salesSorted = periodSales.slice().sort(function (a, b) {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        const salesBody = document.getElementById('cdSalesBody');
+        const salesCount = document.getElementById('cdSalesCount');
+        if (salesCount) salesCount.textContent = String(salesSorted.length);
+        if (salesBody) {
+            if (!salesSorted.length) {
+                salesBody.innerHTML = '<tr><td colspan="6" class="empty">Sin compras en este periodo</td></tr>';
+            } else {
+                salesBody.innerHTML = salesSorted.slice(0, 40).map(function (s) {
+                    const d = new Date(s.createdAt);
+                    const dateStr = isNaN(d) ? '—' : d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+                    return '<tr>' +
+                        '<td class="muted">' + esc(dateStr) + '</td>' +
+                        '<td>' + saleReceiptCellHtml(s) + '</td>' +
+                        '<td><span class="badge">' + esc(payLabel(s.paymentMethod)) + '</span></td>' +
+                        '<td class="muted">' + esc(cityLabel(resolveSaleCity(s))) + '</td>' +
+                        '<td class="num">' + money(s.total) + '</td>' +
+                        '<td><button type="button" class="btn ghost" data-open-note="' + esc(s.id) + '">Ver</button></td>' +
+                        '</tr>';
+                }).join('');
+            }
+        }
     }
 
     function setClientTypeForm(type) {
@@ -5316,24 +5782,30 @@
         const clientsBody = document.getElementById('posClientsBody');
         if (clientsBody) {
             clientsBody.addEventListener('click', function (e) {
-                const edit = e.target.closest('[data-edit-client]');
                 const del = e.target.closest('[data-del-client]');
-                if (edit) {
-                    openClientModal(clientById(edit.getAttribute('data-edit-client')));
-                } else if (del) {
+                if (del) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const id = del.getAttribute('data-del-client');
                     const c = clientById(id);
                     if (!c) return;
                     if (!confirm('¿Eliminar «' + c.name + '»?')) return;
                     clients = clients.filter(function (x) { return x.id !== id; });
                     saveClients();
+                    if (clientDashId === id) closeClientDashboard();
                     renderClients();
                     fillClientSelect();
                     fillHistoryClientFilter();
                     applyCartTierPrices();
                     renderProducts();
                     renderCart();
+                    return;
                 }
+                const openBtn = e.target.closest('[data-open-client]');
+                const row = e.target.closest('tr[data-open-client]');
+                const id = (openBtn && openBtn.getAttribute('data-open-client')) ||
+                    (row && row.getAttribute('data-open-client'));
+                if (id) openClientDashboard(id);
             });
         }
 
@@ -5379,10 +5851,12 @@
                 fillHistoryClientFilter();
                 if (wasNew) {
                     setSelectedClientId(next.id);
+                    openClientDashboard(next.id);
                 } else {
                     applyCartTierPrices();
                     renderProducts();
                     renderCart();
+                    if (clientDashId === next.id) renderClientDashboard(next.id);
                 }
                 toast(wasNew ? 'Cliente creado' : 'Cliente actualizado');
             });
@@ -6236,6 +6710,7 @@
         renderCortes();
         updatePosKpis();
         renderDashboardRadar();
+        if (clientDashId) renderClientDashboard(clientDashId);
         if (prevKey) {
             const still = groupPendingByClient().some(function (g) { return g.key === prevKey; });
             if (still) openCobranzaDetail(prevKey);
@@ -6693,6 +7168,13 @@
             updatePosKpis();
         } else if (id === 'clients') {
             renderClients();
+            if (clientDashId) {
+                const listView = document.getElementById('clientsListView');
+                const detailView = document.getElementById('clientsDetailView');
+                if (listView) listView.hidden = true;
+                if (detailView) detailView.hidden = false;
+                renderClientDashboard(clientDashId);
+            }
         } else if (id === 'salesHistory') {
             fillHistoryClientFilter();
             renderHistory();
@@ -6774,6 +7256,9 @@
             priceEditorHtml: priceEditorHtml,
             renderProductSalesAnalytics: renderProductSalesAnalytics,
             renderProductsMovementsChart: renderProductsMovementsChart,
+            renderClientDashboard: renderClientDashboard,
+            openClientDashboard: openClientDashboard,
+            openCobranzaForClient: openCobranzaForClient,
             renderDashboardRadar: renderDashboardRadar,
             openCortesPeriod: openCortesPeriod,
             importHistoricalSales: importHistoricalSales,
