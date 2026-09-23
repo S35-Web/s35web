@@ -44,6 +44,7 @@ function normalizeName(name) {
     return '(' + String(c).toLocaleUpperCase('es');
   });
   out = out.replace(/\bplus\b/gi, 'Plus');
+  out = out.replace(/\bhpmc\b/gi, 'HPMC');
   out = out.replace(/(\d)\s*l\b/g, '$1L');
   return out;
 }
@@ -216,7 +217,7 @@ const PREFERRED_PLANT = {
   'arena-silicea-graduada': 'arena-deshidratada',
   'arena-de-rio': 'arena-cribada-gruesa',
   'polimero-redispersable-vae': 'resina-rdp740h',
-  'celulosa-hpmc': 'kimacell',
+  'celulosa-hpmc': 'celulosa-hpmc',
   'cal': 'calidra',
   'yeso': 'yeso-sayro',
   'marmolina-fina': 'marmolina-fina',

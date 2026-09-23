@@ -5746,6 +5746,7 @@
             return '(' + String(c).toLocaleUpperCase('es');
         });
         out = out.replace(/(\d)\s*l\b/g, '$1L');
+        out = out.replace(/\bhpmc\b/gi, 'HPMC');
         return out;
     }
     (data.products || []).forEach(function (p) { p.name = normalizeName(p.name); });
@@ -5789,6 +5790,13 @@
         });
         return changed;
     }
+    /** Marcas distintas del mismo HPMC. El id canónico es celulosa-hpmc. */
+    const PLANT_ID_ALIASES = { kimacell: 'celulosa-hpmc', walocell: 'celulosa-hpmc' };
+    function canonicalPlantId(id) {
+        const key = String(id || '').trim();
+        return PLANT_ID_ALIASES[key] || key;
+    }
+    let plantIdsRemapped = false;
     let persistNormalized = false;
     function loadInventory() {
         const seed = seedInventory();
@@ -5800,12 +5808,34 @@
                         || normalizeUnit(m.unit) !== (m.unit || '')
                         || normalizeCategory(m.category) !== (m.category || 'mineral');
                 });
-                const saved = raw.items.map(normalizeItem);
+                const saved = [];
                 const byId = {};
-                saved.forEach(function (m) { byId[m.id] = m; });
+                raw.items.map(normalizeItem).forEach(function (m) {
+                    const canonical = canonicalPlantId(m.id);
+                    if (canonical !== m.id) plantIdsRemapped = true;
+                    const prev = byId[canonical];
+                    if (!prev) {
+                        m.id = canonical;
+                        byId[canonical] = m;
+                        saved.push(m);
+                        return;
+                    }
+                    plantIdsRemapped = true;
+                    prev.stock = (Number(prev.stock) || 0) + (Number(m.stock) || 0);
+                    prev.reserved = (Number(prev.reserved) || 0) + (Number(m.reserved) || 0);
+                    if (prev.reserved > prev.stock) prev.reserved = prev.stock;
+                    if ((Number(m.minStock) || 0) > (Number(prev.minStock) || 0)) prev.minStock = Number(m.minStock) || 0;
+                    if (!(prev.unitCost > 0) && m.unitCost > 0) prev.unitCost = m.unitCost;
+                });
+                if (plantIdsRemapped) persistNormalized = true;
                 seed.forEach(function (m) {
                     if (!byId[m.id]) {
                         saved.push(m);
+                        byId[m.id] = m;
+                        persistNormalized = true;
+                    } else if (m.id === 'celulosa-hpmc' && byId[m.id].name !== m.name) {
+                        byId[m.id].name = m.name;
+                        byId[m.id].labSlug = m.labSlug;
                         persistNormalized = true;
                     }
                 });
@@ -6758,7 +6788,8 @@
         return m ? Number(m[1].replace(',', '.')) : 0;
     }
     function plantById(id) {
-        return inventory.filter(function (m) { return m.id === id; })[0] || null;
+        const key = canonicalPlantId(id);
+        return inventory.filter(function (m) { return m.id === key; })[0] || null;
     }
     function packagingId(recipe) {
         if (recipe.kind === 'liquido') return 'cubeta-19l';
@@ -6901,15 +6932,32 @@
         });
     }
     function mapDoseItems(list) {
-        return (list || []).map(function (it) {
-            const mat = plantById(it.plantId);
-            return {
-                plantId: it.plantId,
-                amount: Number(it.amount) || 0,
+        const out = [];
+        const indexById = {};
+        (list || []).forEach(function (it) {
+            const id = canonicalPlantId(it.plantId);
+            if (!id || !plantById(id)) return;
+            if (id !== String(it.plantId || '').trim()) plantIdsRemapped = true;
+            const mat = plantById(id);
+            const amount = Number(it.amount) || 0;
+            if (indexById[id] != null) {
+                plantIdsRemapped = true;
+                const prev = out[indexById[id]];
+                if (amount > prev.amount) {
+                    prev.amount = amount;
+                    if (it.role) prev.role = it.role;
+                }
+                return;
+            }
+            indexById[id] = out.length;
+            out.push({
+                plantId: id,
+                amount: amount,
                 unit: normalizeUnit(it.unit || (mat && mat.unit) || 'Kg') || 'Kg',
                 role: it.role || ''
-            };
-        }).filter(function (it) { return it.plantId && plantById(it.plantId); });
+            });
+        });
+        return out;
     }
     function cloneItems(items) {
         return (items || []).map(function (it) {
@@ -7274,6 +7322,7 @@
         localStorage.setItem(FORMULA_KEY, JSON.stringify({ items: formulas, updatedAt: new Date().toISOString() }));
     }
     let formulas = loadFormulas();
+    if (plantIdsRemapped) saveFormulas();
     let formulaDirty = false;
     let currentRecipe = recipes[0] ? recipes[0].product : '';
     let formulaAnimToken = 0;

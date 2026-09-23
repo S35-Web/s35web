@@ -1347,19 +1347,10 @@ window.S35_PANEL_DATA = {
       "unitCost": 0.5
     },
     {
-      "id": "kimacell",
-      "name": "Kimacell",
+      "id": "celulosa-hpmc",
+      "name": "Celulosa HPMC",
       "unit": "Kg",
       "minStock": 60,
-      "category": "cellulose",
-      "labSlug": "celulosa-hpmc",
-      "unitCost": 0
-    },
-    {
-      "id": "walocell",
-      "name": "Walocell",
-      "unit": "Kg",
-      "minStock": 20,
       "category": "cellulose",
       "labSlug": "celulosa-hpmc",
       "unitCost": 146.8
@@ -1644,7 +1635,7 @@ window.S35_PANEL_DATA = {
                 "role": "Polímero"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -1709,7 +1700,7 @@ window.S35_PANEL_DATA = {
                 "role": "Polímero"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -1777,7 +1768,7 @@ window.S35_PANEL_DATA = {
             "role": "Polímero"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1,
             "unit": "Kg",
             "role": "Celulosa"
@@ -1840,7 +1831,7 @@ window.S35_PANEL_DATA = {
           "amount": 1
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1
@@ -1866,11 +1857,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -2002,7 +1988,7 @@ window.S35_PANEL_DATA = {
                 "role": "Polímero"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -2064,7 +2050,7 @@ window.S35_PANEL_DATA = {
             "role": "Polímero"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1,
             "unit": "Kg",
             "role": "Celulosa"
@@ -2121,7 +2107,7 @@ window.S35_PANEL_DATA = {
           "amount": 1
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1
@@ -2136,11 +2122,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -2264,7 +2245,7 @@ window.S35_PANEL_DATA = {
                 "role": "Polímero"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -2326,7 +2307,7 @@ window.S35_PANEL_DATA = {
             "role": "Polímero"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1,
             "unit": "Kg",
             "role": "Celulosa"
@@ -2383,7 +2364,7 @@ window.S35_PANEL_DATA = {
           "amount": 1
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1
@@ -2403,11 +2384,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -2533,7 +2509,7 @@ window.S35_PANEL_DATA = {
                 "role": "Aditivo"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -2583,7 +2559,7 @@ window.S35_PANEL_DATA = {
             "role": "Aditivo"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1,
             "unit": "Kg",
             "role": "Celulosa"
@@ -2628,7 +2604,7 @@ window.S35_PANEL_DATA = {
           "amount": 2
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1
@@ -2637,11 +2613,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -2739,7 +2710,7 @@ window.S35_PANEL_DATA = {
                 "role": "Polímero"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1.5,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -2783,7 +2754,7 @@ window.S35_PANEL_DATA = {
             "role": "Polímero"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1.5,
             "unit": "Kg",
             "role": "Celulosa"
@@ -2822,7 +2793,7 @@ window.S35_PANEL_DATA = {
           "amount": 15
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1.5
@@ -2832,11 +2803,6 @@ window.S35_PANEL_DATA = {
           "unit": "Kg",
           "role": "Aditivo",
           "amount": 0.5
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -2976,7 +2942,7 @@ window.S35_PANEL_DATA = {
                 "role": "Aditivo"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -3038,7 +3004,7 @@ window.S35_PANEL_DATA = {
             "role": "Aditivo"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1,
             "unit": "Kg",
             "role": "Celulosa"
@@ -3095,7 +3061,7 @@ window.S35_PANEL_DATA = {
           "amount": 0.25
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1
@@ -3110,11 +3076,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         },
         {
           "plantId": "fibra-de-polipropileno",
@@ -3253,7 +3214,7 @@ window.S35_PANEL_DATA = {
                 "role": "Aditivo"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -3309,7 +3270,7 @@ window.S35_PANEL_DATA = {
             "role": "Aditivo"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1,
             "unit": "Kg",
             "role": "Celulosa"
@@ -3360,7 +3321,7 @@ window.S35_PANEL_DATA = {
           "amount": 1
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1
@@ -3375,11 +3336,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         },
         {
           "plantId": "fibra-de-polipropileno",
@@ -3508,7 +3464,7 @@ window.S35_PANEL_DATA = {
                 "role": "Aditivo"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -3564,7 +3520,7 @@ window.S35_PANEL_DATA = {
             "role": "Aditivo"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1,
             "unit": "Kg",
             "role": "Celulosa"
@@ -3615,7 +3571,7 @@ window.S35_PANEL_DATA = {
           "amount": 1
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1
@@ -3624,11 +3580,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         },
         {
           "plantId": "fibra-de-polipropileno",
@@ -3739,7 +3690,7 @@ window.S35_PANEL_DATA = {
             "totalKg": 518.2,
             "items": [
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -3807,7 +3758,7 @@ window.S35_PANEL_DATA = {
         "totalKg": 518.2,
         "items": [
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1,
             "unit": "Kg",
             "role": "Celulosa"
@@ -3870,7 +3821,7 @@ window.S35_PANEL_DATA = {
       },
       "suggested": [
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1
@@ -3938,11 +3889,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Reología de autonivelado (grado baja viscosidad)"
         }
       ]
     },
@@ -4224,7 +4170,7 @@ window.S35_PANEL_DATA = {
                 "role": "Polímero"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -4274,7 +4220,7 @@ window.S35_PANEL_DATA = {
             "role": "Polímero"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1,
             "unit": "Kg",
             "role": "Celulosa"
@@ -4319,7 +4265,7 @@ window.S35_PANEL_DATA = {
           "amount": 6
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1
@@ -4328,11 +4274,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -4458,7 +4399,7 @@ window.S35_PANEL_DATA = {
                 "role": "Polímero"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1.6,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -4508,7 +4449,7 @@ window.S35_PANEL_DATA = {
             "role": "Polímero"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1.6,
             "unit": "Kg",
             "role": "Celulosa"
@@ -4553,7 +4494,7 @@ window.S35_PANEL_DATA = {
           "amount": 10
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1.6
@@ -4567,11 +4508,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -4697,7 +4633,7 @@ window.S35_PANEL_DATA = {
                 "role": "Polímero"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1.6,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -4747,7 +4683,7 @@ window.S35_PANEL_DATA = {
             "role": "Polímero"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1.6,
             "unit": "Kg",
             "role": "Celulosa"
@@ -4792,15 +4728,10 @@ window.S35_PANEL_DATA = {
           "amount": 12
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1.6
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -4926,7 +4857,7 @@ window.S35_PANEL_DATA = {
                 "role": "Polímero"
               },
               {
-                "plantId": "walocell",
+                "plantId": "celulosa-hpmc",
                 "amount": 1.6,
                 "unit": "Kg",
                 "role": "Celulosa"
@@ -4976,7 +4907,7 @@ window.S35_PANEL_DATA = {
             "role": "Polímero"
           },
           {
-            "plantId": "walocell",
+            "plantId": "celulosa-hpmc",
             "amount": 1.6,
             "unit": "Kg",
             "role": "Celulosa"
@@ -5021,7 +4952,7 @@ window.S35_PANEL_DATA = {
           "amount": 20
         },
         {
-          "plantId": "walocell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Celulosa",
           "amount": 1.6
@@ -5030,11 +4961,6 @@ window.S35_PANEL_DATA = {
           "plantId": "marmolina-talco-200",
           "unit": "Kg",
           "role": "Carga"
-        },
-        {
-          "plantId": "kimacell",
-          "unit": "Kg",
-          "role": "Retención de agua / reología"
         }
       ]
     },
@@ -5182,7 +5108,7 @@ window.S35_PANEL_DATA = {
           "role": "Polímero redispersable"
         },
         {
-          "plantId": "kimacell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Retención de agua / reología"
         }
@@ -5272,7 +5198,7 @@ window.S35_PANEL_DATA = {
           "role": "Polímero redispersable"
         },
         {
-          "plantId": "kimacell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Retención de agua / reología"
         }
@@ -5370,7 +5296,7 @@ window.S35_PANEL_DATA = {
           "role": "Polímero redispersable"
         },
         {
-          "plantId": "kimacell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Retención de agua / reología"
         }
@@ -5587,7 +5513,7 @@ window.S35_PANEL_DATA = {
           "role": "Polímero redispersable"
         },
         {
-          "plantId": "kimacell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Retención de agua / reología"
         }
@@ -5677,7 +5603,7 @@ window.S35_PANEL_DATA = {
           "role": "Polímero redispersable"
         },
         {
-          "plantId": "kimacell",
+          "plantId": "celulosa-hpmc",
           "unit": "Kg",
           "role": "Retención de agua / reología"
         }
