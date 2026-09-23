@@ -4206,13 +4206,13 @@
         const q = (document.getElementById('posProductSearch') && document.getElementById('posProductSearch').value || '').toLowerCase().trim();
         return getRecipes().filter(function (r) {
             const fam = recipeFamily(r);
-            const famOk = familyFilter === PRODUCT_UNCATEGORIZED_ID
-                ? !fam
-                : fam === familyFilter;
             const qOk = !q || [r.name, r.code, fam, r.product].some(function (v) {
                 return String(v || '').toLowerCase().includes(q);
             });
-            return famOk && qOk;
+            if (!qOk) return false;
+            // Con búsqueda: todo el catálogo. Sin búsqueda: solo la familia activa.
+            if (q) return true;
+            return familyFilter === PRODUCT_UNCATEGORIZED_ID ? !fam : fam === familyFilter;
         });
     }
 
@@ -4221,7 +4221,10 @@
         if (!grid) return;
         const list = filteredProducts();
         if (!list.length) {
-            grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Sin productos</div>';
+            const q = (document.getElementById('posProductSearch') && document.getElementById('posProductSearch').value || '').trim();
+            grid.innerHTML = '<div class="empty" style="grid-column:1/-1">' +
+                (q ? 'Sin resultados para “' + esc(q) + '”' : 'Sin productos en esta familia') +
+                '</div>';
             return;
         }
         const cartUnits = cartQty();
