@@ -1055,8 +1055,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1085,7 +1087,20 @@
         "year": 2026,
         "month": 1,
         "day": 30,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2306691",
+          "folio": "12201",
+          "serie": "",
+          "uuid": "D5C95900-2EFC-4372-B1C8-2D4E428C26E0",
+          "fecha": "2026-01-30 11:30:25",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 198099.71,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1097,8 +1112,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1127,7 +1144,20 @@
         "year": 2026,
         "month": 1,
         "day": 30,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2306693",
+          "folio": "12202",
+          "serie": "",
+          "uuid": "49C875F5-8FD2-4388-92B3-6275778E7E91",
+          "fecha": "2026-01-30 11:39:01",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 200000.0,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1139,8 +1169,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1169,7 +1201,20 @@
         "year": 2026,
         "month": 1,
         "day": 30,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2306707",
+          "folio": "12204",
+          "serie": "",
+          "uuid": "9A3193ED-D734-4600-945D-96DD3BB64B53",
+          "fecha": "2026-01-30 11:43:01",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 140858.6,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1181,8 +1226,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1211,7 +1258,20 @@
         "year": 2026,
         "month": 2,
         "day": 27,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2322503",
+          "folio": "12275",
+          "serie": "",
+          "uuid": "92918133-B3E1-40C3-A073-05254E122CD7",
+          "fecha": "2026-02-27 13:10:21",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 150000.01,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1223,8 +1283,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1253,7 +1315,20 @@
         "year": 2026,
         "month": 2,
         "day": 27,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2322510",
+          "folio": "12277",
+          "serie": "",
+          "uuid": "A017B81A-7C7A-4B0E-ADCD-F0B048E0D464",
+          "fecha": "2026-02-27 13:19:01",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 240000.01,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1265,8 +1340,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1295,7 +1372,20 @@
         "year": 2026,
         "month": 2,
         "day": 27,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2322551",
+          "folio": "12278",
+          "serie": "",
+          "uuid": "732C86E6-8C44-46C0-88B1-737135C1C3D5",
+          "fecha": "2026-02-27 13:28:20",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 676368.77,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1307,8 +1397,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1346,7 +1438,20 @@
         "year": 2026,
         "month": 3,
         "day": 26,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2337846",
+          "folio": "12330",
+          "serie": "",
+          "uuid": "E8525BF2-6C0E-4797-964A-7E9EFE03EDF6",
+          "fecha": "2026-03-26 15:22:01",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 267568.04,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1358,8 +1463,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1397,7 +1504,20 @@
         "year": 2026,
         "month": 3,
         "day": 27,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2338206",
+          "folio": "12332",
+          "serie": "",
+          "uuid": "F3A81DB3-D347-4B66-B9F3-DE3757E4690F",
+          "fecha": "2026-03-27 10:56:48",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 240000.06,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1409,8 +1529,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1439,7 +1561,20 @@
         "year": 2026,
         "month": 7,
         "day": 24,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2404272",
+          "folio": "12582",
+          "serie": "",
+          "uuid": "5FFC113B-0BC8-4B11-959C-DE050B610895",
+          "fecha": "2026-07-24 13:36:30",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 267568.0,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1451,8 +1586,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1481,7 +1618,20 @@
         "year": 2026,
         "month": 7,
         "day": 24,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2404286",
+          "folio": "12583",
+          "serie": "",
+          "uuid": "4C2AC7A4-4AE4-4076-A9E7-CBA2E22DCB6B",
+          "fecha": "2026-07-24 13:49:29",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 105392.0,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1493,8 +1643,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1523,7 +1675,20 @@
         "year": 2026,
         "month": 7,
         "day": 24,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2404288",
+          "folio": "12584",
+          "serie": "",
+          "uuid": "5E57BA3A-37F5-43C4-A4A4-3158F4766205",
+          "fecha": "2026-07-24 14:01:53",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 105392.0,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1535,8 +1700,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1565,7 +1732,20 @@
         "year": 2026,
         "month": 7,
         "day": 29,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2407032",
+          "folio": "12594",
+          "serie": "",
+          "uuid": "1B86DC73-982E-45D2-84E6-C7D4DD46BFE8",
+          "fecha": "2026-07-29 13:39:19",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 118565.99,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1577,8 +1757,10 @@
       "client": {
         "id": "c_50565f9bd6d8",
         "name": "CONSTRUCCIONES RICBOR",
-        "rfc": "CRI1103157P8",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
         "company": "",
+        "rfc": "CRI1103157P8",
         "type": "client"
       },
       "customer": "CONSTRUCCIONES RICBOR",
@@ -1607,7 +1789,20 @@
         "year": 2026,
         "month": 8,
         "day": 6,
-        "city": "mochis"
+        "city": "mochis",
+        "cfdi": {
+          "id": "2412332",
+          "folio": "12612",
+          "serie": "",
+          "uuid": "A3B3502C-84BE-4CBD-9BBE-7980205E3344",
+          "fecha": "2026-08-06 12:45:58",
+          "rfc": "CRI1103157P8",
+          "receptor": "CONSTRUCCIONES RICBOR",
+          "total": 105392.0,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0,
+          "matchMoneyDiff": 0.0
+        }
       },
       "city": "mochis"
     },
@@ -1723,9 +1918,9 @@
       "id": "sale-hist-rcpt-64059",
       "folio": "HIST-R64059",
       "createdAt": "2026-09-21T16:23:00",
-      "customer": "Jesús Ramón Domínguez Ramírez",
+      "customer": "JESUS RAMON DOMINGUEZ RAMIREZ",
       "paymentMethod": "tarjeta",
-      "billing": "sin_facturar",
+      "billing": "facturado",
       "items": [
         {
           "product": "waxtard-blanco-perla",
@@ -1748,9 +1943,32 @@
         "year": 2026,
         "month": 9,
         "day": 21,
-        "city": "culiacan"
+        "city": "culiacan",
+        "cfdi": {
+          "id": "2436799",
+          "folio": "12703",
+          "serie": "",
+          "uuid": "686AF341-E418-4BC4-845A-ADAAB0C00667",
+          "fecha": "2026-09-21 14:38:49",
+          "rfc": "DORJ710303M42",
+          "receptor": "JESUS RAMON DOMINGUEZ RAMIREZ",
+          "total": 1050.0,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0723,
+          "matchMoneyDiff": 0.0
+        }
       },
-      "city": "culiacan"
+      "city": "culiacan",
+      "clientId": "c_7e1a9b8a586e",
+      "client": {
+        "id": "c_7e1a9b8a586e",
+        "name": "JESUS RAMON DOMINGUEZ RAMIREZ",
+        "phone": "",
+        "email": "a2d_cfd@hotmail.com",
+        "company": "",
+        "rfc": "DORJ710303M42",
+        "type": "client"
+      }
     },
     {
       "id": "sale-hist-rcpt-64060",
@@ -1856,14 +2074,29 @@
         "year": 2026,
         "month": 9,
         "day": 22,
-        "city": "culiacan"
+        "city": "culiacan",
+        "cfdi": {
+          "id": "2437437",
+          "folio": "12705",
+          "serie": "",
+          "uuid": "B5ED57D8-D4E9-424F-92CD-8FEC22C48059",
+          "fecha": "2026-09-22 12:47:31",
+          "rfc": "LOM100225SF1",
+          "receptor": "LOMATSA",
+          "total": 8750.0,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.1031,
+          "matchMoneyDiff": 0.0
+        }
       },
       "clientId": "c_3693ed2a37b3",
       "client": {
         "id": "c_3693ed2a37b3",
         "name": "LOMATSA",
-        "rfc": "LOM100225SF1",
+        "phone": "7532547",
+        "email": "lalomitamateriales@hotmail.com",
         "company": "",
+        "rfc": "LOM100225SF1",
         "type": "client"
       },
       "city": "culiacan"
@@ -1897,14 +2130,29 @@
         "year": 2026,
         "month": 9,
         "day": 22,
-        "city": "culiacan"
+        "city": "culiacan",
+        "cfdi": {
+          "id": "2435900",
+          "folio": "12699",
+          "serie": "",
+          "uuid": "9556EDA5-AA57-4249-B57B-ACDDCE6155C3",
+          "fecha": "2026-09-18 14:45:41",
+          "rfc": "MALO830112298",
+          "receptor": "OSCAR DAVID MARTOS LOPEZ",
+          "total": 630.01,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 3.9127,
+          "matchMoneyDiff": 0.009999999999990905
+        }
       },
       "clientId": "c_6d59c0feab5f",
       "client": {
         "id": "c_6d59c0feab5f",
         "name": "OSCAR DAVID MARTOS LOPEZ",
-        "rfc": "MALO830112298",
+        "phone": "",
+        "email": "electricamartos@hotmail.com",
         "company": "",
+        "rfc": "MALO830112298",
         "type": "client"
       },
       "city": "culiacan"
@@ -1938,14 +2186,29 @@
         "year": 2026,
         "month": 9,
         "day": 22,
-        "city": "culiacan"
+        "city": "culiacan",
+        "cfdi": {
+          "id": "2437521",
+          "folio": "12707",
+          "serie": "",
+          "uuid": "24CF4864-7EFB-43E2-8EA0-ABA68A353B59",
+          "fecha": "2026-09-22 14:50:01",
+          "rfc": "DORJ710303M42",
+          "receptor": "JESUS RAMON DOMINGUEZ RAMIREZ",
+          "total": 1050.0,
+          "matchedAt": "2026-09-22T19:00:30",
+          "matchDeltaDays": 0.0549,
+          "matchMoneyDiff": 0.0
+        }
       },
       "clientId": "c_7e1a9b8a586e",
       "client": {
         "id": "c_7e1a9b8a586e",
         "name": "JESUS RAMON DOMINGUEZ RAMIREZ",
-        "rfc": "DORJ710303M42",
+        "phone": "",
+        "email": "a2d_cfd@hotmail.com",
         "company": "",
+        "rfc": "DORJ710303M42",
         "type": "client"
       },
       "city": "culiacan"
