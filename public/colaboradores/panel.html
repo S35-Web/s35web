@@ -3059,6 +3059,26 @@
             padding-top: 0;
             border-top: none;
         }
+        .products-movements-block {
+            margin: 0 0 22px;
+            padding: 16px 18px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+        }
+        .products-movements-block .cortes-filters-bar {
+            margin-bottom: 14px;
+        }
+        .products-movements-block .cortes-chart-panel {
+            margin-bottom: 0;
+            border: none;
+            padding: 0;
+        }
+        .products-movements-block .cortes-chart-legend {
+            flex-wrap: wrap;
+            max-width: min(520px, 100%);
+            justify-content: flex-end;
+        }
         .pd-sales-head {
             display: flex;
             justify-content: space-between;
@@ -3387,6 +3407,15 @@
             font-variant-numeric: tabular-nums;
             color: var(--tip-accent, var(--text));
             opacity: 0.85;
+        }
+        .cortes-chart-tip.tip-city-plain .tip-units {
+            margin-top: 0;
+            margin-left: 0;
+        }
+        .cortes-chart-tip.tip-head .tip-units-head {
+            color: var(--muted);
+            opacity: 1;
+            margin-top: 1px;
         }
         .cortes-chart-tip .tip-units-prev,
         .cortes-chart-tip.tip-prev-plain .tip-units {
@@ -4371,6 +4400,48 @@
                     <div id="productsListView">
                         <h1 class="page-title">Productos</h1>
                         <p class="page-sub">Precios, presentaciones y formulaciones en un solo lugar. Se guarda en este navegador.</p>
+
+                        <div class="pd-sales-block products-movements-block" id="productsMovementsBlock">
+                            <div class="pd-sales-head">
+                                <div>
+                                    <p class="pd-section-label">Movimientos</p>
+                                    <p class="page-sub" style="margin:0">Ritmo de ventas por familia · POS + histórico</p>
+                                </div>
+                                <div class="cortes-range pd-sales-range">
+                                    <button type="button" class="cortes-nav-btn" id="productsMovPrev" title="Periodo anterior" aria-label="Periodo anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                                    <button type="button" class="cortes-range-label" id="productsMovRangeLabel" data-period-range-trigger="productsMov" aria-haspopup="dialog" aria-expanded="false" title="Elegir periodo">Hoy</button>
+                                    <button type="button" class="cortes-nav-btn" id="productsMovNext" title="Periodo siguiente" aria-label="Periodo siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                                    <button type="button" class="cortes-today-btn" id="productsMovReset">Actual</button>
+                                </div>
+                            </div>
+                            <div class="cortes-filters-bar">
+                                <div class="seg-control" id="productsMovPeriodTabs" role="tablist" aria-label="Periodo de movimientos">
+                                    <button type="button" role="tab" data-products-mov-period="day" class="active" aria-selected="true">Día</button>
+                                    <button type="button" role="tab" data-products-mov-period="week" aria-selected="false">Semana</button>
+                                    <button type="button" role="tab" data-products-mov-period="month" aria-selected="false">Mes</button>
+                                    <button type="button" role="tab" data-products-mov-period="year" aria-selected="false">Año</button>
+                                    <button type="button" role="tab" data-products-mov-period="historial" aria-selected="false">Historial</button>
+                                </div>
+                                <div class="seg-control cortes-city-menu" id="productsMovFamilyMenu">
+                                    <select id="productsMovFamilySelect" aria-label="Familia de productos">
+                                        <option value="all" selected>Todas</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="cortes-chart-panel">
+                                <div class="cortes-chart-head">
+                                    <div>
+                                        <h3>Ritmo de ventas</h3>
+                                        <p class="panel-sub" id="productsMovChartSub">Por hora · 7:00–19:00</p>
+                                    </div>
+                                    <div class="cortes-chart-head-right">
+                                        <div class="cortes-chart-legend" id="productsMovLegend" aria-hidden="true"></div>
+                                    </div>
+                                </div>
+                                <div class="cortes-chart" id="productsMovChart" role="img" aria-label="Gráfica de movimientos de productos"></div>
+                            </div>
+                        </div>
+
                         <div class="card">
                             <div class="toolbar">
                                 <input id="productsSearch" class="search" type="search" placeholder="Buscar nombre, código o familia">
@@ -7333,6 +7404,9 @@
         if (detailView) detailView.hidden = true;
         renderProductHubChips();
         renderProductHubList();
+        if (window.S35PosModule && typeof window.S35PosModule.renderProductsMovementsChart === 'function') {
+            window.S35PosModule.renderProductsMovementsChart();
+        }
         if (!opts.skipHash) syncPanelHash();
     }
 
@@ -9464,6 +9538,9 @@
                 productFamiliesModal && productFamiliesModal.classList.contains('show')) {
                 renderProductFamiliesList();
             }
+            if (window.S35PosModule && typeof window.S35PosModule.renderProductsMovementsChart === 'function') {
+                window.S35PosModule.renderProductsMovementsChart();
+            }
             if (hubProductSlug && typeof openProductHub === 'function') {
                 openProductHub(hubProductSlug, { skipHash: true, tab: hubProductTab });
             }
@@ -9479,6 +9556,6 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260922-pdunits"></script>
+    <script src="/colaboradores/pos-module.js?v=20260922-prodmov"></script>
 </body>
 </html>
