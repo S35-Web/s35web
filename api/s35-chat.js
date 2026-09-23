@@ -1,6 +1,7 @@
 /**
- * S35 Copiloto — chat admin con OpenAI.
- * El cliente envía un contexto de negocio ya agregado (no el histórico completo).
+ * S35 Copiloto — cerebro del panel.
+ * Tools de lectura se ejecutan en el cliente (datos locales + histórico).
+ * navigate se ejecuta en el cliente como acción de UI.
  */
 const jwt = require('jsonwebtoken');
 
@@ -30,9 +31,136 @@ const TOOLS = [
   {
     type: 'function',
     function: {
+      name: 'get_sales_summary',
+      description:
+        'Consulta ventas reales del sistema para un periodo. Usa offset relativo: 0=periodo actual, -1=anterior, -2=hace dos (ej. día: 0=hoy, -1=ayer, -2=antier).',
+      parameters: {
+        type: 'object',
+        properties: {
+          period: {
+            type: 'string',
+            enum: ['day', 'week', 'month', 'year'],
+            description: 'Granularidad del corte'
+          },
+          offset: {
+            type: 'integer',
+            description: '0 actual, -1 anterior, -2 el de antes, etc. Default 0'
+          },
+          city: {
+            type: 'string',
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan'],
+            description: 'Sucursal o all. Default all'
+          }
+        },
+        required: ['period']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'compare_sales_periods',
+      description:
+        'Compara dos periodos del mismo tipo (ej. ayer vs antier: period=day, offsetA=-1, offsetB=-2).',
+      parameters: {
+        type: 'object',
+        properties: {
+          period: { type: 'string', enum: ['day', 'week', 'month', 'year'] },
+          offsetA: { type: 'integer', description: 'Primer periodo (ej. -1 = ayer)' },
+          offsetB: { type: 'integer', description: 'Segundo periodo (ej. -2 = antier)' },
+          city: {
+            type: 'string',
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan']
+          }
+        },
+        required: ['period', 'offsetA', 'offsetB']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'search_sales',
+      description: 'Busca tickets/notas por folio, cliente, RFC o texto.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: { type: 'string' },
+          limit: { type: 'integer', description: 'Máx resultados, default 8' }
+        },
+        required: ['query']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'lookup_client',
+      description: 'Busca clientes por nombre, empresa, teléfono o RFC y resume actividad.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: { type: 'string' },
+          limit: { type: 'integer' }
+        },
+        required: ['query']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'top_products',
+      description: 'Top productos por monto en un periodo.',
+      parameters: {
+        type: 'object',
+        properties: {
+          period: { type: 'string', enum: ['day', 'week', 'month', 'year'] },
+          offset: { type: 'integer' },
+          city: {
+            type: 'string',
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan']
+          },
+          limit: { type: 'integer' }
+        },
+        required: ['period']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'top_clients',
+      description: 'Top clientes por monto en un periodo.',
+      parameters: {
+        type: 'object',
+        properties: {
+          period: { type: 'string', enum: ['day', 'week', 'month', 'year'] },
+          offset: { type: 'integer' },
+          city: {
+            type: 'string',
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan']
+          },
+          limit: { type: 'integer' }
+        },
+        required: ['period']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'stock_alerts',
+      description: 'Alertas de stock bajo / materias primas y productos sin movimiento reciente.',
+      parameters: { type: 'object', properties: {} }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'navigate',
       description:
-        'Navega el panel Colaboradores a una sección y opcionalmente abre un corte (periodo/ciudad), cliente o producto.',
+        'Navega el panel a una sección. Úsalo cuando el usuario quiera VER algo (corte, cliente, producto), no solo preguntar cifras.',
       parameters: {
         type: 'object',
         properties: {
@@ -54,17 +182,15 @@ const TOOLS = [
           },
           period: {
             type: 'string',
-            enum: ['day', 'week', 'month', 'year', 'historial'],
-            description: 'Solo para Cortes'
+            enum: ['day', 'week', 'month', 'year', 'historial']
           },
           city: {
             type: 'string',
-            enum: ['all', 'culiacan', 'mochis', 'mazatlan'],
-            description: 'Sucursal del corte'
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan']
           },
           clientId: { type: 'string' },
           productSlug: { type: 'string' },
-          reason: { type: 'string', description: 'Por qué navegas (breve, para el usuario)' }
+          reason: { type: 'string' }
         },
         required: ['section']
       }
@@ -72,19 +198,71 @@ const TOOLS = [
   }
 ];
 
+const CLIENT_DATA_TOOLS = {
+  get_sales_summary: true,
+  compare_sales_periods: true,
+  search_sales: true,
+  lookup_client: true,
+  top_products: true,
+  top_clients: true,
+  stock_alerts: true
+};
+
 function systemPrompt(context) {
   const ctx = context && typeof context === 'object' ? context : {};
   return [
     'Eres el copiloto operativo de S-35 Midday (materiales de construcción, México).',
-    'Responde siempre en español, breve y claro. Usa montos en MXN con formato $X,XXX.XX.',
-    'SOLO usa cifras del CONTEXTO DE NEGOCIO que te pasan. Si no hay dato, dilo y sugiere abrir Cortes o importar datos.',
-    'Cuando el usuario pida ver una gráfica, corte, cliente o producto, llama a la tool navigate.',
-    'No inventes tickets, clientes ni inventarios. No menciones API keys ni detalles técnicos internos.',
-    'Las cifras del contexto son las ventas unificadas del sistema. Si un ticket trae usuario/vendedor, puedes mencionarlo.',
+    'Responde siempre en español, breve y claro. Montos en MXN con formato $X,XXX.XX.',
+    'Eres el cerebro del panel: para cifras de periodos, ciudades, clientes, productos o stock DEBES usar tools.',
+    'Offsets de día: 0=hoy, -1=ayer, -2=antier. Semana/mes/año igual (0 actual, -1 anterior).',
+    'El CONTEXTO es solo un snapshot rápido. Si falta un dato (ej. antier), llama get_sales_summary o compare_sales_periods.',
+    'No inventes tickets ni totales. Si la tool devuelve vacío, dilo.',
+    'Para abrir pantallas usa navigate. Para solo informar cifras, no navegues salvo que el usuario lo pida.',
     '',
-    'CONTEXTO DE NEGOCIO (JSON):',
-    JSON.stringify(ctx).slice(0, 12000)
+    'SNAPSHOT (JSON):',
+    JSON.stringify(ctx).slice(0, 10000)
   ].join('\n');
+}
+
+function sanitizeMessages(messagesIn) {
+  const out = [];
+  (Array.isArray(messagesIn) ? messagesIn : []).forEach(function (m) {
+    if (!m || typeof m !== 'object') return;
+    if (m.role === 'user') {
+      const content = typeof m.content === 'string' ? m.content.slice(0, 4000) : '';
+      if (!content.trim()) return;
+      out.push({ role: 'user', content: content });
+      return;
+    }
+    if (m.role === 'assistant') {
+      const row = { role: 'assistant', content: m.content == null ? null : String(m.content).slice(0, 8000) };
+      if (Array.isArray(m.tool_calls) && m.tool_calls.length) {
+        row.tool_calls = m.tool_calls.slice(0, 12).map(function (c) {
+          return {
+            id: c.id,
+            type: 'function',
+            function: {
+              name: c.function && c.function.name,
+              arguments:
+                typeof (c.function && c.function.arguments) === 'string'
+                  ? c.function.arguments.slice(0, 4000)
+                  : JSON.stringify((c.function && c.function.arguments) || {}).slice(0, 4000)
+            }
+          };
+        });
+      }
+      out.push(row);
+      return;
+    }
+    if (m.role === 'tool') {
+      out.push({
+        role: 'tool',
+        tool_call_id: String(m.tool_call_id || ''),
+        content: String(m.content || '').slice(0, 12000)
+      });
+    }
+  });
+  return out.slice(-24);
 }
 
 async function openaiChat(messages) {
@@ -103,7 +281,7 @@ async function openaiChat(messages) {
     },
     body: JSON.stringify({
       model: model,
-      temperature: 0.3,
+      temperature: 0.2,
       messages: messages,
       tools: TOOLS,
       tool_choice: 'auto'
@@ -124,17 +302,19 @@ async function openaiChat(messages) {
   return data;
 }
 
-function extractActions(message) {
+function parseToolArgs(call) {
+  try {
+    return JSON.parse((call.function && call.function.arguments) || '{}');
+  } catch (_) {
+    return {};
+  }
+}
+
+function extractNavigateActions(message) {
   const actions = [];
-  const calls = (message && message.tool_calls) || [];
-  calls.forEach(function (call) {
+  ((message && message.tool_calls) || []).forEach(function (call) {
     if (!call || !call.function || call.function.name !== 'navigate') return;
-    let args = {};
-    try {
-      args = JSON.parse(call.function.arguments || '{}');
-    } catch (_) {
-      args = {};
-    }
+    const args = parseToolArgs(call);
     actions.push({
       type: 'navigate',
       section: args.section,
@@ -146,6 +326,19 @@ function extractActions(message) {
     });
   });
   return actions;
+}
+
+function classifyToolCalls(message) {
+  const calls = (message && message.tool_calls) || [];
+  const dataCalls = [];
+  const navigateCalls = [];
+  calls.forEach(function (call) {
+    const name = call && call.function && call.function.name;
+    if (!name) return;
+    if (name === 'navigate') navigateCalls.push(call);
+    else if (CLIENT_DATA_TOOLS[name]) dataCalls.push(call);
+  });
+  return { dataCalls: dataCalls, navigateCalls: navigateCalls, all: calls };
 }
 
 module.exports = async function handler(req, res) {
@@ -165,29 +358,10 @@ module.exports = async function handler(req, res) {
   }
 
   const body = parseBody(req);
-  const messagesIn = Array.isArray(body.messages) ? body.messages : [];
   const context = body.context || {};
-  const mode = body.mode === 'briefing' ? 'briefing' : 'chat';
+  const cleaned = sanitizeMessages(body.messages);
 
-  const cleaned = messagesIn
-    .filter(function (m) {
-      return m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string';
-    })
-    .slice(-12)
-    .map(function (m) {
-      return { role: m.role, content: String(m.content).slice(0, 4000) };
-    });
-
-  if (mode === 'briefing') {
-    cleaned.length = 0;
-    cleaned.push({
-      role: 'user',
-      content:
-        'Genera el briefing de apertura del dashboard en 3 a 5 frases cortas: ' +
-        'cómo van ventas hoy vs ayer, ciudades relevantes, alertas de atención si hay, ' +
-        'y una sugerencia de acción. Sin saludos largos.'
-    });
-  } else if (!cleaned.length) {
+  if (!cleaned.length) {
     res.status(400).json({ ok: false, error: 'Falta mensaje' });
     return;
   }
@@ -195,13 +369,34 @@ module.exports = async function handler(req, res) {
   const apiMessages = [{ role: 'system', content: systemPrompt(context) }].concat(cleaned);
 
   try {
-    let data = await openaiChat(apiMessages);
-    let choice = data.choices && data.choices[0];
-    let message = choice && choice.message;
-    let actions = extractActions(message);
+    const data = await openaiChat(apiMessages);
+    const choice = data.choices && data.choices[0];
+    const message = choice && choice.message;
+    const classified = classifyToolCalls(message);
+    const navigateActions = extractNavigateActions(message);
 
-    // Un round de tools: respondemos al modelo con resultado sintético y pedimos texto final
-    if (actions.length && message && message.tool_calls) {
+    // Tools de datos → el cliente las ejecuta y reenvía
+    if (classified.dataCalls.length) {
+      res.status(200).json({
+        ok: true,
+        status: 'tool_calls',
+        toolCalls: classified.all.map(function (c) {
+          return {
+            id: c.id,
+            name: c.function.name,
+            arguments: parseToolArgs(c)
+          };
+        }),
+        assistantToolCalls: classified.all,
+        actions: navigateActions,
+        model: process.env.S35_AI_MODEL || 'gpt-4o-mini',
+        usage: data.usage || null
+      });
+      return;
+    }
+
+    // Solo navigate → sintetizar resultado y pedir texto final
+    if (classified.navigateCalls.length && message.tool_calls) {
       const follow = apiMessages.concat([
         {
           role: 'assistant',
@@ -220,21 +415,31 @@ module.exports = async function handler(req, res) {
           })
         });
       });
-      data = await openaiChat(follow);
-      choice = data.choices && data.choices[0];
-      message = choice && choice.message;
-      // keep original navigate actions
+      const data2 = await openaiChat(follow);
+      const choice2 = data2.choices && data2.choices[0];
+      const message2 = choice2 && choice2.message;
+      const reply =
+        String((message2 && message2.content) || '').trim() ||
+        (navigateActions[0] && navigateActions[0].reason) ||
+        'Listo, te llevo ahí.';
+      res.status(200).json({
+        ok: true,
+        status: 'reply',
+        reply: reply,
+        actions: navigateActions,
+        model: process.env.S35_AI_MODEL || 'gpt-4o-mini',
+        usage: data2.usage || data.usage || null
+      });
+      return;
     }
 
     const reply = String((message && message.content) || '').trim() ||
-      (actions.length
-        ? (actions[0].reason || 'Listo, te llevo ahí.')
-        : 'No pude generar respuesta. Intenta de nuevo.');
-
+      'No pude generar respuesta. Intenta de nuevo.';
     res.status(200).json({
       ok: true,
+      status: 'reply',
       reply: reply,
-      actions: actions,
+      actions: [],
       model: process.env.S35_AI_MODEL || 'gpt-4o-mini',
       usage: data.usage || null
     });

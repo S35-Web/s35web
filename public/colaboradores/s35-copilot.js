@@ -1,5 +1,5 @@
 /**
- * S35 Copiloto — Inicio estilo Gemini (sin briefing automático).
+ * S35 Copiloto — cerebro del panel (tools de sistema + chat bajo demanda).
  */
 (function () {
     'use strict';
@@ -33,14 +33,14 @@
         return document.getElementById(id);
     }
 
-    function setBusy(on) {
+    function setBusy(on, statusText) {
         busy = !!on;
         const send = el('copilotSend');
         const input = el('copilotInput');
         if (send) send.disabled = busy;
         if (input) input.disabled = busy;
         const status = el('copilotStatus');
-        if (status) status.textContent = busy ? 'Pensando…' : '';
+        if (status) status.textContent = busy ? (statusText || 'Pensando…') : '';
         document.querySelectorAll('[data-copilot-chip]').forEach(function (btn) {
             btn.disabled = busy;
         });
@@ -109,6 +109,48 @@
         });
     }
 
+    function executeToolCalls(toolCalls) {
+        const pos = window.S35PosModule || {};
+        const run = typeof pos.executeCopilotTool === 'function'
+            ? pos.executeCopilotTool.bind(pos)
+            : function () { return { ok: false, error: 'POS no listo' }; };
+        return (toolCalls || []).map(function (call) {
+            const name = call.name || (call.function && call.function.name);
+            const args = call.arguments || {};
+            let result;
+            try {
+                result = run(name, args);
+            } catch (err) {
+                result = { ok: false, error: (err && err.message) || 'Error tool' };
+            }
+            return {
+                role: 'tool',
+                tool_call_id: call.id,
+                content: JSON.stringify(result)
+            };
+        });
+    }
+
+    async function postChat(messages) {
+        const res = await fetch('/api/s35-chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token()
+            },
+            body: JSON.stringify({
+                mode: 'chat',
+                messages: messages,
+                context: context()
+            })
+        });
+        const data = await res.json().catch(function () { return {}; });
+        if (!res.ok || !data.ok) {
+            throw new Error(data.error || ('Error HTTP ' + res.status));
+        }
+        return data;
+    }
+
     async function ask(text) {
         if (!isAdmin()) {
             appendBubble('assistant', 'El copiloto está disponible solo para administradores.');
@@ -121,28 +163,49 @@
         appendBubble('user', content);
         history.push({ role: 'user', content: content });
 
-        setBusy(true);
+        setBusy(true, 'Pensando…');
         try {
-            const res = await fetch('/api/s35-chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: 'Bearer ' + token()
-                },
-                body: JSON.stringify({
-                    mode: 'chat',
-                    messages: history.slice(-10),
-                    context: context()
-                })
-            });
-            const data = await res.json().catch(function () { return {}; });
-            if (!res.ok || !data.ok) {
-                throw new Error(data.error || ('Error HTTP ' + res.status));
+            let wire = history.slice(-12);
+            let finalReply = '';
+            let actions = [];
+
+            for (let round = 0; round < 5; round++) {
+                const data = await postChat(wire);
+                if (data.actions && data.actions.length) {
+                    actions = actions.concat(data.actions);
+                }
+
+                if (data.status === 'tool_calls' && data.toolCalls && data.toolCalls.length) {
+                    setBusy(true, 'Consultando el sistema…');
+                    const assistantMsg = {
+                        role: 'assistant',
+                        content: null,
+                        tool_calls: data.assistantToolCalls || data.toolCalls.map(function (c) {
+                            return {
+                                id: c.id,
+                                type: 'function',
+                                function: {
+                                    name: c.name,
+                                    arguments: JSON.stringify(c.arguments || {})
+                                }
+                            };
+                        })
+                    };
+                    const toolMsgs = executeToolCalls(data.toolCalls);
+                    wire = wire.concat([assistantMsg]).concat(toolMsgs);
+                    continue;
+                }
+
+                finalReply = data.reply || '';
+                break;
             }
-            const reply = data.reply || '';
-            appendBubble('assistant', reply);
-            history.push({ role: 'assistant', content: reply });
-            runActions(data.actions || []);
+
+            if (!finalReply) {
+                finalReply = 'Consulté el sistema pero no pude armar una respuesta. Intenta de nuevo.';
+            }
+            appendBubble('assistant', finalReply);
+            history.push({ role: 'assistant', content: finalReply });
+            runActions(actions);
         } catch (err) {
             appendBubble('assistant', 'No pude responder: ' + (err.message || 'error de red'));
         } finally {
@@ -216,6 +279,6 @@
     window.S35Copilot = {
         ask: ask,
         clear: clearChat,
-        refreshBriefing: function () { /* briefing desactivado */ }
+        refreshBriefing: function () {}
     };
 })();

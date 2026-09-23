@@ -1380,6 +1380,7 @@
             const today = startOfLocalDay(new Date());
             if (start.getTime() === today.getTime()) return 'Hoy · ' + start.toLocaleDateString('es-MX', optsDay);
             if (start.getTime() === addDays(today, -1).getTime()) return 'Ayer · ' + start.toLocaleDateString('es-MX', optsDay);
+            if (start.getTime() === addDays(today, -2).getTime()) return 'Antier · ' + start.toLocaleDateString('es-MX', optsDay);
             return start.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
         }
         if (period === 'week') {
@@ -4414,18 +4415,33 @@
             });
     }
 
-    /** Contexto compacto para el copiloto (no envía el histórico crudo). */
+    /** Contexto compacto para el copiloto (snapshot; el detalle va por tools). */
     function buildCopilotContext() {
         const analytics = salesForAnalytics();
         const todayB = periodBounds('day', 0);
         const ydayB = periodBounds('day', -1);
+        const antierB = periodBounds('day', -2);
         const monthB = periodBounds('month', 0);
         const todayList = salesInRange(analytics, todayB.start, todayB.end);
         const ydayList = salesInRange(analytics, ydayB.start, ydayB.end);
+        const antierList = salesInRange(analytics, antierB.start, antierB.end);
         const monthList = salesInRange(analytics, monthB.start, monthB.end);
         const today = summarizeSalesSlice(todayList);
         const yesterday = summarizeSalesSlice(ydayList);
+        const dayBeforeYesterday = summarizeSalesSlice(antierList);
         const month = summarizeSalesSlice(monthList);
+        const last7Days = [];
+        for (let off = 0; off >= -6; off--) {
+            const b = periodBounds('day', off);
+            const slice = summarizeSalesSlice(salesInRange(analytics, b.start, b.end));
+            last7Days.push({
+                offset: off,
+                label: formatPeriodLabel('day', b.start, b.end),
+                date: b.start.toISOString().slice(0, 10),
+                total: slice.total,
+                tickets: slice.tickets
+            });
+        }
         const movers = (typeof computeDashMovers === 'function' ? computeDashMovers(3) : []).map(function (m) {
             return { slug: m.slug, name: m.name, delta: m.delta, pct: m.pct };
         });
@@ -4447,7 +4463,7 @@
         return {
             generatedAt: new Date().toISOString(),
             source: 's35_ventas',
-            note: 'Totales unificados del sistema (histórico + tickets POS). Cada ticket guarda el usuario vendedor.',
+            note: 'Snapshot rápido. Para periodos/ciudades/clientes concretos usa tools (offsets: 0=hoy, -1=ayer, -2=antier).',
             catalog: {
                 clients: clients.length,
                 tickets: analytics.length,
@@ -4456,10 +4472,16 @@
             },
             today: today,
             yesterday: yesterday,
+            dayBeforeYesterday: dayBeforeYesterday,
             month: month,
+            last7Days: last7Days,
             deltaTodayVsYesterday: {
                 amount: Math.round((today.total - yesterday.total) * 100) / 100,
                 tickets: today.tickets - yesterday.tickets
+            },
+            deltaYesterdayVsAntier: {
+                amount: Math.round((yesterday.total - dayBeforeYesterday.total) * 100) / 100,
+                tickets: yesterday.tickets - dayBeforeYesterday.tickets
             },
             topProductsMonth: topProductsInSales(monthList, 5),
             topClientsMonth: topClientsInSales(monthList, 5),
@@ -4467,6 +4489,133 @@
             attention: attention.slice(0, 8),
             cities: SALE_CITIES.map(function (c) { return { id: c.id, label: c.label, short: c.short }; })
         };
+    }
+
+    function copilotSalesFor(period, offset, city) {
+        const p = ['day', 'week', 'month', 'year'].indexOf(period) >= 0 ? period : 'day';
+        const off = Number(offset);
+        const o = isFinite(off) ? Math.trunc(off) : 0;
+        const bounds = periodBounds(p, o);
+        let list = salesInRange(salesForAnalytics(), bounds.start, bounds.end);
+        const cityId = city && city !== 'all' ? normalizeCityId(city) : 'all';
+        list = filterSalesByCity(list, cityId);
+        const summary = summarizeSalesSlice(list);
+        return {
+            ok: true,
+            period: p,
+            offset: o,
+            city: cityId,
+            label: formatPeriodLabel(p, bounds.start, bounds.end),
+            start: bounds.start.toISOString(),
+            end: bounds.end.toISOString(),
+            summary: summary
+        };
+    }
+
+    function executeCopilotTool(name, args) {
+        args = args || {};
+        try {
+            if (name === 'get_sales_summary') {
+                return copilotSalesFor(args.period, args.offset, args.city);
+            }
+            if (name === 'compare_sales_periods') {
+                const a = copilotSalesFor(args.period, args.offsetA, args.city);
+                const b = copilotSalesFor(args.period, args.offsetB, args.city);
+                const deltaAmount = Math.round((a.summary.total - b.summary.total) * 100) / 100;
+                const deltaTickets = a.summary.tickets - b.summary.tickets;
+                const pct = b.summary.total > 0
+                    ? Math.round(((a.summary.total - b.summary.total) / b.summary.total) * 1000) / 10
+                    : (a.summary.total > 0 ? null : 0);
+                return {
+                    ok: true,
+                    period: a.period,
+                    city: a.city,
+                    a: a,
+                    b: b,
+                    delta: { amount: deltaAmount, tickets: deltaTickets, pct: pct }
+                };
+            }
+            if (name === 'search_sales') {
+                const hits = searchSales(args.query, args.limit || 8).map(function (s) {
+                    return {
+                        id: s.id,
+                        folio: s.folio || null,
+                        total: Number(s.total) || 0,
+                        createdAt: s.createdAt,
+                        client: saleClientLabel(s),
+                        city: cityLabel(saleCity(s)),
+                        billing: s.billing || null
+                    };
+                });
+                return { ok: true, query: args.query, results: hits };
+            }
+            if (name === 'lookup_client') {
+                const needle = String(args.query || '').toLowerCase().trim();
+                if (!needle || needle.length < 2) return { ok: false, error: 'query corta' };
+                const max = Math.min(10, Number(args.limit) || 5);
+                const hits = clients.filter(function (c) {
+                    const blob = [c.name, c.company, c.phone, c.email, c.rfc].join(' ').toLowerCase();
+                    return blob.indexOf(needle) >= 0;
+                }).slice(0, max).map(function (c) {
+                    const sales = salesForClient(c);
+                    const total = sumTotals(sales);
+                    return {
+                        id: c.id,
+                        name: c.name,
+                        company: c.company || '',
+                        rfc: c.rfc || '',
+                        type: normalizeClientType(c.type),
+                        phone: c.phone || '',
+                        tickets: sales.length,
+                        total: Math.round(total * 100) / 100
+                    };
+                });
+                return { ok: true, query: args.query, results: hits };
+            }
+            if (name === 'top_products' || name === 'top_clients') {
+                const p = ['day', 'week', 'month', 'year'].indexOf(args.period) >= 0 ? args.period : 'month';
+                const off = Number(args.offset);
+                const o = isFinite(off) ? Math.trunc(off) : 0;
+                const bounds = periodBounds(p, o);
+                let list = salesInRange(salesForAnalytics(), bounds.start, bounds.end);
+                const cityId = args.city && args.city !== 'all' ? normalizeCityId(args.city) : 'all';
+                list = filterSalesByCity(list, cityId);
+                const limit = Math.min(15, Number(args.limit) || 5);
+                return {
+                    ok: true,
+                    period: p,
+                    offset: o,
+                    city: cityId,
+                    label: formatPeriodLabel(p, bounds.start, bounds.end),
+                    items: name === 'top_products'
+                        ? topProductsInSales(list, limit)
+                        : topClientsInSales(list, limit)
+                };
+            }
+            if (name === 'stock_alerts') {
+                const attention = [];
+                if (window.S35PanelAPI && typeof window.S35PanelAPI.getLowStockMaterials === 'function') {
+                    (window.S35PanelAPI.getLowStockMaterials() || []).slice(0, 12).forEach(function (m) {
+                        attention.push({
+                            type: 'stock',
+                            name: m.name || m.id,
+                            free: m.free != null ? m.free : m.stock,
+                            minStock: m.minStock
+                        });
+                    });
+                }
+                (typeof computeDashStaleProducts === 'function' ? computeDashStaleProducts(8) : []).forEach(function (p) {
+                    attention.push({ type: 'stale', name: p.name, slug: p.slug });
+                });
+                return { ok: true, alerts: attention };
+            }
+            if (name === 'navigate') {
+                return { ok: true, queued: true, args: args };
+            }
+            return { ok: false, error: 'Tool desconocida: ' + name };
+        } catch (err) {
+            return { ok: false, error: (err && err.message) || 'Error al ejecutar tool' };
+        }
     }
 
     function renderDashboardRadar() {
@@ -7692,6 +7841,7 @@
             openCortesPeriod: openCortesPeriod,
             openCortesView: openCortesView,
             buildCopilotContext: buildCopilotContext,
+            executeCopilotTool: executeCopilotTool,
             renderDashboardRadar: renderDashboardRadar,
             importHistoricalSales: importHistoricalSales,
             renderCobranza: renderCobranza,
