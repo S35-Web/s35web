@@ -267,7 +267,7 @@
         if (using.length) saveProductFamilyOverrides(productFamilyOverrides);
         productFamilies = productFamilies.filter(function (f) { return f.id !== fam.id; });
         saveProductFamilies(productFamilies);
-        if (familyFilter === fam.label) familyFilter = 'all';
+        if (familyFilter === fam.label) familyFilter = defaultPosFamilyFilter();
         if (priceFamilyFilter === fam.label) priceFamilyFilter = 'all';
         refreshProductFamilyUi();
         return { ok: true, label: fam.label, moved: using.length };
@@ -4154,22 +4154,47 @@
         return productFamilies.map(function (f) { return f.label; });
     }
 
-    function renderFamilyChips(containerId, activeFilter) {
+    function defaultPosFamilyFilter() {
+        const fams = families();
+        if (fams.length) return fams[0];
+        if (hasUncategorizedProducts()) return PRODUCT_UNCATEGORIZED_ID;
+        return PRODUCT_UNCATEGORIZED_ID;
+    }
+    function ensurePosFamilyFilter() {
+        const fams = families();
+        if (familyFilter === 'all') {
+            familyFilter = defaultPosFamilyFilter();
+            return;
+        }
+        if (familyFilter === PRODUCT_UNCATEGORIZED_ID) {
+            if (!hasUncategorizedProducts() && fams.length) familyFilter = fams[0];
+            return;
+        }
+        if (fams.indexOf(familyFilter) < 0) familyFilter = defaultPosFamilyFilter();
+    }
+    function renderFamilyChips(containerId, activeFilter, opts) {
         const chips = document.getElementById(containerId);
         if (!chips) return;
-        const list = ['all'].concat(families());
+        const includeAll = !(opts && opts.excludeAll);
+        const list = (includeAll ? ['all'] : []).concat(families());
         if (hasUncategorizedProducts()) list.push(PRODUCT_UNCATEGORIZED_ID);
+        if (!list.length) {
+            chips.innerHTML = '';
+            return;
+        }
+        const active = list.indexOf(activeFilter) >= 0 ? activeFilter : list[0];
         chips.innerHTML = list.map(function (f) {
             const label = f === 'all'
                 ? 'Todas'
                 : (f === PRODUCT_UNCATEGORIZED_ID ? PRODUCT_UNCATEGORIZED_LABEL : f);
-            return '<button type="button" class="chip' + (f === activeFilter ? ' active' : '') + '" data-fam="' + esc(f) + '">' +
+            return '<button type="button" class="chip' + (f === active ? ' active' : '') + '" data-fam="' + esc(f) + '">' +
                 familyDot(f) + esc(label) + '</button>';
         }).join('');
     }
 
     function renderChips() {
-        renderFamilyChips('posFamilyChips', familyFilter);
+        ensurePosFamilyFilter();
+        renderFamilyChips('posFamilyChips', familyFilter, { excludeAll: true });
     }
 
     function renderPriceChips() {
@@ -4177,11 +4202,13 @@
     }
 
     function filteredProducts() {
+        ensurePosFamilyFilter();
         const q = (document.getElementById('posProductSearch') && document.getElementById('posProductSearch').value || '').toLowerCase().trim();
         return getRecipes().filter(function (r) {
             const fam = recipeFamily(r);
-            const famOk = familyFilter === 'all'
-                || (familyFilter === PRODUCT_UNCATEGORIZED_ID ? !fam : fam === familyFilter);
+            const famOk = familyFilter === PRODUCT_UNCATEGORIZED_ID
+                ? !fam
+                : fam === familyFilter;
             const qOk = !q || [r.name, r.code, fam, r.product].some(function (v) {
                 return String(v || '').toLowerCase().includes(q);
             });
@@ -6220,7 +6247,8 @@
             chips.addEventListener('click', function (e) {
                 const btn = e.target.closest('.chip[data-fam]');
                 if (!btn) return;
-                familyFilter = btn.getAttribute('data-fam');
+                familyFilter = btn.getAttribute('data-fam') || defaultPosFamilyFilter();
+                if (familyFilter === 'all') familyFilter = defaultPosFamilyFilter();
                 renderChips();
                 renderProducts();
             });
