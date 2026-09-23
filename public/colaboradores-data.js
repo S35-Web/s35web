@@ -32,7 +32,7 @@ window.S35_PANEL_DATA = {
           "label": "porcelánico máximo de esta ficha"
         }
       ],
-      "image": "/Assets/productos_thumbs/porcelanico.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Pegaexpres-Porcelanico.png",
       "imageAlt": "Saco de 25 kg de Pegaxpress Porcelánico Universal"
     },
     {
@@ -67,7 +67,7 @@ window.S35_PANEL_DATA = {
           "label": "tránsito y emboquillado"
         }
       ],
-      "image": "/Assets/productos_thumbs/ceramico.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Pegaexpres-Ceramico.png",
       "imageAlt": "Saco de 25 kg de Pegaxpress Cerámico"
     },
     {
@@ -102,7 +102,7 @@ window.S35_PANEL_DATA = {
           "label": "tránsito y emboquillado"
         }
       ],
-      "image": "/Assets/productos_thumbs/ultraforce.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Pegaexpres-Ultraforce.png",
       "imageAlt": "Saco de 25 kg de Pegaxpress Ultraforce"
     },
     {
@@ -137,7 +137,7 @@ window.S35_PANEL_DATA = {
           "label": "tránsito y emboquillado"
         }
       ],
-      "image": "/Assets/productos_thumbs/piso-sobre-piso.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Pegaexpres-PSP.png",
       "imageAlt": "Saco de 25 kg de Pegaxpress Piso sobre piso"
     },
     {
@@ -172,7 +172,7 @@ window.S35_PANEL_DATA = {
           "label": "acabado continuo aparente"
         }
       ],
-      "image": "/Assets/productos_thumbs/cemento-plastico.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Microconcreto-Concreto-Aparente.png",
       "imageAlt": "Saco de 25 kg de Microconcreto: Concreto aparente (Cemento plástico)"
     },
     {
@@ -242,7 +242,7 @@ window.S35_PANEL_DATA = {
           "label": "temperatura de la superficie"
         }
       ],
-      "image": "/Assets/productos_thumbs/styrobond.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Styrobond-Pro.png",
       "imageAlt": "Saco de 25 kg de Styrobond Pro+, pegamento y recubrimiento para EPS"
     },
     {
@@ -312,7 +312,7 @@ window.S35_PANEL_DATA = {
           "label": "rendimiento de referencia a 5 mm"
         }
       ],
-      "image": "/Assets/productos_thumbs/LEVELTEC-pro.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Leveltec-Pro.png",
       "imageAlt": "Saco de 35 kg de Leveltec Pro, nivelante cementante de pisos"
     },
     {
@@ -347,7 +347,7 @@ window.S35_PANEL_DATA = {
           "label": "espesor por capa"
         }
       ],
-      "image": "/Assets/productos_thumbs/WAXTARD-blanco-perla.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Waxtard-Blanco-Perla.png",
       "imageAlt": "Saco de 25 kg de Waxtard Blanco Perla"
     },
     {
@@ -382,7 +382,7 @@ window.S35_PANEL_DATA = {
           "label": "espesor por capa"
         }
       ],
-      "image": "/Assets/productos_thumbs/WAXTARD-BLANCO-ABSOLUTO.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Waxtard-Blanco-Absoluto.png",
       "imageAlt": "Saco de 25 kg de Waxtard Blanco Absoluto"
     },
     {
@@ -417,7 +417,7 @@ window.S35_PANEL_DATA = {
           "label": "espesor por capa"
         }
       ],
-      "image": "/Assets/productos_thumbs/WAXTARD-gris.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Waxtard-Gris.png",
       "imageAlt": "Saco de 25 kg de Waxtard Gris"
     },
     {
@@ -452,7 +452,7 @@ window.S35_PANEL_DATA = {
           "label": "anclaje químico al sustrato liso"
         }
       ],
-      "image": "/Assets/productos_thumbs/WAXTARD-extra-anclaje.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Waxtard-Extra-Anclaje.png",
       "imageAlt": "Saco de 25 kg de Waxtard Extra Anclaje (EIFS Extra Anclaje)"
     },
     {
@@ -522,7 +522,7 @@ window.S35_PANEL_DATA = {
           "label": "permite el movimiento entre piezas sin fisurar"
         }
       ],
-      "image": "/Assets/productos_thumbs/pastablock.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Pegaexpress-Block.png",
       "imageAlt": "Saco de 30 kg de Pegaxpress: Block"
     },
     {
@@ -872,7 +872,7 @@ window.S35_PANEL_DATA = {
           "label": "temperatura de la superficie"
         }
       ],
-      "image": "/Assets/productos_thumbs/basecoat-blanco.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Basecoat-Blanco-Intenso.png",
       "imageAlt": "Saco de 25 kg de Basecoat Plus: Blanco absoluto"
     },
     {
@@ -907,7 +907,7 @@ window.S35_PANEL_DATA = {
           "label": "temperatura de la superficie"
         }
       ],
-      "image": "/Assets/productos_thumbs/basecoat.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Basecoat-Blanco-Gris.png",
       "imageAlt": "Saco de 25 kg de Basecoat Plus: Gris"
     }
   ],
@@ -1541,7 +1541,7 @@ window.S35_PANEL_DATA = {
       "water": "6.0–7.0 L / saco 25 kg",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (755.5 kg → ~30 sacos).",
-      "image": "/Assets/productos_thumbs/WAXTARD-blanco-perla.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Waxtard-Blanco-Perla.png",
       "imageAlt": "Saco de 25 kg de Waxtard Blanco Perla",
       "items": [
         {
@@ -1829,7 +1829,7 @@ window.S35_PANEL_DATA = {
       "water": "6.0–7.0 L / saco 25 kg",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (729 kg → ~29 sacos).",
-      "image": "/Assets/productos_thumbs/WAXTARD-BLANCO-ABSOLUTO.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Waxtard-Blanco-Absoluto.png",
       "imageAlt": "Saco de 25 kg de Waxtard Blanco Absoluto",
       "items": [
         {
@@ -2094,7 +2094,7 @@ window.S35_PANEL_DATA = {
       "water": "6.0–7.0 L / saco 25 kg",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (754 kg → ~30 sacos).",
-      "image": "/Assets/productos_thumbs/WAXTARD-gris.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Waxtard-Gris.png",
       "imageAlt": "Saco de 25 kg de Waxtard Gris",
       "items": [
         {
@@ -2356,7 +2356,7 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua, consistencia de trabajo",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (793 kg → ~31.72 sacos).",
-      "image": "/Assets/productos_thumbs/WAXTARD-extra-anclaje.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Waxtard-Extra-Anclaje.png",
       "imageAlt": "Saco de 25 kg de Waxtard Extra Anclaje (EIFS Extra Anclaje)",
       "items": [
         {
@@ -2585,7 +2585,7 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua, consistencia de llana",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (529.5 kg → ~21.18 sacos). TALCO 200 → marmolina-talco-200 (malla 200).",
-      "image": "/Assets/productos_thumbs/cemento-plastico.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Microconcreto-Concreto-Aparente.png",
       "imageAlt": "Saco de 25 kg de Microconcreto: Concreto aparente (Cemento plástico)",
       "items": [
         {
@@ -2775,7 +2775,7 @@ window.S35_PANEL_DATA = {
       "water": "6.1 L llana / 7.5 L proyección · saco 25 kg",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (841.75 kg → ~33.67 sacos). TALCO NORMAL → marmolina-talco-100 (misma regla FT-PS-001).",
-      "image": "/Assets/productos_thumbs/basecoat.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Basecoat-Blanco-Gris.png",
       "imageAlt": "Saco de 25 kg de Basecoat Plus: Gris",
       "items": [
         {
@@ -3053,7 +3053,7 @@ window.S35_PANEL_DATA = {
       "water": "6.1 L llana / 7.5 L proyección · saco 25 kg",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (842.5 kg → ~33.7 sacos). TALCO NORMAL → marmolina-talco-100 (no hay talco sin malla en catálogo de planta).",
-      "image": "/Assets/productos_thumbs/basecoat-blanco.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Basecoat-Blanco-Intenso.png",
       "imageAlt": "Saco de 25 kg de Basecoat Plus: Blanco absoluto",
       "items": [
         {
@@ -3313,7 +3313,7 @@ window.S35_PANEL_DATA = {
       "water": "6.0 – 6.1 L / saco 25 kg",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (742 kg → ~29.68 sacos de 25 kg). TALCO NORMAL → marmolina-talco-100. CAL → calidra. CEMENTO BLANCO → cemento-portland-blanco.",
-      "image": "/Assets/productos_thumbs/styrobond.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Styrobond-Pro.png",
       "imageAlt": "Saco de 25 kg de Styrobond Pro+, pegamento y recubrimiento para EPS",
       "items": [
         {
@@ -3557,7 +3557,7 @@ window.S35_PANEL_DATA = {
       "water": "4.0 L / saco 35 kg",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (518.2 kg → ~14.81 sacos de 35 kg). PELOS DE FIBRA → fibra-de-polipropileno. TALCO 100 → marmolina-talco-100. JAL CRIBADO → jal-cribado (labSlug jal-pumita). CAL → calidra.",
-      "image": "/Assets/productos_thumbs/LEVELTEC-pro.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Leveltec-Pro.png",
       "imageAlt": "Saco de 35 kg de Leveltec Pro, nivelante cementante de pisos",
       "items": [
         {
@@ -3861,7 +3861,7 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (775 kg → ~25.83 sacos de 30 kg). ARENA → arena-cribada-fina (equivalente genérico). TALCO 100 → marmolina-talco-100.",
-      "image": "/Assets/productos_thumbs/pastablock.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Pegaexpress-Block.png",
       "imageAlt": "Saco de 30 kg de Pegaxpress: Block",
       "items": [
         {
@@ -4017,7 +4017,7 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (869 kg → ~34.76 sacos). ARENA DESHIDRATADA FINA → arena-deshidratada (única deshidratada en catálogo). TALCO 100 → marmolina-talco-100.",
-      "image": "/Assets/productos_thumbs/ceramico.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Pegaexpres-Ceramico.png",
       "imageAlt": "Saco de 25 kg de Pegaxpress Cerámico",
       "items": [
         {
@@ -4246,7 +4246,7 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (748.6 kg → ~29.94 sacos). CAL → calidra. TALCO NORMAL → marmolina-talco-100 (misma regla FT-PS-001).",
-      "image": "/Assets/productos_thumbs/porcelanico.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Pegaexpres-Porcelanico.png",
       "imageAlt": "Saco de 25 kg de Pegaxpress Porcelánico Universal",
       "items": [
         {
@@ -4480,7 +4480,7 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (750.6 kg → ~30.02 sacos). CAL → calidra. ARENA DESHIDRATADA → arena-deshidratada.",
-      "image": "/Assets/productos_thumbs/piso-sobre-piso.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Pegaexpres-PSP.png",
       "imageAlt": "Saco de 25 kg de Pegaxpress Piso sobre piso",
       "items": [
         {
@@ -4704,7 +4704,7 @@ window.S35_PANEL_DATA = {
       "water": "Solo agua",
       "status": "lote-planta",
       "note": "Dosificación de planta por lote (758.6 kg → ~30.34 sacos). CAL → calidra. TALCO NORMAL → marmolina-talco-100 (misma regla FT-PS-001). ARENA DESHIDRATADA → arena-deshidratada.",
-      "image": "/Assets/productos_thumbs/ultraforce.jpg",
+      "image": "/Assets/Diseno de Sacos 2026/Pegaexpres-Ultraforce.png",
       "imageAlt": "Saco de 25 kg de Pegaxpress Ultraforce",
       "items": [
         {
