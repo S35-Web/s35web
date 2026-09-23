@@ -384,8 +384,8 @@
     /** Ciudades / sucursales de venta (extensible). */
     const SALE_CITIES = [
         { id: 'culiacan', label: 'Culiacán', color: '#171717', short: 'CLN' },
-        { id: 'mochis', label: 'Los Mochis', color: '#0f766e', short: 'LMM' },
-        { id: 'mazatlan', label: 'Mazatlán', color: '#c2410c', short: 'MZT' }
+        { id: 'mochis', label: 'Los Mochis', color: '#15803d', short: 'LMM' },
+        { id: 'mazatlan', label: 'Mazatlán', color: '#b91c1c', short: 'MZT' }
     ];
     const CITY_STORAGE_KEY = 's35_pos_sale_city';
     let cortesCityFilter = 'all';
@@ -1835,6 +1835,7 @@
         const hatchId = opts.hatchId || 'cortesHatch';
         const citySeries = opts.citySeries || null;
         const multiCity = !!(citySeries && citySeries.length > 1);
+        const lineColor = opts.lineColor || null;
         if (!host) return;
 
         const cur = fillRhythmBuckets(period, bounds, list);
@@ -2023,7 +2024,9 @@
                 '" cy="' + y.toFixed(1) + '" r="' + hitR + '" fill="transparent"/>';
             if (!multiCity) {
                 dots += '<circle class="dot-cur" data-idx="' + i + '" cx="' + x.toFixed(1) +
-                    '" cy="' + y.toFixed(1) + '" r="3.5" />';
+                    '" cy="' + y.toFixed(1) + '" r="3.5"' +
+                    (lineColor ? ' style="fill:' + esc(lineColor) + '"' : '') +
+                    ' />';
             }
         }
 
@@ -2035,14 +2038,16 @@
             '</defs>';
 
         const emptyNote = hasData ? '' : '<div class="cortes-chart-empty">Sin ventas en este ritmo</div>';
+        const singleLineStyle = lineColor ? (' style="stroke:' + esc(lineColor) + ';color:' + esc(lineColor) + '"') : '';
         host.innerHTML = emptyNote +
             '<div class="cortes-chart-tip" hidden></div>' +
-            '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
+            '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:' +
+            esc(lineColor || 'var(--text)') + '">' +
             defs + grid + yLabels +
             todayMark +
             (!multiCity && hasData ? '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + esc(hatchId) + ')"/>' : '') +
             (showPrev && prevLine ? '<path class="line-prev" d="' + prevLine + '"/>' : '') +
-            (multiCity ? cityLines : ('<path class="line-cur" d="' + curLine + '"/>')) +
+            (multiCity ? cityLines : ('<path class="line-cur" d="' + curLine + '"' + singleLineStyle + '/>')) +
             dots +
             hits +
             xLabels +
@@ -2102,7 +2107,7 @@
         });
     }
 
-    function renderCortesChart(period, bounds, list, prevBounds, prevList, citySeries) {
+    function renderCortesChart(period, bounds, list, prevBounds, prevList, citySeries, lineColor) {
         renderRhythmChart({
             host: document.getElementById('cortesChart'),
             subEl: document.getElementById('cortesChartSub'),
@@ -2112,7 +2117,8 @@
             list: list,
             prevBounds: prevBounds,
             prevList: prevList,
-            citySeries: citySeries || null
+            citySeries: citySeries || null,
+            lineColor: lineColor || null
         });
     }
 
@@ -4376,20 +4382,33 @@
                     return '<span class="leg"><span class="swatch" style="background:' + esc(c.color) +
                         ';border-color:' + esc(c.color) + '"></span> ' + esc(c.label) + '</span>';
                 }).join('');
-            } else if (isHist) {
-                legendHost.innerHTML = '<span class="leg"><span class="swatch"></span> Historial</span>';
             } else {
+                const c = cityById(cortesCityFilter);
+                const col = c ? c.color : '#171717';
+                const lab = c ? c.label : 'Periodo';
                 legendHost.innerHTML =
-                    '<span class="leg"><span class="swatch"></span> Periodo</span>' +
-                    '<span class="leg"><span class="swatch prev"></span> Anterior</span>';
+                    '<span class="leg"><span class="swatch" style="background:' + esc(col) +
+                    ';border-color:' + esc(col) + '"></span> ' + esc(lab) + '</span>' +
+                    (isHist ? '' :
+                        '<span class="leg"><span class="swatch prev"></span> Anterior</span>');
             }
         }
 
-        document.querySelectorAll('#cortesCityTabs button').forEach(function (btn) {
-            const active = btn.getAttribute('data-city') === cortesCityFilter;
-            btn.classList.toggle('active', active);
-            btn.setAttribute('aria-selected', active ? 'true' : 'false');
-        });
+        const citySelect = document.getElementById('cortesCitySelect');
+        if (citySelect) {
+            // Mantener opciones al día si se agregan ciudades nuevas
+            const wanted = [{ id: 'all', label: 'Todas' }].concat(SALE_CITIES.map(function (c) {
+                return { id: c.id, label: c.label };
+            }));
+            const curOpts = Array.prototype.map.call(citySelect.options, function (o) { return o.value; }).join('|');
+            const nextOpts = wanted.map(function (o) { return o.id; }).join('|');
+            if (curOpts !== nextOpts) {
+                citySelect.innerHTML = wanted.map(function (o) {
+                    return '<option value="' + esc(o.id) + '">' + esc(o.label) + '</option>';
+                }).join('');
+            }
+            citySelect.value = cortesCityFilter;
+        }
 
         renderCortesChart(
             cortesPeriod,
@@ -4397,7 +4416,8 @@
             list,
             multiCity ? null : prevBounds,
             multiCity ? [] : prevList,
-            citySeries
+            citySeries,
+            multiCity ? null : cityColor(cortesCityFilter)
         );
 
         const payKeys = payMethodKeys();
@@ -5016,14 +5036,12 @@
                 renderCortes();
             });
         }
-        const cityTabs = document.getElementById('cortesCityTabs');
-        if (cityTabs) {
-            cityTabs.addEventListener('click', function (e) {
-                const btn = e.target.closest('[data-city]');
-                if (!btn) return;
-                const next = btn.getAttribute('data-city');
-                if (!next || next === cortesCityFilter) return;
+        const citySelectEl = document.getElementById('cortesCitySelect');
+        if (citySelectEl) {
+            citySelectEl.addEventListener('change', function () {
+                const next = citySelectEl.value || 'all';
                 if (next !== 'all' && !cityById(next)) return;
+                if (next === cortesCityFilter) return;
                 cortesCityFilter = next;
                 renderCortes();
             });
