@@ -1,6 +1,6 @@
 {
   "version": 6,
-  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta.",
+  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan.",
   "generatedAt": "2026-09-22",
   "items": [
     {
@@ -40,8 +40,10 @@
         "subTotal": 13985.51,
         "year": 2025,
         "month": 7,
-        "day": 29
-      }
+        "day": 29,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11668",
@@ -80,8 +82,10 @@
         "subTotal": 13985.51,
         "year": 2025,
         "month": 7,
-        "day": 29
-      }
+        "day": 29,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11681",
@@ -120,8 +124,10 @@
         "subTotal": 8491.21,
         "year": 2025,
         "month": 7,
-        "day": 31
-      }
+        "day": 31,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11675",
@@ -160,8 +166,10 @@
         "subTotal": 22476.72,
         "year": 2025,
         "month": 7,
-        "day": 31
-      }
+        "day": 31,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11676",
@@ -200,8 +208,10 @@
         "subTotal": 22476.72,
         "year": 2025,
         "month": 7,
-        "day": 31
-      }
+        "day": 31,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11677",
@@ -240,8 +250,10 @@
         "subTotal": 42955.52,
         "year": 2025,
         "month": 7,
-        "day": 31
-      }
+        "day": 31,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11678",
@@ -280,8 +292,10 @@
         "subTotal": 42955.52,
         "year": 2025,
         "month": 7,
-        "day": 31
-      }
+        "day": 31,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11679",
@@ -320,8 +334,10 @@
         "subTotal": 42955.52,
         "year": 2025,
         "month": 7,
-        "day": 31
-      }
+        "day": 31,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11680",
@@ -360,8 +376,10 @@
         "subTotal": 42955.52,
         "year": 2025,
         "month": 7,
-        "day": 31
-      }
+        "day": 31,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11715",
@@ -400,8 +418,10 @@
         "subTotal": 26972.07,
         "year": 2025,
         "month": 8,
-        "day": 12
-      }
+        "day": 12,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11795",
@@ -440,8 +460,10 @@
         "subTotal": 543.11,
         "year": 2025,
         "month": 9,
-        "day": 1
-      }
+        "day": 1,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11985",
@@ -525,8 +547,10 @@
         "subTotal": 310431.92,
         "year": 2025,
         "month": 10,
-        "day": 31
-      }
+        "day": 31,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11986",
@@ -610,8 +634,10 @@
         "subTotal": 310431.92,
         "year": 2025,
         "month": 10,
-        "day": 31
-      }
+        "day": 31,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11987",
@@ -695,8 +721,10 @@
         "subTotal": 310431.92,
         "year": 2025,
         "month": 10,
-        "day": 31
-      }
+        "day": 31,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-11988",
@@ -762,8 +790,10 @@
         "subTotal": 207900.3,
         "year": 2025,
         "month": 10,
-        "day": 31
-      }
+        "day": 31,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12139",
@@ -802,8 +832,10 @@
         "subTotal": 303009.14,
         "year": 2025,
         "month": 12,
-        "day": 30
-      }
+        "day": 30,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12141",
@@ -842,8 +874,10 @@
         "subTotal": 95400.0,
         "year": 2025,
         "month": 12,
-        "day": 30
-      }
+        "day": 30,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12143",
@@ -882,8 +916,10 @@
         "subTotal": 143100.0,
         "year": 2025,
         "month": 12,
-        "day": 30
-      }
+        "day": 30,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12144",
@@ -922,8 +958,10 @@
         "subTotal": 255775.86,
         "year": 2025,
         "month": 12,
-        "day": 30
-      }
+        "day": 30,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12142",
@@ -962,8 +1000,10 @@
         "subTotal": 295263.0,
         "year": 2025,
         "month": 12,
-        "day": 30
-      }
+        "day": 30,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12140",
@@ -1002,8 +1042,10 @@
         "subTotal": 48495.0,
         "year": 2025,
         "month": 12,
-        "day": 30
-      }
+        "day": 30,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12201",
@@ -1042,8 +1084,10 @@
         "subTotal": 170775.61,
         "year": 2026,
         "month": 1,
-        "day": 30
-      }
+        "day": 30,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12202",
@@ -1082,8 +1126,10 @@
         "subTotal": 172413.79,
         "year": 2026,
         "month": 1,
-        "day": 30
-      }
+        "day": 30,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12204",
@@ -1122,8 +1168,10 @@
         "subTotal": 121429.83,
         "year": 2026,
         "month": 1,
-        "day": 30
-      }
+        "day": 30,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12275",
@@ -1162,8 +1210,10 @@
         "subTotal": 129310.35,
         "year": 2026,
         "month": 2,
-        "day": 27
-      }
+        "day": 27,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12277",
@@ -1202,8 +1252,10 @@
         "subTotal": 206896.56,
         "year": 2026,
         "month": 2,
-        "day": 27
-      }
+        "day": 27,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12278",
@@ -1242,8 +1294,10 @@
         "subTotal": 583076.53,
         "year": 2026,
         "month": 2,
-        "day": 27
-      }
+        "day": 27,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12330",
@@ -1291,8 +1345,10 @@
         "subTotal": 230662.1,
         "year": 2026,
         "month": 3,
-        "day": 26
-      }
+        "day": 26,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12332",
@@ -1340,8 +1396,10 @@
         "subTotal": 206896.6,
         "year": 2026,
         "month": 3,
-        "day": 27
-      }
+        "day": 27,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12582",
@@ -1380,8 +1438,10 @@
         "subTotal": 230662.07,
         "year": 2026,
         "month": 7,
-        "day": 24
-      }
+        "day": 24,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12583",
@@ -1420,8 +1480,10 @@
         "subTotal": 90855.17,
         "year": 2026,
         "month": 7,
-        "day": 24
-      }
+        "day": 24,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12584",
@@ -1460,8 +1522,10 @@
         "subTotal": 90855.17,
         "year": 2026,
         "month": 7,
-        "day": 24
-      }
+        "day": 24,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12594",
@@ -1500,8 +1564,10 @@
         "subTotal": 102212.06,
         "year": 2026,
         "month": 7,
-        "day": 29
-      }
+        "day": 29,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-cfdi-12612",
@@ -1540,8 +1606,10 @@
         "subTotal": 90855.17,
         "year": 2026,
         "month": 8,
-        "day": 6
-      }
+        "day": 6,
+        "city": "mochis"
+      },
+      "city": "mochis"
     },
     {
       "id": "sale-hist-rcpt-64056",
@@ -1580,8 +1648,10 @@
         "observations": "Mostr efe",
         "year": 2026,
         "month": 9,
-        "day": 21
-      }
+        "day": 21,
+        "city": "culiacan"
+      },
+      "city": "culiacan"
     },
     {
       "id": "sale-hist-rcpt-64057",
@@ -1611,8 +1681,10 @@
         "observations": "Mostr efe",
         "year": 2026,
         "month": 9,
-        "day": 21
-      }
+        "day": 21,
+        "city": "culiacan"
+      },
+      "city": "culiacan"
     },
     {
       "id": "sale-hist-rcpt-64058",
@@ -1642,8 +1714,10 @@
         "observations": "Mostr tarjeta",
         "year": 2026,
         "month": 9,
-        "day": 21
-      }
+        "day": 21,
+        "city": "culiacan"
+      },
+      "city": "culiacan"
     },
     {
       "id": "sale-hist-rcpt-64059",
@@ -1673,8 +1747,10 @@
         "observations": "Mostr f y tarjeta",
         "year": 2026,
         "month": 9,
-        "day": 21
-      }
+        "day": 21,
+        "city": "culiacan"
+      },
+      "city": "culiacan"
     },
     {
       "id": "sale-hist-rcpt-64060",
@@ -1704,8 +1780,10 @@
         "observations": "MOSTRE EFE",
         "year": 2026,
         "month": 9,
-        "day": 22
-      }
+        "day": 22,
+        "city": "culiacan"
+      },
+      "city": "culiacan"
     },
     {
       "id": "sale-hist-rcpt-64061",
@@ -1744,8 +1822,10 @@
         "observations": "Mostr efe",
         "year": 2026,
         "month": 9,
-        "day": 22
-      }
+        "day": 22,
+        "city": "culiacan"
+      },
+      "city": "culiacan"
     },
     {
       "id": "sale-hist-rcpt-64062",
@@ -1775,7 +1855,8 @@
         "observations": "MOSTR LOMATSA FAC TRANSF",
         "year": 2026,
         "month": 9,
-        "day": 22
+        "day": 22,
+        "city": "culiacan"
       },
       "clientId": "c_3693ed2a37b3",
       "client": {
@@ -1784,7 +1865,8 @@
         "rfc": "LOM100225SF1",
         "company": "",
         "type": "client"
-      }
+      },
+      "city": "culiacan"
     },
     {
       "id": "sale-hist-rcpt-64063",
@@ -1814,7 +1896,8 @@
         "observations": "Fac trata scar David martes",
         "year": 2026,
         "month": 9,
-        "day": 22
+        "day": 22,
+        "city": "culiacan"
       },
       "clientId": "c_6d59c0feab5f",
       "client": {
@@ -1823,7 +1906,8 @@
         "rfc": "MALO830112298",
         "company": "",
         "type": "client"
-      }
+      },
+      "city": "culiacan"
     },
     {
       "id": "sale-hist-rcpt-64064",
@@ -1853,7 +1937,8 @@
         "observations": "Mostr tarjet fac Jess Ramn dominguez Ramrez",
         "year": 2026,
         "month": 9,
-        "day": 22
+        "day": 22,
+        "city": "culiacan"
       },
       "clientId": "c_7e1a9b8a586e",
       "client": {
@@ -1862,7 +1947,8 @@
         "rfc": "DORJ710303M42",
         "company": "",
         "type": "client"
-      }
+      },
+      "city": "culiacan"
     },
     {
       "id": "sale-hist-rcpt-64065",
@@ -1892,8 +1978,10 @@
         "observations": "MOSTR EFE",
         "year": 2026,
         "month": 9,
-        "day": 22
-      }
+        "day": 22,
+        "city": "culiacan"
+      },
+      "city": "culiacan"
     }
   ],
   "skippedCancelled": [

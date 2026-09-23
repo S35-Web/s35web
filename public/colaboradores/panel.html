@@ -3198,6 +3198,13 @@
             stroke-linecap: round;
             pointer-events: none;
         }
+        .cortes-chart .line-city {
+            fill: none;
+            stroke-width: 1.75;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+            pointer-events: none;
+        }
         .cortes-chart .line-prev {
             fill: none;
             stroke: #a3a3a3;
@@ -3268,6 +3275,26 @@
             opacity: 0.7;
             font-size: 11px;
             font-variant-numeric: tabular-nums;
+        }
+        .cortes-chart-tip .tip-city {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 3px;
+            font-size: 11px;
+            color: var(--text);
+        }
+        .cortes-chart-tip .tip-city .sw {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            flex: 0 0 auto;
+        }
+        .cortes-city-tabs {
+            margin: 0 0 14px;
+        }
+        .seg.seg-city {
+            flex-wrap: wrap;
         }
         [data-theme="dark"] .cortes-chart-tip {
             background: #f5f5f5;
@@ -3894,6 +3921,14 @@
                                         </div>
                                     </div>
                                     <div>
+                                        <div class="field-label">Ciudad / sucursal</div>
+                                        <div class="seg seg-city" id="posSaleCitySeg">
+                                            <label><input type="radio" name="saleCity" value="culiacan" checked> Culiacán</label>
+                                            <label><input type="radio" name="saleCity" value="mochis"> Los Mochis</label>
+                                            <label><input type="radio" name="saleCity" value="mazatlan"> Mazatlán</label>
+                                        </div>
+                                    </div>
+                                    <div>
                                         <div class="field-label">Método de pago</div>
                                         <div class="seg seg-pay">
                                             <label><input type="radio" name="payMethod" value="efectivo" checked> Efectivo</label>
@@ -4148,6 +4183,13 @@
                         <button type="button" role="tab" data-period="month" aria-selected="false">Mes</button>
                         <button type="button" role="tab" data-period="year" aria-selected="false">Año</button>
                         <button type="button" role="tab" data-period="historial" aria-selected="false">Historial</button>
+                    </div>
+
+                    <div class="seg-control cortes-city-tabs" id="cortesCityTabs" role="tablist" aria-label="Ciudad del corte">
+                        <button type="button" role="tab" data-city="all" class="active" aria-selected="true">Todas</button>
+                        <button type="button" role="tab" data-city="culiacan" aria-selected="false">Culiacán</button>
+                        <button type="button" role="tab" data-city="mochis" aria-selected="false">Los Mochis</button>
+                        <button type="button" role="tab" data-city="mazatlan" aria-selected="false">Mazatlán</button>
                     </div>
 
                     <div class="cortes-chart-panel">
@@ -9326,6 +9368,6 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260922-mazatlan"></script>
+    <script src="/colaboradores/pos-module.js?v=20260922-cities"></script>
 </body>
 </html>

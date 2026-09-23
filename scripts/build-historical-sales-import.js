@@ -21,6 +21,13 @@ const STORE_NAMES = {
   '36': 'Mochis',
 };
 
+/** Ciudad de venta por store_id (para etiquetar al rebuild). */
+const STORE_CITIES = {
+  '35': 'mazatlan',
+  '36': 'mochis',
+  '32': 'mochis',
+};
+
 /** Tiendas excluidas del import (cotizaciones / no ventas de planta). */
 const EXCLUDED_STORE_IDS = new Set(['32', '36']);
 
@@ -194,6 +201,10 @@ function build() {
       };
       if (storeId != null && storeId !== '') meta.storeId = storeId;
       if (storeName) meta.storeName = storeName;
+      const city = (storeIdRaw && STORE_CITIES[String(storeIdRaw)])
+        ? STORE_CITIES[String(storeIdRaw)]
+        : 'culiacan';
+      meta.city = city;
       return {
         id: 'sale-hist-rcpt-' + rcpt.receiptId,
         folio: 'HIST-R' + rcpt.receiptId,
@@ -201,6 +212,7 @@ function build() {
         customer: 'Histórico importado',
         paymentMethod: 'transferencia',
         billing: 'sin_facturar',
+        city: city,
         items: merged,
         total: total,
         user: 'import-historico',

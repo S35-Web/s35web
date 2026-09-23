@@ -380,6 +380,86 @@
     function billLabel(v) {
         return v === 'facturado' ? 'Facturado' : 'Sin facturar';
     }
+
+    /** Ciudades / sucursales de venta (extensible). */
+    const SALE_CITIES = [
+        { id: 'culiacan', label: 'Culiacán', color: '#171717', short: 'CLN' },
+        { id: 'mochis', label: 'Los Mochis', color: '#0f766e', short: 'LMM' },
+        { id: 'mazatlan', label: 'Mazatlán', color: '#c2410c', short: 'MZT' }
+    ];
+    const CITY_STORAGE_KEY = 's35_pos_sale_city';
+    let cortesCityFilter = 'all';
+
+    function saleCityCatalog() {
+        return SALE_CITIES;
+    }
+    function cityById(id) {
+        const key = String(id || '').toLowerCase().trim();
+        return SALE_CITIES.filter(function (c) { return c.id === key; })[0] || null;
+    }
+    function normalizeCityId(raw) {
+        const v = String(raw || '').toLowerCase().trim()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (v === 'culiacan' || v === 'cln') return 'culiacan';
+        if (v === 'mochis' || v === 'los mochis' || v === 'lmm') return 'mochis';
+        if (v === 'mazatlan' || v === 'mzt') return 'mazatlan';
+        if (cityById(v)) return v;
+        return 'culiacan';
+    }
+    function cityLabel(id) {
+        const c = cityById(normalizeCityId(id));
+        return c ? c.label : 'Culiacán';
+    }
+    function cityColor(id) {
+        const c = cityById(normalizeCityId(id));
+        return c ? c.color : '#171717';
+    }
+    /** Resuelve ciudad de una venta (explícita o inferida). */
+    function resolveSaleCity(sale) {
+        if (!sale) return 'culiacan';
+        if (sale.city) return normalizeCityId(sale.city);
+        const meta = sale.meta || {};
+        if (meta.city) return normalizeCityId(meta.city);
+        const sid = meta.storeId;
+        const sname = String(meta.storeName || '');
+        if (sid === 35 || sid === '35' || sname === 'Mazatlán' || sname === 'Mazatlan') return 'mazatlan';
+        if (sid === 36 || sid === '36' || sname === 'Mochis') return 'mochis';
+        if (meta.source === 'cfdi-import' || meta.kind === 'invoice') return 'mochis';
+        return 'culiacan';
+    }
+    function saleCity(sale) {
+        return resolveSaleCity(sale);
+    }
+    function filterSalesByCity(list, cityFilter) {
+        const f = cityFilter == null ? 'all' : cityFilter;
+        if (!f || f === 'all') return list || [];
+        const id = normalizeCityId(f);
+        return (list || []).filter(function (s) { return saleCity(s) === id; });
+    }
+    function loadPreferredSaleCity() {
+        try {
+            const raw = localStorage.getItem(CITY_STORAGE_KEY);
+            if (raw && cityById(normalizeCityId(raw))) return normalizeCityId(raw);
+        } catch (_) {}
+        return 'culiacan';
+    }
+    function savePreferredSaleCity(id) {
+        try { localStorage.setItem(CITY_STORAGE_KEY, normalizeCityId(id)); } catch (_) {}
+    }
+    function selectedSaleCity() {
+        const el = document.querySelector('input[name="saleCity"]:checked');
+        if (el && el.value) return normalizeCityId(el.value);
+        return loadPreferredSaleCity();
+    }
+    function citySegHtml(selected, nameAttr) {
+        const sel = normalizeCityId(selected || 'culiacan');
+        const name = nameAttr || 'saleCity';
+        return SALE_CITIES.map(function (c) {
+            return '<label><input type="radio" name="' + esc(name) + '" value="' + esc(c.id) + '"' +
+                (c.id === sel ? ' checked' : '') + '> ' + esc(c.label) + '</label>';
+        }).join('');
+    }
+
     function toast(msg) {
         const el = document.getElementById('toast');
         if (!el) return;
@@ -426,6 +506,7 @@
         } else if (patch.note) {
             next.note = patch.note;
         }
+        next.city = resolveSaleCity(next);
         return next;
     }
     function isSaleEditDeleted(id) {
@@ -585,6 +666,7 @@
             '</div>' +
             '<div class="sale-note-meta">' +
             '<div class="row"><span class="k">Fecha</span><span class="v">' + esc(formatSaleDateTime(sale.createdAt)) + '</span></div>' +
+            '<div class="row"><span class="k">Ciudad</span><span class="v">' + esc(cityLabel(saleCity(sale))) + '</span></div>' +
             (store
                 ? '<div class="row"><span class="k">Sucursal</span><span class="v">' + esc(store) + '</span></div>'
                 : '') +
@@ -826,6 +908,11 @@
                 return '<option value="' + b[0] + '"' + (bill === b[0] ? ' selected' : '') + '>' + b[1] + '</option>';
             }).join('') +
             '</select></label>' +
+            '<label class="span-2">Ciudad / sucursal<select id="sneCity">' +
+            SALE_CITIES.map(function (c) {
+                return '<option value="' + esc(c.id) + '"' + (saleCity(sale) === c.id ? ' selected' : '') + '>' + esc(c.label) + '</option>';
+            }).join('') +
+            '</select></label>' +
             '</div>' +
             '<div style="overflow:auto">' +
             '<table class="sne-lines"><thead><tr>' +
@@ -866,6 +953,7 @@
         const customerRaw = ((document.getElementById('sneCustomer') || {}).value || '').trim();
         const pay = (document.getElementById('snePay') || {}).value || 'efectivo';
         const bill = (document.getElementById('sneBill') || {}).value || 'sin_facturar';
+        const city = normalizeCityId((document.getElementById('sneCity') || {}).value || saleCity(sale));
         const createdAt = fromDatetimeLocalValue((document.getElementById('sneCreatedAt') || {}).value);
         const body = document.getElementById('sneLinesBody');
         const items = [];
@@ -922,6 +1010,7 @@
             customer: client ? clientDisplay(client) : (customerRaw || 'Mostrador'),
             paymentMethod: pay,
             billing: bill,
+            city: city,
             items: items,
             total: Math.round(total * 100) / 100
         };
@@ -947,6 +1036,7 @@
                     customer: sale.customer,
                     paymentMethod: sale.paymentMethod,
                     billing: sale.billing,
+                    city: sale.city || resolveSaleCity(sale),
                     items: sale.items,
                     total: sale.total,
                     note: sale.note || null,
@@ -1743,19 +1833,39 @@
         const prevBounds = opts.prevBounds;
         const prevList = opts.prevList;
         const hatchId = opts.hatchId || 'cortesHatch';
+        const citySeries = opts.citySeries || null;
+        const multiCity = !!(citySeries && citySeries.length > 1);
         if (!host) return;
 
         const cur = fillRhythmBuckets(period, bounds, list);
-        const showPrev = period !== 'historial' && prevBounds && prevList;
+        const showPrev = !multiCity && period !== 'historial' && prevBounds && prevList;
         const prev = showPrev
             ? fillRhythmBuckets(period, prevBounds, prevList)
             : { subtitle: '', buckets: cur.buckets.map(function (b) { return { key: b.key, label: b.label, amount: 0 }; }) };
-        if (subEl) subEl.textContent = cur.subtitle;
+        if (subEl) {
+            subEl.textContent = multiCity ? (cur.subtitle + ' · por ciudad') : cur.subtitle;
+        }
+
+        const seriesBuckets = multiCity
+            ? citySeries.map(function (s) {
+                return {
+                    key: s.key,
+                    label: s.label,
+                    color: s.color,
+                    buckets: fillRhythmBuckets(period, bounds, s.list || []).buckets
+                };
+            })
+            : null;
 
         const n = cur.buckets.length;
         let maxVal = 0;
         for (let i = 0; i < n; i++) {
             maxVal = Math.max(maxVal, cur.buckets[i].amount, (prev.buckets[i] && prev.buckets[i].amount) || 0);
+            if (seriesBuckets) {
+                seriesBuckets.forEach(function (s) {
+                    maxVal = Math.max(maxVal, (s.buckets[i] && s.buckets[i].amount) || 0);
+                });
+            }
         }
         const hasData = maxVal > 0;
 
@@ -1869,6 +1979,16 @@
             ' L' + ptX(n - 1).toFixed(1) + ' ' + baseY.toFixed(1) +
             ' L' + ptX(0).toFixed(1) + ' ' + baseY.toFixed(1) + ' Z';
 
+        let cityLines = '';
+        if (multiCity && seriesBuckets) {
+            seriesBuckets.forEach(function (s) {
+                const d = linePath(s.buckets);
+                if (!d) return;
+                cityLines += '<path class="line-city" data-city="' + esc(s.key) + '" d="' + d +
+                    '" style="stroke:' + esc(s.color) + '"/>';
+            });
+        }
+
         let xLabels = '';
         const labelEvery = period === 'month' ? (n > 20 ? 2 : 1)
             : (period === 'day' ? 2
@@ -1901,8 +2021,10 @@
             const y = ptY(cur.buckets[i].amount);
             hits += '<circle class="hit-zone" data-idx="' + i + '" cx="' + x.toFixed(1) +
                 '" cy="' + y.toFixed(1) + '" r="' + hitR + '" fill="transparent"/>';
-            dots += '<circle class="dot-cur" data-idx="' + i + '" cx="' + x.toFixed(1) +
-                '" cy="' + y.toFixed(1) + '" r="3.5" />';
+            if (!multiCity) {
+                dots += '<circle class="dot-cur" data-idx="' + i + '" cx="' + x.toFixed(1) +
+                    '" cy="' + y.toFixed(1) + '" r="3.5" />';
+            }
         }
 
         const defs =
@@ -1918,9 +2040,9 @@
             '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
             defs + grid + yLabels +
             todayMark +
-            (hasData ? '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + esc(hatchId) + ')"/>' : '') +
+            (!multiCity && hasData ? '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + esc(hatchId) + ')"/>' : '') +
             (showPrev && prevLine ? '<path class="line-prev" d="' + prevLine + '"/>' : '') +
-            '<path class="line-cur" d="' + curLine + '"/>' +
+            (multiCity ? cityLines : ('<path class="line-cur" d="' + curLine + '"/>')) +
             dots +
             hits +
             xLabels +
@@ -1935,12 +2057,23 @@
         }
         function showTip(idx) {
             if (!tipEl || idx < 0 || idx >= n) return;
-            const amt = Number(cur.buckets[idx].amount) || 0;
-            const prevAmt = showPrev && prev.buckets[idx] ? (Number(prev.buckets[idx].amount) || 0) : null;
-            let html = '<div class="tip-label">' + esc(tipTitle(idx)) + '</div>' +
-                '<div class="tip-val">' + money(amt) + '</div>';
-            if (prevAmt != null) {
-                html += '<div class="tip-prev">Anterior · ' + money(prevAmt) + '</div>';
+            let html = '<div class="tip-label">' + esc(tipTitle(idx)) + '</div>';
+            if (multiCity && seriesBuckets) {
+                let sum = 0;
+                seriesBuckets.forEach(function (s) {
+                    const amt = Number(s.buckets[idx] && s.buckets[idx].amount) || 0;
+                    sum += amt;
+                    html += '<div class="tip-city"><span class="sw" style="background:' + esc(s.color) + '"></span>' +
+                        esc(s.label) + ' · ' + money(amt) + '</div>';
+                });
+                html += '<div class="tip-val">' + money(sum) + '</div>';
+            } else {
+                const amt = Number(cur.buckets[idx].amount) || 0;
+                const prevAmt = showPrev && prev.buckets[idx] ? (Number(prev.buckets[idx].amount) || 0) : null;
+                html += '<div class="tip-val">' + money(amt) + '</div>';
+                if (prevAmt != null) {
+                    html += '<div class="tip-prev">Anterior · ' + money(prevAmt) + '</div>';
+                }
             }
             tipEl.innerHTML = html;
             tipEl.hidden = false;
@@ -1969,7 +2102,7 @@
         });
     }
 
-    function renderCortesChart(period, bounds, list, prevBounds, prevList) {
+    function renderCortesChart(period, bounds, list, prevBounds, prevList, citySeries) {
         renderRhythmChart({
             host: document.getElementById('cortesChart'),
             subEl: document.getElementById('cortesChartSub'),
@@ -1978,7 +2111,8 @@
             bounds: bounds,
             list: list,
             prevBounds: prevBounds,
-            prevList: prevList
+            prevList: prevList,
+            citySeries: citySeries || null
         });
     }
 
@@ -2538,6 +2672,7 @@
             user: row.user || 'import-historico',
             meta: row.meta || { source: 'old-panel' }
         };
+        base.city = resolveSaleCity(base);
         return applySaleEditPatch(base);
     }
 
@@ -4036,6 +4171,8 @@
         }
         const clientId = selectedClientId();
         const client = clientById(clientId);
+        const saleCityId = selectedSaleCity();
+        savePreferredSaleCity(saleCityId);
         const clientSnapshot = client ? {
             id: client.id,
             name: client.name,
@@ -4061,6 +4198,7 @@
             customer: client ? clientDisplay(client) : 'Mostrador',
             paymentMethod: paymentMethod,
             billing: billing,
+            city: saleCityId,
             items: cart.map(function (it) {
                 const row = {
                     product: it.product,
@@ -4160,12 +4298,28 @@
             ? null
             : likeForLikePrevBounds(cortesPeriod, bounds, cortesOffset);
         const likeForLike = !isHist && cortesOffset === 0 && cortesPeriod !== 'historial';
-        const analytics = salesForAnalytics();
+        const analyticsAll = salesForAnalytics();
+        const analytics = filterSalesByCity(analyticsAll, cortesCityFilter);
         const list = salesInRange(analytics, bounds.start, bounds.end);
         const prevList = isHist ? [] : salesInRange(analytics, prevBounds.start, prevBounds.end);
         const comparePrevList = isHist
             ? []
-            : salesInRange(analytics, comparePrevBounds.start, comparePrevBounds.end);
+            : salesInRange(
+                filterSalesByCity(analyticsAll, cortesCityFilter),
+                comparePrevBounds.start,
+                comparePrevBounds.end
+            );
+        const multiCity = cortesCityFilter === 'all';
+        const citySeries = multiCity
+            ? SALE_CITIES.map(function (c) {
+                return {
+                    key: c.id,
+                    label: c.label,
+                    color: c.color,
+                    list: salesInRange(filterSalesByCity(analyticsAll, c.id), bounds.start, bounds.end)
+                };
+            })
+            : null;
         const total = sumTotals(list);
         const prevTotal = sumTotals(comparePrevList);
         const tickets = list.length;
@@ -4201,23 +4355,50 @@
         if (dailyEl) dailyEl.textContent = money(dailyAvg);
         const hintEl = document.getElementById('cortesCompareHint');
         if (hintEl) {
-            hintEl.textContent = isHist
-                ? 'Vista completa · todos los años con ventas'
-                : formatDelta(total, prevTotal, {
+            if (isHist) {
+                hintEl.textContent = multiCity
+                    ? 'Vista completa · todas las ciudades'
+                    : ('Vista completa · ' + cityLabel(cortesCityFilter));
+            } else if (multiCity) {
+                hintEl.textContent = 'Todas las ciudades · suma del periodo';
+            } else {
+                hintEl.textContent = formatDelta(total, prevTotal, {
                     likeForLike: likeForLike,
                     period: cortesPeriod
                 });
+            }
         }
 
         const legendHost = document.querySelector('#cortes .cortes-chart-legend');
         if (legendHost) {
-            legendHost.innerHTML = isHist
-                ? '<span class="leg"><span class="swatch"></span> Historial</span>'
-                : '<span class="leg"><span class="swatch"></span> Periodo</span>' +
-                  '<span class="leg"><span class="swatch prev"></span> Anterior</span>';
+            if (multiCity) {
+                legendHost.innerHTML = SALE_CITIES.map(function (c) {
+                    return '<span class="leg"><span class="swatch" style="background:' + esc(c.color) +
+                        ';border-color:' + esc(c.color) + '"></span> ' + esc(c.label) + '</span>';
+                }).join('');
+            } else if (isHist) {
+                legendHost.innerHTML = '<span class="leg"><span class="swatch"></span> Historial</span>';
+            } else {
+                legendHost.innerHTML =
+                    '<span class="leg"><span class="swatch"></span> Periodo</span>' +
+                    '<span class="leg"><span class="swatch prev"></span> Anterior</span>';
+            }
         }
 
-        renderCortesChart(cortesPeriod, bounds, list, prevBounds, prevList);
+        document.querySelectorAll('#cortesCityTabs button').forEach(function (btn) {
+            const active = btn.getAttribute('data-city') === cortesCityFilter;
+            btn.classList.toggle('active', active);
+            btn.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+
+        renderCortesChart(
+            cortesPeriod,
+            bounds,
+            list,
+            multiCity ? null : prevBounds,
+            multiCity ? [] : prevList,
+            citySeries
+        );
 
         const payKeys = payMethodKeys();
         const payRows = payKeys.map(function (k) {
@@ -4832,6 +5013,18 @@
                 closePeriodRangePicker();
                 cortesPeriod = next;
                 cortesOffset = 0;
+                renderCortes();
+            });
+        }
+        const cityTabs = document.getElementById('cortesCityTabs');
+        if (cityTabs) {
+            cityTabs.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-city]');
+                if (!btn) return;
+                const next = btn.getAttribute('data-city');
+                if (!next || next === cortesCityFilter) return;
+                if (next !== 'all' && !cityById(next)) return;
+                cortesCityFilter = next;
                 renderCortes();
             });
         }
@@ -6107,6 +6300,17 @@
         ensureHistoricalSalesImport();
         bind();
         bindCobranza();
+        (function syncSaleCityRadios() {
+            const preferred = loadPreferredSaleCity();
+            document.querySelectorAll('input[name="saleCity"]').forEach(function (el) {
+                el.checked = el.value === preferred;
+            });
+            document.querySelectorAll('input[name="saleCity"]').forEach(function (el) {
+                el.addEventListener('change', function () {
+                    if (el.checked) savePreferredSaleCity(el.value);
+                });
+            });
+        })();
         renderChips();
         renderProducts();
         fillClientSelect();
