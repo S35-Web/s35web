@@ -2952,11 +2952,48 @@
                 grid-template-columns: 1fr;
             }
         }
+        .client-dash-data-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .client-dash-data-head .pd-section-label { margin: 0; }
+        .client-dash-data-head .seg-control {
+            flex-shrink: 0;
+        }
+        .client-dash-data-head .seg-control button {
+            padding: 4px 10px;
+            font-size: 12px;
+        }
         .client-dash-form-actions {
             display: flex;
             justify-content: space-between;
             gap: 10px;
             margin-top: 14px;
+        }
+        .client-dash-form-actions[hidden] {
+            display: none !important;
+        }
+        .client-dash-data:not(.is-editing) .form-grid input:not([type="range"]),
+        .client-dash-data:not(.is-editing) .form-grid textarea {
+            border-color: transparent;
+            background: transparent;
+            box-shadow: none;
+            cursor: default;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .client-dash-data:not(.is-editing) .form-grid input:not([type="range"]):focus,
+        .client-dash-data:not(.is-editing) .form-grid textarea:focus {
+            outline: none;
+            border-color: transparent;
+            box-shadow: none;
+        }
+        .client-dash-data:not(.is-editing) #cdTypeSeg {
+            pointer-events: none;
+            opacity: 0.92;
         }
         .client-dash-meta {
             margin: 12px 0 0;
@@ -4219,8 +4256,14 @@
                         </div>
 
                         <div class="client-dash-grid">
-                            <div class="card client-dash-data">
-                                <p class="pd-section-label">Datos</p>
+                            <div class="card client-dash-data" id="cdDataCard">
+                                <div class="client-dash-data-head">
+                                    <p class="pd-section-label">Datos</p>
+                                    <div class="seg-control" id="cdEditModeSeg" role="tablist" aria-label="Modo de datos del cliente">
+                                        <button type="button" role="tab" data-cd-edit-mode="view" class="active" aria-selected="true">Ver</button>
+                                        <button type="button" role="tab" data-cd-edit-mode="edit" aria-selected="false">Editar</button>
+                                    </div>
+                                </div>
                                 <form id="cdForm" class="client-dash-form">
                                     <div class="form-grid">
                                         <div class="field-block">
@@ -4231,25 +4274,25 @@
                                             </div>
                                         </div>
                                         <label>Nombre
-                                            <input id="cdName" type="text" required autocomplete="off">
+                                            <input id="cdName" type="text" required autocomplete="off" readonly>
                                         </label>
                                         <label>Teléfono
-                                            <input id="cdPhone" type="tel" autocomplete="off">
+                                            <input id="cdPhone" type="tel" autocomplete="off" readonly>
                                         </label>
                                         <label>Email
-                                            <input id="cdEmail" type="text" inputmode="email" autocomplete="off" placeholder="varios: separados por coma">
+                                            <input id="cdEmail" type="text" inputmode="email" autocomplete="off" placeholder="varios: separados por coma" readonly>
                                         </label>
                                         <label>Empresa
-                                            <input id="cdCompany" type="text" autocomplete="off">
+                                            <input id="cdCompany" type="text" autocomplete="off" readonly>
                                         </label>
                                         <label>RFC (opcional)
-                                            <input id="cdRfc" type="text" autocomplete="off">
+                                            <input id="cdRfc" type="text" autocomplete="off" readonly>
                                         </label>
                                         <label>Dirección fiscal
-                                            <textarea id="cdAddress" rows="2" autocomplete="street-address" placeholder="Calle, colonia, C.P., localidad"></textarea>
+                                            <textarea id="cdAddress" rows="2" autocomplete="street-address" placeholder="Calle, colonia, C.P., localidad" readonly></textarea>
                                         </label>
                                     </div>
-                                    <div class="client-dash-form-actions">
+                                    <div class="client-dash-form-actions" id="cdFormActions" hidden>
                                         <button type="button" class="btn danger" id="cdDeleteBtn"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
                                         <button type="submit" class="btn primary">Guardar</button>
                                     </div>
@@ -9778,6 +9821,6 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-bill-grp"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-cd-edit"></script>
 </body>
 </html>

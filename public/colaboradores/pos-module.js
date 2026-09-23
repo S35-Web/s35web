@@ -316,6 +316,7 @@
     let clientDashPeriod = 'year';
     let clientDashOffset = 0;
     let clientDashBound = false;
+    let clientDashEditing = false;
     const PRODUCT_LINE_PALETTE = [
         '#171717', '#1565c0', '#2e7d32', '#c41626', '#e65100',
         '#6a1b9a', '#00838f', '#ad1457', '#455a64', '#5d4037',
@@ -4965,6 +4966,32 @@
         return normalizeClientType(active && active.getAttribute('data-cd-type'));
     }
 
+    function setCdEditModeSeg(editing) {
+        const seg = document.getElementById('cdEditModeSeg');
+        if (!seg) return;
+        const mode = editing ? 'edit' : 'view';
+        seg.querySelectorAll('button[data-cd-edit-mode]').forEach(function (btn) {
+            const on = btn.getAttribute('data-cd-edit-mode') === mode;
+            btn.classList.toggle('active', on);
+            btn.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+    }
+
+    function setClientDashEditMode(editing) {
+        clientDashEditing = !!editing;
+        const card = document.getElementById('cdDataCard') || document.querySelector('.client-dash-data');
+        if (card) card.classList.toggle('is-editing', clientDashEditing);
+        setCdEditModeSeg(clientDashEditing);
+        const actions = document.getElementById('cdFormActions');
+        if (actions) actions.hidden = !clientDashEditing;
+        ['cdName', 'cdPhone', 'cdEmail', 'cdCompany', 'cdRfc', 'cdAddress'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (clientDashEditing) el.removeAttribute('readonly');
+            else el.setAttribute('readonly', '');
+        });
+    }
+
     function fillClientDashboardForm(client) {
         if (!client) return;
         const title = document.getElementById('cdNameTitle');
@@ -5028,6 +5055,7 @@
         renderProducts();
         renderCart();
         renderClients();
+        setClientDashEditMode(false);
         renderClientDashboard(clientDashId);
         toast('Cliente actualizado');
     }
@@ -5036,6 +5064,7 @@
         const client = clientById(id);
         if (!client) return;
         clientDashId = id;
+        clientDashEditing = false;
         const listView = document.getElementById('clientsListView');
         const detailView = document.getElementById('clientsDetailView');
         if (listView) listView.hidden = true;
@@ -5045,6 +5074,8 @@
 
     function closeClientDashboard() {
         clientDashId = null;
+        clientDashEditing = false;
+        setClientDashEditMode(false);
         const listView = document.getElementById('clientsListView');
         const detailView = document.getElementById('clientsDetailView');
         if (listView) listView.hidden = false;
@@ -5082,12 +5113,29 @@
         if (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
+                if (!clientDashEditing) return;
                 saveClientDashboardForm();
+            });
+        }
+        const editModeSeg = document.getElementById('cdEditModeSeg');
+        if (editModeSeg) {
+            editModeSeg.addEventListener('click', function (e) {
+                const btn = e.target.closest('button[data-cd-edit-mode]');
+                if (!btn) return;
+                e.preventDefault();
+                const next = btn.getAttribute('data-cd-edit-mode') === 'edit';
+                if (next === clientDashEditing) return;
+                if (!next && clientDashId) {
+                    const client = clientById(clientDashId);
+                    if (client) fillClientDashboardForm(client);
+                }
+                setClientDashEditMode(next);
             });
         }
         const typeSeg = document.getElementById('cdTypeSeg');
         if (typeSeg) {
             typeSeg.addEventListener('click', function (e) {
+                if (!clientDashEditing) return;
                 const btn = e.target.closest('button[data-cd-type]');
                 if (!btn) return;
                 e.preventDefault();
@@ -5168,7 +5216,12 @@
         }
         clientDashId = client.id;
         bindClientDashboardControls();
-        fillClientDashboardForm(client);
+        if (!clientDashEditing) {
+            fillClientDashboardForm(client);
+            setClientDashEditMode(false);
+        } else {
+            setClientDashEditMode(true);
+        }
 
         const pending = clientPendingGroup(client);
         const debtBtn = document.getElementById('cdDebtBtn');
