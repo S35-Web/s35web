@@ -432,8 +432,14 @@
         const c = cityById(normalizeCityId(id));
         return c ? c.label : 'Culiacán';
     }
+    function isDarkTheme() {
+        return document.documentElement.getAttribute('data-theme') === 'dark';
+    }
     function cityColor(id) {
-        const c = cityById(normalizeCityId(id));
+        const key = normalizeCityId(id);
+        const c = cityById(key);
+        // Culiacán es casi negro (#171717): en modo oscuro pasa a blanco para verse en la gráfica.
+        if (key === 'culiacan' && isDarkTheme()) return '#fafafa';
         return c ? c.color : '#171717';
     }
     /** Resuelve ciudad de una venta (explícita o inferida). */
@@ -5061,7 +5067,7 @@
                 return {
                     key: c.id,
                     label: c.label,
-                    color: c.color,
+                    color: cityColor(c.id),
                     list: salesInRange(filterSalesByCity(analyticsAll, c.id), bounds.start, bounds.end)
                 };
             })
@@ -5119,12 +5125,13 @@
         if (legendHost) {
             if (multiCity) {
                 legendHost.innerHTML = SALE_CITIES.map(function (c) {
-                    return '<span class="leg"><span class="swatch" style="background:' + esc(c.color) +
-                        ';border-color:' + esc(c.color) + '"></span> ' + esc(c.label) + '</span>';
+                    const col = cityColor(c.id);
+                    return '<span class="leg"><span class="swatch" style="background:' + esc(col) +
+                        ';border-color:' + esc(col) + '"></span> ' + esc(c.label) + '</span>';
                 }).join('');
             } else {
                 const c = cityById(cortesCityFilter);
-                const col = c ? c.color : '#171717';
+                const col = cityColor(cortesCityFilter);
                 const lab = c ? c.label : 'Periodo';
                 legendHost.innerHTML =
                     '<span class="leg"><span class="swatch" style="background:' + esc(col) +
@@ -7873,6 +7880,7 @@
             priceEditorHtml: priceEditorHtml,
             renderProductSalesAnalytics: renderProductSalesAnalytics,
             renderProductsMovementsChart: renderProductsMovementsChart,
+            renderCortes: renderCortes,
             renderClientDashboard: renderClientDashboard,
             openClientDashboard: openClientDashboard,
             openClientModal: openClientModal,
