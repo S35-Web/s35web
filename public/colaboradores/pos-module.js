@@ -3474,7 +3474,7 @@
                     '<td class="muted">' + esc(dateStr) + '</td>' +
                     '<td>' + saleReceiptCellHtml(s) + '</td>' +
                     '<td>' + esc(clientLabel) + '</td>' +
-                    '<td><span class="badge">' + esc(payLabel(s.paymentMethod)) + '</span></td>' +
+                    '<td><span class="badge">' + esc(formatSalePayLabel(s)) + '</span></td>' +
                     '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing)) + '</span></td>' +
                     '<td class="num">' + itemsN + '</td>' +
                     '<td class="num">' + money(s.total) + '</td>' +
@@ -5521,7 +5521,7 @@
                             (saleStoreName(s) ? ' · ' + esc(saleStoreName(s)) : '') + '</div>' +
                         '</div>' +
                         '<div class="cortes-invoice-pills">' +
-                            '<span class="cortes-pill">' + esc(payLabel(s.paymentMethod)) + '</span>' +
+                            '<span class="cortes-pill">' + esc(formatSalePayLabel(s)) + '</span>' +
                             '<span class="cortes-pill' + (billOk ? ' ok' : '') + '">' + esc(billLabel(s.billing)) + '</span>' +
                         '</div>' +
                         '<div class="cortes-invoice-client">' +
@@ -6134,7 +6134,7 @@
                     return '<tr>' +
                         '<td class="muted">' + esc(dateStr) + '</td>' +
                         '<td>' + saleReceiptCellHtml(s) + '</td>' +
-                        '<td><span class="badge">' + esc(payLabel(s.paymentMethod)) + '</span></td>' +
+                        '<td><span class="badge">' + esc(formatSalePayLabel(s)) + '</span></td>' +
                         '<td class="muted">' + esc(cityLabel(resolveSaleCity(s))) + '</td>' +
                         '<td class="num">' + money(s.total) + '</td>' +
                         '<td><button type="button" class="btn ghost" data-open-note="' + esc(s.id) + '">Ver</button></td>' +
