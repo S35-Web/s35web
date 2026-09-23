@@ -388,10 +388,16 @@
         if (v === 'tarjeta') return 'Tarjeta';
         if (v === 'transferencia') return 'Transferencia';
         if (v === 'por_cobrar') return 'Por cobrar';
+        if (v === 'mixto') return 'Pago mixto';
         return 'Efectivo';
     }
     function isPendingCollection(sale) {
-        return !!(sale && (sale.paymentMethod || '') === 'por_cobrar');
+        if (!sale) return false;
+        if ((sale.paymentMethod || '') === 'mixto') {
+            const lines = salePaymentLines(sale);
+            return lines.length > 0 && lines.every(function (p) { return p.method === 'por_cobrar'; });
+        }
+        return (sale.paymentMethod || '') === 'por_cobrar';
     }
     function payMethodKeys() {
         return ['efectivo', 'tarjeta', 'transferencia', 'por_cobrar'];
@@ -401,6 +407,89 @@
     }
     function billLabel(v) {
         return v === 'facturado' ? 'Facturado' : 'Sin facturar';
+    }
+    function roundMoney(n) {
+        return Math.round((Number(n) || 0) * 100) / 100;
+    }
+    /** Líneas de pago de una venta (compat: 1 método = total completo). */
+    function salePaymentLines(sale) {
+        const total = roundMoney(sale && sale.total);
+        const raw = sale && Array.isArray(sale.payments) ? sale.payments : null;
+        if (raw && raw.length) {
+            const lines = [];
+            raw.forEach(function (p) {
+                const method = isValidPayMethod(p && p.method) ? p.method : 'efectivo';
+                const amount = roundMoney(p && p.amount);
+                if (amount <= 0) return;
+                lines.push({ method: method, amount: amount });
+            });
+            if (lines.length) return lines;
+        }
+        const method = isValidPayMethod(sale && sale.paymentMethod)
+            ? sale.paymentMethod
+            : 'efectivo';
+        return [{ method: method, amount: total }];
+    }
+    function formatSalePayLabel(sale) {
+        const lines = salePaymentLines(sale);
+        if (lines.length <= 1) {
+            return payLabel(lines[0] ? lines[0].method : (sale && sale.paymentMethod));
+        }
+        return lines.map(function (p) {
+            return payLabel(p.method) + ' ' + money(p.amount);
+        }).join(' + ');
+    }
+    function amountPaidByMethod(sale, method) {
+        return salePaymentLines(sale).reduce(function (n, p) {
+            return n + (p.method === method ? p.amount : 0);
+        }, 0);
+    }
+    function derivePaymentMethod(lines) {
+        if (!lines || !lines.length) return 'efectivo';
+        if (lines.length === 1) return lines[0].method;
+        return 'mixto';
+    }
+    /** Normaliza y valida líneas de pago mixto. No permite por_cobrar en mixto. */
+    function normalizePaymentLines(rawLines, total) {
+        const target = roundMoney(total);
+        const merged = {};
+        (rawLines || []).forEach(function (p) {
+            const method = p && p.method;
+            if (!isValidPayMethod(method)) return;
+            const amount = roundMoney(p.amount);
+            if (amount <= 0) return;
+            merged[method] = roundMoney((merged[method] || 0) + amount);
+        });
+        const lines = payMethodKeys().filter(function (k) { return merged[k] > 0; })
+            .map(function (k) { return { method: k, amount: merged[k] }; });
+        if (!lines.length) {
+            return { ok: false, error: 'Indica al menos un monto de pago' };
+        }
+        if (lines.length > 1 && lines.some(function (p) { return p.method === 'por_cobrar'; })) {
+            return { ok: false, error: 'Por cobrar no se puede combinar con otros métodos' };
+        }
+        const sum = roundMoney(lines.reduce(function (n, p) { return n + p.amount; }, 0));
+        if (Math.abs(sum - target) > 0.009) {
+            return {
+                ok: false,
+                error: 'La suma de pagos (' + money(sum) + ') debe ser igual al total (' + money(target) + ')'
+            };
+        }
+        return {
+            ok: true,
+            payments: lines,
+            paymentMethod: derivePaymentMethod(lines),
+            sum: sum
+        };
+    }
+    function paidMethodOptionsHtml(selected, opts) {
+        const allowPending = !(opts && opts.excludePending);
+        return payMethodKeys().filter(function (k) {
+            return allowPending || k !== 'por_cobrar';
+        }).map(function (k) {
+            return '<option value="' + k + '"' + (selected === k ? ' selected' : '') + '>' +
+                esc(payLabel(k)) + '</option>';
+        }).join('');
     }
 
     /** Ciudades / sucursales de venta (extensible). */
@@ -614,7 +703,7 @@
             'Detalle:',
             lines.join('\n') || '—',
             '',
-            'Pago: ' + payLabel(sale.paymentMethod),
+            'Pago: ' + formatSalePayLabel(sale),
             'Facturación: ' + billLabel(sale.billing),
             'Total: ' + money(sale.total),
             '',
@@ -714,7 +803,7 @@
             (saleUserLabel(sale)
                 ? '<div class="row"><span class="k">Vendedor</span><span class="v">' + esc(saleUserLabel(sale)) + '</span></div>'
                 : '') +
-            '<div class="row"><span class="k">Pago</span><span class="v">' + esc(payLabel(sale.paymentMethod)) + '</span></div>' +
+            '<div class="row"><span class="k">Pago</span><span class="v">' + esc(formatSalePayLabel(sale)) + '</span></div>' +
             '<div class="row"><span class="k">Facturación</span><span class="v">' + esc(billLabel(sale.billing)) + '</span></div>' +
             (saleReceiptId(sale)
                 ? '<div class="row"><span class="k">Referencia</span><span class="v">' + esc('HIST-R' + saleReceiptId(sale)) + '</span></div>'
@@ -936,16 +1025,24 @@
         sneClientPickerOpen = false;
         sneClientPickerActiveIdx = -1;
         const rid = saleReceiptId(sale);
-        const pay = sale.paymentMethod || 'efectivo';
+        const payLines = salePaymentLines(sale);
+        const isSplit = payLines.length > 1 || (sale.paymentMethod === 'mixto');
+        const pay = payLines[0] ? payLines[0].method : (sale.paymentMethod || 'efectivo');
         const bill = sale.billing || 'sin_facturar';
         const items = (sale.items && sale.items.length) ? sale.items : [{ product: '', name: '', qty: 1, price: 0 }];
+        const splitRows = (isSplit ? payLines : [
+            { method: 'tarjeta', amount: '' },
+            { method: 'efectivo', amount: '' }
+        ]).map(function (p, i) {
+            return snePaySplitRowHtml(p.method, p.amount === '' ? '' : p.amount, i);
+        }).join('');
         host.innerHTML =
             '<div class="form-grid">' +
             '<label>Recibo / folio<input type="text" id="sneFolio" value="' + esc(rid ? ('Recibo ' + rid) : (sale.folio || '')) + '" readonly></label>' +
             '<label>Fecha y hora<input type="datetime-local" id="sneCreatedAt" value="' + esc(toDatetimeLocalValue(sale.createdAt)) + '"></label>' +
             '<label class="span-2">Cliente' + saleNoteClientPickerHtml(sale) + '</label>' +
             '<label class="span-2">Nombre en nota (si no hay cliente)<input type="text" id="sneCustomer" value="' + esc(sale.customer || '') + '" placeholder="Mostrador o nombre libre"></label>' +
-            '<label>Pago<select id="snePay">' +
+            '<label id="snePaySingleWrap"' + (isSplit ? ' hidden' : '') + '>Pago<select id="snePay">' +
             [['efectivo', 'Efectivo'], ['tarjeta', 'Tarjeta'], ['transferencia', 'Transferencia'], ['por_cobrar', 'Por cobrar']].map(function (p) {
                 return '<option value="' + p[0] + '"' + (pay === p[0] ? ' selected' : '') + '>' + p[1] + '</option>';
             }).join('') +
@@ -960,6 +1057,15 @@
                 return '<option value="' + esc(c.id) + '"' + (saleCity(sale) === c.id ? ' selected' : '') + '>' + esc(c.label) + '</option>';
             }).join('') +
             '</select></label>' +
+            '<div class="span-2 sne-pay-split-block">' +
+            '<label class="sne-pay-split-check"><input type="checkbox" id="snePaySplit"' + (isSplit ? ' checked' : '') + '> Dividir pago (varios métodos)</label>' +
+            '<div class="pay-split-panel" id="snePaySplitPanel"' + (isSplit ? '' : ' hidden') + '>' +
+            '<div class="pay-split-rows" id="snePaySplitRows">' + splitRows + '</div>' +
+            '<button type="button" class="btn" id="snePaySplitAdd"><i class="fa-solid fa-plus"></i> Método</button>' +
+            '<div class="pay-split-summary"><span>Asignado <strong id="snePaySplitSum">$0.00</strong></span>' +
+            '<span>Restante <strong id="snePaySplitRemain">$0.00</strong></span></div>' +
+            '<p class="pay-split-hint">Ej. parte tarjeta y parte efectivo, misma facturación.</p>' +
+            '</div></div>' +
             '</div>' +
             '<div style="overflow:auto">' +
             '<table class="sne-lines"><thead><tr>' +
@@ -974,6 +1080,74 @@
             '<button type="button" class="btn primary" id="sneSave"><i class="fa-solid fa-check"></i> Guardar cambios</button>' +
             '</div>';
         refreshSaleNoteEditTotals();
+        refreshSnePaySplitSummary();
+    }
+
+    function snePaySplitRowHtml(method, amount, idx) {
+        const val = amount === '' || amount == null ? '' : String(amount);
+        return '<div class="pay-split-row" data-sne-split-row="' + idx + '">' +
+            '<select data-sne-split-method>' + paidMethodOptionsHtml(method || 'efectivo', { excludePending: true }) + '</select>' +
+            '<input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-sne-split-amount value="' + esc(val) + '">' +
+            '<button type="button" class="iconbtn" data-sne-split-remove title="Quitar" aria-label="Quitar"><i class="fa-solid fa-xmark"></i></button>' +
+            '</div>';
+    }
+
+    function snePaySplitEnabled() {
+        const el = document.getElementById('snePaySplit');
+        return !!(el && el.checked);
+    }
+
+    function readSnePaySplitLines() {
+        const rows = document.querySelectorAll('#snePaySplitRows .pay-split-row');
+        const lines = [];
+        rows.forEach(function (row) {
+            const method = ((row.querySelector('[data-sne-split-method]') || {}).value || 'efectivo');
+            const amount = Number((row.querySelector('[data-sne-split-amount]') || {}).value) || 0;
+            lines.push({ method: method, amount: amount });
+        });
+        return lines;
+    }
+
+    function refreshSnePaySplitSummary() {
+        const sumEl = document.getElementById('snePaySplitSum');
+        const remEl = document.getElementById('snePaySplitRemain');
+        if (!sumEl || !remEl) return;
+        const totalEl = document.getElementById('sneTotal');
+        const totalTxt = totalEl ? String(totalEl.textContent || '').replace(/[^0-9.-]/g, '') : '0';
+        // Prefer summing lines from form fields
+        let total = 0;
+        const body = document.getElementById('sneLinesBody');
+        if (body) {
+            body.querySelectorAll('tr').forEach(function (tr) {
+                const qty = Number((tr.querySelector('[data-sne-field="qty"]') || {}).value) || 0;
+                const price = Number((tr.querySelector('[data-sne-field="price"]') || {}).value) || 0;
+                total += qty * price;
+            });
+        } else {
+            total = Number(totalTxt) || 0;
+        }
+        total = roundMoney(total);
+        const sum = roundMoney(readSnePaySplitLines().reduce(function (n, p) { return n + (Number(p.amount) || 0); }, 0));
+        const remain = roundMoney(total - sum);
+        sumEl.textContent = money(sum);
+        remEl.textContent = money(remain);
+        remEl.classList.toggle('is-ok', Math.abs(remain) < 0.01);
+        remEl.classList.toggle('is-bad', Math.abs(remain) >= 0.01);
+    }
+
+    function syncSnePaySplitUi() {
+        const on = snePaySplitEnabled();
+        const panel = document.getElementById('snePaySplitPanel');
+        const single = document.getElementById('snePaySingleWrap');
+        if (panel) panel.hidden = !on;
+        if (single) single.hidden = on;
+        if (on) {
+            const rows = document.getElementById('snePaySplitRows');
+            if (rows && !rows.children.length) {
+                rows.innerHTML = snePaySplitRowHtml('tarjeta', '', 0) + snePaySplitRowHtml('efectivo', '', 1);
+            }
+            refreshSnePaySplitSummary();
+        }
     }
 
     function refreshSaleNoteEditTotals() {
@@ -990,6 +1164,7 @@
             if (cell) cell.textContent = money(line);
         });
         totalEl.textContent = money(total);
+        refreshSnePaySplitSummary();
     }
 
     function collectSaleNoteEditForm() {
@@ -998,7 +1173,6 @@
         const clientId = (document.getElementById('sneClientId') || {}).value || '';
         const client = clientId ? clientById(clientId) : null;
         const customerRaw = ((document.getElementById('sneCustomer') || {}).value || '').trim();
-        const pay = (document.getElementById('snePay') || {}).value || 'efectivo';
         const bill = (document.getElementById('sneBill') || {}).value || 'sin_facturar';
         const city = normalizeCityId((document.getElementById('sneCity') || {}).value || saleCity(sale));
         const createdAt = fromDatetimeLocalValue((document.getElementById('sneCreatedAt') || {}).value);
@@ -1032,13 +1206,26 @@
             toast('Agrega al menos una línea');
             return null;
         }
-        if (!isValidPayMethod(pay)) {
-            toast('Método de pago inválido');
-            return null;
-        }
         if (['facturado', 'sin_facturar'].indexOf(bill) < 0) {
             toast('Facturación inválida');
             return null;
+        }
+        const total = items.reduce(function (n, it) { return n + (Number(it.lineTotal) || 0); }, 0);
+        let pay = (document.getElementById('snePay') || {}).value || 'efectivo';
+        let payments = null;
+        if (snePaySplitEnabled()) {
+            const norm = normalizePaymentLines(readSnePaySplitLines(), total);
+            if (!norm.ok) {
+                toast(norm.error || 'Pago mixto inválido');
+                return null;
+            }
+            pay = norm.paymentMethod;
+            payments = norm.payments;
+        } else if (!isValidPayMethod(pay)) {
+            toast('Método de pago inválido');
+            return null;
+        } else {
+            payments = [{ method: pay, amount: roundMoney(total) }];
         }
         const clientSnapshot = client ? {
             id: client.id,
@@ -1049,13 +1236,13 @@
             rfc: client.rfc || '',
             type: normalizeClientType(client.type || client.kind)
         } : null;
-        const total = items.reduce(function (n, it) { return n + (Number(it.lineTotal) || 0); }, 0);
         return {
             createdAt: createdAt,
             clientId: client ? client.id : null,
             client: clientSnapshot,
             customer: client ? clientDisplay(client) : (customerRaw || 'Mostrador'),
             paymentMethod: pay,
+            payments: payments,
             billing: bill,
             city: city,
             items: items,
@@ -1082,6 +1269,7 @@
                     client: sale.client,
                     customer: sale.customer,
                     paymentMethod: sale.paymentMethod,
+                    payments: sale.payments || null,
                     billing: sale.billing,
                     city: sale.city || resolveSaleCity(sale),
                     items: sale.items,
@@ -4194,6 +4382,7 @@
         }
         if (totalEl) totalEl.textContent = money(cartTotal());
         updatePosKpis();
+        refreshPosPaySplitSummary();
     }
 
     function setCartQty(idx, nextQty) {
@@ -4847,15 +5036,27 @@
 
     function checkout() {
         if (!cart.length) return;
-        const paymentMethod = selectedPay();
         const billing = selectedBilling();
-        if (!isValidPayMethod(paymentMethod)) {
-            toast('Elige método de pago');
-            return;
-        }
         if (['facturado', 'sin_facturar'].indexOf(billing) < 0) {
             toast('Elige opción de facturación');
             return;
+        }
+        const total = cartTotal();
+        let paymentMethod = selectedPay();
+        let payments = null;
+        if (posPaySplitEnabled()) {
+            const norm = normalizePaymentLines(readPosPaySplitLines(), total);
+            if (!norm.ok) {
+                toast(norm.error || 'Pago mixto inválido');
+                return;
+            }
+            paymentMethod = norm.paymentMethod;
+            payments = norm.payments;
+        } else if (!isValidPayMethod(paymentMethod)) {
+            toast('Elige método de pago');
+            return;
+        } else {
+            payments = [{ method: paymentMethod, amount: roundMoney(total) }];
         }
         const clientId = selectedClientId();
         const client = clientById(clientId);
@@ -4900,6 +5101,7 @@
             client: clientSnapshot,
             customer: client ? clientDisplay(client) : 'Mostrador',
             paymentMethod: paymentMethod,
+            payments: payments,
             billing: billing,
             city: saleCityId,
             items: cart.map(function (it) {
@@ -4924,7 +5126,7 @@
                 if (it.promoPriceAuto) row.promoPriceAuto = true;
                 return row;
             }),
-            total: cartTotal(),
+            total: total,
             user: soldBy,
             userId: soldBy.id,
             userName: soldBy.name || soldBy.username
@@ -4951,6 +5153,7 @@
         cart = [];
         appliedPromoCode = null;
         editingPriceIdx = null;
+        resetPosPaySplitUi();
         const payE = document.querySelector('#venta input[name="payMethod"][value="efectivo"]');
         const billS = document.querySelector('#venta input[name="billing"][value="sin_facturar"]');
         if (payE) payE.checked = true;
@@ -4961,9 +5164,66 @@
         renderProducts();
         renderHistory();
         refreshSalesDependentViews();
-        toast('Venta ' + ticket.folio + ' · ' + payLabel(paymentMethod) + ' · ' + billLabel(billing));
+        toast('Venta ' + ticket.folio + ' · ' + formatSalePayLabel(ticket) + ' · ' + billLabel(billing));
         openSaleNoteModal(ticket);
         renderCobranza();
+    }
+
+    function posPaySplitEnabled() {
+        const el = document.getElementById('posPaySplit');
+        return !!(el && el.checked);
+    }
+    function posPaySplitRowHtml(method, amount) {
+        const val = amount === '' || amount == null ? '' : String(amount);
+        return '<div class="pay-split-row">' +
+            '<select data-pos-split-method>' + paidMethodOptionsHtml(method || 'efectivo', { excludePending: true }) + '</select>' +
+            '<input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-pos-split-amount value="' + esc(val) + '">' +
+            '<button type="button" class="iconbtn" data-pos-split-remove title="Quitar" aria-label="Quitar"><i class="fa-solid fa-xmark"></i></button>' +
+            '</div>';
+    }
+    function readPosPaySplitLines() {
+        const rows = document.querySelectorAll('#posPaySplitRows .pay-split-row');
+        const lines = [];
+        rows.forEach(function (row) {
+            lines.push({
+                method: ((row.querySelector('[data-pos-split-method]') || {}).value || 'efectivo'),
+                amount: Number((row.querySelector('[data-pos-split-amount]') || {}).value) || 0
+            });
+        });
+        return lines;
+    }
+    function refreshPosPaySplitSummary() {
+        const sumEl = document.getElementById('posPaySplitSum');
+        const remEl = document.getElementById('posPaySplitRemain');
+        if (!sumEl || !remEl) return;
+        const total = roundMoney(cartTotal());
+        const sum = roundMoney(readPosPaySplitLines().reduce(function (n, p) { return n + (Number(p.amount) || 0); }, 0));
+        const remain = roundMoney(total - sum);
+        sumEl.textContent = money(sum);
+        remEl.textContent = money(remain);
+        remEl.classList.toggle('is-ok', Math.abs(remain) < 0.01);
+        remEl.classList.toggle('is-bad', Math.abs(remain) >= 0.01);
+    }
+    function syncPosPaySplitUi() {
+        const on = posPaySplitEnabled();
+        const panel = document.getElementById('posPaySplitPanel');
+        const seg = document.getElementById('posPaySeg');
+        if (panel) panel.hidden = !on;
+        if (seg) seg.classList.toggle('is-disabled', on);
+        if (on) {
+            const rows = document.getElementById('posPaySplitRows');
+            if (rows && !rows.children.length) {
+                rows.innerHTML = posPaySplitRowHtml('tarjeta', '') + posPaySplitRowHtml('efectivo', '');
+            }
+            refreshPosPaySplitSummary();
+        }
+    }
+    function resetPosPaySplitUi() {
+        const cb = document.getElementById('posPaySplit');
+        if (cb) cb.checked = false;
+        const rows = document.getElementById('posPaySplitRows');
+        if (rows) rows.innerHTML = '';
+        syncPosPaySplitUi();
     }
 
     function renderBreakdownRows(containerId, barId, rows, total) {
@@ -5172,7 +5432,7 @@
         const payKeys = payMethodKeys();
         const payRows = payKeys.map(function (k) {
             const amount = list.reduce(function (n, s) {
-                return n + ((s.paymentMethod || 'efectivo') === k ? (Number(s.total) || 0) : 0);
+                return n + amountPaidByMethod(s, k);
             }, 0);
             return { key: k, label: payLabel(k), amount: amount };
         }).filter(function (r) { return r.amount > 0; });
@@ -5192,8 +5452,8 @@
             const children = billPayMethods.map(function (p) {
                 const amount = list.reduce(function (n, s) {
                     const bill = s.billing || 'sin_facturar';
-                    const pay = s.paymentMethod || 'efectivo';
-                    return n + (bill === g.bill && pay === p.pay ? (Number(s.total) || 0) : 0);
+                    if (bill !== g.bill) return n;
+                    return n + amountPaidByMethod(s, p.pay);
                 }, 0);
                 return {
                     key: g.bill + '_' + p.pay,
@@ -5435,8 +5695,10 @@
     function clientPayBreakdown(periodSales) {
         const map = { efectivo: 0, tarjeta: 0, transferencia: 0, por_cobrar: 0 };
         periodSales.forEach(function (s) {
-            const k = isValidPayMethod(s.paymentMethod) ? s.paymentMethod : 'efectivo';
-            map[k] = (map[k] || 0) + (Number(s.total) || 0);
+            salePaymentLines(s).forEach(function (p) {
+                const k = isValidPayMethod(p.method) ? p.method : 'efectivo';
+                map[k] = (map[k] || 0) + (Number(p.amount) || 0);
+            });
         });
         return map;
     }
@@ -6042,6 +6304,46 @@
         const checkoutBtn = document.getElementById('posCheckoutBtn');
         if (checkoutBtn) checkoutBtn.addEventListener('click', checkout);
 
+        const paySplitCb = document.getElementById('posPaySplit');
+        if (paySplitCb) {
+            paySplitCb.addEventListener('change', syncPosPaySplitUi);
+        }
+        const paySplitPanel = document.getElementById('posPaySplitPanel');
+        if (paySplitPanel) {
+            paySplitPanel.addEventListener('click', function (e) {
+                if (e.target.closest('#posPaySplitAdd')) {
+                    const rows = document.getElementById('posPaySplitRows');
+                    if (!rows) return;
+                    const used = {};
+                    readPosPaySplitLines().forEach(function (p) { used[p.method] = true; });
+                    const next = payMethodKeys().filter(function (k) {
+                        return k !== 'por_cobrar' && !used[k];
+                    })[0] || 'efectivo';
+                    rows.insertAdjacentHTML('beforeend', posPaySplitRowHtml(next, ''));
+                    refreshPosPaySplitSummary();
+                    return;
+                }
+                const rm = e.target.closest('[data-pos-split-remove]');
+                if (rm) {
+                    const row = rm.closest('.pay-split-row');
+                    const rows = document.getElementById('posPaySplitRows');
+                    if (row && rows && rows.children.length > 1) {
+                        row.remove();
+                        refreshPosPaySplitSummary();
+                    }
+                }
+            });
+            paySplitPanel.addEventListener('input', function (e) {
+                if (e.target.closest('[data-pos-split-amount], [data-pos-split-method]')) {
+                    refreshPosPaySplitSummary();
+                }
+            });
+            paySplitPanel.addEventListener('change', function (e) {
+                if (e.target.closest('[data-pos-split-method]')) refreshPosPaySplitSummary();
+            });
+        }
+        syncPosPaySplitUi();
+
         /* Banner de código aplicado (fuera del body, delegación en cart). */
         const cartRoot = document.querySelector('.pos-cart');
         if (cartRoot) {
@@ -6226,6 +6528,32 @@
                     refreshSaleNoteEditTotals();
                     return;
                 }
+                if (e.target && e.target.id === 'snePaySplit') {
+                    syncSnePaySplitUi();
+                    return;
+                }
+                if (e.target.closest('#snePaySplitAdd')) {
+                    const rows = document.getElementById('snePaySplitRows');
+                    if (!rows) return;
+                    const used = {};
+                    readSnePaySplitLines().forEach(function (p) { used[p.method] = true; });
+                    const next = payMethodKeys().filter(function (k) {
+                        return k !== 'por_cobrar' && !used[k];
+                    })[0] || 'efectivo';
+                    rows.insertAdjacentHTML('beforeend', snePaySplitRowHtml(next, '', rows.children.length));
+                    refreshSnePaySplitSummary();
+                    return;
+                }
+                const splitRm = e.target.closest('[data-sne-split-remove]');
+                if (splitRm) {
+                    const row = splitRm.closest('.pay-split-row');
+                    const rows = document.getElementById('snePaySplitRows');
+                    if (row && rows && rows.children.length > 1) {
+                        row.remove();
+                        refreshSnePaySplitSummary();
+                    }
+                    return;
+                }
                 const rm = e.target.closest('[data-sne-remove]');
                 if (rm) {
                     const tr = rm.closest('tr');
@@ -6241,6 +6569,10 @@
                 }
                 if (e.target.closest('[data-sne-field="qty"], [data-sne-field="price"]')) {
                     refreshSaleNoteEditTotals();
+                    return;
+                }
+                if (e.target.closest('[data-sne-split-amount], [data-sne-split-method]')) {
+                    refreshSnePaySplitSummary();
                 }
             });
             saleNoteEditHost.addEventListener('keydown', function (e) {
@@ -6265,6 +6597,14 @@
                 }
             });
             saleNoteEditHost.addEventListener('change', function (e) {
+                if (e.target && e.target.id === 'snePaySplit') {
+                    syncSnePaySplitUi();
+                    return;
+                }
+                if (e.target.closest('[data-sne-split-method]')) {
+                    refreshSnePaySplitSummary();
+                    return;
+                }
                 const sel = e.target.closest('[data-sne-field="product"]');
                 if (!sel) return;
                 const tr = sel.closest('tr');
@@ -7313,6 +7653,7 @@
             if (!sale || !isPendingCollection(sale)) return;
             amount += Number(sale.total) || 0;
             sale.paymentMethod = pay;
+            sale.payments = [{ method: pay, amount: roundMoney(sale.total) }];
             if (!sale.meta) sale.meta = {};
             sale.meta.collectedAt = new Date().toISOString();
             sale.meta.collectedPay = pay;

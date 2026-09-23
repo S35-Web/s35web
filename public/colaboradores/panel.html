@@ -1999,6 +1999,78 @@
         .seg.seg-pay label:nth-child(2) { border-right: none; }
         .seg.seg-pay label:nth-child(3),
         .seg.seg-pay label:nth-child(4) { border-top: 1px solid var(--border); }
+        .seg.seg-pay.is-disabled {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+        .pay-split-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--muted);
+            cursor: pointer;
+            user-select: none;
+        }
+        .pay-split-check input {
+            accent-color: var(--text);
+        }
+        .pay-split-panel {
+            margin-top: 8px;
+            display: grid;
+            gap: 8px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-soft);
+        }
+        .pay-split-rows { display: grid; gap: 6px; }
+        .pay-split-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 32px;
+            gap: 6px;
+            align-items: center;
+        }
+        .pay-split-row select,
+        .pay-split-row input {
+            width: 100%;
+            height: 34px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            padding: 0 8px;
+            color: var(--text);
+            outline: none;
+        }
+        .pay-split-summary {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .pay-split-summary strong {
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+        }
+        .pay-split-summary .is-ok { color: var(--success); }
+        .pay-split-summary .is-bad { color: var(--danger); }
+        .pay-split-hint {
+            margin: 0;
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.35;
+        }
+        .sne-pay-split-block { display: grid; gap: 6px; }
+        .sne-pay-split-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--muted);
+            cursor: pointer;
+        }
         .seg label {
             display: grid; place-items: center; padding: 8px 6px;
             font-size: 12px; cursor: pointer; border-right: 1px solid var(--border);
@@ -4592,11 +4664,21 @@
                                     </div>
                                     <div>
                                         <div class="field-label">Método de pago</div>
-                                        <div class="seg seg-pay">
+                                        <div class="seg seg-pay" id="posPaySeg">
                                             <label><input type="radio" name="payMethod" value="efectivo" checked> Efectivo</label>
                                             <label><input type="radio" name="payMethod" value="tarjeta"> Tarjeta</label>
                                             <label><input type="radio" name="payMethod" value="transferencia"> Transfer.</label>
                                             <label><input type="radio" name="payMethod" value="por_cobrar"> Por cobrar</label>
+                                        </div>
+                                        <label class="pay-split-check"><input type="checkbox" id="posPaySplit"> Dividir pago (varios métodos)</label>
+                                        <div class="pay-split-panel" id="posPaySplitPanel" hidden>
+                                            <div class="pay-split-rows" id="posPaySplitRows"></div>
+                                            <button type="button" class="btn" id="posPaySplitAdd"><i class="fa-solid fa-plus"></i> Método</button>
+                                            <div class="pay-split-summary">
+                                                <span>Asignado <strong id="posPaySplitSum">$0.00</strong></span>
+                                                <span>Restante <strong id="posPaySplitRemain">$0.00</strong></span>
+                                            </div>
+                                            <p class="pay-split-hint">Ej. parte tarjeta y parte efectivo. La facturación aplica a toda la nota.</p>
                                         </div>
                                     </div>
                                     <div>
@@ -10572,7 +10654,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-culiacan-dark"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-pay-split"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260923-copilot-section"></script>
 </body>
