@@ -3322,83 +3322,73 @@
             z-index: 5;
             left: 0;
             top: 0;
-            min-width: 72px;
-            max-width: 200px;
-            padding: 6px 9px;
-            border-radius: 8px;
-            background: var(--text);
-            color: var(--bg);
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-            pointer-events: none;
-            font-size: 12px;
-            line-height: 1.35;
-            white-space: nowrap;
-        }
-        .cortes-chart-tip.tip-axis {
             min-width: 0;
-            padding: 4px 8px;
-            background: var(--panel);
+            max-width: 220px;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            background: transparent;
             color: var(--text);
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            box-shadow: none;
+            pointer-events: none;
             font-size: 11px;
+            line-height: 1.25;
+            white-space: nowrap;
+            text-shadow:
+                0 0 3px var(--panel),
+                0 0 6px var(--panel),
+                1px 0 0 var(--panel),
+                -1px 0 0 var(--panel),
+                0 1px 0 var(--panel),
+                0 -1px 0 var(--panel);
         }
-        .cortes-chart-tip.tip-axis .tip-label {
-            opacity: 1;
-            margin: 0;
+        .cortes-chart-tip.tip-head {
+            text-align: center;
+            color: var(--muted);
         }
-        .cortes-chart-tip.tip-city-float {
-            background: var(--panel);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-left: 3px solid var(--tip-accent, var(--text));
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        .cortes-chart-tip .tip-when {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--muted);
+            letter-spacing: 0.01em;
         }
-        .cortes-chart-tip .tip-label {
-            opacity: 0.72;
-            font-size: 11px;
-            margin-bottom: 2px;
-        }
-        .cortes-chart-tip.tip-city-float .tip-label {
-            opacity: 0.85;
-            color: var(--tip-accent, var(--text));
-            font-weight: 600;
-        }
-        .cortes-chart-tip .tip-val {
+        .cortes-chart-tip .tip-total {
+            margin-top: 1px;
+            font-size: 12px;
             font-weight: 650;
             font-variant-numeric: tabular-nums;
-            font-size: 13px;
+            color: var(--text);
         }
-        .cortes-chart-tip .tip-prev {
-            margin-top: 4px;
-            opacity: 0.7;
-            font-size: 11px;
+        .cortes-chart-tip.tip-city-plain {
+            color: var(--tip-accent, var(--text));
+            font-size: 10px;
+            font-weight: 550;
+        }
+        .cortes-chart-tip.tip-city-plain .tip-name {
+            opacity: 0.9;
+        }
+        .cortes-chart-tip.tip-city-plain .tip-amt {
             font-variant-numeric: tabular-nums;
+            font-weight: 650;
         }
-        .cortes-chart-tip .tip-city {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 3px;
-            font-size: 11px;
+        .cortes-chart-tip.tip-single-plain {
+            text-align: center;
         }
-        .cortes-chart-tip .tip-city .sw {
-            width: 8px;
-            height: 8px;
-            border-radius: 2px;
-            flex: 0 0 auto;
+        .cortes-chart-tip.tip-single-plain .tip-amt {
+            font-size: 12px;
+            font-weight: 650;
+            font-variant-numeric: tabular-nums;
+            color: var(--tip-accent, var(--text));
+        }
+        .cortes-chart-tip.tip-single-plain .tip-prev {
+            margin-top: 1px;
+            font-size: 10px;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+            color: #a3a3a3;
         }
         .seg.seg-city {
             flex-wrap: wrap;
-        }
-        [data-theme="dark"] .cortes-chart-tip {
-            background: #f5f5f5;
-            color: #111;
-        }
-        [data-theme="dark"] .cortes-chart-tip.tip-axis,
-        [data-theme="dark"] .cortes-chart-tip.tip-city-float {
-            background: var(--panel);
-            color: var(--text);
         }
         .prod-formula-chart {
             position: relative;
@@ -9473,6 +9463,6 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260922-cityseg"></script>
+    <script src="/colaboradores/pos-module.js?v=20260922-tipplain"></script>
 </body>
 </html>

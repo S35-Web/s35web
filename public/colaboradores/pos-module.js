@@ -2142,63 +2142,63 @@
             });
 
             const markers = [];
+            let citySum = 0;
             if (multiCity && seriesBuckets) {
                 seriesBuckets.forEach(function (s) {
                     const amt = Number(s.buckets[idx] && s.buckets[idx].amount) || 0;
+                    citySum += amt;
                     markers.push({
                         color: s.color,
-                        label: s.label,
-                        amount: amt,
                         y: ptY(amt),
-                        html: '<div class="tip-label">' + esc(s.label) + '</div>' +
-                            '<div class="tip-val">' + money(amt) + '</div>'
+                        html: '<span class="tip-name">' + esc(s.label) + '</span> ' +
+                            '<span class="tip-amt">' + money(amt) + '</span>'
                     });
                 });
             } else {
                 const amt = Number(cur.buckets[idx].amount) || 0;
                 const prevAmt = showPrev && prev.buckets[idx] ? (Number(prev.buckets[idx].amount) || 0) : null;
                 markers.push({
-                    color: lineColor || null,
-                    label: tipTitle(idx),
-                    amount: amt,
+                    color: lineColor || 'var(--text)',
                     y: ptY(amt),
-                    html: '<div class="tip-label">' + esc(tipTitle(idx)) + '</div>' +
-                        '<div class="tip-val">' + money(amt) + '</div>' +
+                    html: '<div class="tip-when">' + esc(tipTitle(idx)) + '</div>' +
+                        '<div class="tip-amt">' + money(amt) + '</div>' +
                         (prevAmt != null
-                            ? '<div class="tip-prev">Anterior · ' + money(prevAmt) + '</div>'
+                            ? '<div class="tip-prev">' + money(prevAmt) + '</div>'
                             : '')
                 });
             }
 
-            // Título del periodo solo en multi-ciudad (en single va dentro del tip del punto)
             let axisBottom = 2;
+            // Cabecera: fecha (+ total si Todas)
+            const headEl = document.createElement('div');
+            headEl.className = 'cortes-chart-tip tip-head';
+            headEl.innerHTML = '<div class="tip-when">' + esc(tipTitle(idx)) + '</div>' +
+                (multiCity
+                    ? '<div class="tip-total">' + money(citySum) + '</div>'
+                    : '');
             if (multiCity) {
-                const titleEl = document.createElement('div');
-                titleEl.className = 'cortes-chart-tip tip-axis';
-                titleEl.innerHTML = '<div class="tip-label">' + esc(tipTitle(idx)) + '</div>';
-                tipsHost.appendChild(titleEl);
-                const titleW = titleEl.offsetWidth || 80;
-                const titleH = titleEl.offsetHeight || 22;
-                let titleLeft = ox + px * scaleX - titleW / 2;
-                titleLeft = Math.max(4, Math.min(titleLeft, hostRect.width - titleW - 4));
-                const titleTop = Math.max(2, oy + padT * scaleY - titleH - 4);
-                titleEl.style.left = titleLeft + 'px';
-                titleEl.style.top = titleTop + 'px';
-                titleEl.style.transform = 'none';
-                axisBottom = titleTop + titleH + 4;
+                tipsHost.appendChild(headEl);
+                const headW = headEl.offsetWidth || 80;
+                const headH = headEl.offsetHeight || 28;
+                let headLeft = ox + px * scaleX - headW / 2;
+                headLeft = Math.max(4, Math.min(headLeft, hostRect.width - headW - 4));
+                const headTop = Math.max(2, oy + padT * scaleY - headH - 2);
+                headEl.style.left = headLeft + 'px';
+                headEl.style.top = headTop + 'px';
+                axisBottom = headTop + headH + 4;
             }
 
             const boxes = [];
             markers.forEach(function (m) {
                 const el = document.createElement('div');
-                el.className = 'cortes-chart-tip tip-float' + (m.color ? ' tip-city-float' : '');
+                el.className = 'cortes-chart-tip tip-plain' + (multiCity ? ' tip-city-plain' : ' tip-single-plain');
                 if (m.color) el.style.setProperty('--tip-accent', m.color);
                 el.innerHTML = m.html;
                 tipsHost.appendChild(el);
-                const w = el.offsetWidth || 100;
-                const h = el.offsetHeight || 40;
-                let left = ox + px * scaleX - w / 2;
-                let top = Math.max(axisBottom, oy + m.y * scaleY - h - 10);
+                const w = el.offsetWidth || 90;
+                const h = el.offsetHeight || 28;
+                const left = ox + px * scaleX - w / 2;
+                const top = Math.max(axisBottom, oy + m.y * scaleY - h - 8);
                 boxes.push({ el: el, left: left, top: top, w: w, h: h });
             });
             placeTips(boxes);
