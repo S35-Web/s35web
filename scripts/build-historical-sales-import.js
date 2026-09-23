@@ -17,6 +17,7 @@ const OUT_PATH = path.join(ROOT, 'public/colaboradores/data/historical-sales-imp
 /** Nombres conocidos de tiendas del panel viejo (store_id → etiqueta). */
 const STORE_NAMES = {
   '32': 'Cotizador',
+  '35': 'Mazatlán',
   '36': 'Mochis',
 };
 
