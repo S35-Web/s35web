@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-09-22T19:36:35",
   "grupos": 12,
-  "ticketsUpdated": 49,
+  "ticketsUpdated": 46,
   "updatedHistorical": 49,
   "updatedCatchup": 0,
   "clientRfcHits": 12,
@@ -9,11 +9,11 @@
   "missing": [],
   "ocean": {
     "cfdiFolio": "12276",
-    "cfdiTotal": 3957.92,
-    "ticketsMonth": "2026-01",
-    "suma": 3960.0,
-    "diff": 2.08,
-    "saleIds": [
+    "status": "replaced_by_synthetic_mazatlan_sale",
+    "saleId": "sale-cfdi-12276-ocean-mzt",
+    "city": "mazatlan",
+    "total": 3957.92,
+    "revertedJanuarySaleIds": [
       "sale-hist-rcpt-62715",
       "sale-hist-rcpt-62747",
       "sale-hist-rcpt-62786"
@@ -525,39 +525,8 @@
       "receptor": "LOPAL ADITIVOS",
       "clientId": "c_73c535372809",
       "matchType": "combinacion_mismo_mes"
-    },
-    {
-      "grupo": 12,
-      "saleId": "sale-hist-rcpt-62715",
-      "saleFolio": "HIST-R62715",
-      "saleTotal": 630,
-      "cfdiFolio": "12276",
-      "cfdiTotal": 3957.92,
-      "receptor": "OCEAN EDIFICACIONES",
-      "clientId": "c_0bd09cc68fa7",
-      "matchType": "combinacion_cross_mes_ene"
-    },
-    {
-      "grupo": 12,
-      "saleId": "sale-hist-rcpt-62747",
-      "saleFolio": "HIST-R62747",
-      "saleTotal": 930,
-      "cfdiFolio": "12276",
-      "cfdiTotal": 3957.92,
-      "receptor": "OCEAN EDIFICACIONES",
-      "clientId": "c_0bd09cc68fa7",
-      "matchType": "combinacion_cross_mes_ene"
-    },
-    {
-      "grupo": 12,
-      "saleId": "sale-hist-rcpt-62786",
-      "saleFolio": "HIST-R62786",
-      "saleTotal": 2400,
-      "cfdiFolio": "12276",
-      "cfdiTotal": 3957.92,
-      "receptor": "OCEAN EDIFICACIONES",
-      "clientId": "c_0bd09cc68fa7",
-      "matchType": "combinacion_cross_mes_ene"
     }
-  ]
+  ],
+  "oceanReplacedBy": "sale-cfdi-12276-ocean-mzt",
+  "note": "Ocean jan combo reverted; see cfdi-2026-ocean-venta-mazatlan.json"
 }

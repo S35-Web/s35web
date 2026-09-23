@@ -1,6 +1,6 @@
 {
-  "version": 6,
-  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan.",
+  "version": 7,
+  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán",
   "generatedAt": "2026-09-22",
   "items": [
     {
@@ -2245,6 +2245,80 @@
         "city": "culiacan"
       },
       "city": "culiacan"
+    },
+    {
+      "id": "sale-cfdi-12276-ocean-mzt",
+      "folio": "CFDI-12276",
+      "createdAt": "2026-02-27T13:15:19",
+      "clientId": "c_0bd09cc68fa7",
+      "client": {
+        "id": "c_0bd09cc68fa7",
+        "name": "OCEAN EDIFICACIONES",
+        "rfc": "OED100311N66",
+        "company": "",
+        "type": "client"
+      },
+      "customer": "OCEAN EDIFICACIONES",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "microconcreto-blanco-pulido",
+          "code": "",
+          "unit": "Pza",
+          "price": 200,
+          "qty": 10,
+          "lineTotal": 2000.0
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "adhesivo-darawell",
+          "code": "",
+          "unit": "Pza",
+          "price": 275,
+          "qty": 6,
+          "lineTotal": 1650.0
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "adhesivo-darawell",
+          "code": "",
+          "unit": "Pza",
+          "price": 307.92,
+          "qty": 1,
+          "lineTotal": 307.92
+        }
+      ],
+      "total": 3957.92,
+      "user": "import-historico",
+      "city": "mazatlan",
+      "meta": {
+        "source": "cfdi-import",
+        "kind": "invoice",
+        "invoiceFolio": 12276,
+        "year": 2026,
+        "month": 2,
+        "day": 27,
+        "city": "mazatlan",
+        "storeId": 35,
+        "storeName": "Mazatlán",
+        "synthetic": true,
+        "syntheticReason": "CFDI 12276 sin tickets; venta generada adhesivo/microconcreto MZT",
+        "cfdi": {
+          "folio": "12276",
+          "uuid": "8F86BF05-0EC1-41D4-A4E0-3428F80AD77B",
+          "fecha": "2026-02-27 13:15:19",
+          "rfc": "OED100311N66",
+          "receptor": "OCEAN EDIFICACIONES",
+          "total": 3957.92,
+          "matchType": "venta_sintetica_mismo_monto",
+          "grupo": 12,
+          "siblingSaleIds": [],
+          "matchedAt": "2026-09-22T19:40:05",
+          "note": "Venta Mazatlán generada por $3,957.92 (adhesivo + microconcreto)"
+        }
+      }
     }
   ],
   "skippedCancelled": [
