@@ -43,7 +43,9 @@
     function renderUsage(summary) {
         const root = el('copilotUsage');
         if (!root || !summary || !summary.ok) return;
-        root.hidden = false;
+        const onCopilot = !!(el('dashboard') && el('dashboard').classList.contains('active'));
+        root.hidden = !onCopilot;
+        if (!onCopilot) return;
         const pct = Math.max(0, Math.min(100, Number(summary.pctUsed) || 0));
         const pctEl = el('copilotUsagePct');
         if (pctEl) pctEl.textContent = (pct % 1 ? pct.toFixed(1) : String(pct)) + '%';
@@ -335,6 +337,7 @@
     window.S35Copilot = {
         ask: ask,
         clear: clearChat,
+        refreshUsage: refreshUsage,
         refreshBriefing: function () {}
     };
 })();

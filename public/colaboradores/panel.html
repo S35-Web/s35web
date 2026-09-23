@@ -596,7 +596,6 @@
             margin: -24px -20px -48px;
             padding: 0;
             min-height: calc(100vh - var(--topbar-h, 52px));
-            display: flex;
             flex-direction: column;
             overflow: hidden;
         }
@@ -6098,6 +6097,8 @@
             id = fallback;
         }
         document.querySelectorAll('.section').forEach(function (el) { el.classList.toggle('active', el.id === id); });
+        const usage = document.getElementById('copilotUsage');
+        if (usage && id !== 'dashboard') usage.hidden = true;
         document.querySelectorAll('.nav a[data-section]').forEach(function (el) {
             const sec = el.getAttribute('data-section');
             el.classList.toggle('active',
@@ -6117,7 +6118,12 @@
         }
         if (!opts.skipHash) syncPanelHash();
         if (window.S35PosModule && window.S35PosModule.onSectionShow) window.S35PosModule.onSectionShow(id);
-        if (id === 'dashboard') refreshDashboardRadar();
+        if (id === 'dashboard') {
+            refreshDashboardRadar();
+            if (window.S35Copilot && typeof window.S35Copilot.refreshUsage === 'function') {
+                window.S35Copilot.refreshUsage();
+            }
+        }
     }
     document.querySelectorAll('.nav a[data-section]').forEach(function (a) {
         a.addEventListener('click', function (e) {
