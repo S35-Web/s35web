@@ -6361,7 +6361,11 @@
             const resp = await fetch('/api/gmail-oauth?action=status', {
                 headers: { Authorization: 'Bearer ' + getToken(), Accept: 'application/json' }
             });
-            if (!resp.ok) return;
+            if (!resp.ok) {
+                gmailStatus = { configured: false, connected: false, email: 'contacto@s35.com.mx' };
+                updateGmailConnectUi();
+                return;
+            }
             const payload = await resp.json();
             gmailStatus = {
                 configured: !!payload.configured,
@@ -6369,7 +6373,10 @@
                 email: payload.email || 'contacto@s35.com.mx'
             };
             updateGmailConnectUi();
-        } catch (_) {}
+        } catch (_) {
+            gmailStatus = { configured: false, connected: false, email: 'contacto@s35.com.mx' };
+            updateGmailConnectUi();
+        }
     }
 
     async function loadMessages() {
@@ -6380,7 +6387,18 @@
         if (messagesSource === 'gmail') {
             if (!gmailStatus.connected) {
                 setMessagesBadge(0);
-                tbody.innerHTML = '<tr><td colspan="' + cols + '" class="empty">Conecta Gmail arriba para ver el correo de contacto@s35.com.mx</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="' + cols + '" class="empty">' +
+                    'Conecta Gmail para ver el correo de contacto@s35.com.mx. ' +
+                    '<button type="button" class="btn primary" id="gmailConnectInlineBtn" style="margin-left:8px">' +
+                    '<i class="fa-brands fa-google"></i> Conectar Gmail</button></td></tr>';
+                const inline = document.getElementById('gmailConnectInlineBtn');
+                if (inline) {
+                    inline.addEventListener('click', function () {
+                        const main = document.getElementById('gmailConnectBtn');
+                        if (main && !main.hidden) main.click();
+                        else startGmailConnect();
+                    });
+                }
                 return;
             }
             const resp = await fetch('/api/gmail', { headers: { Authorization: 'Bearer ' + getToken() } });
@@ -6515,7 +6533,7 @@
         loadMessages();
     });
 
-    document.getElementById('gmailConnectBtn').addEventListener('click', async function () {
+    async function startGmailConnect() {
         const resp = await fetch('/api/gmail-oauth?action=start', {
             headers: { Authorization: 'Bearer ' + getToken(), Accept: 'application/json' }
         });
@@ -6525,7 +6543,9 @@
             return;
         }
         window.location.href = payload.url;
-    });
+    }
+
+    document.getElementById('gmailConnectBtn').addEventListener('click', startGmailConnect);
     document.getElementById('gmailDisconnectBtn').addEventListener('click', async function () {
         if (!confirm('¿Desconectar Gmail del panel? El correo en Google no se borra.')) return;
         const resp = await fetch('/api/gmail-oauth?action=disconnect', {
