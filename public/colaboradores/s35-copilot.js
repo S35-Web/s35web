@@ -1,12 +1,11 @@
 /**
- * S35 Copiloto — UI del inicio (solo admin).
+ * S35 Copiloto — Inicio estilo Gemini (sin briefing automático).
  */
 (function () {
     'use strict';
 
     const history = [];
     let busy = false;
-    let briefingDone = false;
 
     function isAdmin() {
         const api = window.S35PanelAPI;
@@ -47,11 +46,16 @@
         });
     }
 
+    function setChatting(on) {
+        const root = el('copilotPanel');
+        if (!root) return;
+        root.classList.toggle('is-chatting', !!on);
+    }
+
     function appendBubble(role, text) {
         const host = el('copilotMessages');
         if (!host) return;
-        const empty = host.querySelector('.copilot-empty');
-        if (empty) empty.remove();
+        setChatting(true);
         const div = document.createElement('div');
         div.className = 'copilot-bubble is-' + role;
         div.textContent = text;
@@ -59,12 +63,18 @@
         host.scrollTop = host.scrollHeight;
     }
 
-    function setInsight(text, loading) {
-        const brief = el('copilotBriefing');
-        if (!brief) return;
-        brief.hidden = false;
-        brief.classList.toggle('is-loading', !!loading);
-        brief.textContent = text || '';
+    function clearChat() {
+        history.length = 0;
+        const host = el('copilotMessages');
+        if (host) host.innerHTML = '';
+        setChatting(false);
+        const status = el('copilotStatus');
+        if (status) status.textContent = '';
+        const input = el('copilotInput');
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
     }
 
     function runActions(actions) {
@@ -99,21 +109,17 @@
         });
     }
 
-    async function ask(text, mode) {
+    async function ask(text) {
         if (!isAdmin()) {
             appendBubble('assistant', 'El copiloto está disponible solo para administradores.');
             return;
         }
         if (busy) return;
         const content = String(text || '').trim();
-        if (!content && mode !== 'briefing') return;
+        if (!content) return;
 
-        if (mode === 'briefing') {
-            setInsight('Preparando lectura del día…', true);
-        } else {
-            appendBubble('user', content);
-            history.push({ role: 'user', content: content });
-        }
+        appendBubble('user', content);
+        history.push({ role: 'user', content: content });
 
         setBusy(true);
         try {
@@ -124,7 +130,7 @@
                     Authorization: 'Bearer ' + token()
                 },
                 body: JSON.stringify({
-                    mode: mode || 'chat',
+                    mode: 'chat',
                     messages: history.slice(-10),
                     context: context()
                 })
@@ -134,20 +140,11 @@
                 throw new Error(data.error || ('Error HTTP ' + res.status));
             }
             const reply = data.reply || '';
-            if (mode === 'briefing') {
-                setInsight(reply, false);
-            } else {
-                appendBubble('assistant', reply);
-                history.push({ role: 'assistant', content: reply });
-            }
+            appendBubble('assistant', reply);
+            history.push({ role: 'assistant', content: reply });
             runActions(data.actions || []);
         } catch (err) {
-            const msg = 'No pude responder: ' + (err.message || 'error de red');
-            if (mode === 'briefing') {
-                setInsight(msg, false);
-            } else {
-                appendBubble('assistant', msg);
-            }
+            appendBubble('assistant', 'No pude responder: ' + (err.message || 'error de red'));
         } finally {
             setBusy(false);
         }
@@ -173,7 +170,7 @@
                 const input = el('copilotInput');
                 const v = input ? input.value : '';
                 if (input) input.value = '';
-                ask(v, 'chat');
+                ask(v);
             });
         }
 
@@ -182,23 +179,26 @@
             btn.dataset.bound = '1';
             btn.addEventListener('click', function () {
                 const q = btn.getAttribute('data-copilot-chip') || '';
-                ask(q, 'chat');
+                ask(q);
             });
         });
-    }
 
-    function maybeBriefing() {
-        if (briefingDone || !isAdmin()) return;
-        const section = document.querySelector('#dashboard.section.active');
-        if (!section) return;
-        briefingDone = true;
-        ask('', 'briefing');
+        const neu = el('copilotNewChat');
+        if (neu && !neu.dataset.bound) {
+            neu.dataset.bound = '1';
+            neu.addEventListener('click', clearChat);
+        }
+
+        const input = el('copilotInput');
+        if (input && !history.length) {
+            setTimeout(function () {
+                try { input.focus(); } catch (_) {}
+            }, 200);
+        }
     }
 
     function onReady() {
         bind();
-        setTimeout(maybeBriefing, 1200);
-        document.addEventListener('s35:pos-ready', maybeBriefing);
     }
 
     if (document.readyState === 'loading') {
@@ -210,15 +210,12 @@
     Object.defineProperty(window, '__s35CopilotBoot', {
         value: function () {
             bind();
-            setTimeout(maybeBriefing, 400);
         }
     });
 
     window.S35Copilot = {
         ask: ask,
-        refreshBriefing: function () {
-            briefingDone = false;
-            maybeBriefing();
-        }
+        clear: clearChat,
+        refreshBriefing: function () { /* briefing desactivado */ }
     };
 })();

@@ -560,166 +560,140 @@
         #prodLotsWrap.is-danger .prod-lots-status { color: var(--danger); }
         #prodLotsWrap.is-ok .prod-lots-status { color: var(--muted); }
 
-        /* ——— Inicio · Copiloto S35 ——— */
+        /* ——— Inicio · Copiloto S35 (Gemini-style) ——— */
         #dashboard.home-ai {
             position: relative;
-            max-width: 920px;
-            margin: 0 auto;
-            padding-bottom: 32px;
+            max-width: none;
+            margin: 0;
+            padding: 0;
+            min-height: calc(100vh - 72px);
+            display: flex;
+            flex-direction: column;
         }
         #dashboard.home-ai::before {
             content: '';
             position: absolute;
-            inset: -24px -12px auto -12px;
-            height: min(52vh, 420px);
+            inset: 0;
             background:
-                radial-gradient(ellipse 80% 60% at 20% 0%, rgba(10, 10, 10, 0.06), transparent 55%),
-                radial-gradient(ellipse 70% 50% at 90% 10%, rgba(10, 10, 10, 0.04), transparent 50%);
+                radial-gradient(ellipse 55% 45% at 50% 42%, rgba(10, 10, 10, 0.055), transparent 70%);
             pointer-events: none;
             z-index: 0;
         }
         [data-theme="dark"] #dashboard.home-ai::before {
             background:
-                radial-gradient(ellipse 80% 60% at 20% 0%, rgba(250, 250, 250, 0.07), transparent 55%),
-                radial-gradient(ellipse 70% 50% at 90% 10%, rgba(250, 250, 250, 0.04), transparent 50%);
+                radial-gradient(ellipse 55% 45% at 50% 42%, rgba(250, 250, 250, 0.07), transparent 70%);
         }
         .home-ai-stage {
             position: relative;
             z-index: 1;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 22px;
-            animation: homeAiIn 0.55s ease both;
+            width: min(720px, 100%);
+            margin: 0 auto;
+            padding: 12px 8px 20px;
+            animation: homeAiIn 0.45s ease both;
         }
         @keyframes homeAiIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .home-ai-brand { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; }
-        .home-ai-mark {
+
+        .copilot-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            margin: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+            overflow: hidden;
+        }
+        .copilot-panel[hidden] { display: none !important; }
+        .copilot-topbar {
+            display: none;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 4px 0 8px;
+        }
+        .copilot-panel.is-chatting .copilot-topbar { display: flex; }
+        .copilot-new {
+            height: 34px;
+            padding: 0 12px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--panel);
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .copilot-new:hover { background: var(--hover); }
+
+        .copilot-welcome {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 10px;
+            padding: 24px 12px 8px;
+            animation: homeAiIn 0.5s ease both;
+        }
+        .copilot-panel.is-chatting .copilot-welcome { display: none; }
+        .copilot-welcome-mark {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            display: grid;
+            place-items: center;
+            color: var(--text);
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        .copilot-welcome h1 {
             margin: 0;
             font-family: var(--font-display);
             font-weight: 400;
-            font-size: clamp(42px, 7vw, 64px);
+            font-size: clamp(32px, 5.5vw, 48px);
             letter-spacing: -0.03em;
-            line-height: 0.95;
+            line-height: 1.05;
             color: var(--text);
         }
-        .home-ai-mark span {
-            display: block;
-            font-size: 0.42em;
-            letter-spacing: 0.02em;
+        .copilot-welcome-sub {
+            margin: 0;
+            max-width: 34em;
+            font-size: 15px;
+            line-height: 1.45;
             color: var(--muted);
-            margin-top: 4px;
         }
-        .home-ai-greet { margin: 4px 0 0; font-size: 15px; color: var(--muted); }
-        .home-ai-pulse {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1px;
-            background: var(--border);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            overflow: hidden;
-            cursor: pointer;
-            animation: homeAiIn 0.55s ease 0.08s both;
-        }
-        .home-ai-pulse:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
-        .home-ai-pulse .pulse-cell {
-            background: var(--panel);
-            padding: 14px 16px;
-            transition: background 0.15s ease;
-        }
-        .home-ai-pulse:hover .pulse-cell { background: var(--bg-soft); }
-        .home-ai-pulse .label {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--muted);
-            margin-bottom: 4px;
-        }
-        .home-ai-pulse .val {
-            font-size: 20px;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            color: var(--text);
-        }
-        .home-ai-pulse .val.up { color: var(--success); }
-        .home-ai-pulse .val.down { color: var(--danger); }
-        .home-ai-pulse .hint { margin-top: 2px; font-size: 11px; color: var(--muted); }
-        @media (max-width: 560px) { .home-ai-pulse { grid-template-columns: 1fr; } }
 
-        .copilot-panel {
-            margin: 0;
-            padding: 0;
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            background: color-mix(in srgb, var(--panel) 92%, transparent);
-            backdrop-filter: blur(10px);
-            overflow: hidden;
-            animation: homeAiIn 0.55s ease 0.14s both;
-        }
-        .copilot-panel[hidden] { display: none !important; }
-        .copilot-insight {
-            margin: 0;
-            padding: 16px 18px;
-            border-bottom: 1px solid var(--border);
-            font-family: var(--font-display);
-            font-size: 18px;
-            line-height: 1.35;
-            letter-spacing: -0.01em;
-            color: var(--text);
-            white-space: pre-wrap;
-        }
-        .copilot-insight[hidden] { display: none !important; }
-        .copilot-insight.is-loading {
-            font-family: var(--font);
-            font-size: 13px;
-            color: var(--muted);
-        }
-        .copilot-capabilities {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            padding: 14px 14px 4px;
-        }
-        @media (max-width: 560px) { .copilot-capabilities { grid-template-columns: 1fr; } }
-        .copilot-cap {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            text-align: left;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: var(--bg-soft);
-            color: var(--text);
-            cursor: pointer;
-            transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
-        }
-        .copilot-cap:hover {
-            background: var(--hover);
-            border-color: var(--border-strong);
-            transform: translateY(-1px);
-        }
-        .copilot-cap i { margin-top: 2px; width: 18px; text-align: center; color: var(--muted); font-size: 14px; }
-        .copilot-cap strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; }
-        .copilot-cap span { display: block; font-size: 12px; color: var(--muted); line-height: 1.35; }
         .copilot-messages {
-            max-height: min(36vh, 320px);
+            display: none;
+            flex: 1;
+            min-height: 0;
             overflow: auto;
-            display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding: 12px 14px 8px;
+            gap: 14px;
+            padding: 8px 4px 16px;
         }
-        .copilot-empty { padding: 8px 4px 12px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+        .copilot-panel.is-chatting .copilot-messages {
+            display: flex;
+        }
         .copilot-bubble {
             max-width: 92%;
-            padding: 10px 12px;
-            border-radius: 14px;
-            font-size: 13px;
-            line-height: 1.45;
+            padding: 12px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
             white-space: pre-wrap;
             word-break: break-word;
             animation: homeAiIn 0.25s ease both;
@@ -728,44 +702,104 @@
             align-self: flex-end;
             background: var(--text);
             color: var(--bg);
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 5px;
         }
         .copilot-bubble.is-assistant {
             align-self: flex-start;
-            background: var(--bg-soft);
+            background: var(--panel);
             color: var(--text);
             border: 1px solid var(--border);
-            border-bottom-left-radius: 4px;
+            border-bottom-left-radius: 5px;
+        }
+
+        .copilot-chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            padding: 4px 4px 18px;
+            animation: homeAiIn 0.5s ease 0.06s both;
+        }
+        .copilot-panel.is-chatting .copilot-chips { display: none; }
+        .copilot-chip {
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 9px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+        }
+        .copilot-chip:hover {
+            background: var(--hover);
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+        }
+        .copilot-chip:disabled { opacity: 0.55; cursor: default; transform: none; }
+
+        .copilot-composer-wrap {
+            position: sticky;
+            bottom: 0;
+            padding: 0 0 4px;
+            background: linear-gradient(to top, var(--bg) 70%, transparent);
         }
         .copilot-composer {
             display: flex;
-            gap: 8px;
             align-items: center;
-            padding: 12px 14px 14px;
-            border-top: 1px solid var(--border);
+            gap: 8px;
+            padding: 10px 12px 10px 18px;
+            border: 1px solid var(--border);
+            border-radius: 28px;
             background: var(--panel);
+            box-shadow: 0 8px 28px rgba(10, 10, 10, 0.06);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        [data-theme="dark"] .copilot-composer {
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+        }
+        .copilot-composer:focus-within {
+            border-color: var(--border-strong);
+            box-shadow: 0 10px 32px rgba(10, 10, 10, 0.09);
         }
         .copilot-composer input {
             flex: 1;
             height: 44px;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            background: var(--bg);
+            border: none;
+            background: transparent;
             color: var(--text);
-            padding: 0 18px;
-            font-size: 15px;
+            padding: 0;
+            font-size: 16px;
             min-width: 0;
         }
-        .copilot-composer input:focus { outline: none; border-color: var(--border-strong); }
-        .copilot-composer .btn { height: 44px; min-width: 44px; border-radius: 999px; padding: 0 16px; }
-        .copilot-status { font-size: 11px; color: var(--muted); padding: 0 18px 10px; min-height: 1em; }
+        .copilot-composer input:focus { outline: none; }
+        .copilot-composer input::placeholder { color: var(--muted); }
+        .copilot-composer .btn {
+            height: 40px;
+            width: 40px;
+            min-width: 40px;
+            border-radius: 999px;
+            padding: 0;
+            display: grid;
+            place-items: center;
+        }
+        .copilot-status {
+            font-size: 11px;
+            color: var(--muted);
+            text-align: center;
+            padding: 8px 8px 0;
+            min-height: 1.2em;
+        }
         .home-ai-guest {
+            margin: auto;
             padding: 28px 20px;
             border: 1px dashed var(--border);
             border-radius: 16px;
             text-align: center;
             color: var(--muted);
             font-size: 14px;
+            max-width: 420px;
         }
 
         .kpis {
@@ -4230,69 +4264,31 @@
             <main class="content">
                 <section id="dashboard" class="section active home-ai">
                     <div class="home-ai-stage">
-                        <div class="home-ai-brand">
-                            <h1 class="home-ai-mark">S35<span>Copiloto</span></h1>
-                            <p class="home-ai-greet" id="dashGreet">Buenas</p>
-                        </div>
-
-                        <div class="home-ai-pulse" id="dashSignals" role="button" tabindex="0" title="Abrir corte del día" aria-label="Pulso del día: abrir corte del día">
-                            <div class="pulse-cell">
-                                <div class="label">Hoy</div>
-                                <div class="val" id="dashSalesToday">$0.00</div>
-                                <div class="hint" id="dashStatus">Ventas</div>
-                            </div>
-                            <div class="pulse-cell">
-                                <div class="label">Tickets</div>
-                                <div class="val" id="dashTicketsToday">0</div>
-                                <div class="hint">Este día</div>
-                            </div>
-                            <div class="pulse-cell">
-                                <div class="label">Variación</div>
-                                <div class="val" id="dashDeltaToday">—</div>
-                                <div class="hint" id="dashDeltaHint">vs ayer</div>
-                            </div>
-                        </div>
-
                         <div class="copilot-panel" id="copilotPanel" hidden>
-                            <p class="copilot-insight is-loading" id="copilotBriefing" hidden>Preparando lectura del día…</p>
-                            <div class="copilot-capabilities" id="copilotCapabilities">
-                                <button type="button" class="copilot-cap" data-copilot-chip="¿Cómo vamos hoy por ciudad?">
-                                    <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
-                                    <div>
-                                        <strong>Lectura de ventas</strong>
-                                        <span>Resumen por ciudad, periodo y variación</span>
-                                    </div>
-                                </button>
-                                <button type="button" class="copilot-cap" data-copilot-chip="¿Cuáles son los productos top del mes?">
-                                    <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i>
-                                    <div>
-                                        <strong>Productos y stock</strong>
-                                        <span>Top movidos, caídas y alertas de inventario</span>
-                                    </div>
-                                </button>
-                                <button type="button" class="copilot-cap" data-copilot-chip="Muéstrame clientes con más compra este mes">
-                                    <i class="fa-solid fa-users" aria-hidden="true"></i>
-                                    <div>
-                                        <strong>Clientes</strong>
-                                        <span>Quién compra más y a quién conviene seguir</span>
-                                    </div>
-                                </button>
-                                <button type="button" class="copilot-cap" data-copilot-chip="Ábreme el corte de hoy en Mazatlán">
-                                    <i class="fa-solid fa-bolt" aria-hidden="true"></i>
-                                    <div>
-                                        <strong>Acciones en el sistema</strong>
-                                        <span>Abrir cortes, productos o fichas de cliente</span>
-                                    </div>
+                            <div class="copilot-topbar">
+                                <button type="button" class="copilot-new" id="copilotNewChat" title="Nueva conversación">
+                                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Nueva
                                 </button>
                             </div>
-                            <div class="copilot-messages" id="copilotMessages">
-                                <div class="copilot-empty">Pregúntame por ventas, ciudades, stock o pídeme abrir un corte. Entiendo el contexto del panel.</div>
+                            <div class="copilot-welcome" id="copilotWelcome">
+                                <div class="copilot-welcome-mark" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                                <h1 id="dashGreet">Pregúntame</h1>
+                                <p class="copilot-welcome-sub">Ventas, cortes, clientes, stock o acciones del panel. Tú decides cuándo hablar con la IA.</p>
                             </div>
-                            <form class="copilot-composer" id="copilotForm">
-                                <input id="copilotInput" type="text" autocomplete="off" placeholder="Pregunta a S35…" maxlength="500" aria-label="Pregunta al copiloto S35">
-                                <button type="submit" class="btn primary" id="copilotSend" aria-label="Enviar"><i class="fa-solid fa-arrow-up"></i></button>
-                            </form>
-                            <div class="copilot-status" id="copilotStatus" aria-live="polite"></div>
+                            <div class="copilot-messages" id="copilotMessages" aria-live="polite"></div>
+                            <div class="copilot-chips" id="copilotChips">
+                                <button type="button" class="copilot-chip" data-copilot-chip="¿Cómo vamos hoy por ciudad?">Hoy por ciudad</button>
+                                <button type="button" class="copilot-chip" data-copilot-chip="¿Cuáles son los productos top del mes?">Top productos</button>
+                                <button type="button" class="copilot-chip" data-copilot-chip="Muéstrame clientes con más compra este mes">Top clientes</button>
+                                <button type="button" class="copilot-chip" data-copilot-chip="Ábreme el corte de hoy">Abrir corte de hoy</button>
+                            </div>
+                            <div class="copilot-composer-wrap">
+                                <form class="copilot-composer" id="copilotForm">
+                                    <input id="copilotInput" type="text" autocomplete="off" placeholder="Pregunta a S35…" maxlength="500" aria-label="Pregunta al copiloto S35">
+                                    <button type="submit" class="btn primary" id="copilotSend" aria-label="Enviar"><i class="fa-solid fa-arrow-up"></i></button>
+                                </form>
+                                <div class="copilot-status" id="copilotStatus" aria-live="polite"></div>
+                            </div>
                         </div>
 
                         <div class="home-ai-guest" id="homeAiGuest" hidden>
@@ -5503,7 +5499,7 @@
     function refreshGreeting() {
         const display = panelUserName.charAt(0).toUpperCase() + panelUserName.slice(1);
         const greet = document.getElementById('dashGreet');
-        if (greet) greet.textContent = greetingForNow() + ', ' + display;
+        if (greet) greet.textContent = 'Pregúntame, ' + display;
         const avatarEl = document.getElementById('userAvatar');
         if (avatarEl) {
             avatarEl.textContent = initialsFrom(panelUserName);
@@ -5972,16 +5968,6 @@
             window.S35PosModule.openCortesPeriod('day');
         }
         showSection('cortes');
-    }
-    const dashSignals = document.getElementById('dashSignals');
-    if (dashSignals) {
-        dashSignals.addEventListener('click', function () { openCortesDayFromDash(); });
-        dashSignals.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                openCortesDayFromDash();
-            }
-        });
     }
     const topbarMessagesBtn = document.getElementById('topbarMessagesBtn');
     if (topbarMessagesBtn) {
@@ -10127,8 +10113,8 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-clients-sync"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-gemini-home"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-corte-cmd"></script>
-    <script src="/colaboradores/s35-copilot.js?v=20260923-home-ai"></script>
+    <script src="/colaboradores/s35-copilot.js?v=20260923-gemini-home"></script>
 </body>
 </html>
