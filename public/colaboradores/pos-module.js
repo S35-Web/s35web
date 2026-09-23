@@ -2752,24 +2752,147 @@
     function selectedClientIsDistributor() {
         return isDistributorClient(clientById(selectedClientId()));
     }
+    function normalizeClientRecord(c) {
+        if (!c || typeof c !== 'object') return null;
+        const next = Object.assign({}, c, { type: normalizeClientType(c.type || c.kind) });
+        const addr = clientAddress(next);
+        if (addr) next.address = addr;
+        delete next.domicilio;
+        delete next.localidad;
+        if (!next.id || !next.name) return null;
+        return next;
+    }
     function loadClients() {
         try {
             const raw = JSON.parse(localStorage.getItem(CLIENTS_KEY) || 'null');
             if (raw && Array.isArray(raw.items)) {
-                return raw.items.map(function (c) {
-                    const next = Object.assign({}, c, { type: normalizeClientType(c.type || c.kind) });
-                    const addr = clientAddress(next);
-                    if (addr) next.address = addr;
-                    delete next.domicilio;
-                    delete next.localidad;
-                    return next;
-                });
+                return raw.items.map(normalizeClientRecord).filter(Boolean);
             }
         } catch (_) {}
         return [];
     }
-    function saveClients() {
+    function saveClientsLocal() {
         localStorage.setItem(CLIENTS_KEY, JSON.stringify({ items: clients, updatedAt: new Date().toISOString() }));
+    }
+    function clientsAuthHeaders() {
+        const token = localStorage.getItem('s35_admin_token') || '';
+        return {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + token
+        };
+    }
+    let clientsPushTimer = null;
+    let clientsSyncing = false;
+    let clientsPushPending = false;
+    function pushClientsToServer() {
+        const token = localStorage.getItem('s35_admin_token') || '';
+        if (!token) return Promise.resolve(false);
+        if (clientsSyncing) {
+            clientsPushPending = true;
+            return Promise.resolve(false);
+        }
+        clientsSyncing = true;
+        return fetch('/api/clients', {
+            method: 'PUT',
+            headers: clientsAuthHeaders(),
+            body: JSON.stringify({ items: clients })
+        })
+            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+            .then(function (res) {
+                if (!res.ok || !res.data || !res.data.ok) {
+                    throw new Error((res.data && res.data.error) || 'No se pudo guardar clientes');
+                }
+                return true;
+            })
+            .catch(function (err) {
+                console.warn('[S35] sync clientes', err && err.message ? err.message : err);
+                return false;
+            })
+            .then(function (ok) {
+                clientsSyncing = false;
+                if (clientsPushPending) {
+                    clientsPushPending = false;
+                    return pushClientsToServer();
+                }
+                return ok;
+            });
+    }
+    function saveClients() {
+        saveClientsLocal();
+        if (clientsPushTimer) clearTimeout(clientsPushTimer);
+        clientsPushTimer = setTimeout(function () {
+            clientsPushTimer = null;
+            pushClientsToServer();
+        }, 400);
+    }
+    function mergeClientLists(primary, secondary) {
+        const out = (primary || []).slice();
+        const byId = {};
+        const byRfc = {};
+        out.forEach(function (c, i) {
+            byId[c.id] = i;
+            const rfc = String(c.rfc || '').trim().toUpperCase();
+            if (rfc) byRfc[rfc] = i;
+        });
+        (secondary || []).forEach(function (row) {
+            const c = normalizeClientRecord(row);
+            if (!c) return;
+            const rfc = String(c.rfc || '').trim().toUpperCase();
+            const idx = byId[c.id] != null ? byId[c.id] : (rfc && byRfc[rfc] != null ? byRfc[rfc] : -1);
+            if (idx >= 0) return;
+            byId[c.id] = out.length;
+            if (rfc) byRfc[rfc] = out.length;
+            out.push(c);
+        });
+        return out;
+    }
+    function refreshClientsUi() {
+        fillClientSelect();
+        fillHistoryClientFilter();
+        renderClients();
+        if (clientDashId) renderClientDashboard(clientDashId);
+    }
+    /** Carga el catálogo universal (Mongo / archivo) y fusiona extras locales una vez. */
+    function syncClientsFromServer() {
+        const token = localStorage.getItem('s35_admin_token') || '';
+        if (!token) {
+            return Promise.resolve({ ok: false, reason: 'no-token' });
+        }
+        const localCache = loadClients();
+        return fetch('/api/clients', {
+            method: 'GET',
+            headers: clientsAuthHeaders(),
+            cache: 'no-store'
+        })
+            .then(function (r) {
+                return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; });
+            })
+            .then(function (res) {
+                if (!res.ok || !res.data || !res.data.ok || !Array.isArray(res.data.items)) {
+                    throw new Error((res.data && res.data.error) || ('HTTP ' + res.status));
+                }
+                const remote = res.data.items.map(normalizeClientRecord).filter(Boolean);
+                const merged = mergeClientLists(remote, localCache);
+                clients = merged;
+                saveClientsLocal();
+                const grew = merged.length > remote.length;
+                if (grew || (remote.length === 0 && merged.length > 0)) {
+                    return pushClientsToServer().then(function () {
+                        refreshClientsUi();
+                        return { ok: true, total: clients.length, uploadedLocal: true };
+                    });
+                }
+                refreshClientsUi();
+                return { ok: true, total: clients.length, uploadedLocal: false };
+            })
+            .catch(function (err) {
+                console.warn('[S35] pull clientes', err && err.message ? err.message : err);
+                if (!clients.length && localCache.length) {
+                    clients = localCache;
+                    refreshClientsUi();
+                }
+                return { ok: false, error: err && err.message };
+            });
     }
     /** Merge catalog from /colaboradores/data/clients-import.json into local clients (by RFC or id). */
     function importClientsCatalog() {
@@ -6057,7 +6180,7 @@
         const importClientsBtn = document.getElementById('posClientImportBtn');
         if (importClientsBtn) {
             importClientsBtn.addEventListener('click', function () {
-                if (!confirm('¿Importar el catálogo de clientes (~1000)?\n\nSe agregan los nuevos y se actualizan los que ya existan con el mismo RFC. Los marcados como Distribuidor se conservan.')) return;
+                if (!confirm('¿Resincronizar el catálogo base de clientes (~1000)?\n\nSe agregan los nuevos y se actualizan los que ya existan con el mismo RFC. Los marcados como Distribuidor se conservan. Los cambios se publican para todos los navegadores.')) return;
                 importClientsBtn.disabled = true;
                 importClientsCatalog()
                     .then(function (res) {
@@ -7494,6 +7617,15 @@
         promoCodes = loadPromoCodes();
         ensurePromoSeeds();
         ensureHistoricalSalesImport();
+        syncClientsFromServer().then(function (res) {
+            if (res && res.ok) return;
+            if (!clients.length) {
+                return importClientsCatalog().then(function () {
+                    return pushClientsToServer();
+                });
+            }
+            return pushClientsToServer();
+        }).catch(function () {});
         bind();
         bindCobranza();
         (function syncSaleCityRadios() {

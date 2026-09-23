@@ -180,6 +180,71 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Clientes compartidos (archivo local, todos los navegadores del mismo host)
+    if (pathname === '/api/clients') {
+        const livePath = path.join(__dirname, '.data', 'clients-live.json');
+        const seedPath = path.join(__dirname, 'public', 'colaboradores', 'data', 'clients-import.json');
+        const ensureLive = () => {
+            if (fs.existsSync(livePath)) {
+                try {
+                    const raw = JSON.parse(fs.readFileSync(livePath, 'utf8'));
+                    if (raw && Array.isArray(raw.items) && raw.items.length) return raw;
+                } catch (_) {}
+            }
+            let items = [];
+            try {
+                const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+                if (seed && Array.isArray(seed.items)) items = seed.items;
+            } catch (_) {}
+            const doc = { items: items, updatedAt: new Date().toISOString(), seededFromFile: true };
+            fs.mkdirSync(path.dirname(livePath), { recursive: true });
+            fs.writeFileSync(livePath, JSON.stringify(doc));
+            return doc;
+        };
+        if (req.method === 'GET') {
+            const doc = ensureLive();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                ok: true,
+                items: doc.items || [],
+                updatedAt: doc.updatedAt || null,
+                seeded: !!doc.seededFromFile
+            }));
+            return;
+        }
+        if (req.method === 'PUT') {
+            let body = '';
+            req.on('data', chunk => { body += chunk.toString(); });
+            req.on('end', () => {
+                try {
+                    const parsed = JSON.parse(body || '{}');
+                    const items = Array.isArray(parsed.items) ? parsed.items : null;
+                    if (!items) {
+                        res.writeHead(400, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ ok: false, error: 'Falta items[]' }));
+                        return;
+                    }
+                    const doc = {
+                        items: items,
+                        updatedAt: new Date().toISOString(),
+                        seededFromFile: false
+                    };
+                    fs.mkdirSync(path.dirname(livePath), { recursive: true });
+                    fs.writeFileSync(livePath, JSON.stringify(doc));
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: true, total: items.length, updatedAt: doc.updatedAt }));
+                } catch (e) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: 'Solicitud inválida' }));
+                }
+            });
+            return;
+        }
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed' }));
+        return;
+    }
+
     if (pathname === '/colaboradores' || pathname === '/colaboradores/') {
         serveStaticFile(req, res, path.join(__dirname, 'public', 'colaboradores', 'index.html'));
         return;
