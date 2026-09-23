@@ -918,35 +918,75 @@
         }
         .pos-station-top {
             display: grid;
-            grid-template-columns: auto minmax(0, 1.2fr) minmax(0, 1fr) auto;
-            gap: 12px 16px;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            gap: 14px 20px;
             align-items: end;
             padding: 12px 16px;
             border-bottom: 1px solid var(--border);
             background: var(--panel);
+            position: relative;
+            z-index: 5;
         }
         .pos-station-top .pos-station-title {
             margin: 0;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 550;
-            letter-spacing: -0.01em;
+            letter-spacing: -0.02em;
             align-self: center;
+            line-height: 1;
+            padding-bottom: 2px;
         }
-        .pos-station-top .field-label { margin-bottom: 4px; }
+        .pos-station-fields {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 168px;
+            gap: 12px 14px;
+            align-items: end;
+            min-width: 0;
+        }
+        .pos-field {
+            display: grid;
+            gap: 5px;
+            min-width: 0;
+        }
+        .pos-station-top .field-label,
+        .pos-station-pay .field-label {
+            margin: 0;
+            line-height: 1;
+        }
         .pos-station-top .pos-client-picker { min-width: 0; }
+        .pos-station-top .pos-client-trigger,
+        .pos-select,
+        .pos-station-top .btn,
+        .pos-pad-tools .search {
+            height: 36px;
+        }
+        .pos-select {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 0 28px 0 10px;
+            outline: none;
+            font: inherit;
+            font-size: 13px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23737373' d='M3 4.5L6 8l3-3.5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+        .pos-select:focus { border-color: var(--border-strong); }
         .pos-station-actions {
             display: flex;
             align-items: center;
             gap: 8px;
             justify-content: flex-end;
-            align-self: center;
+            align-self: end;
         }
-        .pos-kpi-inline {
-            display: none;
-        }
+        .pos-kpi-inline { display: none; }
         .pos-station-main {
             display: grid;
-            grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+            grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
             min-height: 0;
             flex: 1;
         }
@@ -962,31 +1002,40 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
+            gap: 12px;
             padding: 10px 16px;
             border-bottom: 1px solid var(--border);
             background: var(--panel);
             flex-shrink: 0;
+            min-height: 52px;
+            box-sizing: border-box;
+        }
+        .pos-ticket-head-text {
+            display: grid;
+            gap: 2px;
+            min-width: 0;
         }
         .pos-ticket-head h3 {
             margin: 0;
-            font-size: 13px;
-            font-weight: 550;
-            letter-spacing: 0.02em;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
             color: var(--muted);
+            line-height: 1.2;
         }
         .pos-cart-tier {
+            margin: 0;
             font-size: 11px;
             color: var(--muted);
-            padding: 6px 16px;
-            border-bottom: 1px solid var(--border);
-            background: var(--panel);
-            flex-shrink: 0;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         #posCartPromoBanner {
             display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-            padding: 8px 10px; margin: 8px 12px 0;
+            padding: 8px 10px; margin: 10px 16px 0;
             border: 1px solid var(--border); border-radius: var(--radius-sm);
             background: var(--hover); font-size: 12px;
             flex-shrink: 0;
@@ -995,17 +1044,19 @@
         .pos-cart-body {
             flex: 1;
             overflow: auto;
-            padding: 4px 12px 12px;
+            padding: 6px 16px 16px;
             min-height: 120px;
             background: var(--bg);
         }
         .pos-cart-body .empty {
             display: grid;
             place-items: center;
-            min-height: 160px;
+            min-height: 180px;
             text-align: center;
             color: var(--muted);
             font-size: 13px;
+            line-height: 1.4;
+            padding: 24px;
         }
         .pos-pad {
             display: flex;
@@ -1015,69 +1066,83 @@
             background: var(--panel);
         }
         .pos-pad-tools {
-            padding: 10px 12px 8px;
+            padding: 10px 12px;
             border-bottom: 1px solid var(--border);
             display: grid;
             gap: 8px;
             flex-shrink: 0;
+            min-height: 52px;
+            box-sizing: border-box;
+            align-content: center;
         }
-        .pos-pad-tools .toolbar {
-            margin: 0;
-            gap: 8px;
-        }
+        .pos-pad-tools .toolbar { margin: 0; gap: 8px; }
         .pos-pad-tools .chips {
             margin: 0;
-            max-height: 64px;
+            max-height: 56px;
             overflow: auto;
         }
         .pos-pad .product-grid {
             flex: 1;
             overflow: auto;
             align-content: start;
-            padding: 10px;
-            gap: 6px;
-            grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+            padding: 12px;
+            gap: 8px;
+            grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
             max-height: none;
         }
         .pos-station-pay {
             display: grid;
-            grid-template-columns: minmax(0, 1.4fr) minmax(160px, 0.55fr) auto auto;
-            gap: 12px 16px;
+            grid-template-columns: minmax(0, 1.35fr) 200px auto;
+            gap: 14px 20px;
             align-items: end;
-            padding: 12px 16px;
+            padding: 12px 16px 14px;
             border-top: 1px solid var(--border);
-            background: color-mix(in srgb, var(--panel) 88%, var(--bg-soft));
+            background: color-mix(in srgb, var(--panel) 90%, var(--bg-soft));
         }
-        .pos-station-pay .field-label { margin-bottom: 4px; }
-        .pos-pay-block { min-width: 0; }
+        .pos-pay-block,
+        .pos-bill-block {
+            display: grid;
+            gap: 6px;
+            min-width: 0;
+            align-content: end;
+        }
+        .pos-pay-checkout {
+            display: flex;
+            align-items: end;
+            gap: 14px;
+            justify-content: flex-end;
+        }
         .pos-station-pay .cart-total {
             display: grid;
-            gap: 2px;
+            gap: 3px;
             padding: 0;
             margin: 0;
             border: none;
             align-content: end;
             justify-items: end;
             text-align: right;
+            min-width: 110px;
         }
         .pos-station-pay .cart-total .label {
             font-size: 11px;
+            line-height: 1;
         }
         .pos-station-pay .cart-total .amount {
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 600;
             letter-spacing: -0.03em;
             line-height: 1;
+            font-variant-numeric: tabular-nums;
         }
         #posCheckoutBtn {
             height: 44px;
-            min-width: 132px;
+            min-width: 128px;
+            padding: 0 18px;
             font-size: 15px;
             font-weight: 550;
             letter-spacing: -0.01em;
-            align-self: end;
         }
-        /* legacy class hooks for JS */
+        .pos-station-pay .pay-split-check { margin-top: 2px; }
         .pos-layout { display: contents; }
         .pos-catalog { display: contents; }
 
@@ -2261,10 +2326,6 @@
             overflow: hidden;
         }
         .pos-client-popover[hidden] { display: none !important; }
-        .pos-station-top {
-            position: relative;
-            z-index: 5;
-        }
         .pos-station-top .pos-client-popover {
             top: calc(100% + 6px);
             bottom: auto;
@@ -4509,30 +4570,37 @@
             .cortes-invoice-client { grid-column: 1 / -1; }
         }
         @media (max-width: 1100px) {
-            .pos-station-top {
-                grid-template-columns: auto 1fr auto;
-            }
-            .pos-station-top .pos-city-field {
-                grid-column: 1 / -1;
+            .pos-station-fields {
+                grid-template-columns: minmax(0, 1fr) 148px;
             }
             .pos-station-pay {
                 grid-template-columns: 1fr 1fr;
             }
-            .pos-station-pay .pos-pay-block { grid-column: 1 / -1; }
-            .pos-station-pay .cart-total { justify-items: start; text-align: left; }
-            #posCheckoutBtn { width: 100%; min-width: 0; }
+            .pos-pay-block { grid-column: 1 / -1; }
+            .pos-pay-checkout {
+                grid-column: 1 / -1;
+                justify-content: space-between;
+            }
+            #posCheckoutBtn { min-width: 140px; }
         }
         @media (max-width: 900px) {
             #venta.section.active { min-height: 0; margin: 0; }
             .pos-station-main { grid-template-columns: 1fr; }
-            .pos-ticket { border-right: none; border-bottom: 1px solid var(--border); min-height: 280px; }
-            .pos-pad .product-grid { max-height: 280px; }
+            .pos-ticket { border-right: none; border-bottom: 1px solid var(--border); min-height: 260px; }
+            .pos-pad .product-grid { max-height: 260px; }
             .pos-station-top {
-                grid-template-columns: 1fr;
-                align-items: stretch;
+                grid-template-columns: 1fr auto;
+                align-items: start;
             }
-            .pos-station-actions { justify-content: flex-start; }
+            .pos-station-title { grid-column: 1; }
+            .pos-station-actions { grid-column: 2; align-self: start; }
+            .pos-station-fields {
+                grid-column: 1 / -1;
+                grid-template-columns: 1fr;
+            }
             .pos-station-pay { grid-template-columns: 1fr; }
+            .pos-pay-checkout { width: 100%; }
+            #posCheckoutBtn { flex: 1; }
         }
     </style>
 </head>
@@ -4758,34 +4826,36 @@
                     <div class="pos-station">
                         <header class="pos-station-top">
                             <h1 class="pos-station-title">Venta</h1>
-                            <div>
-                                <div class="field-label">Cliente</div>
-                                <div class="pos-client-picker" id="posClientPicker">
-                                    <input type="hidden" id="posClientSelect" value="" autocomplete="off">
-                                    <button type="button" class="pos-client-trigger" id="posClientTrigger"
-                                        aria-haspopup="listbox" aria-expanded="false" aria-controls="posClientPickerList">
-                                        <span class="pos-client-trigger-text">
-                                            <span class="pos-client-trigger-label" id="posClientTriggerLabel">Sin cliente (mostrador)</span>
-                                            <span class="pos-client-trigger-badge" id="posClientTriggerBadge" hidden></span>
-                                        </span>
-                                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                                    </button>
-                                    <div class="pos-client-popover" id="posClientPopover" hidden role="dialog" aria-label="Buscar cliente">
-                                        <div class="pos-client-search-wrap">
+                            <div class="pos-station-fields">
+                                <div class="pos-field pos-field-client">
+                                    <span class="field-label">Cliente</span>
+                                    <div class="pos-client-picker" id="posClientPicker">
+                                        <input type="hidden" id="posClientSelect" value="" autocomplete="off">
+                                        <button type="button" class="pos-client-trigger" id="posClientTrigger"
+                                            aria-haspopup="listbox" aria-expanded="false" aria-controls="posClientPickerList">
+                                            <span class="pos-client-trigger-text">
+                                                <span class="pos-client-trigger-label" id="posClientTriggerLabel">Sin cliente (mostrador)</span>
+                                                <span class="pos-client-trigger-badge" id="posClientTriggerBadge" hidden></span>
+                                            </span>
                                             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                                            <input type="search" id="posClientPickerSearch" class="pos-client-search"
-                                                placeholder="Nombre, empresa, teléfono, email o RFC" autocomplete="off" aria-autocomplete="list" aria-controls="posClientPickerList">
+                                        </button>
+                                        <div class="pos-client-popover" id="posClientPopover" hidden role="dialog" aria-label="Buscar cliente">
+                                            <div class="pos-client-search-wrap">
+                                                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                                <input type="search" id="posClientPickerSearch" class="pos-client-search"
+                                                    placeholder="Nombre, empresa, teléfono, email o RFC" autocomplete="off" aria-autocomplete="list" aria-controls="posClientPickerList">
+                                            </div>
+                                            <div class="pos-client-list" id="posClientPickerList" role="listbox"></div>
                                         </div>
-                                        <div class="pos-client-list" id="posClientPickerList" role="listbox"></div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="pos-city-field">
-                                <div class="field-label">Ciudad</div>
-                                <div class="seg seg-city" id="posSaleCitySeg">
-                                    <label><input type="radio" name="saleCity" value="culiacan" checked> Culiacán</label>
-                                    <label><input type="radio" name="saleCity" value="mochis"> Los Mochis</label>
-                                    <label><input type="radio" name="saleCity" value="mazatlan"> Mazatlán</label>
+                                <div class="pos-field pos-field-city">
+                                    <label class="field-label" for="posSaleCity">Ciudad</label>
+                                    <select id="posSaleCity" class="pos-select" aria-label="Ciudad / sucursal">
+                                        <option value="culiacan">Culiacán</option>
+                                        <option value="mochis">Los Mochis</option>
+                                        <option value="mazatlan">Mazatlán</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="pos-station-actions">
@@ -4803,13 +4873,15 @@
                         <div class="pos-station-main">
                             <div class="pos-ticket pos-cart">
                                 <div class="pos-ticket-head pos-cart-head">
-                                    <h3>Ticket</h3>
+                                    <div class="pos-ticket-head-text">
+                                        <h3>Ticket</h3>
+                                        <p class="pos-cart-tier" id="posCartTierHint">Escalón por unidades</p>
+                                    </div>
                                     <button type="button" class="btn ghost" id="posClearCartBtn">Vaciar</button>
                                 </div>
-                                <div class="pos-cart-tier" id="posCartTierHint">Escalón por unidades del ticket</div>
                                 <div id="posCartPromoBanner" hidden></div>
                                 <div class="pos-cart-body" id="posCartBody">
-                                    <div class="empty">Toca un producto a la derecha para empezar.</div>
+                                    <div class="empty">Toca un producto para agregarlo al ticket.</div>
                                 </div>
                             </div>
                             <div class="pos-pad">
@@ -4842,21 +4914,22 @@
                                     </div>
                                 </div>
                             </div>
-                            <div>
+                            <div class="pos-bill-block">
                                 <div class="field-label">Facturación</div>
                                 <div class="seg two">
                                     <label><input type="radio" name="billing" value="sin_facturar" checked> Sin factura</label>
                                     <label><input type="radio" name="billing" value="facturado"> Facturado</label>
                                 </div>
                             </div>
-                            <div class="cart-total">
-                                <span class="label">Total</span>
-                                <span class="amount" id="posCartTotal">$0.00</span>
+                            <div class="pos-pay-checkout">
+                                <div class="cart-total">
+                                    <span class="label">Total</span>
+                                    <span class="amount" id="posCartTotal">$0.00</span>
+                                </div>
+                                <button type="button" class="btn primary" id="posCheckoutBtn" disabled>Cobrar</button>
                             </div>
-                            <button type="button" class="btn primary" id="posCheckoutBtn" disabled>Cobrar</button>
                         </footer>
                     </div>
-                    <!-- Alias oculto: el JS también enlaza el botón de promo del ticket -->
                     <button type="button" id="posPromoCartBtn" hidden aria-hidden="true" tabindex="-1"></button>
                 </section>
 
@@ -10815,7 +10888,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-pay-split-2"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-pos-station-2"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260923-copilot-section"></script>
 </body>
