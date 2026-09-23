@@ -3228,6 +3228,13 @@
             pointer-events: none;
             vector-effect: non-scaling-stroke;
         }
+        .cortes-chart .focus-line {
+            stroke: var(--muted);
+            stroke-width: 1;
+            stroke-dasharray: 2 3;
+            pointer-events: none;
+            vector-effect: non-scaling-stroke;
+        }
         .cortes-chart .line-cur {
             fill: none;
             stroke: currentColor;
@@ -3269,6 +3276,7 @@
         }
         .cortes-chart .hit-zone {
             cursor: pointer;
+            touch-action: manipulation;
         }
         .cortes-chart .dot-cur {
             fill: currentColor;
@@ -3281,14 +3289,21 @@
         .cortes-chart .dot-cur.is-active {
             opacity: 1;
         }
+        .cortes-chart-tips {
+            position: absolute;
+            inset: 0;
+            z-index: 6;
+            pointer-events: none;
+            overflow: visible;
+        }
         .cortes-chart-tip {
             position: absolute;
             z-index: 5;
             left: 0;
             top: 0;
-            min-width: 96px;
-            max-width: 220px;
-            padding: 8px 10px;
+            min-width: 72px;
+            max-width: 200px;
+            padding: 6px 9px;
             border-radius: 8px;
             background: var(--text);
             color: var(--bg);
@@ -3298,15 +3313,40 @@
             line-height: 1.35;
             white-space: nowrap;
         }
+        .cortes-chart-tip.tip-axis {
+            min-width: 0;
+            padding: 4px 8px;
+            background: var(--panel);
+            color: var(--text);
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            font-size: 11px;
+        }
+        .cortes-chart-tip.tip-axis .tip-label {
+            opacity: 1;
+            margin: 0;
+        }
+        .cortes-chart-tip.tip-city-float {
+            background: var(--panel);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--tip-accent, var(--text));
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        }
         .cortes-chart-tip .tip-label {
             opacity: 0.72;
             font-size: 11px;
             margin-bottom: 2px;
         }
+        .cortes-chart-tip.tip-city-float .tip-label {
+            opacity: 0.85;
+            color: var(--tip-accent, var(--text));
+            font-weight: 600;
+        }
         .cortes-chart-tip .tip-val {
             font-weight: 650;
             font-variant-numeric: tabular-nums;
-            font-size: 14px;
+            font-size: 13px;
         }
         .cortes-chart-tip .tip-prev {
             margin-top: 4px;
@@ -3320,7 +3360,6 @@
             gap: 6px;
             margin-top: 3px;
             font-size: 11px;
-            color: var(--text);
         }
         .cortes-chart-tip .tip-city .sw {
             width: 8px;
@@ -3334,6 +3373,11 @@
         [data-theme="dark"] .cortes-chart-tip {
             background: #f5f5f5;
             color: #111;
+        }
+        [data-theme="dark"] .cortes-chart-tip.tip-axis,
+        [data-theme="dark"] .cortes-chart-tip.tip-city-float {
+            background: var(--panel);
+            color: var(--text);
         }
         .prod-formula-chart {
             position: relative;
@@ -9407,6 +9451,6 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260922-citycolor"></script>
+    <script src="/colaboradores/pos-module.js?v=20260922-charttips"></script>
 </body>
 </html>

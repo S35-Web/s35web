@@ -2015,19 +2015,32 @@
 
         let hits = '';
         let dots = '';
-        // Radio pequeño en coords del viewBox (~10–14 px en pantalla) alrededor del punto
-        const hitR = 12;
+        // Franjas verticales a lo alto del plot: fáciles de apuntar (mouse + touch)
+        const colSpan = n <= 1 ? plotW : plotW / Math.max(1, n - 1);
         for (let i = 0; i < n; i++) {
             const x = ptX(i);
-            const y = ptY(cur.buckets[i].amount);
-            hits += '<circle class="hit-zone" data-idx="' + i + '" cx="' + x.toFixed(1) +
-                '" cy="' + y.toFixed(1) + '" r="' + hitR + '" fill="transparent"/>';
+            const half = colSpan / 2;
+            const x0 = Math.max(padL, x - half);
+            const x1 = Math.min(W - padR, x + half);
+            hits += '<rect class="hit-zone" data-idx="' + i + '" x="' + x0.toFixed(1) +
+                '" y="' + padT + '" width="' + Math.max(1, x1 - x0).toFixed(1) +
+                '" height="' + plotH.toFixed(1) + '" fill="transparent"/>';
             if (!multiCity) {
                 dots += '<circle class="dot-cur" data-idx="' + i + '" cx="' + x.toFixed(1) +
-                    '" cy="' + y.toFixed(1) + '" r="3.5"' +
+                    '" cy="' + ptY(cur.buckets[i].amount).toFixed(1) + '" r="3.5"' +
                     (lineColor ? ' style="fill:' + esc(lineColor) + '"' : '') +
                     ' />';
             }
+        }
+        if (multiCity && seriesBuckets) {
+            seriesBuckets.forEach(function (s) {
+                for (let i = 0; i < n; i++) {
+                    const amt = Number(s.buckets[i] && s.buckets[i].amount) || 0;
+                    dots += '<circle class="dot-cur" data-idx="' + i + '" data-city="' + esc(s.key) +
+                        '" cx="' + ptX(i).toFixed(1) + '" cy="' + ptY(amt).toFixed(1) +
+                        '" r="3.5" style="fill:' + esc(s.color) + '"/>';
+                }
+            });
         }
 
         const defs =
@@ -2040,11 +2053,12 @@
         const emptyNote = hasData ? '' : '<div class="cortes-chart-empty">Sin ventas en este ritmo</div>';
         const singleLineStyle = lineColor ? (' style="stroke:' + esc(lineColor) + ';color:' + esc(lineColor) + '"') : '';
         host.innerHTML = emptyNote +
-            '<div class="cortes-chart-tip" hidden></div>' +
+            '<div class="cortes-chart-tips" aria-hidden="true"></div>' +
             '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:' +
             esc(lineColor || 'var(--text)') + '">' +
             defs + grid + yLabels +
             todayMark +
+            '<line class="focus-line" x1="0" y1="' + padT + '" x2="0" y2="' + baseY.toFixed(1) + '" opacity="0"/>' +
             (!multiCity && hasData ? '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + esc(hatchId) + ')"/>' : '') +
             (showPrev && prevLine ? '<path class="line-prev" d="' + prevLine + '"/>' : '') +
             (multiCity ? cityLines : ('<path class="line-cur" d="' + curLine + '"' + singleLineStyle + '/>')) +
@@ -2053,57 +2067,154 @@
             xLabels +
             '</svg>';
 
-        const tipEl = host.querySelector('.cortes-chart-tip');
+        const tipsHost = host.querySelector('.cortes-chart-tips');
+        const focusLine = host.querySelector('.focus-line');
+        let activeTipIdx = -1;
+
         function hideTip() {
-            if (tipEl) tipEl.hidden = true;
+            activeTipIdx = -1;
+            if (tipsHost) tipsHost.innerHTML = '';
+            if (focusLine) focusLine.setAttribute('opacity', '0');
             host.querySelectorAll('.dot-cur.is-active').forEach(function (el) {
                 el.classList.remove('is-active');
             });
         }
-        function showTip(idx) {
-            if (!tipEl || idx < 0 || idx >= n) return;
-            let html = '<div class="tip-label">' + esc(tipTitle(idx)) + '</div>';
-            if (multiCity && seriesBuckets) {
-                let sum = 0;
-                seriesBuckets.forEach(function (s) {
-                    const amt = Number(s.buckets[idx] && s.buckets[idx].amount) || 0;
-                    sum += amt;
-                    html += '<div class="tip-city"><span class="sw" style="background:' + esc(s.color) + '"></span>' +
-                        esc(s.label) + ' · ' + money(amt) + '</div>';
-                });
-                html += '<div class="tip-val">' + money(sum) + '</div>';
-            } else {
-                const amt = Number(cur.buckets[idx].amount) || 0;
-                const prevAmt = showPrev && prev.buckets[idx] ? (Number(prev.buckets[idx].amount) || 0) : null;
-                html += '<div class="tip-val">' + money(amt) + '</div>';
-                if (prevAmt != null) {
-                    html += '<div class="tip-prev">Anterior · ' + money(prevAmt) + '</div>';
+
+        function placeTips(boxes) {
+            // Evitar traslapes: ordenar de arriba→abajo y empujar hacia abajo si chocan
+            boxes.sort(function (a, b) { return a.top - b.top; });
+            const gap = 4;
+            for (let i = 1; i < boxes.length; i++) {
+                const prev = boxes[i - 1];
+                const minTop = prev.top + prev.h + gap;
+                if (boxes[i].top < minTop) boxes[i].top = minTop;
+            }
+            // Si se salen por abajo, subir el bloque entero
+            const hostH = host.clientHeight || 0;
+            if (boxes.length) {
+                const last = boxes[boxes.length - 1];
+                const overflow = (last.top + last.h + 2) - hostH;
+                if (overflow > 0) {
+                    boxes.forEach(function (b) { b.top -= overflow; });
+                }
+                if (boxes[0].top < 2) {
+                    const shift = 2 - boxes[0].top;
+                    boxes.forEach(function (b) { b.top += shift; });
                 }
             }
-            tipEl.innerHTML = html;
-            tipEl.hidden = false;
+            // Clamp horizontal + empujar a los lados si siguen muy juntos en Y
+            const hostW = host.clientWidth || 0;
+            boxes.forEach(function (b, i) {
+                b.left = Math.max(4, Math.min(b.left, hostW - b.w - 4));
+                if (i > 0 && Math.abs(boxes[i].top - boxes[i - 1].top) < 2) {
+                    const dir = (i % 2 === 0) ? 1 : -1;
+                    b.left = Math.max(4, Math.min(b.left + dir * (b.w * 0.55 + 6), hostW - b.w - 4));
+                }
+                b.el.style.left = b.left + 'px';
+                b.el.style.top = b.top + 'px';
+                b.el.style.transform = 'none';
+            });
+        }
 
-            // Anclar el tip encima del punto, siempre fuera de la línea (arriba del host)
+        function showTip(idx) {
+            if (!tipsHost || idx < 0 || idx >= n) return;
+            activeTipIdx = idx;
+            tipsHost.innerHTML = '';
+
+            const svg = host.querySelector('svg');
+            if (!svg) return;
             const hostRect = host.getBoundingClientRect();
-            const svgRect = host.querySelector('svg').getBoundingClientRect();
+            const svgRect = svg.getBoundingClientRect();
             const scaleX = svgRect.width / W;
-            const tipW = tipEl.offsetWidth || 120;
-            let left = (ptX(idx) * scaleX) - tipW / 2;
-            left = Math.max(4, Math.min(left, hostRect.width - tipW - 4));
-            tipEl.style.left = left + 'px';
-            tipEl.style.top = '0';
-            tipEl.style.transform = 'translateY(calc(-100% - 6px))';
+            const scaleY = svgRect.height / H;
+            const ox = svgRect.left - hostRect.left;
+            const oy = svgRect.top - hostRect.top;
+            const px = ptX(idx);
+
+            if (focusLine) {
+                focusLine.setAttribute('x1', px.toFixed(1));
+                focusLine.setAttribute('x2', px.toFixed(1));
+                focusLine.setAttribute('opacity', '1');
+            }
 
             host.querySelectorAll('.dot-cur').forEach(function (el) {
                 el.classList.toggle('is-active', Number(el.getAttribute('data-idx')) === idx);
             });
-        }
-        host.onmouseleave = hideTip;
-        host.querySelectorAll('.hit-zone').forEach(function (zone) {
-            zone.addEventListener('mouseenter', function () {
-                showTip(Number(zone.getAttribute('data-idx')));
+
+            const markers = [];
+            if (multiCity && seriesBuckets) {
+                seriesBuckets.forEach(function (s) {
+                    const amt = Number(s.buckets[idx] && s.buckets[idx].amount) || 0;
+                    markers.push({
+                        color: s.color,
+                        label: s.label,
+                        amount: amt,
+                        y: ptY(amt),
+                        html: '<div class="tip-label">' + esc(s.label) + '</div>' +
+                            '<div class="tip-val">' + money(amt) + '</div>'
+                    });
+                });
+            } else {
+                const amt = Number(cur.buckets[idx].amount) || 0;
+                const prevAmt = showPrev && prev.buckets[idx] ? (Number(prev.buckets[idx].amount) || 0) : null;
+                markers.push({
+                    color: lineColor || null,
+                    label: tipTitle(idx),
+                    amount: amt,
+                    y: ptY(amt),
+                    html: '<div class="tip-label">' + esc(tipTitle(idx)) + '</div>' +
+                        '<div class="tip-val">' + money(amt) + '</div>' +
+                        (prevAmt != null
+                            ? '<div class="tip-prev">Anterior · ' + money(prevAmt) + '</div>'
+                            : '')
+                });
+            }
+
+            // Título del periodo solo en multi-ciudad (en single va dentro del tip del punto)
+            if (multiCity) {
+                const titleEl = document.createElement('div');
+                titleEl.className = 'cortes-chart-tip tip-axis';
+                titleEl.innerHTML = '<div class="tip-label">' + esc(tipTitle(idx)) + '</div>';
+                tipsHost.appendChild(titleEl);
+                const titleW = titleEl.offsetWidth || 80;
+                let titleLeft = ox + px * scaleX - titleW / 2;
+                titleLeft = Math.max(4, Math.min(titleLeft, hostRect.width - titleW - 4));
+                titleEl.style.left = titleLeft + 'px';
+                titleEl.style.top = Math.max(2, oy + padT * scaleY - titleEl.offsetHeight - 4) + 'px';
+                titleEl.style.transform = 'none';
+            }
+
+            const boxes = [];
+            markers.forEach(function (m) {
+                const el = document.createElement('div');
+                el.className = 'cortes-chart-tip tip-float' + (m.color ? ' tip-city-float' : '');
+                if (m.color) el.style.setProperty('--tip-accent', m.color);
+                el.innerHTML = m.html;
+                tipsHost.appendChild(el);
+                const w = el.offsetWidth || 100;
+                const h = el.offsetHeight || 40;
+                let left = ox + px * scaleX - w / 2;
+                let top = oy + m.y * scaleY - h - 10;
+                boxes.push({ el: el, left: left, top: top, w: w, h: h });
             });
-            zone.addEventListener('mouseleave', hideTip);
+            placeTips(boxes);
+        }
+
+        host.onpointerleave = function (e) {
+            if (e.pointerType === 'touch' || e.pointerType === 'pen') return;
+            hideTip();
+        };
+        host.querySelectorAll('.hit-zone').forEach(function (zone) {
+            const idx = Number(zone.getAttribute('data-idx'));
+            zone.addEventListener('pointerenter', function (e) {
+                if (e.pointerType === 'touch' || e.pointerType === 'pen') return;
+                showTip(idx);
+            });
+            zone.addEventListener('pointerdown', function (e) {
+                if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+                if (activeTipIdx === idx) hideTip();
+                else showTip(idx);
+            });
         });
     }
 
