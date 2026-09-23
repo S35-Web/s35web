@@ -4,6 +4,7 @@
  * navigate se ejecuta en el cliente como acción de UI.
  */
 const jwt = require('jsonwebtoken');
+const { recordCopilotUsage } = require('../lib/copilot-usage');
 
 function parseBody(req) {
   try {
@@ -271,6 +272,26 @@ function sanitizeMessages(messagesIn) {
   return out.slice(-24);
 }
 
+function mergeUsage(a, b) {
+  if (!a && !b) return null;
+  if (!a) return b;
+  if (!b) return a;
+  return {
+    prompt_tokens: (Number(a.prompt_tokens) || 0) + (Number(b.prompt_tokens) || 0),
+    completion_tokens: (Number(a.completion_tokens) || 0) + (Number(b.completion_tokens) || 0),
+    total_tokens: (Number(a.total_tokens) || 0) + (Number(b.total_tokens) || 0)
+  };
+}
+
+async function trackUsage(usage, model) {
+  try {
+    return await recordCopilotUsage(usage, { model: model });
+  } catch (err) {
+    console.warn('[s35-chat] usage track failed', err && err.message);
+    return null;
+  }
+}
+
 async function openaiChat(messages) {
   const key = process.env.OPENAI_API_KEY;
   if (!key) {
@@ -378,11 +399,13 @@ module.exports = async function handler(req, res) {
     const data = await openaiChat(apiMessages);
     const choice = data.choices && data.choices[0];
     const message = choice && choice.message;
+    const modelName = process.env.S35_AI_MODEL || 'gpt-4o-mini';
     const classified = classifyToolCalls(message);
     const navigateActions = extractNavigateActions(message);
 
     // Tools de datos → el cliente las ejecuta y reenvía
     if (classified.dataCalls.length) {
+      const usageSummary = await trackUsage(data.usage, modelName);
       res.status(200).json({
         ok: true,
         status: 'tool_calls',
@@ -395,8 +418,9 @@ module.exports = async function handler(req, res) {
         }),
         assistantToolCalls: classified.all,
         actions: navigateActions,
-        model: process.env.S35_AI_MODEL || 'gpt-4o-mini',
-        usage: data.usage || null
+        model: modelName,
+        usage: data.usage || null,
+        usageSummary: usageSummary
       });
       return;
     }
@@ -428,26 +452,31 @@ module.exports = async function handler(req, res) {
         String((message2 && message2.content) || '').trim() ||
         (navigateActions[0] && navigateActions[0].reason) ||
         'Listo, te llevo ahí.';
+      const combined = mergeUsage(data.usage, data2.usage);
+      const usageSummary = await trackUsage(combined, modelName);
       res.status(200).json({
         ok: true,
         status: 'reply',
         reply: reply,
         actions: navigateActions,
-        model: process.env.S35_AI_MODEL || 'gpt-4o-mini',
-        usage: data2.usage || data.usage || null
+        model: modelName,
+        usage: combined,
+        usageSummary: usageSummary
       });
       return;
     }
 
     const reply = String((message && message.content) || '').trim() ||
       'No pude generar respuesta. Intenta de nuevo.';
+    const usageSummary = await trackUsage(data.usage, modelName);
     res.status(200).json({
       ok: true,
       status: 'reply',
       reply: reply,
       actions: [],
-      model: process.env.S35_AI_MODEL || 'gpt-4o-mini',
-      usage: data.usage || null
+      model: modelName,
+      usage: data.usage || null,
+      usageSummary: usageSummary
     });
   } catch (err) {
     const status = err.code === 'NO_KEY' ? 503 : err.status && err.status < 500 ? 400 : 502;

@@ -245,6 +245,29 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Usage global del copiloto
+    if (pathname === '/api/s35-usage') {
+        if (req.method === 'GET') {
+            try {
+                const { getCopilotUsageSummary } = require('./lib/copilot-usage');
+                getCopilotUsageSummary().then(function (summary) {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(summary));
+                }).catch(function (err) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: err.message || 'Error usage' }));
+                });
+            } catch (err) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: err.message || 'Error usage' }));
+            }
+            return;
+        }
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed' }));
+        return;
+    }
+
     if (pathname === '/colaboradores' || pathname === '/colaboradores/') {
         serveStaticFile(req, res, path.join(__dirname, 'public', 'colaboradores', 'index.html'));
         return;

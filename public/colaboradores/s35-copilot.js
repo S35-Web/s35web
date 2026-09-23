@@ -33,6 +33,57 @@
         return document.getElementById(id);
     }
 
+    function formatTokens(n) {
+        n = Number(n) || 0;
+        if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(/\.0$/, '') + 'M';
+        if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'k';
+        return String(Math.round(n));
+    }
+
+    function renderUsage(summary) {
+        const root = el('copilotUsage');
+        if (!root || !summary || !summary.ok) return;
+        root.hidden = false;
+        const pct = Math.max(0, Math.min(100, Number(summary.pctUsed) || 0));
+        const pctEl = el('copilotUsagePct');
+        if (pctEl) pctEl.textContent = (pct % 1 ? pct.toFixed(1) : String(pct)) + '%';
+        const sub = el('copilotUsageSub');
+        if (sub) {
+            sub.textContent = formatTokens(summary.totalTokens) + ' / ' + formatTokens(summary.budgetTokens) +
+                ' · ' + (summary.requests || 0) + ' req';
+        }
+        const ring = el('copilotUsageRing');
+        if (ring) {
+            const c = 2 * Math.PI * 15.5;
+            ring.setAttribute('stroke-dasharray', String(c.toFixed(2)));
+            ring.setAttribute('stroke-dashoffset', String((c * (1 - pct / 100)).toFixed(2)));
+        }
+        root.title = 'Usage global del copiloto · ' + (summary.month || '') +
+            '\nTokens: ' + (summary.totalTokens || 0).toLocaleString('es-MX') +
+            ' / ' + (summary.budgetTokens || 0).toLocaleString('es-MX') +
+            '\nEst. ~$' + (Number(summary.estimatedCostUsd) || 0).toFixed(4) +
+            ' · ' + (summary.model || '');
+    }
+
+    function refreshUsage(summary) {
+        if (summary && summary.ok) {
+            renderUsage(summary);
+            return Promise.resolve(summary);
+        }
+        const t = token();
+        if (!t) return Promise.resolve(null);
+        return fetch('/api/s35-usage', {
+            headers: { Authorization: 'Bearer ' + t },
+            cache: 'no-store'
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.ok) renderUsage(data);
+                return data;
+            })
+            .catch(function () { return null; });
+    }
+
     function setBusy(on, statusText) {
         busy = !!on;
         const send = el('copilotSend');
@@ -176,6 +227,7 @@
                 }
 
                 if (data.status === 'tool_calls' && data.toolCalls && data.toolCalls.length) {
+                    if (data.usageSummary) refreshUsage(data.usageSummary);
                     setBusy(true, 'Consultando el sistema…');
                     const assistantMsg = {
                         role: 'assistant',
@@ -197,6 +249,7 @@
                 }
 
                 finalReply = data.reply || '';
+                if (data.usageSummary) refreshUsage(data.usageSummary);
                 break;
             }
 
@@ -216,14 +269,17 @@
     function syncVisibility() {
         const root = el('copilotPanel');
         const guest = el('homeAiGuest');
+        const usage = el('copilotUsage');
         const admin = isAdmin();
         if (root) root.hidden = !admin;
         if (guest) guest.hidden = admin;
+        if (usage && !admin) usage.hidden = true;
         return admin;
     }
 
     function bind() {
         if (!syncVisibility()) return;
+        refreshUsage();
 
         const form = el('copilotForm');
         if (form && !form.dataset.bound) {

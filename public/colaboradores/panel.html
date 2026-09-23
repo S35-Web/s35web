@@ -784,6 +784,71 @@
         }
         .copilot-chip:disabled { opacity: 0.55; cursor: default; }
 
+
+        .copilot-usage {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px 10px 10px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: color-mix(in srgb, var(--panel) 92%, transparent);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 28px rgba(10, 10, 10, 0.08);
+            color: var(--text);
+            max-width: 220px;
+            animation: homeAiIn 0.45s ease both;
+        }
+        .copilot-usage[hidden] { display: none !important; }
+        .copilot-usage-donut {
+            width: 52px;
+            height: 52px;
+            flex: 0 0 52px;
+            transform: rotate(-90deg);
+        }
+        .copilot-usage-donut circle.track {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 5;
+        }
+        .copilot-usage-donut circle.prog {
+            fill: none;
+            stroke: #f97316;
+            stroke-width: 5;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.45s ease;
+        }
+        .copilot-usage-meta { min-width: 0; }
+        .copilot-usage-meta .u-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+        .copilot-usage-meta .u-val {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+        .copilot-usage-meta .u-sub {
+            margin-top: 2px;
+            font-size: 11px;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        @media (max-width: 560px) {
+            .copilot-usage { right: 12px; bottom: 12px; padding: 8px; gap: 8px; }
+            .copilot-usage-meta .u-sub { display: none; }
+        }
+
         .home-ai-guest {
             margin: auto;
             padding: 28px 20px;
@@ -4285,6 +4350,18 @@
                         <div class="home-ai-guest" id="homeAiGuest" hidden>
                             El copiloto S35 está disponible para administradores. Usa el menú para ventas, cortes y productos.
                         </div>
+                        <aside class="copilot-usage" id="copilotUsage" hidden title="Uso global del copiloto este mes">
+                            <svg class="copilot-usage-donut" viewBox="0 0 36 36" aria-hidden="true">
+                                <circle class="track" cx="18" cy="18" r="15.5"></circle>
+                                <circle class="prog" id="copilotUsageRing" cx="18" cy="18" r="15.5"
+                                    stroke-dasharray="97.4" stroke-dashoffset="97.4"></circle>
+                            </svg>
+                            <div class="copilot-usage-meta">
+                                <div class="u-label">Usage · mes</div>
+                                <div class="u-val" id="copilotUsagePct">0%</div>
+                                <div class="u-sub" id="copilotUsageSub">0 / 0 tokens</div>
+                            </div>
+                        </aside>
                     </div>
                 </section>
 
@@ -10104,8 +10181,8 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-hist-label"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-usage-donut"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-corte-cmd"></script>
-    <script src="/colaboradores/s35-copilot.js?v=20260923-copilot-brain"></script>
+    <script src="/colaboradores/s35-copilot.js?v=20260923-usage-donut"></script>
 </body>
 </html>
