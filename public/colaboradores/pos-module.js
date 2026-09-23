@@ -4954,12 +4954,16 @@
     function setCdTypeForm(type) {
         const t = normalizeClientType(type);
         const seg = document.getElementById('cdTypeSeg');
-        if (!seg) return;
-        seg.querySelectorAll('button[data-cd-type]').forEach(function (btn) {
-            const on = btn.getAttribute('data-cd-type') === t;
-            btn.classList.toggle('active', on);
-            btn.setAttribute('aria-selected', on ? 'true' : 'false');
-        });
+        if (seg) {
+            seg.querySelectorAll('button[data-cd-type]').forEach(function (btn) {
+                const on = btn.getAttribute('data-cd-type') === t;
+                btn.classList.toggle('active', on);
+                btn.setAttribute('aria-selected', on ? 'true' : 'false');
+                btn.disabled = !clientDashEditing;
+            });
+        }
+        const ro = document.getElementById('cdTypeReadonly');
+        if (ro) ro.textContent = t === 'distributor' ? 'Distribuidor' : 'Cliente';
     }
     function cdTypeFromForm() {
         const active = document.querySelector('#cdTypeSeg button.active');
@@ -4990,6 +4994,7 @@
             if (clientDashEditing) el.removeAttribute('readonly');
             else el.setAttribute('readonly', '');
         });
+        setCdTypeForm(cdTypeFromForm());
     }
 
     function fillClientDashboardForm(client) {

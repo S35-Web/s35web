@@ -2956,16 +2956,85 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 8px;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
         }
-        .client-dash-data-head .pd-section-label { margin: 0; }
-        .client-dash-data-head .seg-control {
+        .client-dash-data-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 650;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            line-height: 1.2;
+        }
+        .cd-mode-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 3px;
+            border-radius: 999px;
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
             flex-shrink: 0;
         }
-        .client-dash-data-head .seg-control button {
-            padding: 4px 10px;
+        .cd-mode-toggle button {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 999px;
+            background: transparent;
+            color: var(--muted);
             font-size: 12px;
+            font-weight: 550;
+            line-height: 1;
+            cursor: pointer;
+            transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+        }
+        .cd-mode-toggle button i {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .cd-mode-toggle button:hover {
+            color: var(--text);
+        }
+        .cd-mode-toggle button.active {
+            background: var(--panel);
+            color: var(--text);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+        }
+        .client-dash-form .field-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .client-dash-form .field-block .field-label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .cd-type-readonly {
+            margin: 0;
+            min-height: 34px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            padding: 0;
+        }
+        .client-dash-data #cdTypeSeg {
+            margin-bottom: 0;
+            width: fit-content;
+        }
+        .client-dash-data:not(.is-editing) #cdTypeSeg {
+            display: none !important;
+        }
+        .client-dash-data.is-editing .cd-type-readonly {
+            display: none !important;
         }
         .client-dash-form-actions {
             display: flex;
@@ -2990,10 +3059,6 @@
             outline: none;
             border-color: transparent;
             box-shadow: none;
-        }
-        .client-dash-data:not(.is-editing) #cdTypeSeg {
-            pointer-events: none;
-            opacity: 0.92;
         }
         .client-dash-meta {
             margin: 12px 0 0;
@@ -4258,16 +4323,21 @@
                         <div class="client-dash-grid">
                             <div class="card client-dash-data" id="cdDataCard">
                                 <div class="client-dash-data-head">
-                                    <p class="pd-section-label">Datos</p>
-                                    <div class="seg-control" id="cdEditModeSeg" role="tablist" aria-label="Modo de datos del cliente">
-                                        <button type="button" role="tab" data-cd-edit-mode="view" class="active" aria-selected="true">Ver</button>
-                                        <button type="button" role="tab" data-cd-edit-mode="edit" aria-selected="false">Editar</button>
+                                    <h3 class="client-dash-data-title">Datos</h3>
+                                    <div class="cd-mode-toggle" id="cdEditModeSeg" role="tablist" aria-label="Modo de datos del cliente">
+                                        <button type="button" role="tab" data-cd-edit-mode="view" class="active" aria-selected="true" title="Ver">
+                                            <i class="fa-solid fa-eye" aria-hidden="true"></i><span>Ver</span>
+                                        </button>
+                                        <button type="button" role="tab" data-cd-edit-mode="edit" aria-selected="false" title="Editar">
+                                            <i class="fa-solid fa-pen" aria-hidden="true"></i><span>Editar</span>
+                                        </button>
                                     </div>
                                 </div>
                                 <form id="cdForm" class="client-dash-form">
                                     <div class="form-grid">
                                         <div class="field-block">
                                             <span class="field-label">Tipo</span>
+                                            <p class="cd-type-readonly" id="cdTypeReadonly">Cliente</p>
                                             <div class="seg-control" id="cdTypeSeg" role="tablist" aria-label="Tipo de cliente">
                                                 <button type="button" role="tab" data-cd-type="client" class="active" aria-selected="true">Cliente</button>
                                                 <button type="button" role="tab" data-cd-type="distributor" aria-selected="false">Distribuidor</button>
@@ -9821,6 +9891,6 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-cd-edit"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-cd-datos-ui"></script>
 </body>
 </html>
