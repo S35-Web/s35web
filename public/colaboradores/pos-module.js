@@ -1684,6 +1684,49 @@
         return { subtitle: meta.subtitle, buckets: buckets };
     }
 
+    /**
+     * Índice (puede ser fraccional) del marcador “hoy” en el eje X, o null
+     * si el periodo visible no incluye el día actual.
+     */
+    function todayRhythmMarkerIndex(period, bounds, now) {
+        now = now || new Date();
+        if (!bounds || !bounds.start || !bounds.end) return null;
+        const t = now.getTime();
+        if (t < bounds.start.getTime() || t >= bounds.end.getTime()) return null;
+
+        if (period === 'day') {
+            const h = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+            if (h < 7) return 0;
+            if (h > 19) return 12; // 19:00 → último bucket (índice 12)
+            return h - 7;
+        }
+        if (period === 'week') {
+            const dayStart = startOfLocalDay(now);
+            const diff = Math.round((dayStart.getTime() - bounds.start.getTime()) / 86400000);
+            if (diff < 0 || diff > 4) return null; // fin de semana fuera del eje Lun–Vie
+            return diff;
+        }
+        if (period === 'month') {
+            const dim = new Date(bounds.start.getFullYear(), bounds.start.getMonth() + 1, 0).getDate();
+            const dayFrac = (now.getDate() - 1) +
+                (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / 86400;
+            return Math.min(dim - 1, Math.max(0, dayFrac));
+        }
+        if (period === 'year') {
+            const m = now.getMonth();
+            const dim = new Date(now.getFullYear(), m + 1, 0).getDate();
+            return m + (now.getDate() - 1) / dim;
+        }
+        if (period === 'historial') {
+            const y0 = bounds.start.getFullYear();
+            const y1 = Math.max(y0, bounds.end.getFullYear() - 1);
+            const y = now.getFullYear();
+            if (y < y0 || y > y1) return null;
+            return y - y0;
+        }
+        return null;
+    }
+
     function compactMoney(n) {
         const v = Number(n) || 0;
         if (v >= 1000000) return '$' + (v / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
@@ -1733,6 +1776,14 @@
         }
         function ptY(v) {
             return padT + plotH - ((Number(v) || 0) / yMax) * plotH;
+        }
+
+        const todayIdx = todayRhythmMarkerIndex(period, bounds);
+        let todayMark = '';
+        if (todayIdx != null && n > 0) {
+            const tx = ptX(Math.min(n - 1, Math.max(0, todayIdx)));
+            todayMark = '<line class="today-mark" x1="' + tx.toFixed(1) + '" y1="' + padT +
+                '" x2="' + tx.toFixed(1) + '" y2="' + baseY.toFixed(1) + '" />';
         }
 
         const gridSteps = [0, 0.25, 0.5, 0.75, 1];
@@ -1866,6 +1917,7 @@
             '<div class="cortes-chart-tip" hidden></div>' +
             '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
             defs + grid + yLabels +
+            todayMark +
             (hasData ? '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + esc(hatchId) + ')"/>' : '') +
             (showPrev && prevLine ? '<path class="line-prev" d="' + prevLine + '"/>' : '') +
             '<path class="line-cur" d="' + curLine + '"/>' +
