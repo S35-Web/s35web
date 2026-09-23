@@ -65,6 +65,16 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  const displayName = sub.charAt(0).toUpperCase() + sub.slice(1);
   const token = jwt.sign({ role: role, sub: sub }, jwtSecret, { expiresIn: '8h' });
-  res.status(200).json({ ok: true, token, user: { username: sub, role: role } });
+  res.status(200).json({
+    ok: true,
+    token,
+    user: {
+      id: sub,
+      username: sub,
+      name: displayName,
+      role: role
+    }
+  });
 };

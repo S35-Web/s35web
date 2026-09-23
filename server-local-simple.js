@@ -148,11 +148,12 @@ const server = http.createServer((req, res) => {
                     res.end(JSON.stringify({ ok: false, error: 'Credenciales inválidas' }));
                     return;
                 }
+                const displayName = sub.charAt(0).toUpperCase() + sub.slice(1);
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({
                     ok: true,
                     token: 'local-dev-token-' + role,
-                    user: { username: sub, role: role }
+                    user: { id: sub, username: sub, name: displayName, role: role }
                 }));
             } catch (e) {
                 res.writeHead(400, { 'Content-Type': 'application/json' });

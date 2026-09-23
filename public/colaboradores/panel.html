@@ -5383,17 +5383,24 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="/colaboradores-data.js"></script>
+    <script src="/colaboradores/roles.js?v=20260923-roles"></script>
     <script>
     const LOGIN_URL = '/colaboradores';
     function getToken() { return localStorage.getItem('s35_admin_token'); }
     if (!getToken()) window.location.replace(LOGIN_URL);
 
-    let panelUserName = 'admin';
+    const sessionUser = (window.S35Roles && window.S35Roles.readSessionUser)
+        ? window.S35Roles.readSessionUser()
+        : { id: 'admin', username: 'admin', name: 'Admin', role: 'admin' };
+    let panelUserName = sessionUser.name || sessionUser.username || 'admin';
     try {
-        const u = JSON.parse(localStorage.getItem('s35_admin_user') || '{}');
-        if (u.username) {
-            panelUserName = u.username;
-            document.getElementById('userChip').textContent = u.username;
+        const chip = document.getElementById('userChip');
+        if (chip) {
+            const roleLab = (window.S35Roles && window.S35Roles.roleLabel)
+                ? window.S35Roles.roleLabel(sessionUser.role)
+                : sessionUser.role;
+            chip.textContent = sessionUser.username + ' · ' + roleLab;
+            chip.title = 'Usuario: ' + sessionUser.username + ' · Rol: ' + roleLab;
         }
     } catch (_) {}
 
@@ -5412,6 +5419,13 @@
         const display = panelUserName.charAt(0).toUpperCase() + panelUserName.slice(1);
         document.getElementById('dashGreet').textContent = greetingForNow() + ', ' + display;
         document.getElementById('userAvatar').textContent = initialsFrom(panelUserName);
+        const avatar = document.getElementById('userAvatar');
+        if (avatar) {
+            const roleLab = (window.S35Roles && window.S35Roles.roleLabel)
+                ? window.S35Roles.roleLabel(sessionUser.role)
+                : sessionUser.role;
+            avatar.title = sessionUser.username + ' · ' + roleLab;
+        }
         const status = document.getElementById('dashStatus');
         if (status) status.textContent = 'Radar del día · ventas de este navegador.';
     }
@@ -5748,26 +5762,28 @@
     const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'clients', 'cobranza', 'promos', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
     const LEGACY_TO_PRODUCTS = { prices: true, catalog: true, formulas: true };
 
-    /* Roles / permisos — deben existir ANTES de showSection (evita TDZ en ROLE_PERMS). */
-    const ROLE_PERMS = {
-        admin: ['*'],
-        ventas: ['dashboard', 'venta', 'clients', 'cobranza', 'salesHistory', 'cortes', 'products', 'prices', 'materials']
-    };
-    let currentRole = 'admin';
+    /* Roles / permisos — catálogo en roles.js; admin = acceso total (*). */
+    let currentRole = (window.S35Roles && window.S35Roles.normalizeRole)
+        ? window.S35Roles.normalizeRole(sessionUser.role)
+        : 'admin';
     try {
-        const uRole = JSON.parse(localStorage.getItem('s35_admin_user') || '{}');
-        if (uRole.role) currentRole = String(uRole.role);
+        const roleOverride = localStorage.getItem('s35_role_override');
+        if (roleOverride && window.S35Roles && window.S35Roles.DEFS[roleOverride]) {
+            currentRole = roleOverride;
+        }
     } catch (_) {}
-    const roleOverride = localStorage.getItem('s35_role_override');
-    if (roleOverride && ROLE_PERMS[roleOverride]) currentRole = roleOverride;
 
     function canAccess(section) {
-        if (LEGACY_TO_PRODUCTS[section]) section = 'products';
-        const perms = ROLE_PERMS[currentRole] || ROLE_PERMS.admin;
-        return perms.indexOf('*') >= 0 || perms.indexOf(section) >= 0;
+        if (window.S35Roles && typeof window.S35Roles.canAccess === 'function') {
+            return window.S35Roles.canAccess(currentRole, section);
+        }
+        return true;
     }
     function canEditFormulas() {
-        return currentRole === 'admin' || (ROLE_PERMS[currentRole] || []).indexOf('*') >= 0;
+        if (window.S35Roles && typeof window.S35Roles.isFullAccess === 'function') {
+            return window.S35Roles.isFullAccess(currentRole);
+        }
+        return currentRole === 'admin';
     }
 
     let hubProductSlug = null;
@@ -8775,7 +8791,10 @@
         renderLotHistoryList();
     }
     function canDeletePurchaseTickets() {
-        return currentRole === 'admin' || (ROLE_PERMS[currentRole] || []).indexOf('*') >= 0;
+        if (window.S35Roles && typeof window.S35Roles.isFullAccess === 'function') {
+            return window.S35Roles.isFullAccess(currentRole);
+        }
+        return currentRole === 'admin';
     }
     function syncPurchaseTicketActionButtons() {
         const saveBtn = document.getElementById('purchaseTicketSave');
@@ -10023,7 +10042,12 @@
             }
         },
         role: currentRole,
-        canAccess: canAccess,
+        currentUser: sessionUser,
+        getCurrentUser: function () {
+            return (window.S35Roles && window.S35Roles.readSessionUser)
+                ? window.S35Roles.readSessionUser()
+                : sessionUser;
+        },
         getProducts: function () { return (data.products || []).slice(); },
         getMaterials: function () { return (inventory || []).slice(); },
         openProduct: function (slug) {
@@ -10050,7 +10074,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-cmdk"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-roles"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-cmdk"></script>
 </body>
 </html>

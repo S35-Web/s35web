@@ -636,11 +636,23 @@
         return '';
     }
 
+    function saleUserLabel(sale) {
+        if (window.S35Roles && typeof window.S35Roles.saleUserLabel === 'function') {
+            return window.S35Roles.saleUserLabel(sale);
+        }
+        if (!sale) return '';
+        if (sale.user && typeof sale.user === 'object') {
+            return String(sale.user.name || sale.user.username || '').trim();
+        }
+        return typeof sale.user === 'string' ? sale.user : '';
+    }
+
     function saleOriginLabel(sale) {
         const store = saleStoreName(sale);
         if (store) return store;
         if (isHistoricalImportSale(sale)) return 'Histórico';
-        return sale.user || 'POS';
+        const who = saleUserLabel(sale);
+        return who || 'POS';
     }
 
     function saleReceiptLabel(sale) {
@@ -693,6 +705,9 @@
                 ? '<div class="row"><span class="k">Sucursal</span><span class="v">' + esc(store) + '</span></div>'
                 : '') +
             '<div class="row"><span class="k">Cliente</span><span class="v">' + esc(saleClientLabel(sale)) + '</span></div>' +
+            (saleUserLabel(sale)
+                ? '<div class="row"><span class="k">Vendedor</span><span class="v">' + esc(saleUserLabel(sale)) + '</span></div>'
+                : '') +
             '<div class="row"><span class="k">Pago</span><span class="v">' + esc(payLabel(sale.paymentMethod)) + '</span></div>' +
             '<div class="row"><span class="k">Facturación</span><span class="v">' + esc(billLabel(sale.billing)) + '</span></div>' +
             (saleReceiptId(sale)
@@ -709,6 +724,10 @@
     }
 
     function isAdminRole() {
+        if (window.S35Roles && typeof window.S35Roles.isFullAccess === 'function') {
+            const role = (window.S35PanelAPI && window.S35PanelAPI.role) || 'admin';
+            return window.S35Roles.isFullAccess(role);
+        }
         return !!(window.S35PanelAPI && window.S35PanelAPI.role === 'admin');
     }
 
@@ -4424,10 +4443,25 @@
             type: normalizeClientType(client.type || client.kind)
         } : null;
 
-        let userName = 'admin';
+        let soldBy = { id: 'admin', username: 'admin', name: 'Admin', role: 'admin' };
         try {
-            const u = JSON.parse(localStorage.getItem('s35_admin_user') || '{}');
-            if (u.username) userName = u.username;
+            if (window.S35Roles && typeof window.S35Roles.userSnapshotForSale === 'function') {
+                soldBy = window.S35Roles.userSnapshotForSale();
+            } else if (window.S35PanelAPI && window.S35PanelAPI.getCurrentUser) {
+                soldBy = window.S35Roles
+                    ? window.S35Roles.userSnapshotForSale(window.S35PanelAPI.getCurrentUser())
+                    : window.S35PanelAPI.getCurrentUser();
+            } else {
+                const u = JSON.parse(localStorage.getItem('s35_admin_user') || '{}');
+                if (u.username) {
+                    soldBy = {
+                        id: u.id || u.username,
+                        username: u.username,
+                        name: u.name || u.username,
+                        role: u.role || 'admin'
+                    };
+                }
+            }
         } catch (_) {}
 
         const ticket = {
@@ -4463,7 +4497,9 @@
                 return row;
             }),
             total: cartTotal(),
-            user: userName
+            user: soldBy,
+            userId: soldBy.id,
+            userName: soldBy.name || soldBy.username
         };
         if (appliedPromoCode) ticket.promoCode = appliedPromoCode;
         ticket.note = {
