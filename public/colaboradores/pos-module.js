@@ -4429,7 +4429,7 @@
                         '<button type="button" class="qty-btn" data-inc="' + idx + '" aria-label="Más">+</button>' +
                         '<button type="button" class="btn ghost danger" data-rm="' + idx + '" style="margin-left:auto;height:28px;padding:0 8px">Quitar</button>' +
                         '</div>');
-                return '<div class="' + itemClass + '">' +
+                return '<div class="' + itemClass + '" data-product="' + esc(it.product) + '">' +
                     '<div class="ci-name">' + esc(it.name) + promoBadge + '</div>' +
                     '<div class="ci-line"' + (priceLocked ? '' : ' data-edit-price="' + idx + '" title="Editar precio unitario"') + '>' +
                     money(it.qty * it.price) + '</div>' +
@@ -5016,6 +5016,36 @@
         }
     }
 
+    function flashAddedProduct(slug) {
+        const safe = String(slug || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        requestAnimationFrame(function () {
+            const card = document.querySelector('.product-card[data-add="' + safe + '"]');
+            if (card) {
+                card.classList.remove('is-added-flash');
+                void card.offsetWidth;
+                card.classList.add('is-added-flash');
+            }
+            const lines = document.querySelectorAll('.cart-item[data-product="' + safe + '"]');
+            let target = null;
+            lines.forEach(function (el) {
+                if (!el.classList.contains('is-promo-auto')) target = el;
+            });
+            if (!target && lines.length) target = lines[0];
+            if (target) {
+                target.classList.remove('is-just-added');
+                void target.offsetWidth;
+                target.classList.add('is-just-added');
+                if (typeof target.scrollIntoView === 'function') {
+                    target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+                clearTimeout(flashAddedProduct._t);
+                flashAddedProduct._t = setTimeout(function () {
+                    target.classList.remove('is-just-added');
+                }, 520);
+            }
+        });
+    }
+
     function addToCart(slug) {
         const r = recipeBySlug(slug);
         if (!r) return;
@@ -5040,7 +5070,7 @@
         applyCartTierPrices();
         renderCart();
         renderProducts();
-        toast('Agregado: ' + r.name);
+        flashAddedProduct(slug);
     }
 
     function openPromoModal() {
