@@ -4250,6 +4250,7 @@
             const fam = recipeFamily(r);
             return '<button type="button" class="product-card" data-add="' + esc(r.product) + '">' +
                 img +
+                '<div class="pc-body">' +
                 '<div class="fam">' + (fam ? familyDot(fam) : '') + esc(fam || PRODUCT_UNCATEGORIZED_LABEL) + '</div>' +
                 '<div class="name">' + esc(r.name) + '</div>' +
                 '<div class="meta">' +
@@ -4259,6 +4260,7 @@
                 '<div class="muted product-code">' +
                 '<span class="code">' + esc(code) + '</span>' +
                 (pack ? '<span class="pack">' + esc(pack) + '</span>' : '') +
+                '</div>' +
                 '</div>' +
                 '</button>';
         }).join('');
