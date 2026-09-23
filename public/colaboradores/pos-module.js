@@ -2030,6 +2030,11 @@
                     '" cy="' + ptY(cur.buckets[i].amount).toFixed(1) + '" r="3.5"' +
                     (lineColor ? ' style="fill:' + esc(lineColor) + '"' : '') +
                     ' />';
+                if (showPrev) {
+                    const py = ptY((prev.buckets[i] && prev.buckets[i].amount) || 0);
+                    dots += '<circle class="dot-cur dot-prev" data-idx="' + i + '" cx="' + x.toFixed(1) +
+                        '" cy="' + py.toFixed(1) + '" r="3" style="fill:#a3a3a3"/>';
+                }
             }
         }
         if (multiCity && seriesBuckets) {
