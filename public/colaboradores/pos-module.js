@@ -4213,6 +4213,138 @@
         return out.slice(0, limit);
     }
 
+    function summarizeSalesSlice(list) {
+        list = list || [];
+        let facturado = 0;
+        let sinFacturar = 0;
+        const byCity = {};
+        SALE_CITIES.forEach(function (c) { byCity[c.id] = { city: c.id, label: c.label, total: 0, tickets: 0 }; });
+        list.forEach(function (s) {
+            const total = Number(s.total) || 0;
+            const bill = s.billing || 'sin_facturar';
+            if (bill === 'facturado') facturado += total;
+            else sinFacturar += total;
+            const cid = saleCity(s) || 'culiacan';
+            if (!byCity[cid]) byCity[cid] = { city: cid, label: cityLabel(cid), total: 0, tickets: 0 };
+            byCity[cid].total += total;
+            byCity[cid].tickets += 1;
+        });
+        return {
+            total: Math.round(sumTotals(list) * 100) / 100,
+            tickets: list.length,
+            facturado: Math.round(facturado * 100) / 100,
+            sinFacturar: Math.round(sinFacturar * 100) / 100,
+            byCity: Object.keys(byCity).map(function (k) {
+                const row = byCity[k];
+                return {
+                    city: row.city,
+                    label: row.label,
+                    total: Math.round(row.total * 100) / 100,
+                    tickets: row.tickets
+                };
+            }).filter(function (r) { return r.tickets > 0 || r.total > 0; })
+        };
+    }
+
+    function topProductsInSales(list, limit) {
+        const map = {};
+        (list || []).forEach(function (s) {
+            (s.items || []).forEach(function (it) {
+                const slug = it.product || it.slug || it.name || 'otro';
+                if (!map[slug]) map[slug] = { slug: slug, name: it.name || slug, amount: 0, units: 0 };
+                map[slug].amount += Number(it.lineTotal != null ? it.lineTotal : (it.qty * it.price)) || 0;
+                map[slug].units += Number(it.qty) || 0;
+            });
+        });
+        return Object.keys(map).map(function (k) { return map[k]; })
+            .sort(function (a, b) { return b.amount - a.amount; })
+            .slice(0, limit || 5)
+            .map(function (r) {
+                return {
+                    slug: r.slug,
+                    name: r.name,
+                    amount: Math.round(r.amount * 100) / 100,
+                    units: Math.round(r.units * 100) / 100
+                };
+            });
+    }
+
+    function topClientsInSales(list, limit) {
+        const map = {};
+        (list || []).forEach(function (s) {
+            const id = s.clientId || (s.client && s.client.id) || saleClientLabel(s) || 'mostrador';
+            const name = saleClientLabel(s) || 'Mostrador';
+            if (!map[id]) map[id] = { clientId: id === 'mostrador' ? null : id, name: name, amount: 0, tickets: 0 };
+            map[id].amount += Number(s.total) || 0;
+            map[id].tickets += 1;
+        });
+        return Object.keys(map).map(function (k) { return map[k]; })
+            .sort(function (a, b) { return b.amount - a.amount; })
+            .slice(0, limit || 5)
+            .map(function (r) {
+                return {
+                    clientId: r.clientId,
+                    name: r.name,
+                    amount: Math.round(r.amount * 100) / 100,
+                    tickets: r.tickets
+                };
+            });
+    }
+
+    /** Contexto compacto para el copiloto (no envía el histórico crudo). */
+    function buildCopilotContext() {
+        const analytics = salesForAnalytics();
+        const todayB = periodBounds('day', 0);
+        const ydayB = periodBounds('day', -1);
+        const monthB = periodBounds('month', 0);
+        const todayList = salesInRange(analytics, todayB.start, todayB.end);
+        const ydayList = salesInRange(analytics, ydayB.start, ydayB.end);
+        const monthList = salesInRange(analytics, monthB.start, monthB.end);
+        const today = summarizeSalesSlice(todayList);
+        const yesterday = summarizeSalesSlice(ydayList);
+        const month = summarizeSalesSlice(monthList);
+        const movers = (typeof computeDashMovers === 'function' ? computeDashMovers(3) : []).map(function (m) {
+            return { slug: m.slug, name: m.name, delta: m.delta, pct: m.pct };
+        });
+        const attention = [];
+        try {
+            if (window.S35PanelAPI && typeof window.S35PanelAPI.getLowStockMaterials === 'function') {
+                (window.S35PanelAPI.getLowStockMaterials() || []).slice(0, 5).forEach(function (m) {
+                    attention.push({
+                        type: 'stock',
+                        name: m.name || m.id,
+                        meta: 'stock ' + (m.stock != null ? m.stock : '?')
+                    });
+                });
+            }
+        } catch (_) {}
+        (typeof computeDashStaleProducts === 'function' ? computeDashStaleProducts(3) : []).forEach(function (p) {
+            attention.push({ type: 'stale', name: p.name, slug: p.slug });
+        });
+        return {
+            generatedAt: new Date().toISOString(),
+            source: 'navegador_actual',
+            note: 'Totales = histórico importado en este navegador + ventas POS locales.',
+            catalog: {
+                clients: clients.length,
+                historicalTickets: historicalSales.length,
+                localPosTickets: sales.length
+            },
+            today: today,
+            yesterday: yesterday,
+            month: month,
+            deltaTodayVsYesterday: {
+                amount: Math.round((today.total - yesterday.total) * 100) / 100,
+                tickets: today.tickets - yesterday.tickets
+            },
+            topProductsMonth: topProductsInSales(monthList, 5),
+            topClientsMonth: topClientsInSales(monthList, 5),
+            movers7d: movers,
+            attention: attention.slice(0, 8),
+            cities: SALE_CITIES.map(function (c) { return { id: c.id, label: c.label, short: c.short }; })
+        };
+    }
+
     function renderDashboardRadar() {
         const salesEl = document.getElementById('dashSalesToday');
         if (!salesEl) return;
@@ -7477,6 +7609,7 @@
             setCortesCityFilter: setCortesCityFilter,
             openCortesPeriod: openCortesPeriod,
             openCortesView: openCortesView,
+            buildCopilotContext: buildCopilotContext,
             renderDashboardRadar: renderDashboardRadar,
             importHistoricalSales: importHistoricalSales,
             renderCobranza: renderCobranza,

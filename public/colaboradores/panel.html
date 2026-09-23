@@ -680,6 +680,115 @@
             color: var(--muted);
         }
 
+        .copilot-briefing {
+            margin: 12px 0 0;
+            padding: 12px 14px;
+            border-left: 3px solid var(--border-strong);
+            background: var(--bg-soft);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            font-size: 14px;
+            line-height: 1.45;
+            color: var(--text);
+            white-space: pre-wrap;
+        }
+        .copilot-panel {
+            margin: 0 0 22px;
+            padding: 16px 16px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+        }
+        .copilot-panel[hidden] { display: none !important; }
+        .copilot-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .copilot-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 650;
+            letter-spacing: -0.02em;
+        }
+        .copilot-sub { margin: 4px 0 0; font-size: 12px; }
+        .copilot-status {
+            font-size: 12px;
+            color: var(--muted);
+            min-height: 1em;
+        }
+        .copilot-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .copilot-chip {
+            border: 1px solid var(--border);
+            background: var(--bg-soft);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .copilot-chip:hover { background: var(--hover); }
+        .copilot-messages {
+            max-height: 280px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 4px 0 12px;
+        }
+        .copilot-empty {
+            padding: 18px 8px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .copilot-bubble {
+            max-width: 92%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .copilot-bubble.is-user {
+            align-self: flex-end;
+            background: var(--text);
+            color: var(--bg);
+        }
+        .copilot-bubble.is-assistant {
+            align-self: flex-start;
+            background: var(--bg-soft);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .copilot-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .copilot-form input {
+            flex: 1;
+            height: 38px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 12px;
+            font-size: 14px;
+            min-width: 0;
+        }
+        .copilot-form input:focus {
+            outline: none;
+            border-color: var(--border-strong);
+        }
+
         .quick-actions {
             display: flex;
             flex-wrap: wrap;
@@ -4168,6 +4277,7 @@
                     <div class="dash-hero">
                         <h1 class="dash-greet" id="dashGreet">Buenas</h1>
                         <p class="dash-status" id="dashStatus">Radar del día · ventas de este navegador.</p>
+                        <p class="copilot-briefing" id="copilotBriefing" hidden></p>
                     </div>
 
                     <div class="dash-radar" id="dashRadar">
@@ -4207,6 +4317,29 @@
                             </div>
                             <div class="dash-list" id="dashAttention"></div>
                         </div>
+                    </div>
+
+                    <div class="copilot-panel" id="copilotPanel" hidden>
+                        <div class="copilot-head">
+                            <div>
+                                <h2 class="copilot-title">Copiloto S35</h2>
+                                <p class="copilot-sub muted">Pregunta por ventas, ciudades, clientes o pídele abrir un corte</p>
+                            </div>
+                            <span class="copilot-status" id="copilotStatus" aria-live="polite"></span>
+                        </div>
+                        <div class="copilot-chips" id="copilotChips">
+                            <button type="button" class="copilot-chip" data-copilot-chip="¿Cómo vamos hoy por ciudad?">Hoy por ciudad</button>
+                            <button type="button" class="copilot-chip" data-copilot-chip="¿Cuáles son los productos top del mes?">Top productos mes</button>
+                            <button type="button" class="copilot-chip" data-copilot-chip="Muéstrame alertas de atención o stock bajo">Alertas</button>
+                            <button type="button" class="copilot-chip" data-copilot-chip="Ábreme el corte de hoy en Mazatlán">Corte hoy MZT</button>
+                        </div>
+                        <div class="copilot-messages" id="copilotMessages">
+                            <div class="copilot-empty">Escribe una pregunta o usa un atajo. Solo admin.</div>
+                        </div>
+                        <form class="copilot-form" id="copilotForm">
+                            <input id="copilotInput" type="text" autocomplete="off" placeholder="Ej. ¿Cómo va Culiacán este mes?" maxlength="500">
+                            <button type="submit" class="btn primary" id="copilotSend">Enviar</button>
+                        </form>
                     </div>
 
                     <div class="quick-actions">
@@ -10016,6 +10149,7 @@
                 window.S35PosModule.renderProductSalesAnalytics(hubProductSlug);
             }
             refreshDashboardRadar();
+            if (typeof window.__s35CopilotBoot === 'function') window.__s35CopilotBoot();
         },
         getLowStockMaterials: function () {
             return typeof lowStockMaterials === 'function' ? lowStockMaterials() : [];
@@ -10075,7 +10209,8 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-corte-cmd"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-copilot"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-corte-cmd"></script>
+    <script src="/colaboradores/s35-copilot.js?v=20260923-copilot"></script>
 </body>
 </html>
