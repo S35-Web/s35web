@@ -5797,6 +5797,31 @@
         return PLANT_ID_ALIASES[key] || key;
     }
     let plantIdsRemapped = false;
+    /** Conteo de sacos, 22 sep 2026. Se aplica una vez para no pisar consumos posteriores. */
+    const SACK_COUNT_FLAG = 's35_plant_sack_count_v1';
+    const SACK_COUNT = {
+        'saco-rafia-waxtard': 15000,
+        'saco-rafia-general': 10000,
+        'saco-rafia-pastablock': 15000
+    };
+    function applySackCount(saved) {
+        let pending = true;
+        try { pending = !localStorage.getItem(SACK_COUNT_FLAG); } catch (_) {}
+        if (!pending) return false;
+        const ids = Object.keys(SACK_COUNT);
+        const ready = ids.every(function (id) {
+            return saved.some(function (m) { return m.id === id; });
+        });
+        if (!ready) return false;
+        saved.forEach(function (m) {
+            if (!Object.prototype.hasOwnProperty.call(SACK_COUNT, m.id)) return;
+            const qty = SACK_COUNT[m.id];
+            m.stock = qty;
+            if ((Number(m.reserved) || 0) > qty) m.reserved = qty;
+        });
+        try { localStorage.setItem(SACK_COUNT_FLAG, new Date().toISOString()); } catch (_) {}
+        return true;
+    }
     let persistNormalized = false;
     function loadInventory() {
         const seed = seedInventory();
@@ -5843,10 +5868,12 @@
                 try { forceCosts = !localStorage.getItem(PLANT_COSTS_FLAG); } catch (_) {}
                 if (applySeedUnitCosts(saved, seed, forceCosts)) persistNormalized = true;
                 try { localStorage.setItem(PLANT_COSTS_FLAG, new Date().toISOString()); } catch (_) {}
+                if (applySackCount(saved)) persistNormalized = true;
                 return saved;
             }
         } catch (_) {}
         try { localStorage.setItem(PLANT_COSTS_FLAG, new Date().toISOString()); } catch (_) {}
+        if (applySackCount(seed)) persistNormalized = true;
         return seed;
     }
     function saveInventory(list) {
@@ -6794,6 +6821,7 @@
     function packagingId(recipe) {
         if (recipe.kind === 'liquido') return 'cubeta-19l';
         if (String(recipe.product || '').indexOf('waxtard') === 0) return 'saco-rafia-waxtard';
+        if (String(recipe.product || '') === 'pegaxpress-block') return 'saco-rafia-pastablock';
         return 'saco-rafia-general';
     }
     /**
@@ -7253,6 +7281,29 @@
         };
         return syncActiveVersionToRoot(f);
     }
+    function pointPastablockSack(f) {
+        if (!f) return false;
+        const next = 'saco-rafia-pastablock';
+        let changed = false;
+        function swapList(items) {
+            (items || []).forEach(function (it) {
+                if (!it || String(it.role || '') !== 'Empaque') return;
+                if (it.plantId === 'saco-rafia-general') {
+                    it.plantId = next;
+                    changed = true;
+                }
+            });
+        }
+        if (!f.packagingPlantId || f.packagingPlantId === 'saco-rafia-general') {
+            if (f.packagingPlantId !== next) {
+                f.packagingPlantId = next;
+                changed = true;
+            }
+        }
+        swapList(f.items);
+        (f.versions || []).forEach(function (ver) { swapList(ver.items); });
+        return changed;
+    }
     function loadFormulas() {
         const map = {};
         recipes.forEach(function (r) { map[r.product] = seedFormula(r); });
@@ -7309,6 +7360,7 @@
         } catch (_) {}
         Object.keys(map).forEach(function (slug) {
             ensureVersions(map[slug]);
+            if (slug === 'pegaxpress-block' && pointPastablockSack(map[slug])) plantIdsRemapped = true;
             syncActiveVersionToRoot(map[slug]);
             const recipe = recipes.filter(function (r) { return r.product === slug; })[0];
             ensureFormulaPackagingLine(map[slug], recipe);

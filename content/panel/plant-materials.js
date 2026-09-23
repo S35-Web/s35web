@@ -37,6 +37,7 @@ module.exports = [
   { id: "resina-semitski", name: "Resina semitski", unit: "Kg", minStock: 25, category: "polymer", labSlug: "polimero-redispersable-vae", unitCost: 275.00 },
   { id: "saco-rafia-waxtard", name: "Saco rafia waxtard impreso", unit: "Pza", minStock: 5000, category: "packaging", labSlug: null },
   { id: "saco-rafia-general", name: "Saco rafia general", unit: "Pza", minStock: 5000, category: "packaging", labSlug: null },
+  { id: "saco-rafia-pastablock", name: "Saco rafia pastablock impreso", unit: "Pza", minStock: 5000, category: "packaging", labSlug: null },
   { id: "yeso-maximo", name: "Yeso maximo", unit: "", minStock: 0, category: "aglutinante", labSlug: "yeso" },
   { id: "yeso-sayro", name: "Yeso sayro", unit: "Kg", minStock: 500, category: "aglutinante", labSlug: "yeso" },
 ];

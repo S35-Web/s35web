@@ -313,7 +313,7 @@ module.exports = {
   'pegaxpress-block': {
     mode: 'plant-lot',
     packSizeKg: 30,
-    packagingPlantId: 'saco-rafia-general',
+    packagingPlantId: 'saco-rafia-pastablock',
     note: 'Lote de planta FT-PR-006. V1 Pegaxpress Block (775 kg → ~25.83 sacos de 30 kg). ARENA → arena-cribada-fina (mejor equivalente genérico; labSlug arena-silicea-graduada). TALCO 100 → marmolina-talco-100. Saco canónico 30 kg (no 25).',
     defaultVersionId: 'v1',
     versions: [
