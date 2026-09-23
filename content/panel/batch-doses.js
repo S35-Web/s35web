@@ -12,7 +12,7 @@ module.exports = {
     mode: 'plant-lot',
     packSizeKg: 25,
     packagingPlantId: 'saco-rafia-waxtard',
-    note: 'Lote de planta FT-PR-001. Versiones alternativas según disponibilidad de marmolina.',
+    note: 'Lote de planta FT-PR-001. V1 con marmolina fina y gruesa.',
     defaultVersionId: 'v1',
     versions: [
       {
@@ -24,24 +24,6 @@ module.exports = {
         items: [
           { plantId: 'marmolina-gruesa', amount: 250, unit: 'Kg', role: 'Agregado' },
           { plantId: 'marmolina-fina', amount: 100, unit: 'Kg', role: 'Agregado' },
-          { plantId: 'marmolina-talco-100', amount: 200, unit: 'Kg', role: 'Carga' },
-          { plantId: 'cemento-portland-gris', amount: 50, unit: 'Kg', role: 'Cementante' },
-          { plantId: 'mortero', amount: 50, unit: 'Kg', role: 'Cementante' },
-          { plantId: 'calidra', amount: 100, unit: 'Kg', role: 'Cementante' },
-          { plantId: 'resina-rdp740h', amount: 1, unit: 'Kg', role: 'Polímero' },
-          { plantId: 'resina-semitski', amount: 1, unit: 'Kg', role: 'Polímero' },
-          { plantId: 'celulosa-hpmc', amount: 1, unit: 'Kg', role: 'Celulosa' },
-          { plantId: 'estearato', amount: 2.5, unit: 'Kg', role: 'Aditivo' },
-        ],
-      },
-      {
-        id: 'v2',
-        name: 'V2',
-        label: 'Marmolina estándar (350 kg)',
-        yieldMin: 29,
-        yieldMax: 31,
-        items: [
-          { plantId: 'marmolina-estandar', amount: 350, unit: 'Kg', role: 'Agregado' },
           { plantId: 'marmolina-talco-100', amount: 200, unit: 'Kg', role: 'Carga' },
           { plantId: 'cemento-portland-gris', amount: 50, unit: 'Kg', role: 'Cementante' },
           { plantId: 'mortero', amount: 50, unit: 'Kg', role: 'Cementante' },
@@ -313,7 +295,7 @@ module.exports = {
   'pegaxpress-block': {
     mode: 'plant-lot',
     packSizeKg: 30,
-    packagingPlantId: 'saco-rafia-general',
+    packagingPlantId: 'saco-rafia-pastablock',
     note: 'Lote de planta FT-PR-006. V1 Pegaxpress Block (775 kg → ~25.83 sacos de 30 kg). ARENA → arena-cribada-fina (mejor equivalente genérico; labSlug arena-silicea-graduada). TALCO 100 → marmolina-talco-100. Saco canónico 30 kg (no 25).',
     defaultVersionId: 'v1',
     versions: [

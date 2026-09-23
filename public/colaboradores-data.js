@@ -1223,11 +1223,12 @@ window.S35_PANEL_DATA = {
     {
       "id": "alcohol-polivinilico",
       "name": "Alcohol polivinilico",
-      "unit": "",
+      "unit": "Kg",
       "minStock": 0,
       "category": "polymer",
       "labSlug": null,
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 180
     },
     {
       "id": "antiespumante",
@@ -1236,7 +1237,8 @@ window.S35_PANEL_DATA = {
       "minStock": 0,
       "category": "chemical",
       "labSlug": null,
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 0
     },
     {
       "id": "arbocel-celulosa",
@@ -1245,7 +1247,8 @@ window.S35_PANEL_DATA = {
       "minStock": 20,
       "category": "cellulose",
       "labSlug": null,
-      "unitCost": 146.8
+      "unitCost": 146.8,
+      "stock": 75
     },
     {
       "id": "arena-cribada-fina",
@@ -1254,7 +1257,8 @@ window.S35_PANEL_DATA = {
       "minStock": 1000,
       "category": "mineral",
       "labSlug": "arena-silicea-graduada",
-      "unitCost": 0.4
+      "unitCost": 0.4,
+      "stock": 7000
     },
     {
       "id": "arena-cribada-gruesa",
@@ -1263,7 +1267,8 @@ window.S35_PANEL_DATA = {
       "minStock": 2000,
       "category": "mineral",
       "labSlug": "arena-de-rio",
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 3500
     },
     {
       "id": "arena-deshidratada",
@@ -1272,7 +1277,8 @@ window.S35_PANEL_DATA = {
       "minStock": 2000,
       "category": "mineral",
       "labSlug": "arena-silicea-graduada",
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 0
     },
     {
       "id": "calidra",
@@ -1281,7 +1287,8 @@ window.S35_PANEL_DATA = {
       "minStock": 500,
       "category": "aglutinante",
       "labSlug": "cal",
-      "unitCost": 3.52
+      "unitCost": 3.52,
+      "stock": 5500
     },
     {
       "id": "cemento-portland-gris",
@@ -1290,7 +1297,8 @@ window.S35_PANEL_DATA = {
       "minStock": 1000,
       "category": "aglutinante",
       "labSlug": "cemento-gris",
-      "unitCost": 4.2
+      "unitCost": 4.2,
+      "stock": 1300
     },
     {
       "id": "cemento-portland-blanco",
@@ -1299,7 +1307,8 @@ window.S35_PANEL_DATA = {
       "minStock": 250,
       "category": "aglutinante",
       "labSlug": "cemento-blanco",
-      "unitCost": 9.31
+      "unitCost": 9.31,
+      "stock": 0
     },
     {
       "id": "cubeta-19l",
@@ -1308,7 +1317,8 @@ window.S35_PANEL_DATA = {
       "minStock": 100,
       "category": "packaging",
       "labSlug": null,
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 87
     },
     {
       "id": "estearato",
@@ -1317,16 +1327,18 @@ window.S35_PANEL_DATA = {
       "minStock": 20,
       "category": "chemical",
       "labSlug": null,
-      "unitCost": 47.2
+      "unitCost": 47.2,
+      "stock": 0
     },
     {
       "id": "formol",
       "name": "Formol",
-      "unit": "",
+      "unit": "Kg",
       "minStock": 0,
       "category": "chemical",
       "labSlug": null,
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 174
     },
     {
       "id": "fibra-de-polipropileno",
@@ -1335,7 +1347,8 @@ window.S35_PANEL_DATA = {
       "minStock": 20,
       "category": "fiber",
       "labSlug": null,
-      "unitCost": 100
+      "unitCost": 100,
+      "stock": 15
     },
     {
       "id": "jal-cribado",
@@ -1344,7 +1357,8 @@ window.S35_PANEL_DATA = {
       "minStock": 500,
       "category": "mineral",
       "labSlug": "jal-pumita",
-      "unitCost": 0.5
+      "unitCost": 0.5,
+      "stock": 12160
     },
     {
       "id": "celulosa-hpmc",
@@ -1353,7 +1367,8 @@ window.S35_PANEL_DATA = {
       "minStock": 60,
       "category": "cellulose",
       "labSlug": "celulosa-hpmc",
-      "unitCost": 146.8
+      "unitCost": 146.8,
+      "stock": 200
     },
     {
       "id": "marmolina-gruesa",
@@ -1362,16 +1377,8 @@ window.S35_PANEL_DATA = {
       "minStock": 1000,
       "category": "mineral",
       "labSlug": "marmolina-fina",
-      "unitCost": 1.53
-    },
-    {
-      "id": "marmolina-estandar",
-      "name": "Marmolina estandar",
-      "unit": "Kg",
-      "minStock": 1000,
-      "category": "mineral",
-      "labSlug": "marmolina-fina",
-      "unitCost": 0
+      "unitCost": 1.53,
+      "stock": 24000
     },
     {
       "id": "marmolina-talco-100",
@@ -1380,7 +1387,8 @@ window.S35_PANEL_DATA = {
       "minStock": 1000,
       "category": "mineral",
       "labSlug": "carbonato-de-calcio",
-      "unitCost": 1.59
+      "unitCost": 1.59,
+      "stock": 32000
     },
     {
       "id": "marmolina-talco-200",
@@ -1389,7 +1397,8 @@ window.S35_PANEL_DATA = {
       "minStock": 4000,
       "category": "mineral",
       "labSlug": "carbonato-de-calcio",
-      "unitCost": 1.83
+      "unitCost": 1.83,
+      "stock": 5300
     },
     {
       "id": "marmolina-talco-300",
@@ -1398,7 +1407,8 @@ window.S35_PANEL_DATA = {
       "minStock": 2000,
       "category": "mineral",
       "labSlug": "carbonato-de-calcio",
-      "unitCost": 2.13
+      "unitCost": 2.13,
+      "stock": 0
     },
     {
       "id": "marmolina-fina",
@@ -1407,7 +1417,8 @@ window.S35_PANEL_DATA = {
       "minStock": 1000,
       "category": "mineral",
       "labSlug": "marmolina-fina",
-      "unitCost": 1.59
+      "unitCost": 1.59,
+      "stock": 0
     },
     {
       "id": "mortero",
@@ -1416,7 +1427,8 @@ window.S35_PANEL_DATA = {
       "minStock": 200,
       "category": "aglutinante",
       "labSlug": null,
-      "unitCost": 3.79
+      "unitCost": 3.79,
+      "stock": 0
     },
     {
       "id": "quimex-95",
@@ -1425,7 +1437,8 @@ window.S35_PANEL_DATA = {
       "minStock": 0,
       "category": "chemical",
       "labSlug": null,
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 0
     },
     {
       "id": "resina-aprapole-p150",
@@ -1434,7 +1447,8 @@ window.S35_PANEL_DATA = {
       "minStock": 0,
       "category": "polymer",
       "labSlug": "polimero-redispersable-vae",
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 0
     },
     {
       "id": "resina-dlp-2001",
@@ -1443,7 +1457,8 @@ window.S35_PANEL_DATA = {
       "minStock": 0,
       "category": "polymer",
       "labSlug": "polimero-redispersable-vae",
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 0
     },
     {
       "id": "resina-rdp740h",
@@ -1452,7 +1467,8 @@ window.S35_PANEL_DATA = {
       "minStock": 125,
       "category": "polymer",
       "labSlug": "polimero-redispersable-vae",
-      "unitCost": 61.75
+      "unitCost": 61.75,
+      "stock": 250
     },
     {
       "id": "resina-semitski",
@@ -1461,7 +1477,8 @@ window.S35_PANEL_DATA = {
       "minStock": 25,
       "category": "polymer",
       "labSlug": "polimero-redispersable-vae",
-      "unitCost": 275
+      "unitCost": 275,
+      "stock": 25
     },
     {
       "id": "saco-rafia-waxtard",
@@ -1470,7 +1487,8 @@ window.S35_PANEL_DATA = {
       "minStock": 5000,
       "category": "packaging",
       "labSlug": null,
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 15000
     },
     {
       "id": "saco-rafia-general",
@@ -1479,7 +1497,18 @@ window.S35_PANEL_DATA = {
       "minStock": 5000,
       "category": "packaging",
       "labSlug": null,
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 10000
+    },
+    {
+      "id": "saco-rafia-pastablock",
+      "name": "Saco rafia pastablock impreso",
+      "unit": "Pza",
+      "minStock": 5000,
+      "category": "packaging",
+      "labSlug": null,
+      "unitCost": 0,
+      "stock": 15000
     },
     {
       "id": "yeso-maximo",
@@ -1488,7 +1517,8 @@ window.S35_PANEL_DATA = {
       "minStock": 0,
       "category": "aglutinante",
       "labSlug": "yeso",
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 0
     },
     {
       "id": "yeso-sayro",
@@ -1497,7 +1527,8 @@ window.S35_PANEL_DATA = {
       "minStock": 500,
       "category": "aglutinante",
       "labSlug": "yeso",
-      "unitCost": 0
+      "unitCost": 0,
+      "stock": 2160
     }
   ],
   "recipes": [
@@ -1574,7 +1605,7 @@ window.S35_PANEL_DATA = {
         "mode": "plant-lot",
         "packSizeKg": 25,
         "packagingPlantId": "saco-rafia-waxtard",
-        "note": "Lote de planta FT-PR-001. Versiones alternativas según disponibilidad de marmolina.",
+        "note": "Lote de planta FT-PR-001. V1 con marmolina fina y gruesa.",
         "defaultVersionId": "v1",
         "versions": [
           {
@@ -1595,71 +1626,6 @@ window.S35_PANEL_DATA = {
               {
                 "plantId": "marmolina-fina",
                 "amount": 100,
-                "unit": "Kg",
-                "role": "Agregado"
-              },
-              {
-                "plantId": "marmolina-talco-100",
-                "amount": 200,
-                "unit": "Kg",
-                "role": "Carga"
-              },
-              {
-                "plantId": "cemento-portland-gris",
-                "amount": 50,
-                "unit": "Kg",
-                "role": "Cementante"
-              },
-              {
-                "plantId": "mortero",
-                "amount": 50,
-                "unit": "Kg",
-                "role": "Cementante"
-              },
-              {
-                "plantId": "calidra",
-                "amount": 100,
-                "unit": "Kg",
-                "role": "Cementante"
-              },
-              {
-                "plantId": "resina-rdp740h",
-                "amount": 1,
-                "unit": "Kg",
-                "role": "Polímero"
-              },
-              {
-                "plantId": "resina-semitski",
-                "amount": 1,
-                "unit": "Kg",
-                "role": "Polímero"
-              },
-              {
-                "plantId": "celulosa-hpmc",
-                "amount": 1,
-                "unit": "Kg",
-                "role": "Celulosa"
-              },
-              {
-                "plantId": "estearato",
-                "amount": 2.5,
-                "unit": "Kg",
-                "role": "Aditivo"
-              }
-            ]
-          },
-          {
-            "id": "v2",
-            "name": "V2",
-            "label": "Marmolina estándar (350 kg)",
-            "yieldMin": 29,
-            "yieldMax": 31,
-            "yieldTheoretical": 30.22,
-            "totalKg": 755.5,
-            "items": [
-              {
-                "plantId": "marmolina-estandar",
-                "amount": 350,
                 "unit": "Kg",
                 "role": "Agregado"
               },
@@ -1841,12 +1807,6 @@ window.S35_PANEL_DATA = {
           "unit": "Kg",
           "role": "Aditivo",
           "amount": 2.5
-        },
-        {
-          "plantId": "marmolina-estandar",
-          "unit": "Kg",
-          "role": "Agregado",
-          "amount": 350
         },
         {
           "plantId": "cemento-portland-blanco",
@@ -3940,7 +3900,7 @@ window.S35_PANEL_DATA = {
       "batchDose": {
         "mode": "plant-lot",
         "packSizeKg": 30,
-        "packagingPlantId": "saco-rafia-general",
+        "packagingPlantId": "saco-rafia-pastablock",
         "note": "Lote de planta FT-PR-006. V1 Pegaxpress Block (775 kg → ~25.83 sacos de 30 kg). ARENA → arena-cribada-fina (mejor equivalente genérico; labSlug arena-silicea-graduada). TALCO 100 → marmolina-talco-100. Saco canónico 30 kg (no 25).",
         "defaultVersionId": "v1",
         "versions": [
