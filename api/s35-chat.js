@@ -39,8 +39,8 @@ const TOOLS = [
         properties: {
           period: {
             type: 'string',
-            enum: ['day', 'week', 'month', 'year'],
-            description: 'Granularidad del corte'
+            enum: ['day', 'week', 'month', 'year', 'historial'],
+            description: 'Granularidad del corte. Usa historial para toda la historia.'
           },
           offset: {
             type: 'integer',
@@ -111,17 +111,17 @@ const TOOLS = [
     type: 'function',
     function: {
       name: 'top_products',
-      description: 'Top productos por monto en un periodo.',
+      description: 'Top productos por monto en un periodo (incluye historial = toda la historia).',
       parameters: {
         type: 'object',
         properties: {
-          period: { type: 'string', enum: ['day', 'week', 'month', 'year'] },
+          period: { type: 'string', enum: ['day', 'week', 'month', 'year', 'historial'] },
           offset: { type: 'integer' },
           city: {
             type: 'string',
             enum: ['all', 'culiacan', 'mochis', 'mazatlan']
           },
-          limit: { type: 'integer' }
+          limit: { type: 'integer', description: 'Cantidad (ej. 10). Default 10, máx 25' }
         },
         required: ['period']
       }
@@ -131,17 +131,18 @@ const TOOLS = [
     type: 'function',
     function: {
       name: 'top_clients',
-      description: 'Top clientes por monto en un periodo.',
+      description:
+        'Top clientes por monto. Para «toda la historia» usa period=historial y limit=10. Excluye tickets sin cliente real (p. ej. Histórico importado).',
       parameters: {
         type: 'object',
         properties: {
-          period: { type: 'string', enum: ['day', 'week', 'month', 'year'] },
+          period: { type: 'string', enum: ['day', 'week', 'month', 'year', 'historial'] },
           offset: { type: 'integer' },
           city: {
             type: 'string',
             enum: ['all', 'culiacan', 'mochis', 'mazatlan']
           },
-          limit: { type: 'integer' }
+          limit: { type: 'integer', description: 'Cantidad (ej. 10). Default 10, máx 25' }
         },
         required: ['period']
       }
@@ -215,7 +216,9 @@ function systemPrompt(context) {
     'Responde siempre en español, breve y claro. Montos en MXN con formato $X,XXX.XX.',
     'Eres el cerebro del panel: para cifras de periodos, ciudades, clientes, productos o stock DEBES usar tools.',
     'Offsets de día: 0=hoy, -1=ayer, -2=antier. Semana/mes/año igual (0 actual, -1 anterior).',
-    'El CONTEXTO es solo un snapshot rápido. Si falta un dato (ej. antier), llama get_sales_summary o compare_sales_periods.',
+    'Para «toda la historia / histórico / all time» usa period=historial (no inventes tops).',
+    'Si top_clients trae note sobre tickets sin cliente, menciónalo breve y lista el top de items[] (nunca digas que no hay top 10 si items tiene filas).',
+    'El CONTEXTO es solo un snapshot rápido. Si falta un dato (ej. antier o top 10), llama la tool correspondiente.',
     'No inventes tickets ni totales. Si la tool devuelve vacío, dilo.',
     'Para abrir pantallas usa navigate. Para solo informar cifras, no navegues salvo que el usuario lo pida.',
     '',

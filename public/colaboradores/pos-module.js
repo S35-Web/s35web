@@ -4393,16 +4393,34 @@
             });
     }
 
-    function topClientsInSales(list, limit) {
+    function isPlaceholderClientLabel(name) {
+        const n = String(name || '').trim().toLowerCase();
+        if (!n) return true;
+        if (n === 'mostrador' || n === 'sin cliente') return true;
+        if (n.indexOf('histórico') >= 0 || n.indexOf('historico') >= 0) return true;
+        if (n === 'import' || n.indexOf('importado') >= 0) return true;
+        return false;
+    }
+
+    function topClientsInSales(list, limit, opts) {
+        opts = opts || {};
+        const excludePlaceholders = opts.excludePlaceholders !== false;
         const map = {};
+        let skippedPlaceholderTickets = 0;
+        let skippedPlaceholderAmount = 0;
         (list || []).forEach(function (s) {
-            const id = s.clientId || (s.client && s.client.id) || saleClientLabel(s) || 'mostrador';
             const name = saleClientLabel(s) || 'Mostrador';
-            if (!map[id]) map[id] = { clientId: id === 'mostrador' ? null : id, name: name, amount: 0, tickets: 0 };
+            if (excludePlaceholders && isPlaceholderClientLabel(name) && !s.clientId && !(s.client && s.client.id)) {
+                skippedPlaceholderTickets += 1;
+                skippedPlaceholderAmount += Number(s.total) || 0;
+                return;
+            }
+            const id = s.clientId || (s.client && s.client.id) || name.toLowerCase() || 'mostrador';
+            if (!map[id]) map[id] = { clientId: (s.clientId || (s.client && s.client.id) || null), name: name, amount: 0, tickets: 0 };
             map[id].amount += Number(s.total) || 0;
             map[id].tickets += 1;
         });
-        return Object.keys(map).map(function (k) { return map[k]; })
+        const items = Object.keys(map).map(function (k) { return map[k]; })
             .sort(function (a, b) { return b.amount - a.amount; })
             .slice(0, limit || 5)
             .map(function (r) {
@@ -4413,6 +4431,14 @@
                     tickets: r.tickets
                 };
             });
+        return {
+            items: items,
+            meta: {
+                excludedPlaceholderTickets: skippedPlaceholderTickets,
+                excludedPlaceholderAmount: Math.round(skippedPlaceholderAmount * 100) / 100,
+                identifiedClients: Object.keys(map).length
+            }
+        };
     }
 
     /** Contexto compacto para el copiloto (snapshot; el detalle va por tools). */
@@ -4484,7 +4510,7 @@
                 tickets: yesterday.tickets - dayBeforeYesterday.tickets
             },
             topProductsMonth: topProductsInSales(monthList, 5),
-            topClientsMonth: topClientsInSales(monthList, 5),
+            topClientsMonth: topClientsInSales(monthList, 5).items,
             movers7d: movers,
             attention: attention.slice(0, 8),
             cities: SALE_CITIES.map(function (c) { return { id: c.id, label: c.label, short: c.short }; })
@@ -4492,9 +4518,9 @@
     }
 
     function copilotSalesFor(period, offset, city) {
-        const p = ['day', 'week', 'month', 'year'].indexOf(period) >= 0 ? period : 'day';
+        const p = ['day', 'week', 'month', 'year', 'historial'].indexOf(period) >= 0 ? period : 'day';
         const off = Number(offset);
-        const o = isFinite(off) ? Math.trunc(off) : 0;
+        const o = p === 'historial' ? 0 : (isFinite(off) ? Math.trunc(off) : 0);
         const bounds = periodBounds(p, o);
         let list = salesInRange(salesForAnalytics(), bounds.start, bounds.end);
         const cityId = city && city !== 'all' ? normalizeCityId(city) : 'all';
@@ -4573,23 +4599,39 @@
                 return { ok: true, query: args.query, results: hits };
             }
             if (name === 'top_products' || name === 'top_clients') {
-                const p = ['day', 'week', 'month', 'year'].indexOf(args.period) >= 0 ? args.period : 'month';
+                const p = ['day', 'week', 'month', 'year', 'historial'].indexOf(args.period) >= 0
+                    ? args.period
+                    : 'month';
                 const off = Number(args.offset);
-                const o = isFinite(off) ? Math.trunc(off) : 0;
+                const o = p === 'historial' ? 0 : (isFinite(off) ? Math.trunc(off) : 0);
                 const bounds = periodBounds(p, o);
                 let list = salesInRange(salesForAnalytics(), bounds.start, bounds.end);
                 const cityId = args.city && args.city !== 'all' ? normalizeCityId(args.city) : 'all';
                 list = filterSalesByCity(list, cityId);
-                const limit = Math.min(15, Number(args.limit) || 5);
+                const limit = Math.min(25, Math.max(1, Number(args.limit) || 10));
+                if (name === 'top_products') {
+                    return {
+                        ok: true,
+                        period: p,
+                        offset: o,
+                        city: cityId,
+                        label: formatPeriodLabel(p, bounds.start, bounds.end),
+                        items: topProductsInSales(list, limit)
+                    };
+                }
+                const ranked = topClientsInSales(list, limit, { excludePlaceholders: true });
                 return {
                     ok: true,
                     period: p,
                     offset: o,
                     city: cityId,
                     label: formatPeriodLabel(p, bounds.start, bounds.end),
-                    items: name === 'top_products'
-                        ? topProductsInSales(list, limit)
-                        : topClientsInSales(list, limit)
+                    items: ranked.items,
+                    note: ranked.meta.excludedPlaceholderTickets
+                        ? ('Se excluyeron ' + ranked.meta.excludedPlaceholderTickets +
+                            ' tickets sin cliente real (p. ej. «Histórico importado»). Top sobre clientes identificados.')
+                        : null,
+                    meta: ranked.meta
                 };
             }
             if (name === 'stock_alerts') {
