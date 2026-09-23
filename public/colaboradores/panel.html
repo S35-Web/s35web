@@ -6182,6 +6182,10 @@
         document.documentElement.setAttribute('data-theme', theme);
         themeBtn.innerHTML = theme === 'light' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
         localStorage.setItem('s35_panel_theme', theme);
+        // Recolorea series de ciudad (Culiacán → blanco en oscuro) al cambiar el tema.
+        if (window.S35PosModule && typeof window.S35PosModule.renderCortes === 'function') {
+            window.S35PosModule.renderCortes();
+        }
     }
     applyTheme(localStorage.getItem('s35_panel_theme') || 'light');
     themeBtn.addEventListener('click', function () {
@@ -10568,7 +10572,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-usage-donut"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-culiacan-dark"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260923-copilot-section"></script>
 </body>
