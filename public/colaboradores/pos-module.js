@@ -564,9 +564,39 @@
         try { localStorage.setItem(CITY_STORAGE_KEY, normalizeCityId(id)); } catch (_) {}
     }
     function selectedSaleCity() {
+        const sel = document.getElementById('posSaleCity');
+        if (sel && sel.value) return normalizeCityId(sel.value);
         const el = document.querySelector('input[name="saleCity"]:checked');
         if (el && el.value) return normalizeCityId(el.value);
         return loadPreferredSaleCity();
+    }
+    function syncSaleCityControl() {
+        const preferred = loadPreferredSaleCity();
+        const sel = document.getElementById('posSaleCity');
+        if (sel) {
+            if (!sel.options.length) {
+                SALE_CITIES.forEach(function (c) {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.label;
+                    sel.appendChild(opt);
+                });
+            }
+            sel.value = preferred;
+            if (!sel._s35CityBound) {
+                sel._s35CityBound = true;
+                sel.addEventListener('change', function () {
+                    savePreferredSaleCity(sel.value);
+                });
+            }
+            return;
+        }
+        document.querySelectorAll('input[name="saleCity"]').forEach(function (el) {
+            el.checked = el.value === preferred;
+            el.addEventListener('change', function () {
+                if (el.checked) savePreferredSaleCity(el.value);
+            });
+        });
     }
     function citySegHtml(selected, nameAttr) {
         const sel = normalizeCityId(selected || 'culiacan');
@@ -8170,15 +8200,7 @@
         bind();
         bindCobranza();
         (function syncSaleCityRadios() {
-            const preferred = loadPreferredSaleCity();
-            document.querySelectorAll('input[name="saleCity"]').forEach(function (el) {
-                el.checked = el.value === preferred;
-            });
-            document.querySelectorAll('input[name="saleCity"]').forEach(function (el) {
-                el.addEventListener('change', function () {
-                    if (el.checked) savePreferredSaleCity(el.value);
-                });
-            });
+            syncSaleCityControl();
         })();
         renderChips();
         renderProducts();
