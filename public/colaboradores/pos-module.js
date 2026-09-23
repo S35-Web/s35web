@@ -4523,6 +4523,8 @@
                 }).join('');
             }
             citySelect.value = cortesCityFilter;
+            const cityMenu = document.getElementById('cortesCityMenu');
+            if (cityMenu) cityMenu.classList.toggle('is-filtered', cortesCityFilter !== 'all');
         }
 
         renderCortesChart(

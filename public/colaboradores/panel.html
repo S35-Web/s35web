@@ -2806,6 +2806,57 @@
             margin-bottom: 20px;
             background: var(--bg-soft);
         }
+        .cortes-filters-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .cortes-filters-bar .seg-control {
+            margin-bottom: 0;
+        }
+        .cortes-city-menu {
+            position: relative;
+            flex: 0 0 auto;
+        }
+        .cortes-city-menu select {
+            appearance: none;
+            -webkit-appearance: none;
+            height: 34px;
+            min-width: 132px;
+            padding: 0 34px 0 16px;
+            border: none;
+            border-radius: 0;
+            background: transparent
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M1 1l5 5 5-5'/%3E%3C/svg%3E")
+                no-repeat right 12px center;
+            color: var(--muted);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            line-height: 34px;
+        }
+        .cortes-city-menu select:hover {
+            color: var(--text);
+            background-color: var(--hover);
+        }
+        .cortes-city-menu select:focus {
+            outline: none;
+            color: var(--text);
+        }
+        .cortes-city-menu.is-filtered select {
+            background-color: var(--text);
+            color: var(--bg);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23ffffff' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+        [data-theme="dark"] .cortes-city-menu.is-filtered select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23111111' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+        }
         .seg-control button {
             height: 34px;
             padding: 0 16px;
@@ -3124,36 +3175,6 @@
             flex-wrap: wrap;
             justify-content: flex-end;
             margin-left: auto;
-        }
-        .cortes-city-select-wrap {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: var(--muted);
-        }
-        .cortes-city-select-label {
-            white-space: nowrap;
-        }
-        .cortes-city-select {
-            appearance: none;
-            -webkit-appearance: none;
-            min-width: 148px;
-            max-width: 220px;
-            padding: 7px 28px 7px 10px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            background: var(--bg)
-                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M1 1l5 5 5-5'/%3E%3C/svg%3E")
-                no-repeat right 10px center;
-            color: var(--text);
-            font: inherit;
-            font-size: 13px;
-            cursor: pointer;
-        }
-        .cortes-city-select:focus {
-            outline: 2px solid var(--text);
-            outline-offset: 1px;
         }
         .cortes-chart-head h3 {
             margin: 0 0 2px;
@@ -4256,12 +4277,22 @@
                         </div>
                     </div>
 
-                    <div class="seg-control" id="cortesPeriodTabs" role="tablist" aria-label="Periodo del corte">
-                        <button type="button" role="tab" data-period="day" class="active" aria-selected="true">Día</button>
-                        <button type="button" role="tab" data-period="week" aria-selected="false">Semana</button>
-                        <button type="button" role="tab" data-period="month" aria-selected="false">Mes</button>
-                        <button type="button" role="tab" data-period="year" aria-selected="false">Año</button>
-                        <button type="button" role="tab" data-period="historial" aria-selected="false">Historial</button>
+                    <div class="cortes-filters-bar">
+                        <div class="seg-control" id="cortesPeriodTabs" role="tablist" aria-label="Periodo del corte">
+                            <button type="button" role="tab" data-period="day" class="active" aria-selected="true">Día</button>
+                            <button type="button" role="tab" data-period="week" aria-selected="false">Semana</button>
+                            <button type="button" role="tab" data-period="month" aria-selected="false">Mes</button>
+                            <button type="button" role="tab" data-period="year" aria-selected="false">Año</button>
+                            <button type="button" role="tab" data-period="historial" aria-selected="false">Historial</button>
+                        </div>
+                        <div class="seg-control cortes-city-menu" id="cortesCityMenu">
+                            <select id="cortesCitySelect" aria-label="Ciudad del corte">
+                                <option value="all" selected>Todas</option>
+                                <option value="culiacan">Culiacán</option>
+                                <option value="mochis">Los Mochis</option>
+                                <option value="mazatlan">Mazatlán</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="cortes-chart-panel">
@@ -4271,15 +4302,6 @@
                                 <p class="panel-sub" id="cortesChartSub">Por hora · 7:00–19:00</p>
                             </div>
                             <div class="cortes-chart-head-right">
-                                <label class="cortes-city-select-wrap">
-                                    <span class="cortes-city-select-label">Ciudad</span>
-                                    <select id="cortesCitySelect" class="cortes-city-select" aria-label="Ciudad del corte">
-                                        <option value="all" selected>Todas</option>
-                                        <option value="culiacan">Culiacán</option>
-                                        <option value="mochis">Los Mochis</option>
-                                        <option value="mazatlan">Mazatlán</option>
-                                    </select>
-                                </label>
                                 <div class="cortes-chart-legend" aria-hidden="true">
                                     <span class="leg"><span class="swatch"></span> Periodo</span>
                                     <span class="leg"><span class="swatch prev"></span> Anterior</span>
