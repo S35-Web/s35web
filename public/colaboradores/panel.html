@@ -4818,14 +4818,14 @@
 
                 <section id="salesHistory" class="section">
                     <h1 class="page-title">Historial de ventas</h1>
-                    <p class="page-sub">POS local + notas históricas · busca por número de recibo (p. ej. 64055).</p>
+                    <p class="page-sub">Todas las ventas del sistema · busca por número de recibo (p. ej. 64055).</p>
                     <div class="card">
                         <div class="toolbar">
                             <input id="posHistorySearch" class="search" type="search" placeholder="Recibo, cotizador, cliente o producto" autocomplete="off">
                             <select id="posHistoryClientFilter" class="customer-input" style="max-width:220px;flex:0 0 auto">
                                 <option value="all">Todos los clientes</option>
                             </select>
-                            <button type="button" class="btn" id="posClearHistoryBtn" title="Solo borra ventas del POS de este navegador">Vaciar POS local</button>
+                            <button type="button" class="btn" id="posClearHistoryBtn" title="Solo borra tickets creados en el POS; el histórico importado no se toca">Vaciar tickets POS</button>
                         </div>
                         <div class="hist-filters">
                             <label>Desde <input type="date" id="posHistoryFrom"></label>
@@ -4871,7 +4871,7 @@
                     <div class="cortes-head">
                         <div>
                             <h1 class="page-title">Cortes</h1>
-                            <p class="page-sub">Corte del día, semana, mes, año e historial · ventas de este navegador.</p>
+                            <p class="page-sub">Corte del día, semana, mes, año e historial · ventas del sistema.</p>
                         </div>
                         <div class="cortes-range">
                             <button type="button" class="cortes-nav-btn" id="cortesPrev" title="Periodo anterior" aria-label="Periodo anterior"><i class="fa-solid fa-chevron-left"></i></button>
@@ -10127,7 +10127,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-home-ai"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-sales-unified"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-corte-cmd"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260923-home-ai"></script>
 </body>

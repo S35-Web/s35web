@@ -4101,10 +4101,9 @@
     }
 
     function updatePosKpis() {
-        const start = new Date();
-        start.setHours(0, 0, 0, 0);
-        const today = sales.filter(function (s) { return new Date(s.createdAt) >= start; });
-        const todayTotal = today.reduce(function (sum, s) { return sum + (Number(s.total) || 0); }, 0);
+        const todayBounds = periodBounds('day', 0);
+        const today = salesInRange(salesForAnalytics(), todayBounds.start, todayBounds.end);
+        const todayTotal = sumTotals(today);
         const kpiT = document.getElementById('posKpiToday');
         const kpiTH = document.getElementById('posKpiTodayHint');
         if (kpiT) kpiT.textContent = money(todayTotal);
@@ -4154,8 +4153,9 @@
     function computeDashMovers(limitEach) {
         limitEach = limitEach || 3;
         const win = dashMoverWindows();
-        const recentSales = salesInRange(sales, win.recent.start, win.recent.end);
-        const prevSales = salesInRange(sales, win.prev.start, win.prev.end);
+        const analytics = salesForAnalytics();
+        const recentSales = salesInRange(analytics, win.recent.start, win.recent.end);
+        const prevSales = salesInRange(analytics, win.prev.start, win.prev.end);
         const recipes = getRecipes();
         const seen = {};
         const rows = [];
@@ -4197,7 +4197,7 @@
     function computeDashStaleProducts(limit) {
         limit = limit || 3;
         const win = dashMoverWindows();
-        const recentSales = salesInRange(sales, win.recent.start, win.recent.end);
+        const recentSales = salesInRange(salesForAnalytics(), win.recent.start, win.recent.end);
         const recipes = getRecipes();
         const out = [];
         const seen = {};
@@ -4323,12 +4323,13 @@
         });
         return {
             generatedAt: new Date().toISOString(),
-            source: 'navegador_actual',
-            note: 'Totales = histórico importado en este navegador + ventas POS locales.',
+            source: 's35_ventas',
+            note: 'Totales unificados del sistema (histórico + tickets POS). Cada ticket guarda el usuario vendedor.',
             catalog: {
                 clients: clients.length,
+                tickets: analytics.length,
                 historicalTickets: historicalSales.length,
-                localPosTickets: sales.length
+                posTickets: sales.length
             },
             today: today,
             yesterday: yesterday,
@@ -4349,10 +4350,11 @@
         const salesEl = document.getElementById('dashSalesToday');
         if (!salesEl) return;
 
+        const analytics = salesForAnalytics();
         const todayBounds = periodBounds('day', 0);
         const ydayBounds = periodBounds('day', -1);
-        const todayList = salesInRange(sales, todayBounds.start, todayBounds.end);
-        const ydayList = salesInRange(sales, ydayBounds.start, ydayBounds.end);
+        const todayList = salesInRange(analytics, todayBounds.start, todayBounds.end);
+        const ydayList = salesInRange(analytics, ydayBounds.start, ydayBounds.end);
         const todayTotal = sumTotals(todayList);
         const ydayTotal = sumTotals(ydayList);
         const delta = formatDashDelta(todayTotal, ydayTotal);
@@ -5830,7 +5832,7 @@
         if (clearHist) {
             clearHist.addEventListener('click', function () {
                 if (!sales.length) return;
-                if (!confirm('¿Eliminar las ventas del POS de este navegador? El histórico importado no se borra.')) return;
+                if (!confirm('¿Eliminar los tickets creados en el POS? El histórico importado no se borra.')) return;
                 sales = [];
                 saveSales();
                 historyPage = 1;
