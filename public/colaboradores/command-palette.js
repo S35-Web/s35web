@@ -358,27 +358,153 @@
         return out.sort(function (a, b) { return b.score - a.score; }).slice(0, MAX_PER_GROUP);
     }
 
-    function cityResults(query) {
+    const CORTE_PERIODS = [
+        { id: 'day', label: 'Día / Hoy', short: 'Hoy', aliases: ['hoy', 'dia', 'diario', 'day', 'daily'] },
+        { id: 'week', label: 'Semana', short: 'Semana', aliases: ['semana', 'week', 'semanal'] },
+        { id: 'month', label: 'Mes', short: 'Mes', aliases: ['mes', 'mensual', 'month'] },
+        { id: 'year', label: 'Año', short: 'Año', aliases: ['ano', 'anual', 'year'] },
+        { id: 'historial', label: 'Historial / Todo', short: 'Historial', aliases: ['historial', 'todo', 'all', 'completo'] }
+    ];
+
+    function corteCities() {
         const cities = typeof pos().getSaleCities === 'function' ? pos().getSaleCities() : [];
-        const q = norm(query);
-        const out = [];
-        [{ id: 'all', label: 'Todas' }].concat(cities).forEach(function (c) {
-            const sc = !q ? 40 : Math.max(scoreMatch(c.label, q), scoreMatch(c.id, q), scoreMatch(c.short, q));
-            if (q && sc <= 0) return;
-            out.push(makeResult({
-                id: 'city:' + c.id,
-                group: 'cortes',
-                groupLabel: 'Cortes · ciudad',
-                kind: 'city',
-                title: 'Ciudad: ' + c.label,
-                subtitle: 'Filtrar Cortes',
-                icon: 'fa-location-dot',
-                score: sc,
-                recentKey: 'city:' + c.id,
-                payload: { cityId: c.id }
-            }));
+        return [{ id: 'all', label: 'Todas', short: 'ALL' }].concat(cities.map(function (c) {
+            return { id: c.id, label: c.label, short: c.short || c.id };
+        }));
+    }
+
+    function matchCortePeriodToken(token) {
+        const t = norm(token);
+        if (!t) return null;
+        for (let i = 0; i < CORTE_PERIODS.length; i++) {
+            const p = CORTE_PERIODS[i];
+            if (p.id === t || p.aliases.indexOf(t) >= 0) return p;
+            if (scoreMatch(p.label, t) >= 80 || scoreMatch(p.short, t) >= 80) return p;
+        }
+        return null;
+    }
+
+    function matchCorteCityToken(token) {
+        const t = norm(token);
+        if (!t) return null;
+        const cities = corteCities();
+        for (let i = 0; i < cities.length; i++) {
+            const c = cities[i];
+            const aliases = [c.id, norm(c.label), norm(c.short)];
+            if (c.id === 'culiacan') aliases.push('cln');
+            if (c.id === 'mochis') aliases.push('lmm', 'losmochis');
+            if (c.id === 'mazatlan') aliases.push('mzt');
+            if (c.id === 'all') aliases.push('todas', 'todos');
+            if (aliases.indexOf(t) >= 0) return c;
+            if (scoreMatch(c.label, t) >= 70 || scoreMatch(c.short, t) >= 70) return c;
+        }
+        return null;
+    }
+
+    function parseCorteQuery(query) {
+        const tokens = String(query || '').trim().split(/\s+/).filter(Boolean);
+        let period = null;
+        let city = null;
+        const unused = [];
+        tokens.forEach(function (tok) {
+            const p = matchCortePeriodToken(tok);
+            const c = matchCorteCityToken(tok);
+            if (p && !period) period = p;
+            else if (c && !city) city = c;
+            else unused.push(tok);
         });
-        return out.sort(function (a, b) { return b.score - a.score; });
+        // multi-word leftovers: try full remainder as city/period
+        if (unused.length && (!period || !city)) {
+            const rest = unused.join(' ');
+            if (!period) period = matchCortePeriodToken(rest);
+            if (!city) city = matchCorteCityToken(rest);
+        }
+        return { period: period, city: city, tokens: tokens };
+    }
+
+    function makeCorteResult(period, city, score) {
+        const p = period || CORTE_PERIODS[0];
+        const c = city || { id: 'all', label: 'Todas', short: 'ALL' };
+        const title = p.short + (c.id !== 'all' ? ' · ' + c.label : ' · Todas');
+        const subtitle = '@corte ' + p.aliases[0] + (c.id !== 'all' ? ' ' + (c.short || c.id).toLowerCase() : '');
+        return makeResult({
+            id: 'corte:' + p.id + ':' + c.id,
+            group: 'cortes',
+            groupLabel: 'Cortes',
+            kind: 'corte',
+            title: title,
+            subtitle: subtitle + ' · gráfica',
+            icon: 'fa-chart-simple',
+            score: score || 80,
+            recentKey: 'corte:' + p.id + ':' + c.id,
+            payload: { period: p.id, cityId: c.id }
+        });
+    }
+
+    function corteResults(query) {
+        if (!canAccess('cortes')) return [];
+        const parsed = parseCorteQuery(query);
+        const cities = corteCities();
+        const out = [];
+
+        if (!query || !String(query).trim()) {
+            CORTE_PERIODS.forEach(function (p, i) {
+                out.push(makeCorteResult(p, cities[0], 95 - i));
+            });
+            cities.forEach(function (c, i) {
+                if (c.id === 'all') return;
+                out.push(makeCorteResult(CORTE_PERIODS[0], c, 70 - i));
+            });
+            // combos útiles
+            out.push(makeCorteResult(matchCortePeriodToken('mes'), matchCorteCityToken('mazatlan'), 60));
+            out.push(makeCorteResult(matchCortePeriodToken('historial'), cities[0], 55));
+            return out;
+        }
+
+        const period = parsed.period;
+        const city = parsed.city;
+
+        if (period && city) {
+            out.push(makeCorteResult(period, city, 100));
+            // también variantes cercanas
+            cities.forEach(function (c) {
+                if (c.id === city.id) return;
+                out.push(makeCorteResult(period, c, 50));
+            });
+            return out.slice(0, 10);
+        }
+
+        if (period && !city) {
+            cities.forEach(function (c, i) {
+                out.push(makeCorteResult(period, c, 90 - i));
+            });
+            return out;
+        }
+
+        if (!period && city) {
+            CORTE_PERIODS.forEach(function (p, i) {
+                out.push(makeCorteResult(p, city, 90 - i));
+            });
+            return out;
+        }
+
+        // fuzzy: score periods/cities against full query
+        CORTE_PERIODS.forEach(function (p) {
+            const best = Math.max.apply(null, [scoreMatch(p.label, query), scoreMatch(p.short, query)].concat(
+                p.aliases.map(function (a) { return scoreMatch(a, query); })
+            ));
+            if (best > 0) out.push(makeCorteResult(p, cities[0], best));
+        });
+        cities.forEach(function (c) {
+            const best = Math.max(scoreMatch(c.label, query), scoreMatch(c.id, query), scoreMatch(c.short, query));
+            if (best > 0) out.push(makeCorteResult(CORTE_PERIODS[0], c, best));
+        });
+        return out.sort(function (a, b) { return b.score - a.score; }).slice(0, 12);
+    }
+
+    function cityResults(query) {
+        const q = String(query || '').trim();
+        return corteResults(q ? ('hoy ' + q) : '');
     }
 
     function scopePickResults(parsed) {
@@ -421,8 +547,8 @@
             tips.push({ title: 'Buscar producto', subtitle: '@producto adhesivo', insert: '@producto ' });
             tips.push({ title: 'Abrir cliente', subtitle: '@cliente ', insert: '@cliente ' });
         } else if (sec === 'cortes') {
-            tips.push({ title: 'Filtrar ciudad', subtitle: 'ciudad mazatlan', insert: 'ciudad mazatlan' });
-            tips.push({ title: 'Ir a historial', subtitle: '/historial', insert: '/historial' });
+            tips.push({ title: 'Corte de hoy', subtitle: '@corte hoy', insert: '@corte hoy ' });
+            tips.push({ title: 'Mes · Mazatlán', subtitle: '@corte mes mzt', insert: '@corte mes mazatlan' });
         } else if (sec === 'clients') {
             tips.push({ title: 'Buscar cliente', subtitle: '@cliente ', insert: '@cliente ' });
             tips.push({ title: 'Nuevo cliente', subtitle: '+cliente', insert: '+cliente ' });
@@ -502,8 +628,7 @@
                 }));
             }
             if (parsed.scope === 'corte' && canAccess('cortes')) {
-                list = list.concat(searchSections('cortes', 1));
-                list = list.concat(cityResults(parsed.query));
+                list = list.concat(corteResults(parsed.query));
             }
             if (parsed.scope === 'ir') list = list.concat(searchSections(parsed.query, 12));
             if (!list.length && parsed.query) {
@@ -531,9 +656,13 @@
         list = list.concat(searchSections(q, 4));
         list = list.concat(searchActions(q, '>').slice(0, 3));
 
-        // city shortcut in free text
-        if (/mazatlan|mochis|culiacan|mzt|cln|lmm/i.test(q) && canAccess('cortes')) {
-            list = list.concat(cityResults(q).slice(0, 2));
+        // free: atajos de corte
+        if (canAccess('cortes')) {
+            const nq = norm(q);
+            if (/^(corte|cortes)\b/.test(nq) || matchCortePeriodToken(q) || matchCorteCityToken(q)) {
+                const corteQ = nq.replace(/^(corte|cortes)\s*/, '');
+                list = list.concat(corteResults(corteQ).slice(0, 6));
+            }
         }
 
         list.sort(function (a, b) { return b.score - a.score; });
@@ -609,9 +738,16 @@
             if (pos().openSaleNoteById) pos().openSaleNoteById(item.payload.saleId);
             return;
         }
-        if (item.kind === 'city') {
+        if (item.kind === 'city' || item.kind === 'corte') {
             showSection('cortes');
-            if (pos().setCortesCityFilter) pos().setCortesCityFilter(item.payload.cityId);
+            const period = (item.payload && item.payload.period) || 'day';
+            const cityId = (item.payload && item.payload.cityId) || 'all';
+            if (pos().openCortesView) {
+                pos().openCortesView({ period: period, cityId: cityId, scrollChart: true });
+            } else {
+                if (pos().openCortesPeriod) pos().openCortesPeriod(period);
+                if (pos().setCortesCityFilter) pos().setCortesCityFilter(cityId);
+            }
             return;
         }
         if (item.kind === 'action') {
@@ -623,7 +759,11 @@
             }
             if (p.section) {
                 showSection(p.section);
-                if (p.cortesDay && pos().openCortesPeriod) pos().openCortesPeriod('day');
+                if (p.cortesDay && pos().openCortesView) {
+                    pos().openCortesView({ period: 'day', cityId: 'all', scrollChart: true });
+                } else if (p.cortesDay && pos().openCortesPeriod) {
+                    pos().openCortesPeriod('day');
+                }
             }
         }
     }

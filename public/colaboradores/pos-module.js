@@ -4339,6 +4339,30 @@
         renderCortes();
     }
 
+    /** Abre Cortes con periodo + ciudad y enfoca la gráfica. */
+    function openCortesView(opts) {
+        opts = opts || {};
+        if (opts.period && ['day', 'week', 'month', 'year', 'historial'].indexOf(opts.period) >= 0) {
+            cortesPeriod = opts.period;
+            cortesOffset = 0;
+        }
+        if (opts.cityId != null) {
+            if (opts.cityId === 'all') cortesCityFilter = 'all';
+            else if (cityById(opts.cityId)) cortesCityFilter = opts.cityId;
+            else cortesCityFilter = normalizeCityId(opts.cityId);
+        }
+        renderCortes();
+        if (opts.scrollChart !== false) {
+            setTimeout(function () {
+                const el = document.getElementById('cortesChart') ||
+                    document.querySelector('#cortes .cortes-chart-panel');
+                if (el && typeof el.scrollIntoView === 'function') {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 80);
+        }
+    }
+
     function addToCart(slug) {
         const r = recipeBySlug(slug);
         if (!r) return;
@@ -7451,8 +7475,9 @@
             searchSales: searchSales,
             getSaleCities: function () { return SALE_CITIES.slice(); },
             setCortesCityFilter: setCortesCityFilter,
-            renderDashboardRadar: renderDashboardRadar,
             openCortesPeriod: openCortesPeriod,
+            openCortesView: openCortesView,
+            renderDashboardRadar: renderDashboardRadar,
             importHistoricalSales: importHistoricalSales,
             renderCobranza: renderCobranza,
             baseUnitPrice: baseUnitPrice,
