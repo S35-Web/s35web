@@ -3647,6 +3647,12 @@
         .cortes-bar .seg-sin_facturar_transferencia { background: #d4d4d4; }
         .cortes-bar .seg-sin_facturar_por_cobrar { background: #d97706; }
         .cortes-rows { display: flex; flex-direction: column; gap: 8px; }
+        .cortes-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .cortes-group + .cortes-group { margin-top: 6px; }
         .cortes-row {
             display: flex;
             align-items: center;
@@ -3654,6 +3660,15 @@
             gap: 12px;
             font-size: 13px;
         }
+        .cortes-row.is-group .left,
+        .cortes-row.is-group .name,
+        .cortes-row.is-group .amt {
+            color: var(--text);
+            font-weight: 500;
+        }
+        .cortes-row.is-sub .left { padding-left: 10px; }
+        .cortes-row.is-sub .name { font-size: 12px; }
+        .cortes-row.is-sub .amt { color: var(--muted); font-size: 12px; }
         .cortes-row .left {
             display: flex;
             align-items: center;
@@ -4582,7 +4597,7 @@
                         </div>
                         <div class="cortes-panel">
                             <h3>Facturación</h3>
-                            <p class="panel-sub">Facturación × pago · solo con monto</p>
+                            <p class="panel-sub">Totales · desglose por pago · solo con monto</p>
                             <div class="cortes-bar" id="cortesBillBar" aria-hidden="true"></div>
                             <div class="cortes-rows" id="cortesBillRows"></div>
                         </div>
@@ -9763,6 +9778,6 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260922-iwa-mzt"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-bill-grp"></script>
 </body>
 </html>

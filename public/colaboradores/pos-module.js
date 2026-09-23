@@ -4488,6 +4488,47 @@
         }).join('');
     }
 
+    /** Facturación: grupo (Total facturado / Total sin facturar) + subfilas por método de pago. */
+    function renderGroupedBreakdownRows(containerId, barId, groups, total) {
+        const rowsEl = document.getElementById(containerId);
+        const barEl = document.getElementById(barId);
+        if (!rowsEl) return;
+        const visible = (groups || []).filter(function (g) {
+            return g.amount > 0 && (g.children || []).length;
+        });
+        const flatSegs = [];
+        visible.forEach(function (g) {
+            (g.children || []).forEach(function (c) { flatSegs.push(c); });
+        });
+        if (!visible.length || !total) {
+            rowsEl.innerHTML = '<div class="cortes-empty">Sin datos en este periodo</div>';
+            if (barEl) barEl.innerHTML = '';
+            return;
+        }
+        if (barEl) {
+            barEl.innerHTML = flatSegs.map(function (r) {
+                const pct = Math.max(0, (r.amount / total) * 100);
+                const title = (r.groupLabel ? r.groupLabel + ' · ' : '') + r.label;
+                return '<span class="seg-' + esc(r.key) + '" style="width:' + pct + '%" title="' + esc(title) + '"></span>';
+            }).join('');
+        }
+        rowsEl.innerHTML = visible.map(function (g) {
+            const subs = (g.children || []).map(function (r) {
+                return '<div class="cortes-row is-sub">' +
+                    '<div class="left"><span class="dot ' + esc(r.key) + '"></span><span class="name">' + esc(r.label) + '</span></div>' +
+                    '<span class="amt">' + money(r.amount) + '</span>' +
+                    '</div>';
+            }).join('');
+            return '<div class="cortes-group">' +
+                '<div class="cortes-row is-group">' +
+                '<div class="left"><span class="dot ' + esc(g.key) + '"></span><span class="name">' + esc(g.label) + '</span></div>' +
+                '<span class="amt">' + money(g.amount) + '</span>' +
+                '</div>' +
+                subs +
+                '</div>';
+        }).join('');
+    }
+
     function refreshSalesDependentViews() {
         renderCortes();
         if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
@@ -4635,25 +4676,34 @@
         }).filter(function (r) { return r.amount > 0; });
         renderBreakdownRows('cortesPayRows', 'cortesPayBar', payRows, total);
 
-        const billCombos = [
-            { key: 'facturado_efectivo', bill: 'facturado', pay: 'efectivo', label: 'Facturado · efectivo' },
-            { key: 'facturado_tarjeta', bill: 'facturado', pay: 'tarjeta', label: 'Facturado · tarjeta' },
-            { key: 'facturado_transferencia', bill: 'facturado', pay: 'transferencia', label: 'Facturado · transferencia' },
-            { key: 'facturado_por_cobrar', bill: 'facturado', pay: 'por_cobrar', label: 'Facturado · por cobrar' },
-            { key: 'sin_facturar_efectivo', bill: 'sin_facturar', pay: 'efectivo', label: 'Sin facturar · efectivo' },
-            { key: 'sin_facturar_tarjeta', bill: 'sin_facturar', pay: 'tarjeta', label: 'Sin facturar · tarjeta' },
-            { key: 'sin_facturar_transferencia', bill: 'sin_facturar', pay: 'transferencia', label: 'Sin facturar · transferencia' },
-            { key: 'sin_facturar_por_cobrar', bill: 'sin_facturar', pay: 'por_cobrar', label: 'Sin facturar · por cobrar' }
+        const billPayMethods = [
+            { pay: 'efectivo', label: 'Efectivo' },
+            { pay: 'tarjeta', label: 'Tarjeta' },
+            { pay: 'transferencia', label: 'Transferencia' },
+            { pay: 'por_cobrar', label: 'Por cobrar' }
         ];
-        const billRows = billCombos.map(function (b) {
-            const amount = list.reduce(function (n, s) {
-                const bill = s.billing || 'sin_facturar';
-                const pay = s.paymentMethod || 'efectivo';
-                return n + (bill === b.bill && pay === b.pay ? (Number(s.total) || 0) : 0);
-            }, 0);
-            return { key: b.key, label: b.label, amount: amount };
-        }).filter(function (r) { return r.amount > 0; });
-        renderBreakdownRows('cortesBillRows', 'cortesBillBar', billRows, total);
+        const billGroupDefs = [
+            { key: 'facturado', bill: 'facturado', label: 'Total facturado' },
+            { key: 'sin_facturar', bill: 'sin_facturar', label: 'Total sin facturar' }
+        ];
+        const billGroups = billGroupDefs.map(function (g) {
+            const children = billPayMethods.map(function (p) {
+                const amount = list.reduce(function (n, s) {
+                    const bill = s.billing || 'sin_facturar';
+                    const pay = s.paymentMethod || 'efectivo';
+                    return n + (bill === g.bill && pay === p.pay ? (Number(s.total) || 0) : 0);
+                }, 0);
+                return {
+                    key: g.bill + '_' + p.pay,
+                    label: p.label,
+                    amount: amount,
+                    groupLabel: g.label
+                };
+            }).filter(function (r) { return r.amount > 0; });
+            const amount = children.reduce(function (n, r) { return n + r.amount; }, 0);
+            return { key: g.key, label: g.label, amount: amount, children: children };
+        }).filter(function (g) { return g.amount > 0; });
+        renderGroupedBreakdownRows('cortesBillRows', 'cortesBillBar', billGroups, total);
 
         const productMap = {};
         list.forEach(function (s) {
