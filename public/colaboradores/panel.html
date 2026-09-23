@@ -6257,7 +6257,7 @@
     let allMessages = [];
     const msgIndex = new Map();
     let messagesSource = 'gmail';
-    let gmailStatus = { configured: false, connected: false, email: 'contacto@s35.com.mx' };
+    let gmailStatus = { configured: false, connected: false, email: 'contacto@s35.com.mx', mongoOk: true, mongoError: null };
 
     function setMessagesHead() {
         const row = document.getElementById('messagesHeadRow');
@@ -6348,6 +6348,15 @@
             disconnectBtn.hidden = true;
             return;
         }
+        if (gmailStatus.mongoOk === false) {
+            title.textContent = 'MongoDB no responde';
+            hint.textContent = 'Google OAuth necesita MONGODB_URI válido en Vercel (badge «Needs Attention»). ' +
+                'Corrige el connection string en Atlas, pégalo de nuevo y Redeploy. ' +
+                (gmailStatus.mongoError ? 'Detalle: ' + gmailStatus.mongoError : '');
+            connectBtn.hidden = true;
+            disconnectBtn.hidden = true;
+            return;
+        }
         connectBtn.hidden = false;
         if (gmailStatus.connected) {
             title.textContent = 'Gmail conectado';
@@ -6380,7 +6389,9 @@
             gmailStatus = {
                 configured: !!payload.configured,
                 connected: !!payload.connected,
-                email: payload.email || 'contacto@s35.com.mx'
+                email: payload.email || 'contacto@s35.com.mx',
+                mongoOk: payload.mongoOk !== false,
+                mongoError: payload.mongoError || null
             };
             updateGmailConnectUi();
         } catch (_) {
