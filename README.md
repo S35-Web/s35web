@@ -526,8 +526,18 @@ graph TD
    - `RESEND_API_KEY`: tu_api_key_de_resend
    - `MAIL_TO`: contacto@s35.com.mx
    - `MAIL_FROM`: noreply@s35.com.mx
+   - `GOOGLE_CLIENT_ID`: OAuth client ID (Google Cloud → APIs → Gmail + OAuth)
+   - `GOOGLE_CLIENT_SECRET`: OAuth client secret
+   - `GOOGLE_REDIRECT_URI`: `https://TU-DOMINIO/api/gmail-oauth` (debe coincidir en Google Cloud)
+   - `GMAIL_PANEL_RETURN`: `https://TU-DOMINIO/colaboradores/panel#messages`
+   - `GMAIL_USER`: `contacto@s35.com.mx` (hint de login)
 
-### **4. Estructura de la base de datos**
+### Gmail en el panel (Mensajes)
+1. En Google Cloud: habilita **Gmail API**, crea pantalla de consentimiento (tipo **Internal** si es Workspace) y un cliente OAuth **Web**.
+2. URI de redirección autorizada: la misma que `GOOGLE_REDIRECT_URI`.
+3. En Vercel, agrega las variables de arriba y redespliega.
+4. En el panel → Mensajes → **Conectar Gmail** e inicia sesión con `contacto@s35.com.mx`.
+5. La pestaña **Correo** lista la bandeja; **Formulario web** sigue mostrando los mensajes del sitio.
 - **products**: Catálogo de productos con SKU y códigos de barras
 - **orders**: Pedidos y ventas con historial completo
 - **quotes**: Cotizaciones con seguimiento de estado
