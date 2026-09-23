@@ -1859,7 +1859,7 @@
         const showPrev = !multiCity && period !== 'historial' && prevBounds && prevList;
         const prev = showPrev
             ? fillRhythmBuckets(period, prevBounds, prevList)
-            : { subtitle: '', buckets: cur.buckets.map(function (b) { return { key: b.key, label: b.label, amount: 0 }; }) };
+            : { subtitle: '', buckets: cur.buckets.map(function (b) { return { key: b.key, label: b.label, amount: 0, qty: 0 }; }) };
         if (subEl) {
             subEl.textContent = multiCity ? (cur.subtitle + ' · por ciudad') : cur.subtitle;
         }
