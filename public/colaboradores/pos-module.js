@@ -362,6 +362,13 @@
     function money(n) {
         return '$' + (Number(n) || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
+    function formatUnits(n) {
+        const q = Number(n) || 0;
+        if (Math.abs(q - Math.round(q)) < 1e-9) {
+            return Math.round(q).toLocaleString('es-MX') + ' u';
+        }
+        return q.toLocaleString('es-MX', { maximumFractionDigits: 2 }) + ' u';
+    }
     function payLabel(v) {
         if (v === 'tarjeta') return 'Tarjeta';
         if (v === 'transferencia') return 'Transferencia';
@@ -1746,29 +1753,38 @@
     function fillRhythmBuckets(period, bounds, list) {
         const meta = emptyRhythmBuckets(period, bounds);
         const buckets = meta.buckets;
+        buckets.forEach(function (b) {
+            if (b.qty == null) b.qty = 0;
+        });
         list.forEach(function (s) {
             const d = new Date(s.createdAt);
             if (isNaN(d.getTime())) return;
             const amt = Number(s.total) || 0;
+            const qty = Number(s.qty) || 0;
+            let bucket = null;
             if (period === 'day') {
                 const h = d.getHours();
-                if (h >= 7 && h <= 19) buckets[h - 7].amount += amt;
+                if (h >= 7 && h <= 19) bucket = buckets[h - 7];
             } else if (period === 'week') {
                 const dayStart = startOfLocalDay(d);
                 const diff = Math.round((dayStart.getTime() - bounds.start.getTime()) / 86400000);
-                if (diff >= 0 && diff <= 4) buckets[diff].amount += amt;
+                if (diff >= 0 && diff <= 4) bucket = buckets[diff];
             } else if (period === 'month') {
                 if (d.getFullYear() === bounds.start.getFullYear() && d.getMonth() === bounds.start.getMonth()) {
                     const day = d.getDate();
-                    if (buckets[day - 1]) buckets[day - 1].amount += amt;
+                    if (buckets[day - 1]) bucket = buckets[day - 1];
                 }
             } else if (period === 'year') {
                 if (d.getFullYear() === bounds.start.getFullYear()) {
-                    buckets[d.getMonth()].amount += amt;
+                    bucket = buckets[d.getMonth()];
                 }
             } else if (period === 'historial') {
                 const idx = d.getFullYear() - bounds.start.getFullYear();
-                if (buckets[idx]) buckets[idx].amount += amt;
+                if (buckets[idx]) bucket = buckets[idx];
+            }
+            if (bucket) {
+                bucket.amount += amt;
+                bucket.qty += qty;
             }
         });
         return { subtitle: meta.subtitle, buckets: buckets };
@@ -1836,6 +1852,7 @@
         const citySeries = opts.citySeries || null;
         const multiCity = !!(citySeries && citySeries.length > 1);
         const lineColor = opts.lineColor || null;
+        const showUnits = !!opts.showUnits;
         if (!host) return;
 
         const cur = fillRhythmBuckets(period, bounds, list);
@@ -2161,20 +2178,24 @@
                 });
             } else {
                 const amt = Number(cur.buckets[idx].amount) || 0;
+                const qty = Number(cur.buckets[idx].qty) || 0;
                 markers.push({
                     color: lineColor || 'var(--text)',
                     y: ptY(amt),
                     kind: 'cur',
                     html: '<div class="tip-when">' + esc(tipTitle(idx)) + '</div>' +
-                        '<div class="tip-amt">' + money(amt) + '</div>'
+                        '<div class="tip-amt">' + money(amt) + '</div>' +
+                        (showUnits ? '<div class="tip-units">' + esc(formatUnits(qty)) + '</div>' : '')
                 });
                 if (showPrev && prev.buckets[idx]) {
                     const prevAmt = Number(prev.buckets[idx].amount) || 0;
+                    const prevQty = Number(prev.buckets[idx].qty) || 0;
                     markers.push({
                         color: '#a3a3a3',
                         y: ptY(prevAmt),
                         kind: 'prev',
-                        html: '<div class="tip-prev">' + money(prevAmt) + '</div>'
+                        html: '<div class="tip-prev">' + money(prevAmt) + '</div>' +
+                            (showUnits ? '<div class="tip-units tip-units-prev">' + esc(formatUnits(prevQty)) + '</div>' : '')
                     });
                 }
             }
@@ -5632,7 +5653,7 @@
         return list.map(function (s) {
             const c = productContribution(s, keys);
             if (!c.amount && !c.qty) return null;
-            return { createdAt: s.createdAt, total: c.amount };
+            return { createdAt: s.createdAt, total: c.amount, qty: c.qty };
         }).filter(Boolean);
     }
 
@@ -5825,7 +5846,8 @@
             bounds: bounds,
             list: curSeries,
             prevBounds: prevBounds,
-            prevList: prevSeries
+            prevList: prevSeries,
+            showUnits: true
         });
     }
 

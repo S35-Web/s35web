@@ -3380,6 +3380,19 @@
             font-variant-numeric: tabular-nums;
             color: var(--tip-accent, var(--text));
         }
+        .cortes-chart-tip .tip-units {
+            margin-top: 1px;
+            font-size: 10px;
+            font-weight: 550;
+            font-variant-numeric: tabular-nums;
+            color: var(--tip-accent, var(--text));
+            opacity: 0.85;
+        }
+        .cortes-chart-tip .tip-units-prev,
+        .cortes-chart-tip.tip-prev-plain .tip-units {
+            color: #a3a3a3;
+            opacity: 1;
+        }
         .cortes-chart-tip.tip-prev-plain {
             text-align: center;
             color: #a3a3a3;
@@ -9466,6 +9479,6 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260922-tipprev"></script>
+    <script src="/colaboradores/pos-module.js?v=20260922-pdunits"></script>
 </body>
 </html>
