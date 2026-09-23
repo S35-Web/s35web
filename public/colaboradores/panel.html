@@ -5798,7 +5798,7 @@
     }
     let plantIdsRemapped = false;
     /** Conteo físico del 22 sep 2026. Se aplica una vez para no pisar consumos posteriores. */
-    const PHYSICAL_COUNT_FLAG = 's35_plant_count_20260922';
+    const PHYSICAL_COUNT_FLAG = 's35_plant_count_20260922b';
     function applyPhysicalCount(saved, seed) {
         let pending = true;
         try { pending = !localStorage.getItem(PHYSICAL_COUNT_FLAG); } catch (_) {}
@@ -5836,6 +5836,10 @@
                 const saved = [];
                 const byId = {};
                 raw.items.map(normalizeItem).forEach(function (m) {
+                    if (m.id === 'marmolina-estandar') {
+                        persistNormalized = true;
+                        return;
+                    }
                     const canonical = canonicalPlantId(m.id);
                     if (canonical !== m.id) plantIdsRemapped = true;
                     const prev = byId[canonical];
@@ -7322,7 +7326,14 @@
                         map[slug].packSizeKg = Number(saved.packSizeKg) || seeded.packSizeKg;
                         map[slug].batchLabel = saved.batchLabel || seeded.batchLabel;
                         map[slug].batchUnit = normalizeUnit(saved.batchUnit || seeded.batchUnit) || seeded.batchUnit;
-                        map[slug].versions = saved.versions.map(function (ver) {
+                        const keptVersions = saved.versions.filter(function (ver) {
+                            return !(ver.items || []).some(function (it) {
+                                return it && String(it.plantId || '') === 'marmolina-estandar';
+                            });
+                        });
+                        if (keptVersions.length !== saved.versions.length) plantIdsRemapped = true;
+                        const versionSource = keptVersions.length ? keptVersions : (seeded.versions || []);
+                        map[slug].versions = versionSource.map(function (ver) {
                             return {
                                 id: ver.id || 'v1',
                                 name: ver.name || ver.id || 'V1',
@@ -7334,7 +7345,11 @@
                                 items: mapDoseItems(ver.items)
                             };
                         });
-                        map[slug].activeVersionId = saved.activeVersionId || map[slug].versions[0].id;
+                        if (!map[slug].versions.length) return;
+                        const stillActive = map[slug].versions.some(function (ver) {
+                            return ver.id === saved.activeVersionId;
+                        });
+                        map[slug].activeVersionId = stillActive ? saved.activeVersionId : map[slug].versions[0].id;
                         syncActiveVersionToRoot(map[slug]);
                         return;
                     }

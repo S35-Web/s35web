@@ -1368,7 +1368,7 @@ window.S35_PANEL_DATA = {
       "category": "cellulose",
       "labSlug": "celulosa-hpmc",
       "unitCost": 146.8,
-      "stock": 450
+      "stock": 200
     },
     {
       "id": "marmolina-gruesa",
@@ -1379,16 +1379,6 @@ window.S35_PANEL_DATA = {
       "labSlug": "marmolina-fina",
       "unitCost": 1.53,
       "stock": 24000
-    },
-    {
-      "id": "marmolina-estandar",
-      "name": "Marmolina estandar",
-      "unit": "Kg",
-      "minStock": 1000,
-      "category": "mineral",
-      "labSlug": "marmolina-fina",
-      "unitCost": 0,
-      "stock": 0
     },
     {
       "id": "marmolina-talco-100",
@@ -1478,7 +1468,7 @@ window.S35_PANEL_DATA = {
       "category": "polymer",
       "labSlug": "polimero-redispersable-vae",
       "unitCost": 61.75,
-      "stock": 0
+      "stock": 250
     },
     {
       "id": "resina-semitski",
@@ -1615,7 +1605,7 @@ window.S35_PANEL_DATA = {
         "mode": "plant-lot",
         "packSizeKg": 25,
         "packagingPlantId": "saco-rafia-waxtard",
-        "note": "Lote de planta FT-PR-001. Versiones alternativas según disponibilidad de marmolina.",
+        "note": "Lote de planta FT-PR-001. V1 con marmolina fina y gruesa.",
         "defaultVersionId": "v1",
         "versions": [
           {
@@ -1636,71 +1626,6 @@ window.S35_PANEL_DATA = {
               {
                 "plantId": "marmolina-fina",
                 "amount": 100,
-                "unit": "Kg",
-                "role": "Agregado"
-              },
-              {
-                "plantId": "marmolina-talco-100",
-                "amount": 200,
-                "unit": "Kg",
-                "role": "Carga"
-              },
-              {
-                "plantId": "cemento-portland-gris",
-                "amount": 50,
-                "unit": "Kg",
-                "role": "Cementante"
-              },
-              {
-                "plantId": "mortero",
-                "amount": 50,
-                "unit": "Kg",
-                "role": "Cementante"
-              },
-              {
-                "plantId": "calidra",
-                "amount": 100,
-                "unit": "Kg",
-                "role": "Cementante"
-              },
-              {
-                "plantId": "resina-rdp740h",
-                "amount": 1,
-                "unit": "Kg",
-                "role": "Polímero"
-              },
-              {
-                "plantId": "resina-semitski",
-                "amount": 1,
-                "unit": "Kg",
-                "role": "Polímero"
-              },
-              {
-                "plantId": "celulosa-hpmc",
-                "amount": 1,
-                "unit": "Kg",
-                "role": "Celulosa"
-              },
-              {
-                "plantId": "estearato",
-                "amount": 2.5,
-                "unit": "Kg",
-                "role": "Aditivo"
-              }
-            ]
-          },
-          {
-            "id": "v2",
-            "name": "V2",
-            "label": "Marmolina estándar (350 kg)",
-            "yieldMin": 29,
-            "yieldMax": 31,
-            "yieldTheoretical": 30.22,
-            "totalKg": 755.5,
-            "items": [
-              {
-                "plantId": "marmolina-estandar",
-                "amount": 350,
                 "unit": "Kg",
                 "role": "Agregado"
               },
@@ -1882,12 +1807,6 @@ window.S35_PANEL_DATA = {
           "unit": "Kg",
           "role": "Aditivo",
           "amount": 2.5
-        },
-        {
-          "plantId": "marmolina-estandar",
-          "unit": "Kg",
-          "role": "Agregado",
-          "amount": 350
         },
         {
           "plantId": "cemento-portland-blanco",
