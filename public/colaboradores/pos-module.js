@@ -4368,63 +4368,11 @@
         }
         const hintEl = document.getElementById('dashDeltaHint');
         if (hintEl) hintEl.textContent = delta.hint;
-
-        const moversEl = document.getElementById('dashMovers');
-        if (moversEl) {
-            const movers = computeDashMovers(3);
-            if (!movers.length) {
-                moversEl.innerHTML = '<div class="dash-empty">Sin movimiento reciente en el historial de ventas.</div>';
-            } else {
-                moversEl.innerHTML = movers.map(function (m) {
-                    const up = m.delta > 0;
-                    const pctLabel = m.pct === Infinity
-                        ? 'nuevo'
-                        : ((m.pct > 0 ? '+' : '') + (m.pct != null ? m.pct.toFixed(0) : '0') + '%');
-                    const icon = up ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
-                    return '<button type="button" class="dash-row" data-open-product="' + esc(m.slug) + '">' +
-                        '<div class="left"><span class="name">' + esc(m.name) + '</span></div>' +
-                        '<span class="amt ' + (up ? 'up' : 'down') + '">' +
-                        '<i class="fa-solid ' + icon + '" aria-hidden="true"></i>' +
-                        esc(pctLabel) +
-                        '</span></button>';
-                }).join('');
-            }
-        }
-
-        const attnEl = document.getElementById('dashAttention');
-        if (attnEl) {
-            const items = [];
-            const lowStock = (window.S35PanelAPI && typeof window.S35PanelAPI.getLowStockMaterials === 'function')
-                ? window.S35PanelAPI.getLowStockMaterials()
-                : [];
-            lowStock.forEach(function (m) {
-                if (items.length >= 5) return;
-                const unit = m.unit ? (' ' + m.unit) : '';
-                items.push({
-                    action: 'materials',
-                    target: '',
-                    name: 'Stock bajo · ' + (m.name || m.id),
-                    meta: 'libre ' + (Number(m.free) || 0) + unit + ' · mín. ' + (Number(m.minStock) || 0)
-                });
-            });
-            computeDashStaleProducts(5 - items.length).forEach(function (p) {
-                items.push({
-                    action: 'product',
-                    target: p.slug,
-                    name: 'Sin movimiento · ' + p.name,
-                    meta: '0 ventas en 7 días'
-                });
-            });
-            if (!items.length) {
-                attnEl.innerHTML = '<div class="dash-empty">Nada urgente por ahora.</div>';
-            } else {
-                attnEl.innerHTML = items.map(function (it) {
-                    return '<button type="button" class="dash-row" data-dash-action="' + esc(it.action) + '"' +
-                        (it.target ? ' data-dash-target="' + esc(it.target) + '"' : '') + '>' +
-                        '<div class="left"><span class="name">' + esc(it.name) + '</span></div>' +
-                        '<span class="meta">' + esc(it.meta) + '</span></button>';
-                }).join('');
-            }
+        const statusEl = document.getElementById('dashStatus');
+        if (statusEl) {
+            statusEl.textContent = todayList.length
+                ? (todayList.length === 1 ? '1 venta' : todayList.length + ' ventas')
+                : 'Sin ventas aún';
         }
     }
 

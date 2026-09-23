@@ -560,258 +560,213 @@
         #prodLotsWrap.is-danger .prod-lots-status { color: var(--danger); }
         #prodLotsWrap.is-ok .prod-lots-status { color: var(--muted); }
 
-        /* Dashboard greeting */
-        .dash-hero { margin-bottom: 28px; max-width: 640px; }
-        .dash-greet {
-            margin: 0 0 6px;
+        /* ——— Inicio · Copiloto S35 ——— */
+        #dashboard.home-ai {
+            position: relative;
+            max-width: 920px;
+            margin: 0 auto;
+            padding-bottom: 32px;
+        }
+        #dashboard.home-ai::before {
+            content: '';
+            position: absolute;
+            inset: -24px -12px auto -12px;
+            height: min(52vh, 420px);
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 0%, rgba(10, 10, 10, 0.06), transparent 55%),
+                radial-gradient(ellipse 70% 50% at 90% 10%, rgba(10, 10, 10, 0.04), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        [data-theme="dark"] #dashboard.home-ai::before {
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 0%, rgba(250, 250, 250, 0.07), transparent 55%),
+                radial-gradient(ellipse 70% 50% at 90% 10%, rgba(250, 250, 250, 0.04), transparent 50%);
+        }
+        .home-ai-stage {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            animation: homeAiIn 0.55s ease both;
+        }
+        @keyframes homeAiIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .home-ai-brand { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; }
+        .home-ai-mark {
+            margin: 0;
             font-family: var(--font-display);
             font-weight: 400;
-            font-size: clamp(28px, 4vw, 36px);
-            letter-spacing: -0.02em;
-            line-height: 1.15;
-        }
-        .dash-status { margin: 0; color: var(--muted); font-size: 14px; }
-
-        .dash-radar {
-            display: flex;
-            flex-direction: column;
-            gap: 28px;
-            margin-bottom: 28px;
-            max-width: 720px;
-        }
-        .dash-block-head {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-        .dash-block h2 {
-            margin: 0;
-            font-weight: 500;
-            font-size: 14px;
-            letter-spacing: -0.01em;
-        }
-        .dash-block-sub {
-            margin: -4px 0 10px;
-            font-size: 12px;
-        }
-        .dash-block-link {
-            border: none;
-            background: none;
-            padding: 0;
-            color: var(--muted);
-            font-size: 12px;
-            cursor: pointer;
-            text-decoration: underline;
-            text-underline-offset: 2px;
-        }
-        .dash-block-link:hover { color: var(--text); }
-        .dash-signals {
-            cursor: pointer;
-        }
-        .dash-signals:focus-visible {
-            outline: 2px solid var(--text);
-            outline-offset: 2px;
-        }
-        .dash-signals .kpi .val.up { color: var(--success); }
-        .dash-signals .kpi .val.down { color: var(--danger); }
-        .dash-list {
-            display: flex;
-            flex-direction: column;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-            background: var(--panel);
-        }
-        .dash-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 12px 14px;
-            border-bottom: 1px solid var(--border);
-            font-size: 13px;
+            font-size: clamp(42px, 7vw, 64px);
+            letter-spacing: -0.03em;
+            line-height: 0.95;
             color: var(--text);
-            background: transparent;
-            border-left: none;
-            border-right: none;
-            border-top: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-            font-family: inherit;
         }
-        .dash-row:last-child { border-bottom: none; }
-        .dash-row:hover { background: var(--hover); }
-        .dash-row:focus-visible {
-            outline: 2px solid var(--text);
-            outline-offset: -2px;
+        .home-ai-mark span {
+            display: block;
+            font-size: 0.42em;
+            letter-spacing: 0.02em;
+            color: var(--muted);
+            margin-top: 4px;
         }
-        .dash-row .left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
-        }
-        .dash-row .name {
+        .home-ai-greet { margin: 4px 0 0; font-size: 15px; color: var(--muted); }
+        .home-ai-pulse {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 14px;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            cursor: pointer;
+            animation: homeAiIn 0.55s ease 0.08s both;
         }
-        .dash-row .meta {
+        .home-ai-pulse:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+        .home-ai-pulse .pulse-cell {
+            background: var(--panel);
+            padding: 14px 16px;
+            transition: background 0.15s ease;
+        }
+        .home-ai-pulse:hover .pulse-cell { background: var(--bg-soft); }
+        .home-ai-pulse .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
             color: var(--muted);
-            font-size: 12px;
-            white-space: nowrap;
+            margin-bottom: 4px;
         }
-        .dash-row .amt {
-            font-weight: 500;
-            white-space: nowrap;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+        .home-ai-pulse .val {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text);
         }
-        .dash-row .amt.up { color: var(--success); }
-        .dash-row .amt.down { color: var(--danger); }
-        .dash-row .amt i { font-size: 11px; }
-        .dash-empty {
-            padding: 14px;
-            font-size: 13px;
-            color: var(--muted);
-        }
+        .home-ai-pulse .val.up { color: var(--success); }
+        .home-ai-pulse .val.down { color: var(--danger); }
+        .home-ai-pulse .hint { margin-top: 2px; font-size: 11px; color: var(--muted); }
+        @media (max-width: 560px) { .home-ai-pulse { grid-template-columns: 1fr; } }
 
-        .copilot-briefing {
-            margin: 12px 0 0;
-            padding: 12px 14px;
-            border-left: 3px solid var(--border-strong);
-            background: var(--bg-soft);
-            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-            font-size: 14px;
-            line-height: 1.45;
+        .copilot-panel {
+            margin: 0;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: color-mix(in srgb, var(--panel) 92%, transparent);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            animation: homeAiIn 0.55s ease 0.14s both;
+        }
+        .copilot-panel[hidden] { display: none !important; }
+        .copilot-insight {
+            margin: 0;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+            font-family: var(--font-display);
+            font-size: 18px;
+            line-height: 1.35;
+            letter-spacing: -0.01em;
             color: var(--text);
             white-space: pre-wrap;
         }
-        .copilot-panel {
-            margin: 0 0 22px;
-            padding: 16px 16px 14px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            background: var(--panel);
+        .copilot-insight[hidden] { display: none !important; }
+        .copilot-insight.is-loading {
+            font-family: var(--font);
+            font-size: 13px;
+            color: var(--muted);
         }
-        .copilot-panel[hidden] { display: none !important; }
-        .copilot-head {
+        .copilot-capabilities {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 14px 14px 4px;
+        }
+        @media (max-width: 560px) { .copilot-capabilities { grid-template-columns: 1fr; } }
+        .copilot-cap {
             display: flex;
             align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-        .copilot-title {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 650;
-            letter-spacing: -0.02em;
-        }
-        .copilot-sub { margin: 4px 0 0; font-size: 12px; }
-        .copilot-status {
-            font-size: 12px;
-            color: var(--muted);
-            min-height: 1em;
-        }
-        .copilot-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .copilot-chip {
+            gap: 10px;
+            text-align: left;
+            padding: 12px;
             border: 1px solid var(--border);
+            border-radius: 12px;
             background: var(--bg-soft);
             color: var(--text);
-            border-radius: 999px;
-            padding: 6px 12px;
-            font-size: 12px;
             cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
         }
-        .copilot-chip:hover { background: var(--hover); }
+        .copilot-cap:hover {
+            background: var(--hover);
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+        }
+        .copilot-cap i { margin-top: 2px; width: 18px; text-align: center; color: var(--muted); font-size: 14px; }
+        .copilot-cap strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+        .copilot-cap span { display: block; font-size: 12px; color: var(--muted); line-height: 1.35; }
         .copilot-messages {
-            max-height: 280px;
+            max-height: min(36vh, 320px);
             overflow: auto;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            padding: 4px 0 12px;
+            padding: 12px 14px 8px;
         }
-        .copilot-empty {
-            padding: 18px 8px;
-            text-align: center;
-            color: var(--muted);
-            font-size: 13px;
-        }
+        .copilot-empty { padding: 8px 4px 12px; color: var(--muted); font-size: 13px; line-height: 1.4; }
         .copilot-bubble {
             max-width: 92%;
             padding: 10px 12px;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 13px;
             line-height: 1.45;
             white-space: pre-wrap;
             word-break: break-word;
+            animation: homeAiIn 0.25s ease both;
         }
         .copilot-bubble.is-user {
             align-self: flex-end;
             background: var(--text);
             color: var(--bg);
+            border-bottom-right-radius: 4px;
         }
         .copilot-bubble.is-assistant {
             align-self: flex-start;
             background: var(--bg-soft);
             color: var(--text);
             border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
         }
-        .copilot-form {
+        .copilot-composer {
             display: flex;
             gap: 8px;
             align-items: center;
+            padding: 12px 14px 14px;
+            border-top: 1px solid var(--border);
+            background: var(--panel);
         }
-        .copilot-form input {
+        .copilot-composer input {
             flex: 1;
-            height: 38px;
+            height: 44px;
             border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
+            border-radius: 999px;
             background: var(--bg);
             color: var(--text);
-            padding: 0 12px;
-            font-size: 14px;
+            padding: 0 18px;
+            font-size: 15px;
             min-width: 0;
         }
-        .copilot-form input:focus {
-            outline: none;
-            border-color: var(--border-strong);
+        .copilot-composer input:focus { outline: none; border-color: var(--border-strong); }
+        .copilot-composer .btn { height: 44px; min-width: 44px; border-radius: 999px; padding: 0 16px; }
+        .copilot-status { font-size: 11px; color: var(--muted); padding: 0 18px 10px; min-height: 1em; }
+        .home-ai-guest {
+            padding: 28px 20px;
+            border: 1px dashed var(--border);
+            border-radius: 16px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
         }
-
-        .quick-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .qa-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            height: 36px;
-            padding: 0 14px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            background: var(--bg);
-            color: var(--text);
-            text-decoration: none;
-            cursor: pointer;
-            font-size: 13px;
-            transition: background .12s;
-        }
-        .qa-btn:hover { background: var(--hover); }
-        .qa-btn i { font-size: 12px; color: var(--muted); }
 
         .kpis {
             display: grid;
@@ -4273,79 +4228,76 @@
             </header>
 
             <main class="content">
-                <section id="dashboard" class="section active">
-                    <div class="dash-hero">
-                        <h1 class="dash-greet" id="dashGreet">Buenas</h1>
-                        <p class="dash-status" id="dashStatus">Radar del día · ventas de este navegador.</p>
-                        <p class="copilot-briefing" id="copilotBriefing" hidden></p>
-                    </div>
+                <section id="dashboard" class="section active home-ai">
+                    <div class="home-ai-stage">
+                        <div class="home-ai-brand">
+                            <h1 class="home-ai-mark">S35<span>Copiloto</span></h1>
+                            <p class="home-ai-greet" id="dashGreet">Buenas</p>
+                        </div>
 
-                    <div class="dash-radar" id="dashRadar">
-                        <div class="dash-block" id="dashSignalsBlock">
-                            <div class="dash-block-head">
-                                <h2>Señales de hoy</h2>
-                                <button type="button" class="dash-block-link" id="dashGoCortesDay">Ver corte del día</button>
+                        <div class="home-ai-pulse" id="dashSignals" role="button" tabindex="0" title="Abrir corte del día" aria-label="Pulso del día: abrir corte del día">
+                            <div class="pulse-cell">
+                                <div class="label">Hoy</div>
+                                <div class="val" id="dashSalesToday">$0.00</div>
+                                <div class="hint" id="dashStatus">Ventas</div>
                             </div>
-                            <div class="kpis dash-signals" id="dashSignals" role="button" tabindex="0" title="Abrir corte del día" aria-label="Señales de hoy: abrir corte del día">
-                                <div class="kpi">
-                                    <div class="label">Ventas hoy</div>
-                                    <div class="val" id="dashSalesToday">$0.00</div>
-                                </div>
-                                <div class="kpi">
-                                    <div class="label">Tickets hoy</div>
-                                    <div class="val" id="dashTicketsToday">0</div>
-                                </div>
-                                <div class="kpi">
-                                    <div class="label">Variación</div>
-                                    <div class="val" id="dashDeltaToday">—</div>
-                                    <div class="hint" id="dashDeltaHint">vs ayer</div>
-                                </div>
+                            <div class="pulse-cell">
+                                <div class="label">Tickets</div>
+                                <div class="val" id="dashTicketsToday">0</div>
+                                <div class="hint">Este día</div>
+                            </div>
+                            <div class="pulse-cell">
+                                <div class="label">Variación</div>
+                                <div class="val" id="dashDeltaToday">—</div>
+                                <div class="hint" id="dashDeltaHint">vs ayer</div>
                             </div>
                         </div>
 
-                        <div class="dash-block">
-                            <div class="dash-block-head">
-                                <h2>Productos en movimiento</h2>
+                        <div class="copilot-panel" id="copilotPanel" hidden>
+                            <p class="copilot-insight is-loading" id="copilotBriefing" hidden>Preparando lectura del día…</p>
+                            <div class="copilot-capabilities" id="copilotCapabilities">
+                                <button type="button" class="copilot-cap" data-copilot-chip="¿Cómo vamos hoy por ciudad?">
+                                    <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                                    <div>
+                                        <strong>Lectura de ventas</strong>
+                                        <span>Resumen por ciudad, periodo y variación</span>
+                                    </div>
+                                </button>
+                                <button type="button" class="copilot-cap" data-copilot-chip="¿Cuáles son los productos top del mes?">
+                                    <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i>
+                                    <div>
+                                        <strong>Productos y stock</strong>
+                                        <span>Top movidos, caídas y alertas de inventario</span>
+                                    </div>
+                                </button>
+                                <button type="button" class="copilot-cap" data-copilot-chip="Muéstrame clientes con más compra este mes">
+                                    <i class="fa-solid fa-users" aria-hidden="true"></i>
+                                    <div>
+                                        <strong>Clientes</strong>
+                                        <span>Quién compra más y a quién conviene seguir</span>
+                                    </div>
+                                </button>
+                                <button type="button" class="copilot-cap" data-copilot-chip="Ábreme el corte de hoy en Mazatlán">
+                                    <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                                    <div>
+                                        <strong>Acciones en el sistema</strong>
+                                        <span>Abrir cortes, productos o fichas de cliente</span>
+                                    </div>
+                                </button>
                             </div>
-                            <p class="dash-block-sub muted">Últimos 7 días vs 7 anteriores</p>
-                            <div class="dash-list" id="dashMovers"></div>
+                            <div class="copilot-messages" id="copilotMessages">
+                                <div class="copilot-empty">Pregúntame por ventas, ciudades, stock o pídeme abrir un corte. Entiendo el contexto del panel.</div>
+                            </div>
+                            <form class="copilot-composer" id="copilotForm">
+                                <input id="copilotInput" type="text" autocomplete="off" placeholder="Pregunta a S35…" maxlength="500" aria-label="Pregunta al copiloto S35">
+                                <button type="submit" class="btn primary" id="copilotSend" aria-label="Enviar"><i class="fa-solid fa-arrow-up"></i></button>
+                            </form>
+                            <div class="copilot-status" id="copilotStatus" aria-live="polite"></div>
                         </div>
 
-                        <div class="dash-block">
-                            <div class="dash-block-head">
-                                <h2>Atención</h2>
-                            </div>
-                            <div class="dash-list" id="dashAttention"></div>
+                        <div class="home-ai-guest" id="homeAiGuest" hidden>
+                            El copiloto S35 está disponible para administradores. Usa el menú para ventas, cortes y productos.
                         </div>
-                    </div>
-
-                    <div class="copilot-panel" id="copilotPanel" hidden>
-                        <div class="copilot-head">
-                            <div>
-                                <h2 class="copilot-title">Copiloto S35</h2>
-                                <p class="copilot-sub muted">Pregunta por ventas, ciudades, clientes o pídele abrir un corte</p>
-                            </div>
-                            <span class="copilot-status" id="copilotStatus" aria-live="polite"></span>
-                        </div>
-                        <div class="copilot-chips" id="copilotChips">
-                            <button type="button" class="copilot-chip" data-copilot-chip="¿Cómo vamos hoy por ciudad?">Hoy por ciudad</button>
-                            <button type="button" class="copilot-chip" data-copilot-chip="¿Cuáles son los productos top del mes?">Top productos mes</button>
-                            <button type="button" class="copilot-chip" data-copilot-chip="Muéstrame alertas de atención o stock bajo">Alertas</button>
-                            <button type="button" class="copilot-chip" data-copilot-chip="Ábreme el corte de hoy en Mazatlán">Corte hoy MZT</button>
-                        </div>
-                        <div class="copilot-messages" id="copilotMessages">
-                            <div class="copilot-empty">Escribe una pregunta o usa un atajo. Solo admin.</div>
-                        </div>
-                        <form class="copilot-form" id="copilotForm">
-                            <input id="copilotInput" type="text" autocomplete="off" placeholder="Ej. ¿Cómo va Culiacán este mes?" maxlength="500">
-                            <button type="submit" class="btn primary" id="copilotSend">Enviar</button>
-                        </form>
-                    </div>
-
-                    <div class="quick-actions">
-                        <button type="button" class="qa-btn" id="goVenta"><i class="fa-solid fa-cash-register"></i> Venta</button>
-                        <button type="button" class="qa-btn" id="goCortes"><i class="fa-solid fa-chart-simple"></i> Cortes</button>
-                        <button type="button" class="qa-btn" id="goProducts"><i class="fa-solid fa-box"></i> Productos</button>
                     </div>
                 </section>
 
@@ -5550,17 +5502,16 @@
     }
     function refreshGreeting() {
         const display = panelUserName.charAt(0).toUpperCase() + panelUserName.slice(1);
-        document.getElementById('dashGreet').textContent = greetingForNow() + ', ' + display;
-        document.getElementById('userAvatar').textContent = initialsFrom(panelUserName);
-        const avatar = document.getElementById('userAvatar');
-        if (avatar) {
+        const greet = document.getElementById('dashGreet');
+        if (greet) greet.textContent = greetingForNow() + ', ' + display;
+        const avatarEl = document.getElementById('userAvatar');
+        if (avatarEl) {
+            avatarEl.textContent = initialsFrom(panelUserName);
             const roleLab = (window.S35Roles && window.S35Roles.roleLabel)
                 ? window.S35Roles.roleLabel(sessionUser.role)
                 : sessionUser.role;
-            avatar.title = sessionUser.username + ' · ' + roleLab;
+            avatarEl.title = sessionUser.username + ' · ' + roleLab;
         }
-        const status = document.getElementById('dashStatus');
-        if (status) status.textContent = 'Radar del día · ventas de este navegador.';
     }
     refreshGreeting();
 
@@ -6030,34 +5981,6 @@
                 e.preventDefault();
                 openCortesDayFromDash();
             }
-        });
-    }
-    const dashGoCortesDay = document.getElementById('dashGoCortesDay');
-    if (dashGoCortesDay) {
-        dashGoCortesDay.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            openCortesDayFromDash();
-        });
-    }
-    const dashMovers = document.getElementById('dashMovers');
-    if (dashMovers) {
-        dashMovers.addEventListener('click', function (e) {
-            const row = e.target.closest('[data-open-product]');
-            if (!row) return;
-            openProductHub(row.getAttribute('data-open-product'));
-        });
-    }
-    const dashAttention = document.getElementById('dashAttention');
-    if (dashAttention) {
-        dashAttention.addEventListener('click', function (e) {
-            const row = e.target.closest('[data-dash-action]');
-            if (!row) return;
-            const action = row.getAttribute('data-dash-action');
-            const target = row.getAttribute('data-dash-target') || '';
-            if (action === 'materials') showSection('materials');
-            else if (action === 'production') showSection('production');
-            else if (action === 'product' && target) openProductHub(target);
         });
     }
     const topbarMessagesBtn = document.getElementById('topbarMessagesBtn');
@@ -10202,15 +10125,10 @@
         }
     };
 
-    const goVenta = document.getElementById('goVenta');
-    if (goVenta) goVenta.addEventListener('click', function (e) { e.preventDefault(); showSection('venta'); });
-    const goCortes = document.getElementById('goCortes');
-    if (goCortes) goCortes.addEventListener('click', function (e) { e.preventDefault(); showSection('cortes'); });
-
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-copilot"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-home-ai"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-corte-cmd"></script>
-    <script src="/colaboradores/s35-copilot.js?v=20260923-copilot"></script>
+    <script src="/colaboradores/s35-copilot.js?v=20260923-home-ai"></script>
 </body>
 </html>

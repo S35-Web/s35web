@@ -1,5 +1,5 @@
 /**
- * S35 Copiloto — UI del dashboard (solo admin).
+ * S35 Copiloto — UI del inicio (solo admin).
  */
 (function () {
     'use strict';
@@ -42,6 +42,9 @@
         if (input) input.disabled = busy;
         const status = el('copilotStatus');
         if (status) status.textContent = busy ? 'Pensando…' : '';
+        document.querySelectorAll('[data-copilot-chip]').forEach(function (btn) {
+            btn.disabled = busy;
+        });
     }
 
     function appendBubble(role, text) {
@@ -54,6 +57,14 @@
         div.textContent = text;
         host.appendChild(div);
         host.scrollTop = host.scrollHeight;
+    }
+
+    function setInsight(text, loading) {
+        const brief = el('copilotBriefing');
+        if (!brief) return;
+        brief.hidden = false;
+        brief.classList.toggle('is-loading', !!loading);
+        brief.textContent = text || '';
     }
 
     function runActions(actions) {
@@ -97,7 +108,9 @@
         const content = String(text || '').trim();
         if (!content && mode !== 'briefing') return;
 
-        if (mode !== 'briefing') {
+        if (mode === 'briefing') {
+            setInsight('Preparando lectura del día…', true);
+        } else {
             appendBubble('user', content);
             history.push({ role: 'user', content: content });
         }
@@ -121,36 +134,40 @@
                 throw new Error(data.error || ('Error HTTP ' + res.status));
             }
             const reply = data.reply || '';
-            appendBubble('assistant', reply);
-            if (mode !== 'briefing') {
-                history.push({ role: 'assistant', content: reply });
+            if (mode === 'briefing') {
+                setInsight(reply, false);
             } else {
-                const brief = el('copilotBriefing');
-                if (brief) {
-                    brief.hidden = false;
-                    brief.textContent = reply;
-                }
+                appendBubble('assistant', reply);
+                history.push({ role: 'assistant', content: reply });
             }
             runActions(data.actions || []);
         } catch (err) {
-            appendBubble('assistant', 'No pude responder: ' + (err.message || 'error de red'));
+            const msg = 'No pude responder: ' + (err.message || 'error de red');
+            if (mode === 'briefing') {
+                setInsight(msg, false);
+            } else {
+                appendBubble('assistant', msg);
+            }
         } finally {
             setBusy(false);
         }
     }
 
-    function bind() {
+    function syncVisibility() {
         const root = el('copilotPanel');
-        if (!root) return;
+        const guest = el('homeAiGuest');
+        const admin = isAdmin();
+        if (root) root.hidden = !admin;
+        if (guest) guest.hidden = admin;
+        return admin;
+    }
 
-        if (!isAdmin()) {
-            root.hidden = true;
-            return;
-        }
-        root.hidden = false;
+    function bind() {
+        if (!syncVisibility()) return;
 
         const form = el('copilotForm');
-        if (form) {
+        if (form && !form.dataset.bound) {
+            form.dataset.bound = '1';
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const input = el('copilotInput');
@@ -161,10 +178,10 @@
         }
 
         document.querySelectorAll('[data-copilot-chip]').forEach(function (btn) {
+            if (btn.dataset.bound) return;
+            btn.dataset.bound = '1';
             btn.addEventListener('click', function () {
                 const q = btn.getAttribute('data-copilot-chip') || '';
-                const input = el('copilotInput');
-                if (input) input.value = q;
                 ask(q, 'chat');
             });
         });
@@ -180,7 +197,6 @@
 
     function onReady() {
         bind();
-        // Esperar a que el POS cargue histórico
         setTimeout(maybeBriefing, 1200);
         document.addEventListener('s35:pos-ready', maybeBriefing);
     }
@@ -191,8 +207,6 @@
         onReady();
     }
 
-    // Hook desde pos-module onPosReady
-    const prev = window.S35PanelAPI && window.S35PanelAPI.onPosReady;
     Object.defineProperty(window, '__s35CopilotBoot', {
         value: function () {
             bind();
