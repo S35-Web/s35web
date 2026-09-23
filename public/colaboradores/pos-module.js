@@ -4277,6 +4277,42 @@
         }
     }
 
+    function setCortesCityFilter(cityId) {
+        if (cityId === 'all') cortesCityFilter = 'all';
+        else if (cityById(cityId)) cortesCityFilter = cityId;
+        else cortesCityFilter = normalizeCityId(cityId);
+        renderCortes();
+    }
+
+    function searchSales(query, limit) {
+        const needle = String(query || '').toLowerCase().trim();
+        if (!needle || needle.length < 2) return [];
+        const max = limit || 8;
+        const all = salesForAnalytics();
+        const out = [];
+        for (let i = all.length - 1; i >= 0 && out.length < max * 3; i--) {
+            const s = all[i];
+            if (!s) continue;
+            const folio = String(s.folio || '').toLowerCase();
+            const id = String(s.id || '').toLowerCase();
+            const cust = s.customer || {};
+            const clientName = String(cust.name || s.clientName || s.client || '').toLowerCase();
+            const cfdiFolio = String((s.meta && s.meta.cfdi && s.meta.cfdi.folio) || '').toLowerCase();
+            const uuid = String((s.meta && s.meta.cfdi && s.meta.cfdi.uuid) || '').toLowerCase();
+            let score = 0;
+            if (folio === needle || id === needle || cfdiFolio === needle) score = 100;
+            else if (folio.indexOf(needle) === 0 || cfdiFolio.indexOf(needle) === 0) score = 85;
+            else if (folio.indexOf(needle) >= 0 || id.indexOf(needle) >= 0 || cfdiFolio.indexOf(needle) >= 0) score = 70;
+            else if (clientName.indexOf(needle) >= 0) score = 55;
+            else if (uuid.indexOf(needle) >= 0) score = 50;
+            else if (String(s.total || '').indexOf(needle) >= 0) score = 40;
+            if (score <= 0) continue;
+            out.push(Object.assign({}, s, { _score: score }));
+        }
+        out.sort(function (a, b) { return b._score - a._score; });
+        return out.slice(0, max);
+    }
+
     function openCortesPeriod(period) {
         if (['day', 'week', 'month', 'year', 'historial'].indexOf(period) < 0) return;
         cortesPeriod = period;
@@ -5396,10 +5432,11 @@
         return normalizeClientType(active && active.getAttribute('data-client-type'));
     }
 
-    function openClientModal(client) {
+    function openClientModal(client, opts) {
+        opts = opts || {};
         editingClientId = client ? client.id : null;
         document.getElementById('clientModalTitle').textContent = client ? 'Editar cliente' : 'Nuevo cliente';
-        document.getElementById('clientName').value = client ? client.name : '';
+        document.getElementById('clientName').value = client ? client.name : (opts.name || '');
         document.getElementById('clientPhone').value = client ? (client.phone || '') : '';
         document.getElementById('clientEmail').value = client ? (client.email || '') : '';
         document.getElementById('clientCompany').value = client ? (client.company || '') : '';
@@ -7371,7 +7408,13 @@
             renderProductsMovementsChart: renderProductsMovementsChart,
             renderClientDashboard: renderClientDashboard,
             openClientDashboard: openClientDashboard,
+            openClientModal: openClientModal,
             openCobranzaForClient: openCobranzaForClient,
+            openSaleNoteById: openSaleNoteById,
+            getClients: function () { return clients.slice(); },
+            searchSales: searchSales,
+            getSaleCities: function () { return SALE_CITIES.slice(); },
+            setCortesCityFilter: setCortesCityFilter,
             renderDashboardRadar: renderDashboardRadar,
             openCortesPeriod: openCortesPeriod,
             importHistoricalSales: importHistoricalSales,

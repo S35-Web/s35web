@@ -205,6 +205,7 @@
             border-radius: var(--radius-sm);
             background: var(--bg-soft);
             color: var(--muted);
+            cursor: pointer;
         }
         .global-search:focus-within { border-color: var(--border-strong); background: var(--bg); }
         .global-search i { font-size: 12px; }
@@ -216,14 +217,165 @@
             color: var(--text);
             font-size: 13px;
             min-width: 0;
+            cursor: pointer;
         }
+        .global-search input::placeholder { color: var(--muted); }
         .global-search kbd {
             font-size: 11px;
             color: var(--muted);
             border: 1px solid var(--border);
-            border-radius: 4px;
             padding: 1px 5px;
+            border-radius: 4px;
             font-family: inherit;
+        }
+
+        /* S35 Command Palette */
+        #cmdPalette {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 12vh 16px 24px;
+            background: rgba(15, 15, 15, 0.45);
+            backdrop-filter: blur(2px);
+        }
+        #cmdPalette.show { display: flex; }
+        .cmd-palette-card {
+            width: min(640px, 100%);
+            max-height: min(72vh, 640px);
+            display: flex;
+            flex-direction: column;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+            overflow: hidden;
+        }
+        .cmd-palette-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .cmd-palette-head > i { color: var(--muted); font-size: 14px; }
+        .cmd-palette-head input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 16px;
+            min-width: 0;
+        }
+        .cmd-palette-hint {
+            font-size: 11px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+        .cmd-palette-close {
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 6px;
+        }
+        .cmd-palette-close:hover { background: var(--hover); color: var(--text); }
+        .cmd-palette-results {
+            overflow: auto;
+            padding: 8px;
+            flex: 1;
+        }
+        .cmd-group-label {
+            padding: 8px 10px 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .cmd-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .cmd-item:hover,
+        .cmd-item.is-active {
+            background: var(--hover);
+        }
+        .cmd-item-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-soft);
+            color: var(--muted);
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+        .cmd-item.is-active .cmd-item-icon {
+            color: var(--text);
+        }
+        .cmd-item-body {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .cmd-item-title {
+            font-size: 14px;
+            font-weight: 550;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .cmd-item-sub {
+            font-size: 12px;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .cmd-empty {
+            padding: 28px 16px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .cmd-palette-foot {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 14px;
+            padding: 10px 14px;
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .cmd-palette-foot kbd {
+            display: inline-block;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0 5px;
+            font-family: inherit;
+            font-size: 10px;
+        }
+        @media (max-width: 640px) {
+            #cmdPalette { padding: 8vh 10px 12px; align-items: flex-start; }
+            .cmd-palette-card { max-height: 84vh; }
+            .cmd-palette-hint { display: none; }
         }
         .topbar-actions {
             margin-left: auto;
@@ -3999,7 +4151,7 @@
                 <button class="menu-btn" id="menuBtn" type="button" aria-label="Menú"><i class="fa-solid fa-bars"></i></button>
                 <label class="global-search" for="globalSearch">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input id="globalSearch" type="search" placeholder="Buscar…" autocomplete="off">
+                    <input id="globalSearch" type="search" placeholder="Buscar, @cliente, /cortes…" autocomplete="off" readonly>
                     <kbd>⌘K</kbd>
                 </label>
                 <div class="topbar-actions">
@@ -4963,6 +5115,24 @@
         </div>
     </div>
 
+    <div id="cmdPalette" class="cmd-palette" aria-hidden="true">
+        <div class="cmd-palette-card" role="dialog" aria-modal="true" aria-label="S35 Command">
+            <div class="cmd-palette-head">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input id="cmdPaletteInput" type="search" placeholder="Buscar o ir a… @cliente  /cortes  >venta" autocomplete="off" spellcheck="false">
+                <span class="cmd-palette-hint" id="cmdPaletteHint">Navegación global</span>
+                <button type="button" class="cmd-palette-close" id="cmdPaletteClose" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="cmd-palette-results" id="cmdPaletteResults" role="listbox"></div>
+            <div class="cmd-palette-foot">
+                <span><kbd>↑</kbd><kbd>↓</kbd> navegar</span>
+                <span><kbd>Enter</kbd> abrir</span>
+                <span><kbd>Tab</kbd> completar @</span>
+                <span><kbd>Esc</kbd> cerrar</span>
+            </div>
+        </div>
+    </div>
+
     <div id="clientModal" class="modal-backdrop" aria-hidden="true">
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="clientModalTitle" style="max-width:480px">
             <div class="modal-head">
@@ -5787,40 +5957,12 @@
     });
 
     const globalSearch = document.getElementById('globalSearch');
-    globalSearch.addEventListener('keydown', function (e) {
-        if (e.key !== 'Enter') return;
-        const q = (globalSearch.value || '').trim().toLowerCase();
-        if (!q) return;
-        const inProducts = (data.products || []).some(function (p) {
-            return [p.name, p.code, p.family].some(function (v) { return String(v || '').toLowerCase().includes(q); });
+    // ⌘K / click: command-palette.js
+    if (globalSearch) {
+        globalSearch.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') e.preventDefault();
         });
-        const inMats = inventory.some(function (m) {
-            return String(m.name || '').toLowerCase().includes(q);
-        });
-        if (inProducts) {
-            showSection('products');
-            const ps = document.getElementById('productsSearch');
-            if (ps) {
-                ps.value = globalSearch.value;
-                ps.dispatchEvent(new Event('input'));
-            }
-        } else if (inMats) {
-            showSection('materials');
-            document.getElementById('matSearch').value = globalSearch.value;
-            document.getElementById('matSearch').dispatchEvent(new Event('input'));
-        } else {
-            showSection('messages');
-            document.getElementById('searchInput').value = globalSearch.value;
-            document.getElementById('searchInput').dispatchEvent(new Event('input'));
-        }
-    });
-    document.addEventListener('keydown', function (e) {
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-            e.preventDefault();
-            globalSearch.focus();
-            globalSearch.select();
-        }
-    });
+    }
 
     function esc(s) {
         return String(s == null ? '' : s)
@@ -9881,7 +10023,24 @@
             }
         },
         role: currentRole,
-        canAccess: canAccess
+        canAccess: canAccess,
+        getProducts: function () { return (data.products || []).slice(); },
+        getMaterials: function () { return (inventory || []).slice(); },
+        openProduct: function (slug) {
+            if (typeof openProductHub === 'function') openProductHub(slug, { tab: 'resumen' });
+        },
+        focusMaterialSearch: function (q) {
+            const el = document.getElementById('matSearch');
+            if (!el) return;
+            el.value = q || '';
+            el.dispatchEvent(new Event('input'));
+        },
+        focusProductSearch: function (q) {
+            const el = document.getElementById('productsSearch');
+            if (!el) return;
+            el.value = q || '';
+            el.dispatchEvent(new Event('input'));
+        }
     };
 
     const goVenta = document.getElementById('goVenta');
@@ -9891,6 +10050,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-cd-datos-ui"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-cmdk"></script>
+    <script src="/colaboradores/command-palette.js?v=20260923-cmdk"></script>
 </body>
 </html>
