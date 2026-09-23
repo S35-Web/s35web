@@ -1945,18 +1945,50 @@
 
         /* —— POS cart line items —— */
         .cart-item {
-            display: grid; grid-template-columns: 1fr auto;
-            gap: 4px 10px; padding: 12px 2px; border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 48px minmax(0, 1fr) auto;
+            gap: 4px 12px;
+            padding: 12px 2px;
+            border-bottom: 1px solid var(--border);
+            align-items: start;
         }
         .cart-item:last-child { border-bottom: none; }
-        .cart-item .ci-name { font-size: 13px; font-weight: 500; }
+        .cart-item .ci-thumb {
+            grid-row: 1 / span 3;
+            align-self: center;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            padding: 0;
+            overflow: hidden;
+        }
+        .cart-item .ci-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            display: block;
+        }
+        .cart-item .ci-thumb-fallback {
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--muted);
+            letter-spacing: 0.04em;
+        }
+        .cart-item .ci-name { font-size: 13px; font-weight: 500; min-width: 0; }
         .cart-item .ci-meta {
             font-size: 12px; color: var(--muted);
             display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+            grid-column: 2 / -1;
         }
         .cart-item .ci-line {
             font-variant-numeric: tabular-nums; font-weight: 500; text-align: right;
             cursor: pointer; border-radius: 4px; padding: 1px 2px;
+            white-space: nowrap;
         }
         .cart-item .ci-line:hover { background: var(--hover); }
         .cart-item .ci-unit-price {

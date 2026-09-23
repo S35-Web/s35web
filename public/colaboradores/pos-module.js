@@ -4411,6 +4411,12 @@
                         '<i class="fa-solid fa-pen" aria-hidden="true"></i></button>' +
                         '</div>');
                 }
+                const recipe = recipeBySlug(it.product);
+                const thumbHtml = (recipe && recipe.image)
+                    ? ('<div class="ci-thumb" aria-hidden="true">' +
+                        '<img src="' + esc(recipe.image) + '" alt="" loading="lazy" decoding="async">' +
+                        '</div>')
+                    : '<div class="ci-thumb" aria-hidden="true"><span class="ci-thumb-fallback">S35</span></div>';
                 const itemClass = 'cart-item' +
                     (it.priceOverride != null ? ' has-price-override' : '') +
                     (it.isPromo ? ' is-promo' : '') +
@@ -4430,11 +4436,11 @@
                         '<button type="button" class="btn ghost danger" data-rm="' + idx + '" style="margin-left:auto;height:28px;padding:0 8px">Quitar</button>' +
                         '</div>');
                 return '<div class="' + itemClass + '" data-product="' + esc(it.product) + '">' +
+                    thumbHtml +
                     '<div class="ci-name">' + esc(it.name) + promoBadge + '</div>' +
                     '<div class="ci-line"' + (priceLocked ? '' : ' data-edit-price="' + idx + '" title="Editar precio unitario"') + '>' +
                     money(it.qty * it.price) + '</div>' +
                     metaHtml +
-                    '<div></div>' +
                     qtyRow +
                     '</div>';
             }).join('');
