@@ -6,21 +6,23 @@ const { getDb } = require('./mongo');
 const GMAIL_SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
   'https://www.googleapis.com/auth/gmail.modify',
+  'openid',
+  'email',
 ];
 const TOKEN_DOC_ID = 'contacto';
 
 function redirectUri() {
-  return (
+  return String(
     process.env.GOOGLE_REDIRECT_URI ||
-    'https://www.s-35.com/api/gmail-oauth'
-  ).replace(/\/$/, '');
+    'https://www.s-35.com.mx/api/gmail-oauth'
+  ).trim().replace(/\/$/, '');
 }
 
 function panelReturnUrl() {
-  return (
+  return String(
     process.env.GMAIL_PANEL_RETURN ||
-    'https://www.s-35.com/colaboradores/panel#messages'
-  );
+    'https://www.s-35.com.mx/colaboradores/panel#messages'
+  ).trim();
 }
 
 function createOAuthClient() {

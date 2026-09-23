@@ -13,6 +13,7 @@ const {
   GMAIL_SCOPES,
   createOAuthClient,
   panelReturnUrl,
+  redirectUri,
   saveTokens,
   clearTokens,
   loadTokenDoc,
@@ -36,7 +37,10 @@ module.exports = async function handler(req, res) {
     }
     try {
       const client = createOAuthClient();
-      const { tokens } = await client.getToken(req.query.code);
+      const { tokens } = await client.getToken({
+        code: String(req.query.code),
+        redirect_uri: redirectUri(),
+      });
       client.setCredentials(tokens);
       let email = process.env.GMAIL_USER || 'contacto@s35.com.mx';
       try {
@@ -52,8 +56,8 @@ module.exports = async function handler(req, res) {
       }
       if (!tokens.refresh_token) {
         res.status(400).send(
-          'Google no devolvió refresh_token. Revoca el acceso de la app en ' +
-            'https://myaccount.google.com/permissions y vuelve a conectar marcando consentimiento.'
+          'Google no devolvió refresh_token. Abre https://myaccount.google.com/permissions , ' +
+            'quita el acceso a «S-35 System» y vuelve a Conectar Gmail (debe pedir Allow otra vez).'
         );
         return;
       }
@@ -65,7 +69,15 @@ module.exports = async function handler(req, res) {
       return;
     } catch (e) {
       console.error('gmail oauth callback', e);
-      res.status(500).send('No se pudo completar la conexión con Gmail.');
+      const detail =
+        (e.response && e.response.data && (e.response.data.error_description || e.response.data.error)) ||
+        e.message ||
+        'error desconocido';
+      res.status(500).send(
+        'No se pudo completar la conexión con Gmail.<br><br>' +
+          '<code style="font-size:13px">' + String(detail).replace(/[<>&]/g, '') + '</code><br><br>' +
+          'Vuelve al panel e intenta Conectar Gmail de nuevo (el código de Google solo sirve una vez).'
+      );
       return;
     }
   }

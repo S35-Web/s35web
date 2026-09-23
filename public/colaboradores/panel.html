@@ -6367,8 +6367,12 @@
             const resp = await fetch('/api/gmail-oauth?action=status', {
                 headers: { Authorization: 'Bearer ' + getToken(), Accept: 'application/json' }
             });
+            if (resp.status === 401) {
+                localStorage.removeItem('s35_admin_token');
+                window.location.replace(LOGIN_URL);
+                return;
+            }
             if (!resp.ok) {
-                gmailStatus = { configured: false, connected: false, email: 'contacto@s35.com.mx' };
                 updateGmailConnectUi();
                 return;
             }
@@ -6380,7 +6384,6 @@
             };
             updateGmailConnectUi();
         } catch (_) {
-            gmailStatus = { configured: false, connected: false, email: 'contacto@s35.com.mx' };
             updateGmailConnectUi();
         }
     }
