@@ -132,7 +132,9 @@ const TOOLS = [
     function: {
       name: 'top_clients',
       description:
-        'Top clientes por monto. Para «toda la historia» usa period=historial y limit=10. Excluye tickets sin cliente real (p. ej. Histórico importado).',
+        'Top clientes por monto. Para «toda la historia» usa period=historial y limit=10. ' +
+        'Nunca trates «Histórico importado» como cliente: es data migrada del sistema anterior sin nombre. ' +
+        'Esta tool ya lo excluye; reporta el top de items[] y opcionalmente la note.',
       parameters: {
         type: 'object',
         properties: {
@@ -217,6 +219,7 @@ function systemPrompt(context) {
     'Eres el cerebro del panel: para cifras de periodos, ciudades, clientes, productos o stock DEBES usar tools.',
     'Offsets de día: 0=hoy, -1=ayer, -2=antier. Semana/mes/año igual (0 actual, -1 anterior).',
     'Para «toda la historia / histórico / all time» usa period=historial (no inventes tops).',
+    'IMPORTANTE sobre «Histórico importado»: NO es un cliente. Es la etiqueta de tickets migrados del sistema anterior a S35 Midday; en esa migración no vino el nombre del cliente. Nunca lo trates, listes ni cites como cliente top. Si el usuario pregunta por clientes en el histórico, usa tops de clientes identificados y, si aplica, menciona en una frase que parte de la data migrada aún no tiene nombre de cliente.',
     'Si top_clients trae note sobre tickets sin cliente, menciónalo breve y lista el top de items[] (nunca digas que no hay top 10 si items tiene filas).',
     'El CONTEXTO es solo un snapshot rápido. Si falta un dato (ej. antier o top 10), llama la tool correspondiente.',
     'No inventes tickets ni totales. Si la tool devuelve vacío, dilo.',

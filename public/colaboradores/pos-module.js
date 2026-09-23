@@ -4489,7 +4489,7 @@
         return {
             generatedAt: new Date().toISOString(),
             source: 's35_ventas',
-            note: 'Snapshot rápido. Para periodos/ciudades/clientes concretos usa tools (offsets: 0=hoy, -1=ayer, -2=antier).',
+            note: 'Snapshot rápido. Tools para detalle. «Histórico importado» = data migrada del sistema anterior sin nombre de cliente (NO es un cliente). Offsets: 0=hoy, -1=ayer, -2=antier.',
             catalog: {
                 clients: clients.length,
                 tickets: analytics.length,
@@ -4628,8 +4628,10 @@
                     label: formatPeriodLabel(p, bounds.start, bounds.end),
                     items: ranked.items,
                     note: ranked.meta.excludedPlaceholderTickets
-                        ? ('Se excluyeron ' + ranked.meta.excludedPlaceholderTickets +
-                            ' tickets sin cliente real (p. ej. «Histórico importado»). Top sobre clientes identificados.')
+                        ? ('«Histórico importado» no es un cliente: son tickets migrados del sistema anterior sin nombre de cliente. ' +
+                            'Se excluyeron ' + ranked.meta.excludedPlaceholderTickets +
+                            ' de esos tickets ($' + ranked.meta.excludedPlaceholderAmount.toLocaleString('es-MX', { minimumFractionDigits: 2 }) +
+                            '). El top lista solo clientes identificados.')
                         : null,
                     meta: ranked.meta
                 };
