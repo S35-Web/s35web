@@ -11,7 +11,7 @@
     const DEBOUNCE_MS = 90;
 
     const SECTIONS = [
-        { id: 'dashboard', label: 'Inicio', aliases: ['inicio', 'home', 'dashboard'], icon: 'fa-border-all' },
+        { id: 'dashboard', label: 'Copiloto', aliases: ['inicio', 'home', 'dashboard', 'copiloto', 'ia', 'ai'], icon: 'fa-circle-dot' },
         { id: 'venta', label: 'Venta', aliases: ['venta', 'pos', 'caja'], icon: 'fa-cash-register' },
         { id: 'cortes', label: 'Cortes', aliases: ['cortes', 'corte', 'reporte'], icon: 'fa-chart-simple' },
         { id: 'clients', label: 'Clientes', aliases: ['clientes', 'cliente', 'customers'], icon: 'fa-user-group' },
