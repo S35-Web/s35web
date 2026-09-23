@@ -1,0 +1,48 @@
+{
+  "generatedAt": "2026-09-22T19:44:29",
+  "action": "iwa_synthetic_mazatlan",
+  "sales": [
+    {
+      "folio": "12191",
+      "saleId": "sale-cfdi-12191-iwa-mzt",
+      "total": 134078.01,
+      "fecha": "2026-01-26 13:01:57",
+      "uuid": "D91665EC-F2CE-4A81-9148-2C532082981E"
+    },
+    {
+      "folio": "12273",
+      "saleId": "sale-cfdi-12273-iwa-mzt",
+      "total": 50000.01,
+      "fecha": "2026-02-27 11:32:12",
+      "uuid": "7A901149-1087-4833-8262-954431682B9F"
+    },
+    {
+      "folio": "12412",
+      "saleId": "sale-cfdi-12412-iwa-mzt",
+      "total": 102379.0,
+      "fecha": "2026-05-13 14:39:34",
+      "uuid": "A34C7EE2-9241-42C1-BA3E-A0C467647B42"
+    },
+    {
+      "folio": "12426",
+      "saleId": "sale-cfdi-12426-iwa-mzt",
+      "total": 100000.0,
+      "fecha": "2026-05-20 15:11:12",
+      "uuid": "1E33977C-27ED-4A84-9C4A-BE91820940FC"
+    },
+    {
+      "folio": "12555",
+      "saleId": "sale-cfdi-12555-iwa-mzt",
+      "total": 100000.0,
+      "fecha": "2026-07-10 12:33:31",
+      "uuid": "74FBC21A-C245-4DF0-B5E8-D8ADA86BB7D6"
+    },
+    {
+      "folio": "12556",
+      "saleId": "sale-cfdi-12556-iwa-mzt",
+      "total": 100000.0,
+      "fecha": "2026-07-10 12:33:40",
+      "uuid": "E51DF4E3-A0FC-4F62-8D44-6815AB8EE96F"
+    }
+  ]
+}

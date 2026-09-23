@@ -1,0 +1,221 @@
+{
+  "generatedAt": "2026-09-22T19:44:29",
+  "action": "create_iwa_mazatlan_synthetic_sales",
+  "clientId": "c_8c281714bb54",
+  "rfc": "IHO220218TH1",
+  "sales": [
+    {
+      "id": "sale-cfdi-12191-iwa-mzt",
+      "folio": "CFDI-12191",
+      "city": "mazatlan",
+      "storeId": 35,
+      "createdAt": "2026-01-26T13:01:57",
+      "total": 134078.01,
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "microconcreto-blanco-pulido",
+          "code": "",
+          "unit": "Pza",
+          "price": 200.0,
+          "qty": 368,
+          "lineTotal": 73600.0
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "adhesivo-darawell",
+          "code": "",
+          "unit": "Pza",
+          "price": 275.0,
+          "qty": 219,
+          "lineTotal": 60225.0
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "adhesivo-darawell",
+          "code": "",
+          "unit": "Pza",
+          "price": 253.01,
+          "qty": 1,
+          "lineTotal": 253.01
+        }
+      ],
+      "clientId": "c_8c281714bb54",
+      "cfdiFolio": "12191",
+      "uuid": "D91665EC-F2CE-4A81-9148-2C532082981E"
+    },
+    {
+      "id": "sale-cfdi-12273-iwa-mzt",
+      "folio": "CFDI-12273",
+      "city": "mazatlan",
+      "storeId": 35,
+      "createdAt": "2026-02-27T11:32:12",
+      "total": 50000.01,
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "microconcreto-blanco-pulido",
+          "code": "",
+          "unit": "Pza",
+          "price": 200.0,
+          "qty": 137,
+          "lineTotal": 27400.0
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "adhesivo-darawell",
+          "code": "",
+          "unit": "Pza",
+          "price": 275.0,
+          "qty": 82,
+          "lineTotal": 22550.0
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "adhesivo-darawell",
+          "code": "",
+          "unit": "Pza",
+          "price": 50.01,
+          "qty": 1,
+          "lineTotal": 50.01
+        }
+      ],
+      "clientId": "c_8c281714bb54",
+      "cfdiFolio": "12273",
+      "uuid": "7A901149-1087-4833-8262-954431682B9F"
+    },
+    {
+      "id": "sale-cfdi-12412-iwa-mzt",
+      "folio": "CFDI-12412",
+      "city": "mazatlan",
+      "storeId": 35,
+      "createdAt": "2026-05-13T14:39:34",
+      "total": 102379.0,
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "microconcreto-blanco-pulido",
+          "code": "",
+          "unit": "Pza",
+          "price": 200.0,
+          "qty": 281,
+          "lineTotal": 56200.0
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "adhesivo-darawell",
+          "code": "",
+          "unit": "Pza",
+          "price": 275.0,
+          "qty": 167,
+          "lineTotal": 45925.0
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "adhesivo-darawell",
+          "code": "",
+          "unit": "Pza",
+          "price": 254.0,
+          "qty": 1,
+          "lineTotal": 254.0
+        }
+      ],
+      "clientId": "c_8c281714bb54",
+      "cfdiFolio": "12412",
+      "uuid": "A34C7EE2-9241-42C1-BA3E-A0C467647B42"
+    },
+    {
+      "id": "sale-cfdi-12426-iwa-mzt",
+      "folio": "CFDI-12426",
+      "city": "mazatlan",
+      "storeId": 35,
+      "createdAt": "2026-05-20T15:11:12",
+      "total": 100000.0,
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "microconcreto-blanco-pulido",
+          "code": "",
+          "unit": "Pza",
+          "price": 200,
+          "qty": 280,
+          "lineTotal": 56000.0
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "adhesivo-darawell",
+          "code": "",
+          "unit": "Pza",
+          "price": 275,
+          "qty": 160,
+          "lineTotal": 44000.0
+        }
+      ],
+      "clientId": "c_8c281714bb54",
+      "cfdiFolio": "12426",
+      "uuid": "1E33977C-27ED-4A84-9C4A-BE91820940FC"
+    },
+    {
+      "id": "sale-cfdi-12555-iwa-mzt",
+      "folio": "CFDI-12555",
+      "city": "mazatlan",
+      "storeId": 35,
+      "createdAt": "2026-07-10T12:33:31",
+      "total": 100000.0,
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "microconcreto-blanco-pulido",
+          "code": "",
+          "unit": "Pza",
+          "price": 200,
+          "qty": 280,
+          "lineTotal": 56000.0
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "adhesivo-darawell",
+          "code": "",
+          "unit": "Pza",
+          "price": 275,
+          "qty": 160,
+          "lineTotal": 44000.0
+        }
+      ],
+      "clientId": "c_8c281714bb54",
+      "cfdiFolio": "12555",
+      "uuid": "74FBC21A-C245-4DF0-B5E8-D8ADA86BB7D6"
+    },
+    {
+      "id": "sale-cfdi-12556-iwa-mzt",
+      "folio": "CFDI-12556",
+      "city": "mazatlan",
+      "storeId": 35,
+      "createdAt": "2026-07-10T12:33:40",
+      "total": 100000.0,
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "microconcreto-blanco-pulido",
+          "code": "",
+          "unit": "Pza",
+          "price": 200,
+          "qty": 280,
+          "lineTotal": 56000.0
+        },
+        {
+          "product": "adhesivo-darawell",
+          "name": "adhesivo-darawell",
+          "code": "",
+          "unit": "Pza",
+          "price": 275,
+          "qty": 160,
+          "lineTotal": 44000.0
+        }
+      ],
+      "clientId": "c_8c281714bb54",
+      "cfdiFolio": "12556",
+      "uuid": "E51DF4E3-A0FC-4F62-8D44-6815AB8EE96F"
+    }
+  ]
+}

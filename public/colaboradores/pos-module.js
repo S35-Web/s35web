@@ -2818,7 +2818,7 @@
     }
 
     /** Import synthetic tickets from historical-sales-import.json (v3: por nota). */
-    const HIST_SALES_FLAG = 's35_hist_sales_imported_v12';
+    const HIST_SALES_FLAG = 's35_hist_sales_imported_v13';
     const HIST_SALES_FLAG_LEGACY = [
         's35_hist_sales_imported_v1',
         's35_hist_sales_imported_v2',
@@ -2830,7 +2830,8 @@
         's35_hist_sales_imported_v8',
         's35_hist_sales_imported_v9',
         's35_hist_sales_imported_v10',
-        's35_hist_sales_imported_v11'
+        's35_hist_sales_imported_v11',
+        's35_hist_sales_imported_v12'
     ];
 
     function isHistoricalImportSale(s) {
