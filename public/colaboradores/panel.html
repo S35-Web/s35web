@@ -562,27 +562,34 @@
 
         /* ——— Inicio · Copiloto S35 (Gemini-style) ——— */
         #dashboard.home-ai {
+            --home-glow: rgba(249, 115, 22, 0.16);
+            --home-glow-soft: rgba(251, 146, 60, 0.10);
             position: relative;
             max-width: none;
-            margin: 0;
+            margin: -24px -20px -48px;
             padding: 0;
-            min-height: calc(100vh - 72px);
+            min-height: calc(100vh - var(--topbar-h, 52px));
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
         #dashboard.home-ai.section.active { display: flex; }
+        @media (max-width: 768px) {
+            #dashboard.home-ai { margin: -20px -16px -40px; }
+        }
         #dashboard.home-ai::before {
             content: '';
             position: absolute;
             inset: 0;
             background:
-                radial-gradient(ellipse 55% 45% at 50% 42%, rgba(10, 10, 10, 0.055), transparent 70%);
+                radial-gradient(ellipse 58% 48% at 50% 42%, var(--home-glow), transparent 68%),
+                radial-gradient(ellipse 36% 30% at 50% 48%, var(--home-glow-soft), transparent 72%);
             pointer-events: none;
             z-index: 0;
         }
-        [data-theme="dark"] #dashboard.home-ai::before {
-            background:
-                radial-gradient(ellipse 55% 45% at 50% 42%, rgba(250, 250, 250, 0.07), transparent 70%);
+        [data-theme="dark"] #dashboard.home-ai {
+            --home-glow: rgba(249, 115, 22, 0.18);
+            --home-glow-soft: rgba(251, 146, 60, 0.08);
         }
         .home-ai-stage {
             position: relative;
@@ -590,13 +597,13 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            width: min(720px, 100%);
+            width: min(680px, 100%);
             margin: 0 auto;
-            padding: 12px 8px 20px;
-            animation: homeAiIn 0.45s ease both;
+            padding: 20px 20px 28px;
+            min-height: 0;
         }
         @keyframes homeAiIn {
-            from { opacity: 0; transform: translateY(8px); }
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -604,29 +611,33 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             min-height: 0;
             margin: 0;
             padding: 0;
             border: none;
             background: transparent;
             overflow: hidden;
+            animation: homeAiIn 0.45s ease both;
         }
+        .copilot-panel.is-chatting { justify-content: flex-start; }
         .copilot-panel[hidden] { display: none !important; }
+
         .copilot-topbar {
             display: none;
             align-items: center;
             justify-content: flex-end;
-            gap: 8px;
-            padding: 4px 0 8px;
+            flex-shrink: 0;
+            padding: 0 0 12px;
         }
         .copilot-panel.is-chatting .copilot-topbar { display: flex; }
         .copilot-new {
-            height: 34px;
+            height: 32px;
             padding: 0 12px;
             border: 1px solid var(--border);
             border-radius: 999px;
-            background: var(--panel);
-            color: var(--text);
+            background: color-mix(in srgb, var(--panel) 88%, transparent);
+            color: var(--muted);
             font-size: 12px;
             font-weight: 500;
             cursor: pointer;
@@ -634,47 +645,26 @@
             align-items: center;
             gap: 6px;
         }
-        .copilot-new:hover { background: var(--hover); }
+        .copilot-new:hover { color: var(--text); background: var(--panel); }
 
         .copilot-welcome {
-            flex: 1;
+            flex: 0 0 auto;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             text-align: center;
-            gap: 10px;
-            padding: 24px 12px 8px;
-            animation: homeAiIn 0.5s ease both;
+            gap: 0;
+            padding: 0 8px 28px;
         }
         .copilot-panel.is-chatting .copilot-welcome { display: none; }
-        .copilot-welcome-mark {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: var(--panel);
-            display: grid;
-            place-items: center;
-            color: var(--text);
-            font-size: 16px;
-            margin-bottom: 4px;
-        }
         .copilot-welcome h1 {
             margin: 0;
-            font-family: var(--font-display);
+            font-family: var(--font);
             font-weight: 400;
-            font-size: clamp(32px, 5.5vw, 48px);
+            font-size: clamp(28px, 4.8vw, 40px);
             letter-spacing: -0.03em;
-            line-height: 1.05;
+            line-height: 1.15;
             color: var(--text);
-        }
-        .copilot-welcome-sub {
-            margin: 0;
-            max-width: 34em;
-            font-size: 15px;
-            line-height: 1.45;
-            color: var(--muted);
         }
 
         .copilot-messages {
@@ -684,15 +674,13 @@
             overflow: auto;
             flex-direction: column;
             gap: 14px;
-            padding: 8px 4px 16px;
+            padding: 4px 2px 20px;
         }
-        .copilot-panel.is-chatting .copilot-messages {
-            display: flex;
-        }
+        .copilot-panel.is-chatting .copilot-messages { display: flex; }
         .copilot-bubble {
             max-width: 92%;
             padding: 12px 14px;
-            border-radius: 16px;
+            border-radius: 18px;
             font-size: 14px;
             line-height: 1.5;
             white-space: pre-wrap;
@@ -703,70 +691,48 @@
             align-self: flex-end;
             background: var(--text);
             color: var(--bg);
-            border-bottom-right-radius: 5px;
+            border-bottom-right-radius: 6px;
         }
         .copilot-bubble.is-assistant {
             align-self: flex-start;
-            background: var(--panel);
+            background: color-mix(in srgb, var(--panel) 92%, transparent);
             color: var(--text);
             border: 1px solid var(--border);
-            border-bottom-left-radius: 5px;
+            border-bottom-left-radius: 6px;
         }
-
-        .copilot-chips {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            padding: 4px 4px 18px;
-            animation: homeAiIn 0.5s ease 0.06s both;
-        }
-        .copilot-panel.is-chatting .copilot-chips { display: none; }
-        .copilot-chip {
-            border: 1px solid var(--border);
-            background: var(--panel);
-            color: var(--text);
-            border-radius: 999px;
-            padding: 9px 14px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-        }
-        .copilot-chip:hover {
-            background: var(--hover);
-            border-color: var(--border-strong);
-            transform: translateY(-1px);
-        }
-        .copilot-chip:disabled { opacity: 0.55; cursor: default; transform: none; }
 
         .copilot-composer-wrap {
+            flex: 0 0 auto;
+            width: 100%;
+            padding: 0;
+        }
+        .copilot-panel.is-chatting .copilot-composer-wrap {
             position: sticky;
             bottom: 0;
-            padding: 0 0 4px;
-            background: linear-gradient(to top, var(--bg) 70%, transparent);
+            padding-top: 8px;
+            background: linear-gradient(to top, var(--bg) 55%, transparent);
         }
         .copilot-composer {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 12px 10px 18px;
+            padding: 8px 10px 8px 20px;
             border: 1px solid var(--border);
-            border-radius: 28px;
+            border-radius: 999px;
             background: var(--panel);
-            box-shadow: 0 8px 28px rgba(10, 10, 10, 0.06);
+            box-shadow: 0 1px 2px rgba(10, 10, 10, 0.04), 0 12px 40px rgba(249, 115, 22, 0.06);
             transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
         [data-theme="dark"] .copilot-composer {
-            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 12px 40px rgba(249, 115, 22, 0.08);
         }
         .copilot-composer:focus-within {
-            border-color: var(--border-strong);
-            box-shadow: 0 10px 32px rgba(10, 10, 10, 0.09);
+            border-color: color-mix(in srgb, #f97316 45%, var(--border));
+            box-shadow: 0 1px 2px rgba(10, 10, 10, 0.04), 0 14px 44px rgba(249, 115, 22, 0.12);
         }
         .copilot-composer input {
             flex: 1;
-            height: 44px;
+            height: 48px;
             border: none;
             background: transparent;
             color: var(--text);
@@ -789,9 +755,35 @@
             font-size: 11px;
             color: var(--muted);
             text-align: center;
-            padding: 8px 8px 0;
+            padding: 10px 8px 0;
             min-height: 1.2em;
         }
+
+        .copilot-chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            padding: 18px 4px 0;
+        }
+        .copilot-panel.is-chatting .copilot-chips { display: none; }
+        .copilot-chip {
+            border: 1px solid var(--border);
+            background: color-mix(in srgb, var(--panel) 80%, transparent);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .copilot-chip:hover {
+            background: var(--panel);
+            border-color: color-mix(in srgb, #f97316 35%, var(--border));
+        }
+        .copilot-chip:disabled { opacity: 0.55; cursor: default; }
+
         .home-ai-guest {
             margin: auto;
             padding: 28px 20px;
@@ -4272,23 +4264,21 @@
                                 </button>
                             </div>
                             <div class="copilot-welcome" id="copilotWelcome">
-                                <div class="copilot-welcome-mark" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                                 <h1 id="dashGreet">Pregúntame</h1>
-                                <p class="copilot-welcome-sub">Ventas, cortes, clientes, stock o acciones del panel. Tú decides cuándo hablar con la IA.</p>
                             </div>
                             <div class="copilot-messages" id="copilotMessages" aria-live="polite"></div>
-                            <div class="copilot-chips" id="copilotChips">
-                                <button type="button" class="copilot-chip" data-copilot-chip="¿Cómo vamos hoy por ciudad?">Hoy por ciudad</button>
-                                <button type="button" class="copilot-chip" data-copilot-chip="¿Cuáles son los productos top del mes?">Top productos</button>
-                                <button type="button" class="copilot-chip" data-copilot-chip="Muéstrame clientes con más compra este mes">Top clientes</button>
-                                <button type="button" class="copilot-chip" data-copilot-chip="Ábreme el corte de hoy">Abrir corte de hoy</button>
-                            </div>
                             <div class="copilot-composer-wrap">
                                 <form class="copilot-composer" id="copilotForm">
                                     <input id="copilotInput" type="text" autocomplete="off" placeholder="Pregunta a S35…" maxlength="500" aria-label="Pregunta al copiloto S35">
                                     <button type="submit" class="btn primary" id="copilotSend" aria-label="Enviar"><i class="fa-solid fa-arrow-up"></i></button>
                                 </form>
                                 <div class="copilot-status" id="copilotStatus" aria-live="polite"></div>
+                            </div>
+                            <div class="copilot-chips" id="copilotChips">
+                                <button type="button" class="copilot-chip" data-copilot-chip="¿Cómo vamos hoy por ciudad?">Hoy por ciudad</button>
+                                <button type="button" class="copilot-chip" data-copilot-chip="¿Cuáles son los productos top del mes?">Top productos</button>
+                                <button type="button" class="copilot-chip" data-copilot-chip="Muéstrame clientes con más compra este mes">Top clientes</button>
+                                <button type="button" class="copilot-chip" data-copilot-chip="Ábreme el corte de hoy">Abrir corte de hoy</button>
                             </div>
                         </div>
 
@@ -10114,8 +10104,8 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260923-gemini-home"></script>
+    <script src="/colaboradores/pos-module.js?v=20260923-gemini-orange"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-corte-cmd"></script>
-    <script src="/colaboradores/s35-copilot.js?v=20260923-gemini-home"></script>
+    <script src="/colaboradores/s35-copilot.js?v=20260923-gemini-orange"></script>
 </body>
 </html>
