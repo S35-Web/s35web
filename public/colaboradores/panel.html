@@ -895,8 +895,49 @@
             overflow: hidden;
             margin-bottom: 24px;
         }
-        #venta .kpis { grid-template-columns: 1fr; max-width: 320px; }
-        #venta .kpis .kpi { border-right: none; border-bottom: none; }
+        #venta .kpis { display: none; }
+        #venta.section.active {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-height: calc(100vh - var(--topbar-h) - 48px);
+        }
+        #venta .pos-page-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        #venta .pos-page-head .page-title { margin-bottom: 2px; }
+        #venta .pos-page-head .page-sub { margin: 0; }
+        #venta .pos-kpi-inline {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            min-width: 160px;
+        }
+        #venta .pos-kpi-inline .label {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        #venta .pos-kpi-inline .val {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+        }
+        #venta .pos-kpi-inline .hint {
+            font-size: 12px;
+            color: var(--muted);
+        }
         .kpi {
             padding: 18px 20px;
             background: var(--panel);
@@ -1633,22 +1674,39 @@
         /* —— POS / Venta —— */
         .pos-layout {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 320px;
-            gap: 16px;
-            align-items: start;
+            grid-template-columns: minmax(240px, 0.82fr) minmax(420px, 1.18fr);
+            gap: 18px;
+            align-items: stretch;
             width: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+        .pos-catalog {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+        }
+        .pos-catalog .toolbar { margin-bottom: 10px; }
+        .pos-catalog .chips { margin-bottom: 10px; }
+        .pos-catalog .product-grid {
+            flex: 1;
+            align-content: start;
+            overflow: auto;
+            padding-right: 2px;
+            max-height: calc(100vh - var(--topbar-h) - 168px);
         }
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+            gap: 8px;
         }
         .product-card {
             border: 1px solid var(--border); border-radius: var(--radius);
-            padding: 10px 12px; background: var(--panel);
+            padding: 8px 10px; background: var(--panel);
             display: grid;
-            grid-template-columns: 56px 1fr;
-            gap: 10px 12px;
+            grid-template-columns: 40px 1fr;
+            gap: 6px 10px;
             align-items: center;
             text-align: left;
             cursor: pointer; transition: background .12s, border-color .12s;
@@ -1658,10 +1716,10 @@
         }
         .product-card:hover { background: var(--hover); border-color: var(--border-strong); }
         .product-card .thumb {
-            width: 56px;
-            height: 56px;
+            width: 40px;
+            height: 40px;
             box-sizing: border-box;
-            padding: 6px;
+            padding: 4px;
             border-radius: 6px;
             background: var(--bg-soft);
             border: 1px solid var(--border);
@@ -1682,48 +1740,55 @@
             display: block;
         }
         .product-card .thumb-fallback {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 500;
             color: var(--muted);
             letter-spacing: .04em;
         }
-        .product-card .name { font-weight: 500; font-size: 14px; letter-spacing: -0.01em; }
-        .product-card .meta { display: flex; align-items: center; gap: 8px; }
-        .product-card .unit { color: var(--muted); font-size: 12px; }
+        .product-card .name { font-weight: 500; font-size: 13px; letter-spacing: -0.01em; line-height: 1.25; }
+        .product-card .meta { display: flex; align-items: center; gap: 6px; }
+        .product-card .unit { color: var(--muted); font-size: 11px; }
         .product-card .unit strong { color: var(--text); font-weight: 600; }
         .product-card .product-code {
             display: inline-flex;
             align-items: baseline;
             flex-wrap: wrap;
             gap: 0 6px;
-            font-size: 12px;
+            font-size: 11px;
         }
         .product-card .product-code .pack { color: var(--muted); }
         .product-card .fam {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--muted);
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
         .pos-cart {
             border: 1px solid var(--border); border-radius: var(--radius);
             background: var(--panel); display: flex; flex-direction: column;
-            position: sticky; top: calc(var(--topbar-h) + 16px); max-height: calc(100vh - var(--topbar-h) - 32px);
+            position: sticky; top: calc(var(--topbar-h) + 16px);
+            max-height: calc(100vh - var(--topbar-h) - 32px);
+            min-width: 0;
+            overflow: hidden;
         }
         .pos-cart-head {
-            padding: 14px 16px; border-bottom: 1px solid var(--border);
+            padding: 14px 18px; border-bottom: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between;
+            gap: 10px;
+            flex-shrink: 0;
         }
-        .pos-cart-head h3 { margin: 0; font-size: 14px; font-weight: 500; }
-        .pos-cart-body { flex: 1; overflow: auto; padding: 8px 12px; min-height: 120px; }
+        .pos-cart-head h3 { margin: 0; font-size: 15px; font-weight: 550; letter-spacing: -0.01em; }
+        .pos-cart-body { flex: 1; overflow: auto; padding: 8px 14px; min-height: 140px; }
         .pos-cart-foot {
-            border-top: 1px solid var(--border); padding: 14px 16px;
-            display: grid; gap: 12px;
+            border-top: 1px solid var(--border); padding: 14px 18px 16px;
+            display: grid; gap: 14px;
+            flex-shrink: 0;
+            background: color-mix(in srgb, var(--panel) 92%, var(--bg-soft));
         }
         .cart-item {
             display: grid; grid-template-columns: 1fr auto;
-            gap: 4px 8px; padding: 12px 4px; border-bottom: 1px solid var(--border);
+            gap: 4px 10px; padding: 12px 2px; border-bottom: 1px solid var(--border);
         }
         .cart-item:last-child { border-bottom: none; }
         .cart-item .ci-name { font-size: 13px; font-weight: 500; }
@@ -1775,9 +1840,10 @@
         }
         #posCartPromoBanner {
             display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-            padding: 8px 10px; margin: 0 0 8px;
+            padding: 8px 10px; margin: 8px 14px 0;
             border: 1px solid var(--border); border-radius: var(--radius-sm);
             background: var(--hover); font-size: 12px;
+            flex-shrink: 0;
         }
         #posCartPromoBanner[hidden] { display: none !important; }
         .pos-promo-code-badge {
@@ -1955,8 +2021,9 @@
         }
         .qty-input:focus { border-color: var(--border-strong); }
         .pos-cart-tier {
-            font-size: 12px; color: var(--muted); padding: 0 14px 8px;
+            font-size: 12px; color: var(--muted); padding: 8px 18px;
             border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
         }
         .prices-table { table-layout: auto; width: 100%; }
         .prices-table th, .prices-table td {
@@ -1978,13 +2045,38 @@
             padding: 6px 3px;
             width: 1%;
         }
-        .cart-total { display: flex; justify-content: space-between; align-items: baseline; }
-        .cart-total .label { color: var(--muted); font-size: 13px; }
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 10px 0 2px;
+            border-top: 1px solid var(--border);
+            margin-top: 2px;
+        }
+        .cart-total .label {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
         .cart-total .amount {
-            font-size: 22px; font-weight: 500; letter-spacing: -0.02em;
+            font-size: 28px; font-weight: 600; letter-spacing: -0.03em;
             font-variant-numeric: tabular-nums;
         }
-        .checkout-fields { display: grid; gap: 10px; }
+        .checkout-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 14px;
+            align-items: start;
+        }
+        .checkout-fields .checkout-span-2 { grid-column: 1 / -1; }
+        #posCheckoutBtn {
+            height: 44px;
+            font-size: 15px;
+            font-weight: 550;
+            letter-spacing: -0.01em;
+        }
         .field-label {
             font-size: 11px; font-weight: 500; letter-spacing: .04em;
             text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
@@ -4374,9 +4466,19 @@
             .cortes-invoice-pills { grid-column: 1 / -1; }
             .cortes-invoice-client { grid-column: 1 / -1; }
         }
+        @media (max-width: 1100px) {
+            .pos-layout {
+                grid-template-columns: minmax(220px, 0.9fr) minmax(360px, 1.1fr);
+            }
+            .checkout-fields { grid-template-columns: 1fr; }
+            .checkout-fields .checkout-span-2 { grid-column: auto; }
+        }
         @media (max-width: 980px) {
+            #venta.section.active { min-height: 0; }
             .pos-layout { grid-template-columns: 1fr; }
+            .pos-catalog .product-grid { max-height: none; overflow: visible; }
             .pos-cart { position: static; max-height: none; }
+            .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
         }
     </style>
 </head>
@@ -4599,13 +4701,19 @@
 
 
                 <section id="venta" class="section">
-                    <h1 class="page-title">Venta</h1>
-                    <p class="page-sub">Punto de venta con productos de formulaciones.</p>
-                    <div class="kpis" style="margin-bottom:16px">
-                        <div class="kpi"><div class="label">Hoy</div><div class="val" id="posKpiToday">$0</div><div class="hint" id="posKpiTodayHint">0 ventas</div></div>
+                    <div class="pos-page-head">
+                        <div>
+                            <h1 class="page-title">Venta</h1>
+                            <p class="page-sub">Catálogo a la izquierda · ticket y cobro a la derecha.</p>
+                        </div>
+                        <div class="pos-kpi-inline" title="Ventas de hoy">
+                            <span class="label">Hoy</span>
+                            <span class="val" id="posKpiToday">$0</span>
+                            <span class="hint" id="posKpiTodayHint">0 ventas</span>
+                        </div>
                     </div>
                     <div class="pos-layout">
-                        <div>
+                        <div class="pos-catalog">
                             <div class="toolbar">
                                 <input id="posProductSearch" class="search" type="search" placeholder="Buscar por nombre, código o familia">
                                 <button type="button" class="btn" id="posPromoBtn" title="Aplicar código de promoción">
@@ -4632,7 +4740,7 @@
                             </div>
                             <div class="pos-cart-foot">
                                 <div class="checkout-fields">
-                                    <div>
+                                    <div class="checkout-span-2">
                                         <div class="field-label">Cliente</div>
                                         <div class="pos-client-picker" id="posClientPicker">
                                             <input type="hidden" id="posClientSelect" value="" autocomplete="off">
@@ -4663,6 +4771,13 @@
                                         </div>
                                     </div>
                                     <div>
+                                        <div class="field-label">Facturación</div>
+                                        <div class="seg two">
+                                            <label><input type="radio" name="billing" value="sin_facturar" checked> Sin facturar</label>
+                                            <label><input type="radio" name="billing" value="facturado"> Facturado</label>
+                                        </div>
+                                    </div>
+                                    <div class="checkout-span-2">
                                         <div class="field-label">Método de pago</div>
                                         <div class="seg seg-pay" id="posPaySeg">
                                             <label><input type="radio" name="payMethod" value="efectivo" checked> Efectivo</label>
@@ -4679,13 +4794,6 @@
                                                 <span>Restante <strong id="posPaySplitRemain">$0.00</strong></span>
                                             </div>
                                             <p class="pay-split-hint">Ej. parte tarjeta y parte efectivo. La facturación aplica a toda la nota.</p>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="field-label">Facturación</div>
-                                        <div class="seg two">
-                                            <label><input type="radio" name="billing" value="sin_facturar" checked> Sin facturar</label>
-                                            <label><input type="radio" name="billing" value="facturado"> Facturado</label>
                                         </div>
                                     </div>
                                 </div>
