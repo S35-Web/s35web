@@ -1,6 +1,6 @@
 {
   "version": 6,
-  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 pago asumido transferencia (obs sin efe/tarjet/transf).",
+  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta.",
   "generatedAt": "2026-09-22",
   "items": [
     {
@@ -1791,7 +1791,7 @@
       "folio": "HIST-R64063",
       "createdAt": "2026-09-22T12:40:00",
       "customer": "OSCAR DAVID MARTOS LOPEZ",
-      "paymentMethod": "transferencia",
+      "paymentMethod": "tarjeta",
       "billing": "facturado",
       "items": [
         {
