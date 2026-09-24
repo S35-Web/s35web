@@ -5,81 +5,352 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="robots" content="noindex, nofollow">
     <title>S-35 | Colaboradores</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --overlay: rgba(0,0,0,.55); }
+        :root {
+            --ink: #1a1a1a;
+            --muted: #9a9a9a;
+            --field: #f3f3f3;
+            --field-text: #3a3a3a;
+            --sep: #ffffff;
+            --white: #ffffff;
+            --btn: #1f1f1f;
+            --danger: #b42318;
+            --danger-bg: #fef3f2;
+            --radius: 12px;
+            --pad-x: 18px;
+            --ease: cubic-bezier(.22, 1, .36, 1);
+            --peach: rgba(255, 200, 160, 0.28);
+            --mx: 50%;
+            --my: 50%;
+        }
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: 300; background: #000; }
-        .page {
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: "DM Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            background: #fff;
             min-height: 100vh;
+            min-height: 100dvh;
+        }
+        /* Glow peach: intensidad actual = techo; solo anima opacidad (respirar) */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(ellipse 95% 75% at 50% 48%, var(--peach) 0%, rgba(255, 220, 190,.14) 48%, rgba(255, 255, 255, 0) 82%),
+                radial-gradient(ellipse 120% 100% at 50% 50%, rgba(255, 245, 235, .5) 0%, #fff 85%);
+            opacity: 1;
+            animation: glow-breathe 9s ease-in-out infinite;
+            will-change: opacity;
+        }
+        @keyframes glow-breathe {
+            0%, 100% { opacity: .55; }
+            50% { opacity: 1; }
+        }
+        /* Ripple blanco bajo el cursor — solo desktop (ver media + JS) */
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0;
+            background: radial-gradient(
+                circle 26vmax at var(--mx) var(--my),
+                rgba(255, 255, 255, 0.92) 0%,
+                rgba(255, 255, 255, 0.45) 32%,
+                rgba(255, 255, 255, 0) 68%
+            );
+            transition: opacity .7s var(--ease);
+        }
+        @media (hover: hover) and (pointer: fine) {
+            body.is-ripple::after { opacity: 1; }
+        }
+        .page {
             position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            min-height: 100dvh;
             display: grid;
             place-items: center;
-            overflow: hidden;
-            background: #000;
+            padding: 48px 24px max(48px, env(safe-area-inset-bottom, 0px));
         }
-        .bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; filter: saturate(0.9) brightness(0.9); }
-        .overlay { position: absolute; inset: 0; background: radial-gradient(1200px 600px at 70% 20%, rgba(0,0,0,.15), transparent), linear-gradient(180deg, var(--overlay), rgba(0,0,0,.75)); }
-        .card {
+        .stage {
+            width: min(100%, 340px);
+            display: grid;
+            gap: 36px;
+            animation: rise .65s var(--ease) both;
+        }
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: none; }
+        }
+        .brand {
+            display: grid;
+            justify-items: center;
+            margin-top: -14px;
+        }
+        .brand img {
+            height: 20px;
+            width: auto;
+            display: block;
+            border-radius: 2px;
+        }
+        .form { display: grid; gap: 18px; }
+        .auth-card {
+            display: grid;
+            border-radius: var(--radius);
+            box-shadow:
+                0 1px 2px rgba(0, 0, 0, 0.04),
+                0 8px 24px rgba(0, 0, 0, 0.06);
+        }
+        .tab-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            margin-bottom: -1px; /* fusione tab activo con el panel */
+        }
+        .tab {
+            appearance: none;
+            border: 0;
+            font: inherit;
+            font-size: 14px;
+            line-height: 1;
+            padding: 13px var(--pad-x);
+            cursor: pointer;
+        }
+        .tab.is-active {
             position: relative;
-            width: min(92vw, 420px);
-            border-radius: 20px;
-            background: transparent;
-            padding: 48px 0;
+            z-index: 2;
+            background: var(--field);
+            color: var(--ink);
+            font-weight: 600;
+            border-radius: var(--radius) var(--radius) 0 0;
+            cursor: default;
+            margin-bottom: -1px;
+            /* Sombra solo hacia el tab inactivo — no entre tab y campos */
+            box-shadow: 4px 0 6px -3px rgba(0, 0, 0, 0.1);
+            clip-path: inset(-8px -14px -2px 0);
         }
-        .logo { display: grid; place-items: center; margin-bottom: 18px; }
-        .logo img { height: 40px; width: auto; }
-        .title { margin: 0 0 10px; color: #fff; font-weight: 300; letter-spacing: .4px; font-size: 28px; text-align: center; }
-        .subtitle { margin: 0 0 28px; color: #bfbfbf; font-weight: 300; font-size: 14px; text-align: center; }
-        .form { display: grid; gap: 20px; }
-        .label { color: #e8e8e8; font-size: 12px; margin-bottom: 6px; letter-spacing: .3px; }
-        .input-wrap { position: relative; }
-        .input { width: 100%; padding: 16px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #fff; outline: none; transition: border-color .2s, background .2s; font-weight: 300; font-size: 16px; }
+        .tab.is-active:last-child:not(:first-child) {
+            box-shadow: -4px 0 6px -3px rgba(0, 0, 0, 0.1);
+            clip-path: inset(-8px 0 -2px -14px);
+        }
+        .tab.is-idle {
+            position: relative;
+            z-index: 0;
+            background: transparent;
+            color: #b0b0b0;
+            font-weight: 500;
+            padding-bottom: 14px;
+        }
+        .panel {
+            display: grid;
+            position: relative;
+            z-index: 1;
+        }
+        .panel[hidden] { display: none !important; }
+        .fields {
+            background: var(--field);
+            border-radius: 0 var(--radius) 0 0;
+            overflow: hidden;
+        }
+        .auth-card.is-register .fields {
+            border-radius: var(--radius) 0 0 0;
+        }
+        .waitlist-copy {
+            margin: 0;
+            padding: 16px var(--pad-x) 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #5c5c5c;
+            font-weight: 450;
+            border-bottom: 1px solid var(--sep);
+        }
+        .input-wrap {
+            position: relative;
+            background: var(--field);
+        }
+        .input-wrap + .input-wrap,
+        .input + .input-wrap {
+            border-top: 1px solid var(--sep);
+        }
+        .input {
+            width: 100%;
+            padding: 16px var(--pad-x);
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            color: var(--field-text);
+            outline: none;
+            font: inherit;
+            font-size: 15px;
+            font-weight: 500;
+        }
         .input.with-toggle { padding-right: 46px; }
-        .input::placeholder { color: #9aa0a6; }
-        .input:focus { border-color: #4da3ff; background: rgba(255,255,255,.1); }
-        .toggle-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9aa0a6; cursor: pointer; padding: 8px; }
-        .toggle-btn:hover { color: #e8e8e8; }
-        .btn { width: 100%; padding: 16px 18px; border-radius: 12px; border: 0; background: linear-gradient(135deg,#0a84ff,#0066cc); color: #fff; font-weight: 500; letter-spacing: .2px; cursor: pointer; box-shadow: 0 12px 30px rgba(10,132,255,.25); transition: transform .15s ease; font-size: 15px; }
-        .btn:hover { transform: translateY(-1px); }
-        .btn:disabled { opacity: .7; cursor: not-allowed; transform: none; box-shadow: none; }
-        .error { display: none; margin-top: 0; border-radius: 12px; border: 1px solid rgba(239,68,68,.35); background: rgba(239,68,68,.08); color: #fca5a5; padding: 12px 14px; font-size: 13px; }
-        .back { text-align: center; margin-top: 18px; }
-        .back a { color: #c7c7c7; text-decoration: none; font-size: 13px; }
-        .back a:hover { color: #fff; }
-        @media (max-width: 640px) {
-            .card { padding: 44px 24px; width: min(88vw, 440px); }
+        .input::placeholder { color: #a8a8a8; font-weight: 400; }
+        .input:focus { background: rgba(0,0,0,.02); }
+        .toggle-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #9a9a9a;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+        }
+        .toggle-btn:hover { color: var(--ink); background: rgba(0,0,0,.04); }
+        .btn {
+            width: 100%;
+            min-height: 50px;
+            margin: 0;
+            border: 0;
+            border-radius: 0 0 var(--radius) var(--radius);
+            background: var(--btn);
+            color: #fff;
+            font: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .15s ease, opacity .15s ease;
+        }
+        .btn:hover { background: #000; }
+        .btn:disabled { opacity: .6; cursor: not-allowed; }
+        .error {
+            display: none;
+            border-radius: var(--radius);
+            background: var(--danger-bg);
+            color: var(--danger);
+            padding: 12px 14px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .success {
+            display: none;
+            border-radius: var(--radius);
+            background: #f3f3f3;
+            color: var(--ink);
+            padding: 12px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+        }
+        .footer-link {
+            display: block;
+            text-align: center;
+            color: var(--ink);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .footer-link:hover { opacity: .65; }
+        .hint {
+            margin: 0;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+        @media (max-width: 600px) {
+            .page {
+                padding: 32px 20px max(40px, env(safe-area-inset-bottom, 0px));
+            }
+            .stage {
+                width: 100%;
+                max-width: 400px;
+                gap: 28px;
+            }
+            .brand img { height: 18px; }
+            .form { gap: 16px; }
+            .input {
+                font-size: 16px; /* evita zoom iOS al enfocar */
+                min-height: 48px;
+                padding: 14px var(--pad-x);
+            }
+            .toggle-btn {
+                padding: 12px;
+                min-width: 44px;
+                min-height: 44px;
+            }
+            .btn {
+                min-height: 52px;
+                font-size: 16px;
+            }
+            .tab {
+                font-size: 15px;
+                padding: 14px var(--pad-x);
+            }
+            .hint { font-size: 11px; }
+        }
+        @media (max-height: 640px) {
+            .page { align-items: start; padding-top: 28px; }
+            .stage { gap: 22px; }
+            .brand img { height: 16px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .stage { animation: none; }
+            body::before {
+                animation: none;
+                opacity: 1;
+            }
+            body::after {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="page">
-        <video class="bg-video" muted playsinline webkit-playsinline autoplay loop preload="metadata">
-            <source src="/Assets/mezcla_optimized.mp4" type="video/mp4">
-        </video>
-        <div class="overlay"></div>
+        <main class="stage">
+            <div class="brand">
+                <img src="/Assets/s35-logo-block.png" alt="S-35" width="60" height="20">
+            </div>
 
-        <div class="card">
-            <div class="logo"><img src="/Assets/Logotipo Principal.png" alt="S-35 Technology"></div>
-            <h1 class="title">Colaboradores</h1>
-            <p class="subtitle">Panel de control interno S-35</p>
-            <form class="form" id="loginForm" autocomplete="off">
-                <div>
-                    <div class="label">Usuario</div>
-                    <input class="input" id="username" name="username" type="text" placeholder="Ingresa tu usuario" required autocapitalize="none" autocorrect="off" autocomplete="username" spellcheck="false">
-                </div>
-                <div>
-                    <div class="label">Contraseña</div>
-                    <div class="input-wrap">
-                        <input class="input with-toggle" id="password" name="password" type="password" placeholder="Ingresa tu contraseña" required autocomplete="current-password">
-                        <button id="toggle" type="button" class="toggle-btn" aria-label="Mostrar u ocultar contraseña"><i class="fas fa-eye"></i></button>
+            <div class="form">
+                <div class="auth-card is-login" id="authCard">
+                    <div class="tab-row" role="tablist" aria-label="Acceso">
+                        <button type="button" class="tab is-active" id="tabLogin" role="tab" aria-selected="true" aria-controls="panelLogin">Iniciar sesión</button>
+                        <button type="button" class="tab is-idle" id="tabRegister" role="tab" aria-selected="false" aria-controls="panelRegister">Registro</button>
                     </div>
+
+                    <form class="panel" id="panelLogin" autocomplete="off">
+                        <div class="fields">
+                            <input class="input" id="username" name="username" type="text" placeholder="usuario" required autocapitalize="none" autocorrect="off" autocomplete="username" spellcheck="false">
+                            <div class="input-wrap">
+                                <input class="input with-toggle" id="password" name="password" type="password" placeholder="contraseña" required autocomplete="current-password">
+                                <button id="toggle" type="button" class="toggle-btn" aria-label="Mostrar u ocultar contraseña"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn" id="loginBtn">Iniciar sesión</button>
+                    </form>
+
+                    <form class="panel" id="panelRegister" autocomplete="off" hidden>
+                        <div class="fields">
+                            <p class="waitlist-copy">Por ahora S35 Digital es solo por invitación. Déjanos tu correo y te sumamos a la lista de espera.</p>
+                            <input class="input" id="waitlistEmail" name="email" type="email" placeholder="correo" required autocomplete="email" autocapitalize="none" spellcheck="false">
+                        </div>
+                        <button type="submit" class="btn" id="waitlistBtn">Unirme a la lista</button>
+                    </form>
                 </div>
-                <button type="submit" class="btn" id="loginBtn"><i class="fas fa-user-shield"></i> Ingresar</button>
                 <div class="error" id="errorMessage" role="alert"></div>
-            </form>
-            <div class="back"><a href="/"><i class="fas fa-arrow-left"></i> Volver al sitio</a></div>
-        </div>
+                <div class="success" id="successMessage" role="status"></div>
+                <a class="footer-link" href="/">Volver al sitio</a>
+            </div>
+            <p class="hint">S-35® Tech - Software 2.01 2027</p>
+        </main>
     </div>
 
     <script>
@@ -87,15 +358,57 @@
             window.location.replace('/colaboradores/panel');
         }
 
-        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+        (function initAuthTabs() {
+            var card = document.getElementById('authCard');
+            var tabLogin = document.getElementById('tabLogin');
+            var tabRegister = document.getElementById('tabRegister');
+            var panelLogin = document.getElementById('panelLogin');
+            var panelRegister = document.getElementById('panelRegister');
+            var err = document.getElementById('errorMessage');
+            var ok = document.getElementById('successMessage');
+
+            function clearNotices() {
+                err.style.display = 'none';
+                err.textContent = '';
+                ok.style.display = 'none';
+                ok.textContent = '';
+            }
+
+            function setTab(mode) {
+                var isLogin = mode === 'login';
+                card.classList.toggle('is-login', isLogin);
+                card.classList.toggle('is-register', !isLogin);
+                tabLogin.classList.toggle('is-active', isLogin);
+                tabLogin.classList.toggle('is-idle', !isLogin);
+                tabLogin.setAttribute('aria-selected', isLogin ? 'true' : 'false');
+                tabRegister.classList.toggle('is-active', !isLogin);
+                tabRegister.classList.toggle('is-idle', isLogin);
+                tabRegister.setAttribute('aria-selected', isLogin ? 'false' : 'true');
+                panelLogin.hidden = !isLogin;
+                panelRegister.hidden = isLogin;
+                clearNotices();
+                var focusEl = isLogin
+                    ? document.getElementById('username')
+                    : document.getElementById('waitlistEmail');
+                if (focusEl) focusEl.focus();
+            }
+
+            tabLogin.addEventListener('click', function () { setTab('login'); });
+            tabRegister.addEventListener('click', function () { setTab('register'); });
+            window.__setAuthTab = setTab;
+        })();
+
+        document.getElementById('panelLogin').addEventListener('submit', async function (e) {
             e.preventDefault();
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
             const loginBtn = document.getElementById('loginBtn');
             loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando…';
+            loginBtn.textContent = 'Verificando…';
             errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
             try {
                 const response = await fetch('/api/login', {
                     method: 'POST',
@@ -115,7 +428,57 @@
                 errorMessage.style.display = 'block';
             } finally {
                 loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-user-shield"></i> Ingresar';
+                loginBtn.textContent = 'Iniciar sesión';
+            }
+        });
+
+        document.getElementById('panelRegister').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            var emailEl = document.getElementById('waitlistEmail');
+            var email = (emailEl.value || '').trim().toLowerCase();
+            var errorMessage = document.getElementById('errorMessage');
+            var successMessage = document.getElementById('successMessage');
+            var btn = document.getElementById('waitlistBtn');
+            var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            if (!emailOk) {
+                errorMessage.textContent = 'Ingresa un correo válido.';
+                errorMessage.style.display = 'block';
+                emailEl.focus();
+                return;
+            }
+            btn.disabled = true;
+            btn.textContent = 'Enviando…';
+            try {
+                var response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nombre: email.split('@')[0] || 'Waitlist',
+                        email: email,
+                        empresa: '',
+                        mensaje: 'Lista de espera — acceso colaboradores S35 Digital (solo por invitación).',
+                        newsletter: false,
+                        website: ''
+                    })
+                });
+                var data = {};
+                try { data = await response.json(); } catch (_) {}
+                if (!response.ok || !data.ok) {
+                    throw new Error(data.error || 'No se pudo enviar. Intenta de nuevo.');
+                }
+                successMessage.textContent = 'Te avisaremos cuando estemos listos.';
+                successMessage.style.display = 'block';
+                emailEl.value = '';
+                btn.textContent = 'Listo';
+            } catch (err) {
+                errorMessage.textContent = err.message || 'No se pudo enviar. Intenta de nuevo.';
+                errorMessage.style.display = 'block';
+                btn.textContent = 'Unirme a la lista';
+            } finally {
+                btn.disabled = false;
+                if (btn.textContent === 'Enviando…') btn.textContent = 'Unirme a la lista';
             }
         });
 
@@ -127,27 +490,50 @@
         });
 
         document.addEventListener('DOMContentLoaded', function () {
-            const video = document.querySelector('.bg-video');
-            if (!video) return;
-            const hideVideo = function () { video.style.display = 'none'; };
-            const tryPlay = function () {
-                const p = video.play();
-                if (p && typeof p.then === 'function') {
-                    p.catch(function () {
-                        hideVideo();
-                        document.addEventListener('touchend', function once() {
-                            video.style.display = '';
-                            video.play().finally(function () {
-                                document.removeEventListener('touchend', once);
-                            });
-                        }, { once: true });
-                    });
-                }
-            };
-            if (video.readyState >= 2) tryPlay();
-            else video.addEventListener('canplay', tryPlay, { once: true });
-            setTimeout(function () { if (video.paused) hideVideo(); }, 1200);
+            var user = document.getElementById('username');
+            if (user) user.focus();
         });
+
+        /* Ripple blanco bajo el cursor (desktop only) */
+        (function initGlowRipple() {
+            var fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+            if (!fine.matches || reduce.matches) return;
+
+            var mx = 50;
+            var my = 50;
+            var tx = 50;
+            var ty = 50;
+            var raf = 0;
+            var body = document.body;
+
+            function paint() {
+                mx += (tx - mx) * 0.1;
+                my += (ty - my) * 0.1;
+                body.style.setProperty('--mx', mx.toFixed(2) + '%');
+                body.style.setProperty('--my', my.toFixed(2) + '%');
+                if (Math.abs(tx - mx) > 0.04 || Math.abs(ty - my) > 0.04) {
+                    raf = requestAnimationFrame(paint);
+                } else {
+                    raf = 0;
+                }
+            }
+
+            function kick() {
+                if (!raf) raf = requestAnimationFrame(paint);
+            }
+
+            window.addEventListener('mousemove', function (e) {
+                tx = (e.clientX / window.innerWidth) * 100;
+                ty = (e.clientY / window.innerHeight) * 100;
+                body.classList.add('is-ripple');
+                kick();
+            }, { passive: true });
+
+            document.documentElement.addEventListener('mouseleave', function () {
+                body.classList.remove('is-ripple');
+            });
+        })();
     </script>
 </body>
 </html>
