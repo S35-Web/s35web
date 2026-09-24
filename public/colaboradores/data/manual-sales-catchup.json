@@ -1,7 +1,7 @@
 {
-  "version": 8,
-  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán",
-  "generatedAt": "2026-09-22",
+  "version": 9,
+  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000",
+  "generatedAt": "2026-09-24",
   "items": [
     {
       "id": "sale-cfdi-11667",
@@ -2730,6 +2730,182 @@
           "note": "Venta Mazatlán generada por $100,000.00 (adhesivo + microconcreto)"
         }
       }
+    },
+    {
+      "id": "sale-hist-rcpt-64067",
+      "folio": "HIST-R64067",
+      "createdAt": "2026-09-23T08:08:00",
+      "customer": "CIOCA COMERCIAL",
+      "clientId": "c_8849f5e7f47d",
+      "client": {
+        "id": "c_8849f5e7f47d",
+        "name": "CIOCA COMERCIAL",
+        "phone": "",
+        "email": "",
+        "company": "",
+        "rfc": "CCO250331793",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 175,
+          "qty": 20,
+          "lineTotal": 3500
+        }
+      ],
+      "total": 3500,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64067,
+        "noteSuffix": "a-1",
+        "observations": "MOSTR TARJ FAC CIOCA COMERCIAL",
+        "year": 2026,
+        "month": 9,
+        "day": 23,
+        "city": "culiacan"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64068",
+      "folio": "HIST-R64068",
+      "createdAt": "2026-09-23T08:32:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 1,
+          "lineTotal": 335
+        },
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 1,
+          "lineTotal": 360
+        }
+      ],
+      "total": 695,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64068,
+        "noteSuffix": "a-2",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 9,
+        "day": 23,
+        "city": "culiacan"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64069",
+      "folio": "HIST-R64069",
+      "createdAt": "2026-09-23T09:07:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        },
+        {
+          "product": "pegaxpress-psp",
+          "name": "Adhesivo PSP PRO+ S35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 265,
+          "qty": 1,
+          "lineTotal": 265
+        }
+      ],
+      "total": 475,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64069,
+        "noteSuffix": "a-3",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 9,
+        "day": 23,
+        "city": "culiacan"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64070",
+      "folio": "HIST-R64070",
+      "createdAt": "2026-09-23T14:15:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "mixto",
+      "payments": [
+        {
+          "method": "tarjeta",
+          "amount": 1120
+        },
+        {
+          "method": "efectivo",
+          "amount": 1000
+        }
+      ],
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "pegaxpress-psp",
+          "name": "Adhesivo PSP PRO+ S35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 265,
+          "qty": 8,
+          "lineTotal": 2120
+        }
+      ],
+      "total": 2120,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64070,
+        "noteSuffix": "a-4",
+        "observations": "Mostr triste personal efe",
+        "year": 2026,
+        "month": 9,
+        "day": 23,
+        "city": "culiacan"
+      },
+      "city": "culiacan"
     }
   ],
   "skippedCancelled": [
