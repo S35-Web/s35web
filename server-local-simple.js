@@ -245,6 +245,81 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Estado de planta (inventario / lotes) — archivo local en desarrollo
+    if (pathname === '/api/plant-state') {
+        const livePath = path.join(__dirname, '.data', 'plant-state-live.json');
+        const readDoc = () => {
+            try {
+                if (fs.existsSync(livePath)) {
+                    return JSON.parse(fs.readFileSync(livePath, 'utf8'));
+                }
+            } catch (_) {}
+            return null;
+        };
+        if (req.method === 'GET') {
+            const doc = readDoc();
+            if (!doc) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    ok: true,
+                    empty: true,
+                    inventory: [],
+                    finished: {},
+                    lots: [],
+                    purchases: [],
+                    updatedAt: null
+                }));
+                return;
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                ok: true,
+                empty: false,
+                inventory: Array.isArray(doc.inventory) ? doc.inventory : [],
+                finished: doc.finished && typeof doc.finished === 'object' ? doc.finished : {},
+                lots: Array.isArray(doc.lots) ? doc.lots : [],
+                purchases: Array.isArray(doc.purchases) ? doc.purchases : [],
+                updatedAt: doc.updatedAt || null
+            }));
+            return;
+        }
+        if (req.method === 'PUT') {
+            let body = '';
+            req.on('data', chunk => { body += chunk.toString(); });
+            req.on('end', () => {
+                try {
+                    const parsed = JSON.parse(body || '{}');
+                    const doc = {
+                        inventory: Array.isArray(parsed.inventory) ? parsed.inventory : [],
+                        finished: parsed.finished && typeof parsed.finished === 'object' ? parsed.finished : {},
+                        lots: Array.isArray(parsed.lots) ? parsed.lots.slice(0, 300) : [],
+                        purchases: Array.isArray(parsed.purchases) ? parsed.purchases.slice(0, 200) : [],
+                        updatedAt: new Date().toISOString()
+                    };
+                    fs.mkdirSync(path.dirname(livePath), { recursive: true });
+                    fs.writeFileSync(livePath, JSON.stringify(doc));
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({
+                        ok: true,
+                        updatedAt: doc.updatedAt,
+                        totals: {
+                            inventory: doc.inventory.length,
+                            lots: doc.lots.length,
+                            purchases: doc.purchases.length
+                        }
+                    }));
+                } catch (e) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: 'Solicitud inválida' }));
+                }
+            });
+            return;
+        }
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed' }));
+        return;
+    }
+
     // Usage global del copiloto
     if (pathname === '/api/s35-usage') {
         if (req.method === 'GET') {

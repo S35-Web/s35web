@@ -6467,31 +6467,23 @@
         return PLANT_ID_ALIASES[key] || key;
     }
     let plantIdsRemapped = false;
-    /** Conteo físico del 22 sep 2026. Se aplica una vez para no pisar consumos posteriores. */
+    /**
+     * Conteo físico del 22 sep 2026 — YA NO se reaplica.
+     * Antes, al cambiar la bandera (p.ej. …20260922 → …b) se pisaban todos los stocks
+     * con el seed (cemento → 1300) y se perdían consumos de producción.
+     * El seed solo aporta materiales NUEVOS; los stocks viven en localStorage + Mongo.
+     */
     const PHYSICAL_COUNT_FLAG = 's35_plant_count_20260922b';
-    function applyPhysicalCount(saved, seed) {
-        let pending = true;
-        try { pending = !localStorage.getItem(PHYSICAL_COUNT_FLAG); } catch (_) {}
-        if (!pending) return false;
-        const bySeed = {};
-        (seed || []).forEach(function (m) { bySeed[m.id] = m; });
-        const ids = Object.keys(bySeed);
-        if (!ids.length) return false;
-        const ready = ids.every(function (id) {
-            return saved.some(function (m) { return m.id === id; });
-        });
-        if (!ready) return false;
-        saved.forEach(function (m) {
-            const src = bySeed[m.id];
-            if (!src) return;
-            const qty = Math.max(0, Number(src.stock) || 0);
-            m.stock = qty;
-            if (src.unit) m.unit = src.unit;
-            if ((Number(m.reserved) || 0) > qty) m.reserved = qty;
-        });
-        try { localStorage.setItem(PHYSICAL_COUNT_FLAG, new Date().toISOString()); } catch (_) {}
-        return true;
+    function applyPhysicalCount(/* saved, seed */) {
+        try {
+            if (!localStorage.getItem(PHYSICAL_COUNT_FLAG)) {
+                localStorage.setItem(PHYSICAL_COUNT_FLAG, new Date().toISOString());
+            }
+        } catch (_) {}
+        return false;
     }
+    /** Push diferido a Mongo; se cablea tras definir lotes/PT. */
+    let schedulePlantStatePush = function () {};
     let persistNormalized = false;
     function loadInventory() {
         const seed = seedInventory();
@@ -6552,6 +6544,7 @@
     }
     function saveInventory(list) {
         localStorage.setItem(PLANT_KEY, JSON.stringify({ items: list, updatedAt: new Date().toISOString() }));
+        schedulePlantStatePush();
     }
     let inventory = loadInventory();
     if (persistNormalized) saveInventory(inventory);
@@ -6629,6 +6622,7 @@
     }
     function saveFinished() {
         localStorage.setItem(FINISHED_KEY, JSON.stringify({ items: finishedStock, updatedAt: new Date().toISOString() }));
+        schedulePlantStatePush();
     }
     let finishedStock = loadFinished();
 
@@ -9485,6 +9479,7 @@
     }
     function saveLotTickets(list) {
         localStorage.setItem(LOT_TICKETS_KEY, JSON.stringify((list || []).slice(0, 300)));
+        schedulePlantStatePush();
     }
     function loadPurchaseTickets() {
         try {
@@ -9496,6 +9491,7 @@
     }
     function savePurchaseTickets(list) {
         localStorage.setItem(PURCHASE_TICKETS_KEY, JSON.stringify((list || []).slice(0, 200)));
+        schedulePlantStatePush();
     }
     function lotCodePrefix(code) {
         return String(code || 'XX-000').replace(/^FT-/, '').replace(/[^A-Z0-9]/gi, '');
@@ -11390,6 +11386,162 @@
     renderLotTicketsList();
     renderLotHistoryList();
     renderPurchaseTicketsList();
+
+    (function wirePlantStateSync() {
+        let plantStatePushTimer = null;
+        let plantStateSyncing = false;
+        let plantStatePushPending = false;
+        let plantStateHydrated = false;
+
+        function plantStateHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + getToken(),
+                Accept: 'application/json'
+            };
+        }
+        function collectPlantState() {
+            return {
+                inventory: inventory,
+                finished: finishedStock || {},
+                lots: loadLotTickets(),
+                purchases: loadPurchaseTickets()
+            };
+        }
+        function applyRemotePlantState(data) {
+            if (!data) return false;
+            let changed = false;
+            if (Array.isArray(data.inventory) && data.inventory.length) {
+                inventory = data.inventory.map(normalizeItem);
+                saveInventoryLocalOnly(inventory);
+                changed = true;
+            }
+            if (data.finished && typeof data.finished === 'object') {
+                finishedStock = data.finished;
+                try {
+                    localStorage.setItem(FINISHED_KEY, JSON.stringify({
+                        items: finishedStock,
+                        updatedAt: data.updatedAt || new Date().toISOString()
+                    }));
+                } catch (_) {}
+                changed = true;
+            }
+            if (Array.isArray(data.lots)) {
+                try {
+                    localStorage.setItem(LOT_TICKETS_KEY, JSON.stringify(data.lots.slice(0, 300)));
+                } catch (_) {}
+                changed = true;
+            }
+            if (Array.isArray(data.purchases)) {
+                try {
+                    localStorage.setItem(PURCHASE_TICKETS_KEY, JSON.stringify(data.purchases.slice(0, 200)));
+                } catch (_) {}
+                changed = true;
+            }
+            return changed;
+        }
+        function saveInventoryLocalOnly(list) {
+            localStorage.setItem(PLANT_KEY, JSON.stringify({
+                items: list,
+                updatedAt: new Date().toISOString()
+            }));
+        }
+        function pushPlantStateToServer() {
+            const token = getToken();
+            if (!token || !plantStateHydrated) return Promise.resolve(false);
+            if (plantStateSyncing) {
+                plantStatePushPending = true;
+                return Promise.resolve(false);
+            }
+            plantStateSyncing = true;
+            return fetch('/api/plant-state', {
+                method: 'PUT',
+                headers: plantStateHeaders(),
+                body: JSON.stringify(collectPlantState())
+            })
+                .then(function (r) {
+                    return r.json().then(function (d) { return { ok: r.ok, data: d }; });
+                })
+                .then(function (res) {
+                    if (!res.ok || !res.data || !res.data.ok) {
+                        throw new Error((res.data && res.data.error) || 'No se pudo guardar planta');
+                    }
+                    return true;
+                })
+                .catch(function (err) {
+                    console.warn('[S35] sync planta', err && err.message ? err.message : err);
+                    return false;
+                })
+                .then(function (ok) {
+                    plantStateSyncing = false;
+                    if (plantStatePushPending) {
+                        plantStatePushPending = false;
+                        return pushPlantStateToServer();
+                    }
+                    return ok;
+                });
+        }
+        schedulePlantStatePush = function () {
+            if (!plantStateHydrated) return;
+            if (plantStatePushTimer) clearTimeout(plantStatePushTimer);
+            plantStatePushTimer = setTimeout(function () {
+                plantStatePushTimer = null;
+                pushPlantStateToServer();
+            }, 500);
+        };
+        function syncPlantStateFromServer() {
+            const token = getToken();
+            if (!token) {
+                plantStateHydrated = true;
+                return Promise.resolve({ ok: false, reason: 'no-token' });
+            }
+            return fetch('/api/plant-state', {
+                method: 'GET',
+                headers: plantStateHeaders(),
+                cache: 'no-store'
+            })
+                .then(function (r) {
+                    return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; });
+                })
+                .then(function (res) {
+                    if (!res.ok || !res.data || !res.data.ok) {
+                        throw new Error((res.data && res.data.error) || ('HTTP ' + res.status));
+                    }
+                    const remote = res.data;
+                    const localHasInv = Array.isArray(inventory) && inventory.length > 0;
+                    const remoteHasInv = Array.isArray(remote.inventory) && remote.inventory.length > 0;
+                    if (remoteHasInv) {
+                        applyRemotePlantState(remote);
+                        try {
+                            if (typeof refreshStockViews === 'function') refreshStockViews();
+                        } catch (_) {}
+                        try {
+                            renderFinished();
+                            renderLotTicketsList();
+                            renderLotHistoryList();
+                            renderPurchaseTicketsList();
+                        } catch (_) {}
+                        plantStateHydrated = true;
+                        panelToast('Inventario sincronizado (servidor)');
+                        return { ok: true, source: 'remote' };
+                    }
+                    plantStateHydrated = true;
+                    if (localHasInv) {
+                        return pushPlantStateToServer().then(function (pushed) {
+                            if (pushed) panelToast('Inventario respaldado en servidor');
+                            return { ok: true, source: 'local-push', pushed: pushed };
+                        });
+                    }
+                    return { ok: true, source: 'empty' };
+                })
+                .catch(function (err) {
+                    console.warn('[S35] sync planta pull', err && err.message ? err.message : err);
+                    plantStateHydrated = true;
+                    return { ok: false, error: err && err.message };
+                });
+        }
+        syncPlantStateFromServer();
+    })();
 
     loadGmailStatus().then(function () { return loadMessages(); });
 

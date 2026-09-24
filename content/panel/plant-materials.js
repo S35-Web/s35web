@@ -17,6 +17,7 @@ module.exports = [
   { id: "arena-deshidratada", name: "Arena deshidratada", unit: "Kg", minStock: 2000, category: "mineral", labSlug: "arena-silicea-graduada", stock: 0 },
   { id: "calidra", name: "Cal", unit: "Kg", minStock: 500, category: "aglutinante", labSlug: "cal", unitCost: 3.52, stock: 5500 },
   { id: "cemento-portland-gris", name: "Cemento portland gris", unit: "Kg", minStock: 1000, category: "aglutinante", labSlug: "cemento-gris", unitCost: 4.20, stock: 1300 },
+  // stock del seed = valor del conteo 22-sep; NO se reaplica en clientes existentes (ver panel applyPhysicalCount).
   { id: "cemento-portland-blanco", name: "Cemento portland blanco", unit: "Kg", minStock: 250, category: "aglutinante", labSlug: "cemento-blanco", unitCost: 9.31, stock: 0 },
   { id: "cubeta-19l", name: "Cubeta 19L", unit: "Pza", minStock: 100, category: "packaging", labSlug: null, stock: 87 },
   { id: "estearato", name: "Estearato", unit: "Kg", minStock: 20, category: "chemical", labSlug: null, unitCost: 47.20, stock: 0 },
