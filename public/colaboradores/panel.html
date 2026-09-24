@@ -4200,38 +4200,21 @@
             height: 0;
             width: 14px;
         }
-        .prod-formula-chart-legend .swatch.cover {
-            background: var(--text);
+        .prod-formula-chart-legend .swatch.stock {
+            background: #c4c4c4;
         }
         .prod-formula-chart-legend .swatch.min {
-            background: transparent;
-            border-top: 1.5px dashed #e8a5a5;
-            height: 0;
-            width: 14px;
+            background: #e8a5a5;
         }
-        .prod-formula-chart-legend .swatch.meta {
-            background: transparent;
-            border-top: 1.5px dashed var(--muted);
-            height: 0;
-            width: 14px;
+        .prod-formula-chart-legend .swatch.need {
+            background: var(--text);
+        }
+        [data-theme="dark"] .prod-formula-chart-legend .swatch.stock {
+            background: #525252;
         }
         [data-theme="dark"] .prod-formula-chart-legend .swatch.min {
-            border-top-color: #c47a7a;
+            background: #c47a7a;
         }
-        .prod-formula-chart .cover-meta {
-            stroke: var(--muted);
-            stroke-width: 1.25;
-            stroke-dasharray: 4 3;
-            fill: none;
-            pointer-events: none;
-        }
-        .prod-formula-chart .cover-label {
-            font-size: 9px;
-            font-weight: 600;
-            fill: var(--text);
-        }
-        .prod-formula-chart .cover-label.is-danger { fill: var(--danger); }
-        .prod-formula-chart .cover-label.is-warn { fill: var(--warning); }
         .cortes-chart {
             width: 100%;
             position: relative;
@@ -4992,15 +4975,15 @@
                             <div class="cortes-chart-head" style="margin-bottom:8px">
                                 <div>
                                     <h3 style="margin:0">Inventario de materia prima</h3>
-                                    <div class="panel-sub" id="prodFormulaChartSub">Bachadas de producto por MP · línea = plan</div>
+                                    <div class="panel-sub" id="prodFormulaChartSub">Ingredientes · kg en inventario</div>
                                 </div>
                                 <div class="cortes-chart-legend prod-formula-chart-legend" aria-hidden="true">
-                                    <span class="leg"><span class="swatch cover"></span> Bachadas de producto</span>
+                                    <span class="leg"><span class="swatch need"></span> Requerido (lote)</span>
+                                    <span class="leg"><span class="swatch stock"></span> En inventario</span>
                                     <span class="leg"><span class="swatch min"></span> Margen hasta mínimo</span>
-                                    <span class="leg"><span class="swatch meta"></span> Plan actual</span>
                                 </div>
                             </div>
-                            <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Cobertura de inventario sobre requerido por materia prima"></div>
+                            <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Gráfica de requerido vs inventario y margen hasta mínimo por materia prima"></div>
                         </div>
                         <div class="card span-7">
                             <h3>Emitir ticket de lote</h3>
@@ -10584,7 +10567,7 @@
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         if (!f || !r) {
             host.innerHTML = '<div class="cortes-chart-empty">Elige un producto</div>';
-            if (subEl) subEl.textContent = 'Bachadas de producto por MP · línea = plan';
+            if (subEl) subEl.textContent = 'Ingredientes · kg en inventario';
             return;
         }
         ensureVersions(f);
@@ -10602,33 +10585,10 @@
             if (Math.abs(n) >= 100) return String(Math.round(n));
             return String(Math.round(n * 1000) / 1000);
         }
-        function fmtBatches(ratio) {
-            if (!isFinite(ratio)) return '∞';
-            if (ratio >= 10) return Math.round(ratio) + '×';
-            if (ratio >= 1) return (Math.round(ratio * 10) / 10) + '×';
-            if (ratio <= 0) return '0×';
-            return (Math.round(ratio * 100) / 100) + '×';
-        }
-        function batchesOfProduct(have, needForPlan) {
-            const need = Number(needForPlan) || 0;
-            const dosePerLot = lots > 0 ? need / lots : need;
-            const h = Math.max(0, Number(have) || 0);
-            if (!(dosePerLot > 0)) return h > 0 ? Infinity : 0;
-            return h / dosePerLot;
-        }
-        // Eje Y = bachadas de producto que alcanza cada MP (inv ÷ dosis de 1 lote).
-        // La línea de plan marca los lotes pedidos; escala visual anclada al plan.
-        const coverVals = rows.map(function (row) { return batchesOfProduct(row.have, row.need); });
-        const marginVals = rows.map(function (row) {
-            return batchesOfProduct(Math.max(0, Number(row.buffer) || 0), row.need);
-        });
-        const planLots = lots;
-        let peak = planLots;
-        coverVals.concat(marginVals).forEach(function (v) {
-            if (isFinite(v) && v > peak) peak = v;
-        });
-        // Tope visual: un poco sobre el plan, o sobre el pico si no es absurdo (≤ 3× el plan).
-        const yMax = Math.max(planLots * 1.35, 1.5, Math.min(peak * 1.08, planLots * 3));
+        const stockVals = rows.map(function (row) { return row.have; });
+        const needVals = rows.map(function (row) { return row.need; });
+        const bufferVals = rows.map(function (row) { return row.buffer; });
+        const yMax = Math.max(1, Math.max.apply(null, stockVals.concat(needVals, bufferVals)) * 1.15);
         const W = 960;
         const H = 280;
         const padL = 48;
@@ -10642,35 +10602,26 @@
             return padL + (i / (n - 1)) * (W - padL - padR);
         }
         function ptY(v) {
-            const clamped = Math.max(0, Math.min(yMax, isFinite(v) ? v : yMax));
-            return baseY - (clamped / yMax) * (baseY - padT);
+            return baseY - (Math.max(0, v) / yMax) * (baseY - padT);
         }
         function ptsFrom(vals) {
             return vals.map(function (v, i) { return { x: ptX(i), y: ptY(v) }; });
         }
-        const coverPts = ptsFrom(coverVals);
-        const marginPts = ptsFrom(marginVals);
-        const coverLine = buildMonotonePath(coverPts, baseY);
-        const marginLine = buildMonotonePath(marginPts, baseY);
-        const areaPath = coverLine +
+        const stockPts = ptsFrom(stockVals);
+        const needPts = ptsFrom(needVals);
+        const bufferPts = ptsFrom(bufferVals);
+        const stockLine = buildMonotonePath(stockPts, baseY);
+        const needLine = buildMonotonePath(needPts, baseY);
+        const minLine = buildMonotonePath(bufferPts, baseY);
+        const areaPath = stockLine +
             ' L' + ptX(n - 1).toFixed(1) + ' ' + baseY.toFixed(1) +
             ' L' + ptX(0).toFixed(1) + ' ' + baseY.toFixed(1) + ' Z';
         let grid = '';
         let yLabels = '';
-        const yTicks = [0];
-        if (yMax > 2.5) {
-            yTicks.push(yMax * 0.25, yMax * 0.5, yMax * 0.75, yMax);
-        } else {
-            yTicks.push(0.5, 1, 1.5, 2);
-        }
-        const seenTick = {};
-        yTicks.forEach(function (tick) {
-            const t = Math.round(tick * 100) / 100;
-            if (t > yMax + 1e-9 || seenTick[t]) return;
-            seenTick[t] = true;
-            const y = ptY(t);
+        [0, 0.5, 1].forEach(function (fY) {
+            const y = ptY(yMax * fY);
             grid += '<line class="grid-line" x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '"/>';
-            const lab = t === 0 ? '0' : (Math.abs(t - Math.round(t)) < 0.05 ? Math.round(t) + '×' : (Math.round(t * 10) / 10) + '×');
+            const lab = fY === 0 ? '0' : (yMax * fY >= 100 ? Math.round(yMax * fY) : Math.round(yMax * fY * 10) / 10);
             yLabels += '<text class="y-label" x="' + (padL - 6) + '" y="' + (y + 3) + '" text-anchor="end">' + lab + '</text>';
         });
         let xLabels = '';
@@ -10685,79 +10636,68 @@
             xLabels += '<text class="axis-label" x="' + x + '" y="' + (H - 32) +
                 '" text-anchor="middle">' + tspans + '</text>';
         });
-        const hatchId = 'prodCoverHatch';
+        const hatchId = 'prodHatch';
         const defs =
             '<defs>' +
             '<pattern id="' + hatchId + '" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">' +
             '<line x1="0" y1="0" x2="0" y2="7" stroke="var(--prod-line-stock)" stroke-width="1" opacity="0.4"/>' +
             '</pattern>' +
             '</defs>';
-        const planY = ptY(planLots);
-        const planLine = '<line class="cover-meta" x1="' + padL + '" y1="' + planY +
-            '" x2="' + (W - padR) + '" y2="' + planY + '"/>' +
-            '<text class="y-label" x="' + (W - padR) + '" y="' + (planY - 4).toFixed(1) +
-            '" text-anchor="end">plan ' + planLots + '×</text>';
+        // Puntos + tooltips (requerido = serie principal)
         let marks = '';
         rows.forEach(function (row, i) {
-            const raw = coverVals[i];
-            const tip =
+            let tip =
                 esc(row.fullName) +
                 (row.isPackaging ? ' (empaque teórico)' : '') +
-                ' — alcanza ' + esc(fmtBatches(raw)) + ' del producto' +
-                ' · plan: ' + planLots + '×' +
+                ' — requiere: ' + esc(fmtQty(row.need)) + ' ' + esc(row.unit) +
                 ' · inventario' + (row.isPackaging ? ' libre' : '') + ': ' + esc(fmtQty(row.have)) + ' ' + esc(row.unit) +
-                ' · por lote: ' + esc(fmtQty((Number(row.need) || 0) / lots)) + ' ' + esc(row.unit) +
                 (row.isPackaging && row.reserved
                     ? ' · reservado: ' + esc(fmtQty(row.reserved))
                     : '') +
-                ' · margen hasta mín.: ' + esc(fmtBatches(marginVals[i])) +
-                ' (' + esc(fmtQty(row.buffer)) + ' ' + esc(row.unit) +
-                ', mín. ' + esc(fmtQty(row.minStock)) + ')' +
-                (row.missing ? ' · sin MP en planta' : '') +
-                (row.alert === 'danger' ? ' · insuficiente para el plan' : '') +
-                (row.alert === 'warning' ? ' · toca margen (precaución)' : '');
-            const mp = marginPts[i];
-            const cp = coverPts[i];
+                ' · margen hasta mín.: ' + esc(fmtQty(row.buffer)) + ' ' + esc(row.unit) +
+                ' (mín. ' + esc(fmtQty(row.minStock)) + ')';
+            if (row.missing) tip += ' · sin MP en planta';
+            else if (row.alert === 'danger') tip += ' · insuficiente';
+            else if (row.alert === 'warning') tip += ' · toca margen (precaución)';
+            const sp = stockPts[i];
+            const bp = bufferPts[i];
+            const np = needPts[i];
             const alertFill = row.alert === 'danger' ? 'var(--danger)'
                 : (row.alert === 'warning' ? 'var(--warning)' : 'var(--prod-line-need)');
-            const labelClass = row.alert === 'danger' ? ' is-danger'
-                : (row.alert === 'warning' ? ' is-warn' : '');
-            const labelY = Math.max(padT + 10, cp.y - 8);
+            const labelFill = row.alert === 'danger' ? 'var(--danger)'
+                : (row.alert === 'warning' ? 'var(--warning)' : 'var(--text)');
             marks +=
-                '<circle cx="' + mp.x.toFixed(1) + '" cy="' + mp.y.toFixed(1) +
+                '<circle cx="' + bp.x.toFixed(1) + '" cy="' + bp.y.toFixed(1) +
                 '" r="2.2" fill="var(--prod-line-min)" stroke="var(--panel)" stroke-width="1">' +
                 '<title>' + tip + '</title></circle>' +
-                '<circle cx="' + cp.x.toFixed(1) + '" cy="' + cp.y.toFixed(1) +
+                '<circle cx="' + sp.x.toFixed(1) + '" cy="' + sp.y.toFixed(1) +
+                '" r="2.6" fill="var(--prod-line-stock)" stroke="var(--panel)" stroke-width="1">' +
+                '<title>' + tip + '</title></circle>' +
+                '<circle cx="' + np.x.toFixed(1) + '" cy="' + np.y.toFixed(1) +
                 '" r="3.4" fill="' + alertFill +
                 '" stroke="var(--panel)" stroke-width="1.5">' +
                 '<title>' + tip + '</title></circle>' +
-                '<text class="cover-label' + labelClass + '" x="' + cp.x.toFixed(1) +
-                '" y="' + labelY.toFixed(1) + '" text-anchor="middle">' + esc(fmtBatches(raw)) + '</text>';
+                '<text class="y-label" x="' + np.x.toFixed(1) + '" y="' + (np.y - 8).toFixed(1) +
+                '" text-anchor="middle" style="fill:' + labelFill +
+                ';font-size:9px">' + esc(fmtQty(row.need)) + '</text>';
         });
         host.innerHTML =
             '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
             defs + grid + yLabels +
             '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + hatchId + ')"/>' +
-            planLine +
-            '<path class="line-min" d="' + marginLine + '"/>' +
-            '<path class="line-need" d="' + coverLine + '"/>' +
+            '<path class="line-min" d="' + minLine + '"/>' +
+            '<path class="line-stock" d="' + stockLine + '"/>' +
+            '<path class="line-need" d="' + needLine + '"/>' +
             marks + xLabels +
             '</svg>';
         if (subEl) {
             const shortCount = rows.filter(function (row) { return row.alert === 'danger'; }).length;
             const atMinCount = rows.filter(function (row) { return row.alert === 'warning'; }).length;
             const packCount = rows.filter(function (row) { return row.isPackaging; }).length;
-            const bottleneck = rows.reduce(function (best, row, i) {
-                const v = coverVals[i];
-                if (!isFinite(v)) return best;
-                if (!best || v < best.v) return { v: v, name: row.fullName };
-                return best;
-            }, null);
             subEl.textContent = (active ? active.name + (active.label ? ' — ' + active.label : '') : 'Versión') +
-                ' · × = bachadas de producto que alcanza cada MP' +
-                ' · plan ' + planLots + '×' +
-                (bottleneck ? ' · límite ≈ ' + fmtBatches(bottleneck.v) + ' (' + bottleneck.name + ')' : '') +
-                (packCount ? ' · empaque incluido' : '') +
+                ' · margen = inventario − mínimo' +
+                (packCount ? ' · empaque teórico incluido' : '') +
+                (lots > 1 ? ' · vs ×' + lots + ' lotes' : ' · vs 1 lote') +
                 (atMinCount ? ' · ' + atMinCount + ' precaución' : '') +
                 (shortCount ? ' · ' + shortCount + ' con falta' : '');
         }
