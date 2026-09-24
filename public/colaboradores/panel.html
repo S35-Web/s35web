@@ -4237,9 +4237,11 @@
         }
         .materials-inventory-chart .products-inventory-row {
             grid-template-columns: minmax(0, 1.15fr) minmax(64px, 1fr) 5.6em;
+            padding-top: 12px;
         }
         .materials-inventory-chart .products-inventory-track {
             position: relative;
+            overflow: visible;
         }
         .mat-min-mark {
             position: absolute;
@@ -4250,9 +4252,21 @@
             background: #1a1a1a;
             pointer-events: none;
         }
-        .mat-min-mark.is-on-fill { background: #fff; }
-        [data-theme="dark"] .mat-min-mark { background: #f2f2f2; }
-        [data-theme="dark"] .mat-min-mark.is-on-fill { background: #111; }
+        .mat-min-mark span {
+            position: absolute;
+            left: 2px;
+            bottom: calc(100% + 1px);
+            font-size: 8px;
+            line-height: 1;
+            font-weight: 500;
+            letter-spacing: .02em;
+            color: #1a1a1a;
+            white-space: nowrap;
+        }
+        .mat-min-mark.is-left span {
+            left: auto;
+            right: 2px;
+        }
         .products-inventory-card {
             margin: 0 0 22px;
         }
@@ -7779,10 +7793,9 @@
             let mark = '';
             if (m.minStock > 0) {
                 const minPct = max > 0 ? Math.min(100, (m.minStock / max) * 100) : 100;
-                const onFill = m.stock > 0 && m.minStock <= m.stock;
                 const minLabel = 'Mínimo ' + fmtMatQty(m.minStock) + (m.unit ? ' ' + m.unit : '');
-                mark = '<span class="mat-min-mark' + (onFill ? ' is-on-fill' : '') + '" style="left:' +
-                    minPct.toFixed(1) + '%" title="' + esc(minLabel) + '"></span>';
+                mark = '<span class="mat-min-mark' + (minPct > 82 ? ' is-left' : '') + '" style="left:' +
+                    minPct.toFixed(1) + '%" title="' + esc(minLabel) + '"><span>min</span></span>';
             }
             return '<button type="button" class="products-inventory-row" data-open-plant="' + esc(m.id) + '" title="' + esc(m.name) + '">' +
                 '<span class="products-inventory-name"><span class="dot" style="background:' + esc(color) + '" aria-hidden="true"></span>' +
