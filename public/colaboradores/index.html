@@ -117,7 +117,11 @@
             display: flex;
             align-items: flex-end;
             gap: 4px;
-            margin-bottom: -1px; /* fusione tab activo con el panel */
+            position: relative;
+            z-index: 2;
+            margin: 0;
+            /* Solapa 1px el panel para una sola pieza continua */
+            margin-bottom: -1px;
         }
         .tab {
             appearance: none;
@@ -127,6 +131,7 @@
             line-height: 1;
             padding: 13px var(--pad-x);
             cursor: pointer;
+            background: transparent;
         }
         .tab.is-active {
             position: relative;
@@ -136,14 +141,16 @@
             font-weight: 600;
             border-radius: var(--radius) var(--radius) 0 0;
             cursor: default;
-            margin-bottom: -1px;
-            /* Sombra solo hacia el tab inactivo — no entre tab y campos */
-            box-shadow: 4px 0 6px -3px rgba(0, 0, 0, 0.1);
-            clip-path: inset(-8px -14px -2px 0);
+            /* Sin sombra abajo: el tab es la misma hoja que .fields */
+            box-shadow: none;
+            clip-path: none;
         }
-        .tab.is-active:last-child:not(:first-child) {
-            box-shadow: -4px 0 6px -3px rgba(0, 0, 0, 0.1);
-            clip-path: inset(-8px 0 -2px -14px);
+        /* Sombra solo hacia el tab inactivo (lateral), no entre tab y panel */
+        .auth-card.is-login .tab.is-active {
+            box-shadow: 4px 0 8px -5px rgba(0, 0, 0, 0.12);
+        }
+        .auth-card.is-register .tab.is-active {
+            box-shadow: -4px 0 8px -5px rgba(0, 0, 0, 0.12);
         }
         .tab.is-idle {
             position: relative;
@@ -157,12 +164,18 @@
             display: grid;
             position: relative;
             z-index: 1;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            background: transparent;
         }
         .panel[hidden] { display: none !important; }
         .fields {
             background: var(--field);
             border-radius: 0 var(--radius) 0 0;
             overflow: hidden;
+            margin: 0;
+            border: 0;
         }
         .auth-card.is-register .fields {
             border-radius: var(--radius) 0 0 0;
