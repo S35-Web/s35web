@@ -4149,6 +4149,62 @@
             max-width: min(520px, 100%);
             justify-content: flex-end;
         }
+        .products-movements-toggle {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+            margin: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+        .products-movements-toggle:focus-visible {
+            outline: 2px solid var(--text);
+            outline-offset: 3px;
+            border-radius: 4px;
+        }
+        .products-movements-chevron {
+            flex: 0 0 auto;
+            width: 12px;
+            margin-top: 2px;
+            font-size: 11px;
+            color: var(--muted);
+            transition: transform .15s ease;
+        }
+        .products-movements-block.is-open .products-movements-chevron {
+            transform: rotate(90deg);
+        }
+        .products-movements-toggle:hover .products-movements-chevron {
+            color: var(--text);
+        }
+        .products-movements-toggle-copy {
+            display: grid;
+            gap: 2px;
+            min-width: 0;
+        }
+        .products-movements-toggle-copy .pd-section-label,
+        .products-movements-toggle-copy .page-sub {
+            display: block;
+            margin: 0;
+        }
+        .products-movements-block:not(.is-open) {
+            cursor: pointer;
+        }
+        .products-movements-block:not(.is-open):hover {
+            background: var(--hover);
+        }
+        .products-movements-block:not(.is-open) .pd-sales-head {
+            margin-bottom: 0;
+        }
+        .products-movements-block:not(.is-open) .pd-sales-range {
+            display: none;
+        }
         .pd-sales-head {
             display: flex;
             justify-content: space-between;
@@ -5747,10 +5803,13 @@
 
                         <div class="pd-sales-block products-movements-block" id="productsMovementsBlock">
                             <div class="pd-sales-head">
-                                <div>
-                                    <p class="pd-section-label">Movimientos</p>
-                                    <p class="page-sub" style="margin:0">Ritmo de ventas por familia · POS + histórico</p>
-                                </div>
+                                <button type="button" class="products-movements-toggle" id="productsMovementsToggle" aria-expanded="false" aria-controls="productsMovementsBody">
+                                    <i class="fa-solid fa-chevron-right products-movements-chevron" aria-hidden="true"></i>
+                                    <span class="products-movements-toggle-copy">
+                                        <span class="pd-section-label">Movimientos</span>
+                                        <span class="page-sub">Ritmo de ventas por familia · POS + histórico</span>
+                                    </span>
+                                </button>
                                 <div class="cortes-range pd-sales-range">
                                     <button type="button" class="cortes-nav-btn" id="productsMovPrev" title="Periodo anterior" aria-label="Periodo anterior"><i class="fa-solid fa-chevron-left"></i></button>
                                     <button type="button" class="cortes-range-label" id="productsMovRangeLabel" data-period-range-trigger="productsMov" aria-haspopup="dialog" aria-expanded="false" title="Elegir periodo">Hoy</button>
@@ -5758,6 +5817,7 @@
                                     <button type="button" class="cortes-today-btn" id="productsMovReset">Actual</button>
                                 </div>
                             </div>
+                            <div id="productsMovementsBody" hidden>
                             <div class="cortes-filters-bar">
                                 <div class="seg-control" id="productsMovPeriodTabs" role="tablist" aria-label="Periodo de movimientos">
                                     <button type="button" role="tab" data-products-mov-period="day" class="active" aria-selected="true">Día</button>
@@ -5783,6 +5843,7 @@
                                     </div>
                                 </div>
                                 <div class="cortes-chart" id="productsMovChart" role="img" aria-label="Gráfica de movimientos de productos"></div>
+                            </div>
                             </div>
                         </div>
 
@@ -9388,6 +9449,30 @@
         }
         const productsFamiliesBtn = document.getElementById('productsFamiliesBtn');
         if (productsFamiliesBtn) productsFamiliesBtn.addEventListener('click', openProductFamiliesModal);
+        const movBlock = document.getElementById('productsMovementsBlock');
+        const movToggle = document.getElementById('productsMovementsToggle');
+        const movBody = document.getElementById('productsMovementsBody');
+        function setProductsMovementsOpen(open) {
+            if (!movBlock || !movToggle || !movBody) return;
+            movBlock.classList.toggle('is-open', open);
+            movBody.hidden = !open;
+            movToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (open && window.S35PosModule && typeof window.S35PosModule.renderProductsMovementsChart === 'function') {
+                window.S35PosModule.renderProductsMovementsChart();
+            }
+        }
+        if (movToggle) {
+            movToggle.addEventListener('click', function () {
+                setProductsMovementsOpen(!movBlock.classList.contains('is-open'));
+            });
+        }
+        if (movBlock) {
+            movBlock.addEventListener('click', function (e) {
+                if (movBlock.classList.contains('is-open')) return;
+                if (e.target.closest('button, a, input, select, label')) return;
+                setProductsMovementsOpen(true);
+            });
+        }
     }
 
     function renderProductFamiliesList() {
