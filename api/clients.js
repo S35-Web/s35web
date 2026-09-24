@@ -1,7 +1,11 @@
 /**
  * Clientes compartidos (MongoDB) — visibles en todos los navegadores.
- * GET: lista (si vacío, siembra desde clients-import.json)
+ * GET: lista (si vacío, siembra UNA VEZ desde clients-import.json; no re-siembra al refresh)
  * PUT: reemplaza el catálogo completo
+ *
+ * El seed solo corre cuando Mongo no tiene items. Edits del panel viven en Mongo y no
+ * deben volver a pisarse con el JSON estático (el botón Importar en el cliente solo
+ * agrega faltantes / rellena campos vacíos).
  */
 const fs = require('fs');
 const path = require('path');

@@ -3018,11 +3018,33 @@
             return Promise.resolve(false);
         }
         clientsSyncing = true;
+        const localSnapshot = clients.slice();
+        // Pull-merge before PUT so a stale tab cannot overwrite newer edits in Mongo.
         return fetch('/api/clients', {
-            method: 'PUT',
+            method: 'GET',
             headers: clientsAuthHeaders(),
-            body: JSON.stringify({ items: clients })
+            cache: 'no-store'
         })
+            .then(function (r) {
+                return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; });
+            })
+            .catch(function () {
+                return { ok: false };
+            })
+            .then(function (res) {
+                if (res.ok && res.data && res.data.ok && Array.isArray(res.data.items)) {
+                    const remote = res.data.items.map(normalizeClientRecord).filter(Boolean);
+                    clients = mergeClientLists(remote, localSnapshot);
+                    saveClientsLocal();
+                } else {
+                    clients = localSnapshot;
+                }
+                return fetch('/api/clients', {
+                    method: 'PUT',
+                    headers: clientsAuthHeaders(),
+                    body: JSON.stringify({ items: clients })
+                });
+            })
             .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
             .then(function (res) {
                 if (!res.ok || !res.data || !res.data.ok) {
@@ -3051,6 +3073,23 @@
             pushClientsToServer();
         }, 400);
     }
+    function clientUpdatedAtMs(c) {
+        if (!c) return 0;
+        const t = Date.parse(c.updatedAt) || Date.parse(c.userEditedAt) || Date.parse(c.createdAt) || 0;
+        return isNaN(t) ? 0 : t;
+    }
+    function clientIsUserEdited(c) {
+        return !!(c && (c.userEdited || c.userEditedAt));
+    }
+    /** Prefer edited / newer record so stale tabs cannot clobber Mongo with dirty Excel names. */
+    function preferClientRecord(a, b) {
+        if (!a) return b;
+        if (!b) return a;
+        const aEd = clientIsUserEdited(a);
+        const bEd = clientIsUserEdited(b);
+        if (aEd !== bEd) return aEd ? a : b;
+        return clientUpdatedAtMs(a) >= clientUpdatedAtMs(b) ? a : b;
+    }
     function mergeClientLists(primary, secondary) {
         const out = (primary || []).slice();
         const byId = {};
@@ -3065,12 +3104,56 @@
             if (!c) return;
             const rfc = String(c.rfc || '').trim().toUpperCase();
             const idx = byId[c.id] != null ? byId[c.id] : (rfc && byRfc[rfc] != null ? byRfc[rfc] : -1);
-            if (idx >= 0) return;
+            if (idx >= 0) {
+                const chosen = preferClientRecord(out[idx], c);
+                if (chosen !== out[idx]) {
+                    const keepId = out[idx].id;
+                    out[idx] = Object.assign({}, chosen, { id: keepId });
+                    const chosenRfc = String(out[idx].rfc || '').trim().toUpperCase();
+                    if (chosenRfc) byRfc[chosenRfc] = idx;
+                }
+                return;
+            }
             byId[c.id] = out.length;
             if (rfc) byRfc[rfc] = out.length;
             out.push(c);
         });
         return out;
+    }
+    function fillEmptyClientFields(prev, incoming) {
+        const merged = Object.assign({}, prev);
+        let changed = false;
+        const fields = ['name', 'phone', 'email', 'company', 'address', 'rfc'];
+        fields.forEach(function (field) {
+            const cur = String(merged[field] || '').trim();
+            const nextVal = String(incoming[field] || '').trim();
+            if (!cur && nextVal) {
+                merged[field] = incoming[field];
+                changed = true;
+            }
+        });
+        if (prev.type === 'distributor') {
+            merged.type = 'distributor';
+        } else if (!merged.type && incoming.type) {
+            merged.type = incoming.type;
+            changed = true;
+        }
+        merged.id = prev.id;
+        merged.createdAt = prev.createdAt || incoming.createdAt || merged.createdAt;
+        if (clientIsUserEdited(prev)) {
+            merged.userEdited = true;
+            if (prev.userEditedAt) merged.userEditedAt = prev.userEditedAt;
+        }
+        delete merged.domicilio;
+        delete merged.localidad;
+        return { merged: merged, changed: changed };
+    }
+    function markClientUserEdited(record) {
+        const now = new Date().toISOString();
+        record.userEdited = true;
+        record.userEditedAt = now;
+        record.updatedAt = now;
+        return record;
     }
     function refreshClientsUi() {
         fillClientSelect();
@@ -3102,7 +3185,13 @@
                 clients = merged;
                 saveClientsLocal();
                 const grew = merged.length > remote.length;
-                if (grew || (remote.length === 0 && merged.length > 0)) {
+                const localHasNewer = merged.some(function (c) {
+                    const rem = remote.find(function (r) { return r.id === c.id; });
+                    if (!rem) return false;
+                    return preferClientRecord(c, rem) === c && c !== rem &&
+                        (clientIsUserEdited(c) || clientUpdatedAtMs(c) > clientUpdatedAtMs(rem));
+                });
+                if (grew || localHasNewer || (remote.length === 0 && merged.length > 0)) {
                     return pushClientsToServer().then(function () {
                         refreshClientsUi();
                         return { ok: true, total: clients.length, uploadedLocal: true };
@@ -3120,7 +3209,11 @@
                 return { ok: false, error: err && err.message };
             });
     }
-    /** Merge catalog from /colaboradores/data/clients-import.json into local clients (by RFC or id). */
+    /**
+     * Merge catalog from clients-import.json.
+     * Only adds missing clients or fills EMPTY fields — never overwrites name/phone/email/company/address already set
+     * (protects manual edits and Mongo from dirty Excel seed data).
+     */
     function importClientsCatalog() {
         return fetch('/colaboradores/data/clients-import.json', { cache: 'no-store' })
             .then(function (r) {
@@ -3131,7 +3224,7 @@
                 const incoming = (data && Array.isArray(data.items)) ? data.items : [];
                 if (!incoming.length) {
                     toast('El archivo de importación está vacío');
-                    return { added: 0, updated: 0, total: clients.length };
+                    return { added: 0, updated: 0, skipped: 0, total: clients.length };
                 }
                 const byRfc = {};
                 const byId = {};
@@ -3142,6 +3235,7 @@
                 });
                 let added = 0;
                 let updated = 0;
+                let skipped = 0;
                 const now = new Date().toISOString();
                 incoming.forEach(function (row) {
                     if (!row || !row.name) return;
@@ -3160,16 +3254,13 @@
                     };
                     let idx = rfc && byRfc[rfc] != null ? byRfc[rfc] : (byId[next.id] != null ? byId[next.id] : -1);
                     if (idx >= 0) {
-                        const prev = clients[idx];
-                        const merged = Object.assign({}, prev, next, {
-                            id: prev.id,
-                            type: prev.type === 'distributor' ? 'distributor' : next.type,
-                            createdAt: prev.createdAt || now
-                        });
-                        delete merged.domicilio;
-                        delete merged.localidad;
-                        clients[idx] = merged;
-                        updated += 1;
+                        const filled = fillEmptyClientFields(clients[idx], next);
+                        if (filled.changed) {
+                            clients[idx] = filled.merged;
+                            updated += 1;
+                        } else {
+                            skipped += 1;
+                        }
                     } else {
                         next.createdAt = now;
                         byId[next.id] = clients.length;
@@ -3182,7 +3273,7 @@
                 renderClients();
                 fillClientSelect();
                 fillHistoryClientFilter();
-                return { added: added, updated: updated, total: clients.length };
+                return { added: added, updated: updated, skipped: skipped, total: clients.length };
             });
     }
 
@@ -5966,6 +6057,7 @@
         const merged = Object.assign({}, clients[idx], next);
         delete merged.domicilio;
         delete merged.localidad;
+        markClientUserEdited(merged);
         clients[idx] = merged;
         saveClients();
         fillClientSelect();
@@ -6872,11 +6964,11 @@
         const importClientsBtn = document.getElementById('posClientImportBtn');
         if (importClientsBtn) {
             importClientsBtn.addEventListener('click', function () {
-                if (!confirm('¿Resincronizar el catálogo base de clientes (~1000)?\n\nSe agregan los nuevos y se actualizan los que ya existan con el mismo RFC. Los marcados como Distribuidor se conservan. Los cambios se publican para todos los navegadores.')) return;
+                if (!confirm('¿Importar clientes faltantes del catálogo base (~1000)?\n\nSolo agrega registros nuevos y rellena campos vacíos.\nNo sobrescribe nombre, teléfono, email ni dirección ya guardados (tus ediciones se conservan).')) return;
                 importClientsBtn.disabled = true;
                 importClientsCatalog()
                     .then(function (res) {
-                        toast('Importados: +' + res.added + ' · actualizados ' + res.updated + ' · total ' + res.total);
+                        toast('Import: +' + res.added + ' · campos vacíos ' + res.updated + ' · sin cambio ' + (res.skipped || 0) + ' · total ' + res.total);
                     })
                     .catch(function (err) {
                         toast((err && err.message) || 'Error al importar');
@@ -6946,9 +7038,11 @@
                     const merged = Object.assign({}, clients[idx], next);
                     delete merged.domicilio;
                     delete merged.localidad;
+                    markClientUserEdited(merged);
                     clients[idx] = merged;
                 } else {
                     next.createdAt = next.updatedAt;
+                    markClientUserEdited(next);
                     clients.push(next);
                 }
                 saveClients();
@@ -8338,6 +8432,7 @@
             ensureHistoricalSalesImport();
             syncClientsFromServer().then(function (res) {
                 if (res && res.ok) return;
+                // Solo siembra desde JSON si no hay clientes locales ni remoto (nunca reimporta al refresh).
                 if (!clients.length) {
                     return importClientsCatalog().then(function () {
                         return pushClientsToServer();
