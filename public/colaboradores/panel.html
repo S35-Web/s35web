@@ -4238,6 +4238,21 @@
         .materials-inventory-chart .products-inventory-row {
             grid-template-columns: minmax(0, 1.15fr) minmax(64px, 1fr) 5.6em;
         }
+        .materials-inventory-chart .products-inventory-track {
+            position: relative;
+        }
+        .mat-min-mark {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            margin-left: -0.5px;
+            background: #1a1a1a;
+            pointer-events: none;
+        }
+        .mat-min-mark.is-on-fill { background: #fff; }
+        [data-theme="dark"] .mat-min-mark { background: #f2f2f2; }
+        [data-theme="dark"] .mat-min-mark.is-on-fill { background: #111; }
         .products-inventory-card {
             margin: 0 0 22px;
         }
@@ -7738,7 +7753,8 @@
                 name: m.name || m.id,
                 unit: m.unit || '',
                 family: cat,
-                stock: Math.max(0, Number(m.stock) || 0)
+                stock: Math.max(0, Number(m.stock) || 0),
+                minStock: Math.max(0, Number(m.minStock) || 0)
             };
         }).sort(function (a, b) {
             return b.stock - a.stock || String(a.name).localeCompare(String(b.name), 'es');
@@ -7760,11 +7776,19 @@
             const pct = max > 0 ? (m.stock / max) * 100 : 0;
             const color = matFamilyColor(m.family);
             const qty = fmtMatQty(m.stock) + (m.unit ? ' ' + m.unit : '');
+            let mark = '';
+            if (m.minStock > 0) {
+                const minPct = max > 0 ? Math.min(100, (m.minStock / max) * 100) : 100;
+                const onFill = m.stock > 0 && m.minStock <= m.stock;
+                const minLabel = 'Mínimo ' + fmtMatQty(m.minStock) + (m.unit ? ' ' + m.unit : '');
+                mark = '<span class="mat-min-mark' + (onFill ? ' is-on-fill' : '') + '" style="left:' +
+                    minPct.toFixed(1) + '%" title="' + esc(minLabel) + '"></span>';
+            }
             return '<button type="button" class="products-inventory-row" data-open-plant="' + esc(m.id) + '" title="' + esc(m.name) + '">' +
                 '<span class="products-inventory-name"><span class="dot" style="background:' + esc(color) + '" aria-hidden="true"></span>' +
                 '<span>' + esc(m.name) + '</span></span>' +
                 '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
-                pct.toFixed(1) + '%;background:' + esc(color) + '"></span></span>' +
+                pct.toFixed(1) + '%;background:' + esc(color) + '"></span>' + mark + '</span>' +
                 '<span class="products-inventory-qty' + (m.stock ? '' : ' is-zero') + '">' + esc(qty) + '</span>' +
                 '</button>';
         }).join('');
