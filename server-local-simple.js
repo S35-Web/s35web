@@ -3,8 +3,40 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const jwt = require('jsonwebtoken');
+const stateStore = require('./api/_lib/state-store');
 
 const PORT = 3000;
+
+// Estado del panel en la nube: usa MongoDB si hay MONGODB_URI; si no, un
+// archivo local compartido por todos los navegadores que apunten a este server.
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+const USE_MONGO = !!process.env.MONGODB_URI;
+let getDb = null;
+if (USE_MONGO) {
+    try { getDb = require('./api/_lib/mongo').getDb; }
+    catch (e) { console.error('No se pudo cargar el cliente de MongoDB:', e.message); }
+}
+const STATE_FILE = path.join(__dirname, '.data', 'state-live.json');
+
+function readStateFile() {
+    try { return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')) || {}; }
+    catch (_) { return {}; }
+}
+function writeStateFile(obj) {
+    fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
+    fs.writeFileSync(STATE_FILE, JSON.stringify(obj));
+}
+function verifyPanelToken(req) {
+    try {
+        const auth = req.headers.authorization || '';
+        const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+        if (!token) return null;
+        const payload = jwt.verify(token, JWT_SECRET);
+        if (payload.role !== 'admin' && payload.role !== 'ventas') return null;
+        return payload;
+    } catch (_) { return null; }
+}
 
 // Función para servir archivos estáticos
 function serveStaticFile(req, res, filePath) {
@@ -149,10 +181,11 @@ const server = http.createServer((req, res) => {
                     return;
                 }
                 const displayName = sub.charAt(0).toUpperCase() + sub.slice(1);
+                const token = jwt.sign({ role: role, sub: sub }, JWT_SECRET, { expiresIn: '8h' });
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({
                     ok: true,
-                    token: 'local-dev-token-' + role,
+                    token: token,
                     user: { id: sub, username: sub, name: displayName, role: role }
                 }));
             } catch (e) {
@@ -297,6 +330,93 @@ const server = http.createServer((req, res) => {
         const dest = pathname.replace(/^\/materialab/, '/laboratorio') + (parsedUrl.search || '');
         res.writeHead(301, { Location: dest });
         res.end();
+        return;
+    }
+
+    // Estado del panel en la nube (ventas, cortes, precios, fórmulas,
+    // inventario, materias primas, producción...). Compartido entre navegadores.
+    if (pathname === '/api/state') {
+        const respond = (code, obj) => {
+            res.writeHead(code, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(obj));
+        };
+        const user = verifyPanelToken(req);
+        if (!user) { respond(401, { ok: false, error: 'Unauthorized' }); return; }
+        const q = parsedUrl.query || {};
+        const key = q.key ? String(q.key) : null;
+
+        if (req.method === 'GET') {
+            if (USE_MONGO && getDb) {
+                getDb().then(async (db) => {
+                    if (q.meta) {
+                        const m = await stateStore.getMeta(db);
+                        return respond(200, { ok: true, updatedAt: m.updatedAt, count: m.count });
+                    }
+                    if (key) {
+                        const one = await stateStore.getOne(db, key);
+                        return respond(200, { ok: true, key: key, value: one ? one.value : null, updatedAt: one ? one.updatedAt : null });
+                    }
+                    const all = await stateStore.getAllState(db);
+                    return respond(200, { ok: true, state: all.state, updatedAt: all.updatedAt });
+                }).catch((e) => respond(500, { ok: false, error: e.message }));
+                return;
+            }
+            const store = readStateFile();
+            if (q.meta) {
+                let updatedAt = null, count = 0;
+                Object.keys(store).forEach((k) => {
+                    if (!stateStore.isSyncableKey(k)) return;
+                    count += 1;
+                    const u = store[k] && store[k].updatedAt;
+                    if (u && (!updatedAt || u > updatedAt)) updatedAt = u;
+                });
+                return respond(200, { ok: true, updatedAt: updatedAt, count: count });
+            }
+            if (key) {
+                const rec = store[key];
+                return respond(200, { ok: true, key: key, value: (rec && typeof rec.value === 'string') ? rec.value : null, updatedAt: rec ? rec.updatedAt : null });
+            }
+            const state = {};
+            let latest = null;
+            Object.keys(store).forEach((k) => {
+                if (!stateStore.isSyncableKey(k)) return;
+                const rec = store[k];
+                state[k] = (rec && typeof rec.value === 'string') ? rec.value : null;
+                if (rec && rec.updatedAt && (!latest || rec.updatedAt > latest)) latest = rec.updatedAt;
+            });
+            return respond(200, { ok: true, state: state, updatedAt: latest });
+        }
+
+        if (req.method === 'PUT' || req.method === 'POST') {
+            if (!key) { respond(400, { ok: false, error: 'Falta key' }); return; }
+            let body = '';
+            req.on('data', (chunk) => {
+                body += chunk.toString();
+                if (body.length > 12 * 1024 * 1024) req.destroy();
+            });
+            req.on('end', () => {
+                let parsed = {};
+                try { parsed = JSON.parse(body || '{}'); } catch (_) {}
+                const value = parsed.value;
+                if (!stateStore.isSyncableKey(key)) { respond(400, { ok: false, error: 'Clave no permitida' }); return; }
+                if (typeof value !== 'string') { respond(400, { ok: false, error: 'value debe ser string' }); return; }
+                if (USE_MONGO && getDb) {
+                    getDb().then(async (db) => {
+                        const r = await stateStore.putState(db, key, value, user);
+                        respond(200, { ok: true, key: key, updatedAt: r.updatedAt });
+                    }).catch((e) => respond(e && e.status ? e.status : 500, { ok: false, error: e.message }));
+                    return;
+                }
+                const store = readStateFile();
+                const updatedAt = new Date().toISOString();
+                store[key] = { value: value, updatedAt: updatedAt, updatedBy: user.sub || user.username || null };
+                writeStateFile(store);
+                respond(200, { ok: true, key: key, updatedAt: updatedAt });
+            });
+            return;
+        }
+
+        respond(405, { ok: false, error: 'Method Not Allowed' });
         return;
     }
 

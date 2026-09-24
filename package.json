@@ -10,6 +10,7 @@
     "build:historical-sales": "node scripts/build-historical-sales-import.js",
     "validate:research": "node scripts/validate-research.js",
     "validate:product-sync": "node scripts/validate-product-sync.js",
+    "test:state": "node scripts/test-state-store.js",
     "start": "echo 'Static site'",
     "dev": "echo 'Static site'"
   },
