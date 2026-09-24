@@ -2790,121 +2790,211 @@
             .sale-note-actions { grid-template-columns: 1fr; }
         }
         @media print {
-            body * { visibility: hidden !important; }
-            #saleNoteModal,
-            #saleNoteModal.show,
-            #saleNoteModal .modal-card,
-            #saleNoteModal .modal-body,
-            #saleNoteDoc,
-            #saleNoteDoc *,
-            #lotTicketModal,
-            #lotTicketModal.show,
-            #lotTicketModal .modal-card,
-            #lotTicketModal .modal-body,
-            #lotTicketDoc,
-            #lotTicketDoc *,
-            #purchaseTicketModal,
-            #purchaseTicketModal.show,
-            #purchaseTicketModal .modal-card,
-            #purchaseTicketModal .modal-body,
-            #purchaseTicketDoc,
-            #purchaseTicketDoc * {
-                visibility: visible !important;
+            @page {
+                size: letter;
+                margin: 12mm;
             }
-            #saleNoteModal,
-            #lotTicketModal,
-            #purchaseTicketModal {
-                position: static !important;
-                display: block !important;
-                background: none !important;
+            html, body {
+                background: #fff !important;
+                color: #0a0a0a !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            /* Evita páginas en blanco: el layout de la app no debe ocupar espacio */
+            body > .app,
+            body > .toast,
+            body > .modal-backdrop:not(.show) {
+                display: none !important;
+            }
+            body * { visibility: hidden !important; }
+
+            #saleNoteModal.show,
+            #lotTicketModal.show,
+            #purchaseTicketModal.show {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+                margin: 0 !important;
                 padding: 0 !important;
                 inset: auto !important;
+                background: #fff !important;
+                display: block !important;
+                visibility: visible !important;
+                overflow: visible !important;
+                z-index: 1 !important;
             }
-            #saleNoteModal .modal-card,
-            #lotTicketModal .modal-card,
-            #purchaseTicketModal .modal-card {
+            #saleNoteModal.show *,
+            #lotTicketModal.show *,
+            #purchaseTicketModal.show * {
+                visibility: visible !important;
+            }
+            #saleNoteModal.show .modal-card,
+            #lotTicketModal.show .modal-card,
+            #purchaseTicketModal.show .modal-card {
                 max-width: none !important;
                 max-height: none !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
                 border: none !important;
                 box-shadow: none !important;
                 border-radius: 0 !important;
+                background: #fff !important;
+                color: #0a0a0a !important;
             }
-            #saleNoteModal .modal-head,
-            #saleNoteModal .sale-note-hint,
-            #saleNoteModal .sale-note-share-fields,
-            #saleNoteModal .sale-note-actions,
-            #saleNoteModal #saleNoteEdit,
-            #saleNoteModal #saleNoteEditBtn,
-            #saleNoteModal #saleNoteShareBlock,
-            #lotTicketModal .modal-head,
-            #lotTicketModal .lot-ticket-actions,
-            #lotTicketModal .lot-confirm-fields,
-            #purchaseTicketModal .modal-head,
-            #purchaseTicketModal .sale-note-hint,
-            #purchaseTicketModal .sale-note-share-fields,
-            #purchaseTicketModal .lot-ticket-actions {
+            #saleNoteModal.show .modal-head,
+            #saleNoteModal.show .sale-note-hint,
+            #saleNoteModal.show .sale-note-share-fields,
+            #saleNoteModal.show .sale-note-actions,
+            #saleNoteModal.show #saleNoteEdit,
+            #saleNoteModal.show #saleNoteEditBtn,
+            #saleNoteModal.show #saleNoteShareBlock,
+            #lotTicketModal.show .modal-head,
+            #lotTicketModal.show .lot-ticket-actions,
+            #lotTicketModal.show .lot-confirm-fields,
+            #purchaseTicketModal.show .modal-head,
+            #purchaseTicketModal.show .sale-note-hint,
+            #purchaseTicketModal.show .sale-note-share-fields,
+            #purchaseTicketModal.show .lot-ticket-actions {
                 display: none !important;
             }
-            #saleNoteModal .modal-body,
-            #lotTicketModal .modal-body,
-            #purchaseTicketModal .modal-body { padding: 0 !important; overflow: visible !important; }
+            #saleNoteModal.show .modal-body,
+            #lotTicketModal.show .modal-body,
+            #purchaseTicketModal.show .modal-body {
+                padding: 0 !important;
+                overflow: visible !important;
+                background: #fff !important;
+            }
+
             .sale-note-doc,
-            .lot-ticket-doc { color: #0a0a0a !important; }
-            /* Vista previa LT sin confirmar: no imprimible (Ctrl/Cmd+P tampoco) */
+            .lot-ticket-doc,
+            #saleNoteDoc,
+            #lotTicketDoc,
+            #purchaseTicketDoc {
+                color: #0a0a0a !important;
+                background: #fff !important;
+            }
+            .sale-note-doc .muted,
+            .lot-ticket-doc .muted,
+            .sale-note-meta .k,
+            .lot-ticket-meta .k,
+            .lot-ticket-pallet-meta .k,
+            .lot-ticket-blank-field .lbl,
+            .handoff-sub {
+                color: #525252 !important;
+            }
+            .sale-note-brand,
+            .lot-ticket-brand,
+            .sale-note-lines th,
+            .lot-ticket-lines th,
+            .sale-note-lines td,
+            .lot-ticket-lines td,
+            .lot-ticket-sheet,
+            .lot-ticket-pallet,
+            .lot-ticket-handoff,
+            .lot-ticket-blank-field .line {
+                border-color: #0a0a0a !important;
+            }
+            .lot-ticket-sheet {
+                border: 1px solid #0a0a0a !important;
+                border-radius: 0 !important;
+                background: #fff !important;
+                overflow: visible !important;
+            }
+            .lot-ticket-pallet {
+                background: #fff !important;
+            }
+
+            /* Vista previa LT sin confirmar: no imprimible */
             #lotTicketModal.is-pending,
             #lotTicketModal.is-pending * {
                 display: none !important;
                 visibility: hidden !important;
             }
-            /* Ticket LT: media hoja A4 — tarima arriba, entrega abajo */
-            @page {
-                size: A4;
-                margin: 10mm;
-            }
+
+            /* Ticket LT: una hoja carta — tarima arriba, entrega abajo */
             #lotTicketDoc .lot-ticket-sheet {
                 display: flex !important;
                 flex-direction: column !important;
-                min-height: 277mm;
-                height: 277mm;
-                color: #0a0a0a !important;
+                min-height: 0 !important;
+                height: auto !important;
+                max-height: none !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
             }
             #lotTicketDoc .lot-ticket-half {
-                flex: 1 1 50%;
+                flex: 0 0 auto;
                 min-height: 0;
-                height: 50%;
+                height: auto !important;
                 box-sizing: border-box;
                 page-break-inside: avoid;
+                break-inside: avoid;
             }
             #lotTicketDoc .lot-ticket-pallet {
                 display: flex !important;
                 flex-direction: column;
                 align-items: center;
-                justify-content: center;
+                justify-content: flex-start;
                 text-align: center;
-                padding: 8mm 6mm;
-                border-bottom: 1.5px dashed #0a0a0a;
+                padding: 10mm 12mm 8mm;
+                border-bottom: 1.5px dashed #0a0a0a !important;
             }
             #lotTicketDoc .lot-ticket-handoff {
                 display: flex !important;
                 flex-direction: column;
                 justify-content: flex-start;
-                padding: 8mm 10mm;
+                padding: 8mm 12mm 10mm;
             }
             #lotTicketDoc .lot-ticket-pallet .folio-big {
-                font-size: 36pt !important;
+                font-size: 28pt !important;
                 line-height: 1.1;
+                margin: 0 0 6mm !important;
+            }
+            #lotTicketDoc .lot-ticket-qr {
+                min-height: 0 !important;
+                margin: 0 auto 6mm !important;
             }
             #lotTicketDoc .lot-ticket-qr img,
             #lotTicketDoc .lot-ticket-qr canvas {
-                width: 42mm !important;
-                height: 42mm !important;
+                width: 48mm !important;
+                height: 48mm !important;
+            }
+            #lotTicketDoc .lot-ticket-pallet-meta {
+                width: 100%;
+                max-width: 140mm;
+                margin: 0 auto;
+            }
+            #lotTicketDoc .lot-ticket-blank-field {
+                margin-top: 5mm;
+            }
+            #lotTicketDoc .lot-ticket-blank-field .line {
+                min-height: 9mm;
+                border-bottom: 1px solid #0a0a0a !important;
             }
             #lotTicketDoc .lot-ticket-screen-only { display: none !important; }
 
+            /* Nota de venta / ticket compra: hoja carta limpia */
+            #saleNoteDoc.sale-note-doc,
+            #purchaseTicketDoc.lot-ticket-doc {
+                max-width: 186mm;
+                margin: 0 auto;
+                padding: 0;
+            }
+            .sale-note-brand .mark,
+            .lot-ticket-brand .mark {
+                color: #0a0a0a !important;
+            }
+
             /* Conteo de inventario — materias primas */
-            body.printing-mat-count #saleNoteModal,
-            body.printing-mat-count #lotTicketModal,
-            body.printing-mat-count #purchaseTicketModal {
+            body.printing-mat-count > .app,
+            body.printing-mat-count > .toast,
+            body.printing-mat-count > .modal-backdrop {
                 display: none !important;
                 visibility: hidden !important;
             }
@@ -2925,6 +3015,7 @@
             }
             body.printing-mat-count .mat-count-print {
                 color: #0a0a0a !important;
+                background: #fff !important;
             }
         }
 
