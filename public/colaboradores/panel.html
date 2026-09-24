@@ -8111,9 +8111,56 @@
         (f.versions || []).forEach(function (ver) { swapList(ver.items); });
         return changed;
     }
+    /** Normaliza una versión guardada o de seed al shape interno. */
+    function normalizeFormulaVersion(ver, packSizeKgFallback) {
+        return {
+            id: ver.id || 'v1',
+            name: ver.name || ver.id || 'V1',
+            label: ver.label || '',
+            yieldMin: Number(ver.yieldMin) || 0,
+            yieldMax: Number(ver.yieldMax) || 0,
+            water: Number(ver.water) || 0,
+            packSizeKg: Number(ver.packSizeKg) || packSizeKgFallback || 25,
+            items: mapDoseItems(ver.items)
+        };
+    }
+    /**
+     * Une versiones del seed (canónico en repo) con las de localStorage.
+     * - Misma id: gana local (edits del usuario).
+     * - Ids solo en seed: se agregan (p. ej. V2 nueva en todos los navegadores).
+     * - Ids solo en local: se conservan (versiones creadas en ese browser).
+     */
+    function mergeFormulaVersions(seededVersions, savedVersions, packSizeKg) {
+        const byId = {};
+        const order = [];
+        function put(ver, preferExisting) {
+            if (!ver) return;
+            const id = String(ver.id || '').trim() || 'v1';
+            const norm = normalizeFormulaVersion(Object.assign({}, ver, { id: id }), packSizeKg);
+            if (preferExisting && byId[id]) return;
+            if (!byId[id]) order.push(id);
+            byId[id] = norm;
+        }
+        (seededVersions || []).forEach(function (ver) { put(ver, false); });
+        (savedVersions || []).forEach(function (ver) {
+            // Local pisa seed en la misma id; ids nuevos de local se anexan.
+            put(ver, false);
+        });
+        // Reordenar: primero orden del seed, luego extras solo-local.
+        const seedIds = (seededVersions || []).map(function (v) { return String(v.id || '').trim() || 'v1'; });
+        const mergedOrder = [];
+        seedIds.forEach(function (id) {
+            if (byId[id] && mergedOrder.indexOf(id) < 0) mergedOrder.push(id);
+        });
+        order.forEach(function (id) {
+            if (byId[id] && mergedOrder.indexOf(id) < 0) mergedOrder.push(id);
+        });
+        return mergedOrder.map(function (id) { return byId[id]; });
+    }
     function loadFormulas() {
         const map = {};
         recipes.forEach(function (r) { map[r.product] = seedFormula(r); });
+        let formulasMergedFromSeed = false;
         try {
             const raw = JSON.parse(localStorage.getItem(FORMULA_KEY) || 'null');
             const items = raw && raw.items ? raw.items : raw;
@@ -8135,19 +8182,18 @@
                             });
                         });
                         if (keptVersions.length !== saved.versions.length) plantIdsRemapped = true;
-                        const versionSource = keptVersions.length ? keptVersions : (seeded.versions || []);
-                        map[slug].versions = versionSource.map(function (ver) {
-                            return {
-                                id: ver.id || 'v1',
-                                name: ver.name || ver.id || 'V1',
-                                label: ver.label || '',
-                                yieldMin: Number(ver.yieldMin) || 0,
-                                yieldMax: Number(ver.yieldMax) || 0,
-                                water: Number(ver.water) || 0,
-                                packSizeKg: Number(ver.packSizeKg) || map[slug].packSizeKg || 25,
-                                items: mapDoseItems(ver.items)
-                            };
+                        const savedIdSet = {};
+                        (keptVersions || []).forEach(function (v) {
+                            if (v && v.id) savedIdSet[String(v.id)] = true;
                         });
+                        (seeded.versions || []).forEach(function (v) {
+                            if (v && v.id && !savedIdSet[String(v.id)]) formulasMergedFromSeed = true;
+                        });
+                        map[slug].versions = mergeFormulaVersions(
+                            seeded.versions,
+                            keptVersions.length ? keptVersions : null,
+                            map[slug].packSizeKg
+                        );
                         if (!map[slug].versions.length) return;
                         const stillActive = map[slug].versions.some(function (ver) {
                             return ver.id === saved.activeVersionId;
@@ -8156,10 +8202,10 @@
                         syncActiveVersionToRoot(map[slug]);
                         return;
                     }
-                    // Migración flat → V1
+                    // Migración flat → V1 (seed puede aportar V2+ encima)
                     if (Array.isArray(saved.items) && saved.items.length) {
                         map[slug].mode = saved.mode || seeded.mode;
-                        map[slug].versions = [{
+                        const flatV1 = {
                             id: 'v1',
                             name: 'V1',
                             label: 'Estándar',
@@ -8168,9 +8214,15 @@
                             water: Number(saved.water) || 0,
                             packSizeKg: Number(saved.packSizeKg) || seeded.packSizeKg || 25,
                             items: mapDoseItems(saved.items)
-                        }];
+                        };
+                        map[slug].versions = mergeFormulaVersions(
+                            seeded.versions,
+                            [flatV1],
+                            map[slug].packSizeKg || seeded.packSizeKg
+                        );
                         map[slug].activeVersionId = 'v1';
                         map[slug].packagingPlantId = saved.packagingPlantId || seeded.packagingPlantId;
+                        if ((seeded.versions || []).length > 1) formulasMergedFromSeed = true;
                         syncActiveVersionToRoot(map[slug]);
                     }
                 });
@@ -8183,6 +8235,7 @@
             const recipe = recipes.filter(function (r) { return r.product === slug; })[0];
             ensureFormulaPackagingLine(map[slug], recipe);
         });
+        if (formulasMergedFromSeed) plantIdsRemapped = true; // reutiliza el flush a localStorage
         return map;
     }
     function saveFormulas() {
