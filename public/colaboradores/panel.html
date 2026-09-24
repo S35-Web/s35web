@@ -7648,12 +7648,9 @@
     document.getElementById('plantMin').addEventListener('focus', function () { this.select(); });
     document.getElementById('plantUnitCost').addEventListener('focus', function () { this.select(); });
     document.getElementById('matAddBtn').addEventListener('click', function () { openPlantModal(null); });
-    document.getElementById('plantModalClose').addEventListener('click', closePlantModal);
     document.getElementById('plantModalCancel').addEventListener('click', closePlantModal);
-    plantModal.addEventListener('click', function (e) { if (e.target === plantModal) closePlantModal(); });
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
-        closePlantModal();
         closeFamiliesModal();
     });
     document.getElementById('plantForm').addEventListener('submit', function (e) {
