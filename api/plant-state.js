@@ -1,8 +1,7 @@
 /**
- * Estado de planta compartido (MongoDB): inventario MP, PT, fórmulas/versiones,
- * lotes y tickets de compra.
- * GET: lee el documento
- * PUT: reemplaza el documento completo (última escritura gana)
+ * @deprecated Usar /api/panel-state (S35PanelSync).
+ * Se mantiene por compatibilidad; el panel ya no lo llama.
+ * GET panel-state migra datos de `plant_state` si panel_state está vacío.
  */
 'use strict';
 
@@ -45,6 +44,8 @@ module.exports = async function handler(req, res) {
         res.status(200).json({
           ok: true,
           empty: true,
+          deprecated: true,
+          use: '/api/panel-state',
           inventory: [],
           finished: {},
           formulas: {},
@@ -57,6 +58,8 @@ module.exports = async function handler(req, res) {
       res.status(200).json({
         ok: true,
         empty: false,
+        deprecated: true,
+        use: '/api/panel-state',
         inventory: asArray(doc.inventory),
         finished: asObject(doc.finished),
         formulas: asObject(doc.formulas),
@@ -92,6 +95,8 @@ module.exports = async function handler(req, res) {
       );
       res.status(200).json({
         ok: true,
+        deprecated: true,
+        use: '/api/panel-state',
         updatedAt: updatedAt,
         totals: {
           inventory: inventory.length,

@@ -35,6 +35,65 @@ const ALLOWED_KEYS = [
 
 const ALLOWED_SET = new Set(ALLOWED_KEYS);
 
+/** Migra un documento legado `plant_state` (sync anterior) a claves panel_state. */
+async function migrateFromPlantState(db, col) {
+  try {
+    const count = await col.countDocuments({ _id: { $in: ALLOWED_KEYS } });
+    if (count > 0) return false;
+    const plant = await db.collection('plant_state').findOne({ _id: 'plant' });
+    if (!plant) return false;
+    const now = plant.updatedAt || new Date().toISOString();
+    const rows = [];
+    if (Array.isArray(plant.inventory) && plant.inventory.length) {
+      rows.push({
+        _id: 's35_plant_inventory',
+        value: { items: plant.inventory, updatedAt: now },
+        updatedAt: now
+      });
+    }
+    if (plant.finished && typeof plant.finished === 'object') {
+      rows.push({
+        _id: 's35_finished_stock',
+        value: { items: plant.finished, updatedAt: now },
+        updatedAt: now
+      });
+    }
+    if (plant.formulas && typeof plant.formulas === 'object' && Object.keys(plant.formulas).length) {
+      rows.push({
+        _id: 's35_plant_formulas_v3',
+        value: { items: plant.formulas, updatedAt: now },
+        updatedAt: now
+      });
+    }
+    if (Array.isArray(plant.lots) && plant.lots.length) {
+      rows.push({
+        _id: 's35_production_lots',
+        value: { items: plant.lots, updatedAt: now },
+        updatedAt: now
+      });
+    }
+    if (Array.isArray(plant.purchases) && plant.purchases.length) {
+      rows.push({
+        _id: 's35_compra_tickets',
+        value: { items: plant.purchases, updatedAt: now },
+        updatedAt: now
+      });
+    }
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      await col.updateOne(
+        { _id: row._id },
+        { $set: { value: row.value, updatedAt: row.updatedAt, updatedBy: 'migrate:plant_state' } },
+        { upsert: true }
+      );
+    }
+    return rows.length > 0;
+  } catch (err) {
+    console.warn('[panel-state] migrate plant_state', err && err.message);
+    return false;
+  }
+}
+
 function parseBody(req) {
   try {
     if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) return req.body;
@@ -70,6 +129,7 @@ module.exports = async function handler(req, res) {
     const col = db.collection('panel_state');
 
     if (req.method === 'GET') {
+      await migrateFromPlantState(db, col);
       const q = (req.query && req.query.keys) || '';
       let keys = ALLOWED_KEYS;
       if (q) {

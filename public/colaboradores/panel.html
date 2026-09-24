@@ -410,6 +410,19 @@
             align-items: center;
             gap: 6px;
         }
+        .sync-chip {
+            font-size: 11px;
+            letter-spacing: 0.02em;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 4px 10px;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .sync-chip.is-ok { color: #1a7f37; border-color: rgba(26, 127, 55, 0.35); }
+        .sync-chip.is-err { color: var(--danger); border-color: rgba(180, 40, 40, 0.35); }
+        .sync-chip.is-pending { color: var(--muted); }
         .topbar-msg-btn {
             position: relative;
             width: 34px;
@@ -4964,6 +4977,7 @@
                     <kbd>⌘K</kbd>
                 </label>
                 <div class="topbar-actions">
+                    <span class="sync-chip is-pending" id="syncStatusChip" title="Estado de sincronización en la nube">Sync…</span>
                     <button type="button" class="topbar-msg-btn" id="topbarMessagesBtn" title="Mensajes" aria-label="Mensajes">
                         <i class="fa-regular fa-envelope" aria-hidden="true"></i>
                         <span class="msg-badge is-empty" id="topbarMessagesBadge" aria-hidden="true">0</span>
@@ -6228,7 +6242,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="/colaboradores-data.js"></script>
     <script src="/colaboradores/roles.js?v=20260923-roles"></script>
-    <script src="/colaboradores/panel-sync.js?v=20260924-cloud-sync"></script>
+    <script src="/colaboradores/panel-sync.js?v=20260924-cloud-sync2"></script>
     <script>
     const LOGIN_URL = '/colaboradores';
     function getToken() { return localStorage.getItem('s35_admin_token'); }
@@ -6248,6 +6262,41 @@
             chip.title = 'Usuario: ' + sessionUser.username + ' · Rol: ' + roleLab;
         }
     } catch (_) {}
+
+    (function wireSyncStatusChip() {
+        const chip = document.getElementById('syncStatusChip');
+        if (!chip) return;
+        function paint(detail) {
+            const d = detail || (window.S35PanelSync && window.S35PanelSync.getStatus && window.S35PanelSync.getStatus()) || {};
+            chip.classList.remove('is-ok', 'is-err', 'is-pending');
+            if (d.lastError || d.ok === false) {
+                chip.classList.add('is-err');
+                chip.textContent = 'Sync error';
+                chip.title = String(d.lastError || 'Error de sincronización');
+                return;
+            }
+            if (!d.bootDone) {
+                chip.classList.add('is-pending');
+                chip.textContent = 'Sync…';
+                chip.title = 'Sincronizando con el servidor';
+                return;
+            }
+            if (d.pending && d.pending.length) {
+                chip.classList.add('is-pending');
+                chip.textContent = 'Subiendo…';
+                chip.title = 'Pendiente: ' + d.pending.join(', ');
+                return;
+            }
+            chip.classList.add('is-ok');
+            chip.textContent = 'En nube';
+            chip.title = d.lastPushAt
+                ? ('Última subida: ' + d.lastPushAt)
+                : 'Datos sincronizados entre computadoras';
+        }
+        window.addEventListener('s35-sync-status', function (e) { paint(e.detail); });
+        paint();
+        setInterval(paint, 4000);
+    })();
 
     function greetingForNow() {
         const h = new Date().getHours();
@@ -6481,8 +6530,6 @@
         } catch (_) {}
         return false;
     }
-    /** Push diferido a Mongo; se cablea tras definir lotes/PT. */
-    let schedulePlantStatePush = function () {};
     let persistNormalized = false;
     function loadInventory() {
         const seed = seedInventory();
@@ -6541,12 +6588,19 @@
         if (applyPhysicalCount(seed, seed)) persistNormalized = true;
         return seed;
     }
-    function saveInventory(list) {
-        localStorage.setItem(PLANT_KEY, JSON.stringify({ items: list, updatedAt: new Date().toISOString() }));
-        schedulePlantStatePush();
+    function saveInventory(list, opts) {
+        opts = opts || {};
+        let updatedAt = new Date().toISOString();
+        if (opts.preserveUpdatedAt) {
+            try {
+                const prev = JSON.parse(localStorage.getItem(PLANT_KEY) || 'null');
+                if (prev && prev.updatedAt) updatedAt = String(prev.updatedAt);
+            } catch (_) {}
+        }
+        localStorage.setItem(PLANT_KEY, JSON.stringify({ items: list, updatedAt: updatedAt }));
     }
     let inventory = loadInventory();
-    if (persistNormalized) saveInventory(inventory);
+    if (persistNormalized) saveInventory(inventory, { preserveUpdatedAt: true });
 
     function materialReserved(mat) {
         return Math.max(0, Number(mat && mat.reserved) || 0);
@@ -6619,9 +6673,16 @@
         } catch (_) {}
         return seed;
     }
-    function saveFinished() {
-        localStorage.setItem(FINISHED_KEY, JSON.stringify({ items: finishedStock, updatedAt: new Date().toISOString() }));
-        schedulePlantStatePush();
+    function saveFinished(opts) {
+        opts = opts || {};
+        let updatedAt = new Date().toISOString();
+        if (opts.preserveUpdatedAt) {
+            try {
+                const prev = JSON.parse(localStorage.getItem(FINISHED_KEY) || 'null');
+                if (prev && prev.updatedAt) updatedAt = String(prev.updatedAt);
+            } catch (_) {}
+        }
+        localStorage.setItem(FINISHED_KEY, JSON.stringify({ items: finishedStock, updatedAt: updatedAt }));
     }
     let finishedStock = loadFinished();
 
@@ -8326,15 +8387,22 @@
         if (formulasMergedFromSeed) plantIdsRemapped = true; // reutiliza el flush a localStorage
         return map;
     }
-    function saveFormulas() {
+    function saveFormulas(opts) {
+        opts = opts || {};
         Object.keys(formulas).forEach(function (slug) {
             persistRootToActiveVersion(formulas[slug]);
         });
-        localStorage.setItem(FORMULA_KEY, JSON.stringify({ items: formulas, updatedAt: new Date().toISOString() }));
-        schedulePlantStatePush();
+        let updatedAt = new Date().toISOString();
+        if (opts.preserveUpdatedAt) {
+            try {
+                const prev = JSON.parse(localStorage.getItem(FORMULA_KEY) || 'null');
+                if (prev && prev.updatedAt) updatedAt = String(prev.updatedAt);
+            } catch (_) {}
+        }
+        localStorage.setItem(FORMULA_KEY, JSON.stringify({ items: formulas, updatedAt: updatedAt }));
     }
     let formulas = loadFormulas();
-    if (plantIdsRemapped) saveFormulas();
+    if (plantIdsRemapped) saveFormulas({ preserveUpdatedAt: true });
     let formulaDirty = false;
     let formulaAutosaveTimer = null;
     function scheduleFormulaAutosave() {
@@ -9484,26 +9552,34 @@
     function loadLotTickets() {
         try {
             const raw = JSON.parse(localStorage.getItem(LOT_TICKETS_KEY) || '[]');
-            return Array.isArray(raw) ? raw : [];
+            if (Array.isArray(raw)) return raw;
+            if (raw && Array.isArray(raw.items)) return raw.items;
+            return [];
         } catch (_) {
             return [];
         }
     }
     function saveLotTickets(list) {
-        localStorage.setItem(LOT_TICKETS_KEY, JSON.stringify((list || []).slice(0, 300)));
-        schedulePlantStatePush();
+        localStorage.setItem(LOT_TICKETS_KEY, JSON.stringify({
+            items: (list || []).slice(0, 300),
+            updatedAt: new Date().toISOString()
+        }));
     }
     function loadPurchaseTickets() {
         try {
             const raw = JSON.parse(localStorage.getItem(PURCHASE_TICKETS_KEY) || '[]');
-            return Array.isArray(raw) ? raw : [];
+            if (Array.isArray(raw)) return raw;
+            if (raw && Array.isArray(raw.items)) return raw.items;
+            return [];
         } catch (_) {
             return [];
         }
     }
     function savePurchaseTickets(list) {
-        localStorage.setItem(PURCHASE_TICKETS_KEY, JSON.stringify((list || []).slice(0, 200)));
-        schedulePlantStatePush();
+        localStorage.setItem(PURCHASE_TICKETS_KEY, JSON.stringify({
+            items: (list || []).slice(0, 200),
+            updatedAt: new Date().toISOString()
+        }));
     }
     function lotCodePrefix(code) {
         return String(code || 'XX-000').replace(/^FT-/, '').replace(/[^A-Z0-9]/gi, '');
@@ -11399,196 +11475,6 @@
     renderLotHistoryList();
     renderPurchaseTicketsList();
 
-    (function wirePlantStateSync() {
-        let plantStatePushTimer = null;
-        let plantStateSyncing = false;
-        let plantStatePushPending = false;
-        let plantStateHydrated = false;
-
-        function plantStateHeaders() {
-            return {
-                'Content-Type': 'application/json',
-                Authorization: 'Bearer ' + getToken(),
-                Accept: 'application/json'
-            };
-        }
-        function collectPlantState() {
-            try {
-                Object.keys(formulas || {}).forEach(function (slug) {
-                    persistRootToActiveVersion(formulas[slug]);
-                });
-            } catch (_) {}
-            return {
-                inventory: inventory,
-                finished: finishedStock || {},
-                formulas: formulas || {},
-                lots: loadLotTickets(),
-                purchases: loadPurchaseTickets()
-            };
-        }
-        function applyRemotePlantState(data) {
-            if (!data) return false;
-            let changed = false;
-            if (Array.isArray(data.inventory) && data.inventory.length) {
-                inventory = data.inventory.map(normalizeItem);
-                saveInventoryLocalOnly(inventory);
-                changed = true;
-            }
-            if (data.finished && typeof data.finished === 'object') {
-                finishedStock = data.finished;
-                try {
-                    localStorage.setItem(FINISHED_KEY, JSON.stringify({
-                        items: finishedStock,
-                        updatedAt: data.updatedAt || new Date().toISOString()
-                    }));
-                } catch (_) {}
-                changed = true;
-            }
-            if (data.formulas && typeof data.formulas === 'object' && Object.keys(data.formulas).length) {
-                try {
-                    localStorage.setItem(FORMULA_KEY, JSON.stringify({
-                        items: data.formulas,
-                        updatedAt: data.updatedAt || new Date().toISOString()
-                    }));
-                } catch (_) {}
-                formulas = loadFormulas();
-                formulaDirty = false;
-                changed = true;
-            }
-            if (Array.isArray(data.lots)) {
-                try {
-                    localStorage.setItem(LOT_TICKETS_KEY, JSON.stringify(data.lots.slice(0, 300)));
-                } catch (_) {}
-                changed = true;
-            }
-            if (Array.isArray(data.purchases)) {
-                try {
-                    localStorage.setItem(PURCHASE_TICKETS_KEY, JSON.stringify(data.purchases.slice(0, 200)));
-                } catch (_) {}
-                changed = true;
-            }
-            return changed;
-        }
-        function saveInventoryLocalOnly(list) {
-            localStorage.setItem(PLANT_KEY, JSON.stringify({
-                items: list,
-                updatedAt: new Date().toISOString()
-            }));
-        }
-        function pushPlantStateToServer() {
-            const token = getToken();
-            if (!token || !plantStateHydrated) return Promise.resolve(false);
-            if (plantStateSyncing) {
-                plantStatePushPending = true;
-                return Promise.resolve(false);
-            }
-            plantStateSyncing = true;
-            return fetch('/api/plant-state', {
-                method: 'PUT',
-                headers: plantStateHeaders(),
-                body: JSON.stringify(collectPlantState())
-            })
-                .then(function (r) {
-                    return r.json().then(function (d) { return { ok: r.ok, data: d }; });
-                })
-                .then(function (res) {
-                    if (!res.ok || !res.data || !res.data.ok) {
-                        throw new Error((res.data && res.data.error) || 'No se pudo guardar planta');
-                    }
-                    return true;
-                })
-                .catch(function (err) {
-                    console.warn('[S35] sync planta', err && err.message ? err.message : err);
-                    return false;
-                })
-                .then(function (ok) {
-                    plantStateSyncing = false;
-                    if (plantStatePushPending) {
-                        plantStatePushPending = false;
-                        return pushPlantStateToServer();
-                    }
-                    return ok;
-                });
-        }
-        schedulePlantStatePush = function () {
-            if (!plantStateHydrated) return;
-            if (plantStatePushTimer) clearTimeout(plantStatePushTimer);
-            plantStatePushTimer = setTimeout(function () {
-                plantStatePushTimer = null;
-                pushPlantStateToServer();
-            }, 500);
-        };
-        function syncPlantStateFromServer() {
-            const token = getToken();
-            if (!token) {
-                plantStateHydrated = true;
-                return Promise.resolve({ ok: false, reason: 'no-token' });
-            }
-            return fetch('/api/plant-state', {
-                method: 'GET',
-                headers: plantStateHeaders(),
-                cache: 'no-store'
-            })
-                .then(function (r) {
-                    return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; });
-                })
-                .then(function (res) {
-                    if (!res.ok || !res.data || !res.data.ok) {
-                        throw new Error((res.data && res.data.error) || ('HTTP ' + res.status));
-                    }
-                    const remote = res.data;
-                    const localHasInv = Array.isArray(inventory) && inventory.length > 0;
-                    const remoteHasInv = Array.isArray(remote.inventory) && remote.inventory.length > 0;
-                    const remoteHasFormulas = !!(remote.formulas && Object.keys(remote.formulas).length);
-                    const localHasFormulas = !!(formulas && Object.keys(formulas).length);
-                    if (remoteHasInv || remoteHasFormulas) {
-                        applyRemotePlantState(remote);
-                        try {
-                            if (typeof refreshStockViews === 'function') refreshStockViews();
-                        } catch (_) {}
-                        try {
-                            renderFinished();
-                            renderLotTicketsList();
-                            renderLotHistoryList();
-                            renderPurchaseTicketsList();
-                        } catch (_) {}
-                        try {
-                            updateRecipeKpi();
-                            renderRecipeNav();
-                            if (currentRecipe) openRecipe(currentRecipe, true);
-                            fillProdProducts();
-                            if (typeof renderProdVersionChips === 'function') renderProdVersionChips();
-                        } catch (_) {}
-                        plantStateHydrated = true;
-                        // Si el servidor aún no tenía fórmulas, sube las locales en el mismo arranque.
-                        if (!remoteHasFormulas && localHasFormulas) {
-                            return pushPlantStateToServer().then(function (pushed) {
-                                if (pushed) panelToast('Fórmulas respaldadas en servidor');
-                                else panelToast('Planta sincronizada (servidor)');
-                                return { ok: true, source: 'remote+formulas-push', pushed: pushed };
-                            });
-                        }
-                        panelToast('Planta sincronizada (servidor)');
-                        return { ok: true, source: 'remote' };
-                    }
-                    plantStateHydrated = true;
-                    if (localHasInv || localHasFormulas) {
-                        return pushPlantStateToServer().then(function (pushed) {
-                            if (pushed) panelToast('Planta respaldada en servidor');
-                            return { ok: true, source: 'local-push', pushed: pushed };
-                        });
-                    }
-                    return { ok: true, source: 'empty' };
-                })
-                .catch(function (err) {
-                    console.warn('[S35] sync planta pull', err && err.message ? err.message : err);
-                    plantStateHydrated = true;
-                    return { ok: false, error: err && err.message };
-                });
-        }
-        syncPlantStateFromServer();
-    })();
-
     loadGmailStatus().then(function () { return loadMessages(); });
 
     function applyNavPermissions() {
@@ -11704,7 +11590,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260924-cloud-sync"></script>
+    <script src="/colaboradores/pos-module.js?v=20260924-cloud-sync2"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260923-copilot-section"></script>
 </body>

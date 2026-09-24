@@ -49,6 +49,19 @@
         appliedRemote: false
     };
 
+    function emitStatus() {
+        try {
+            if (typeof window !== 'undefined' && window.dispatchEvent) {
+                window.dispatchEvent(new CustomEvent('s35-sync-status', {
+                    detail: Object.assign({}, status, {
+                        bootDone: bootDone,
+                        pending: Object.keys(pendingKeys)
+                    })
+                }));
+            }
+        } catch (_) {}
+    }
+
     function getToken() {
         try { return localStorage.getItem('s35_admin_token') || ''; } catch (_) { return ''; }
     }
@@ -217,6 +230,7 @@
                 status.ok = true;
                 status.lastPushAt = new Date().toISOString();
                 status.lastError = null;
+                emitStatus();
                 // Si el servidor rechazó por stale, adoptar remoto.
                 var rejected = res.data.rejected || [];
                 var applied = false;
@@ -234,6 +248,7 @@
             .catch(function (err) {
                 status.ok = false;
                 status.lastError = (err && err.message) || String(err);
+                emitStatus();
                 console.warn('[S35 sync] push', status.lastError);
                 // Reencolar para reintento
                 keys.forEach(function (k) { pendingKeys[k] = true; });
@@ -267,6 +282,7 @@
                 status.lastPullAt = new Date().toISOString();
                 status.ok = true;
                 status.lastError = null;
+                emitStatus();
                 return res.data.stores || {};
             });
     }
@@ -334,6 +350,7 @@
                 toPush.forEach(function (k) { pendingKeys[k] = true; });
                 // También cualquier escritura que ocurrió durante el boot.
                 bootDone = true;
+                emitStatus();
                 return flushPush().then(function (pushRes) {
                     return {
                         ok: true,
@@ -348,6 +365,7 @@
                 status.lastError = (err && err.message) || String(err);
                 console.warn('[S35 sync] pull', status.lastError);
                 bootDone = true;
+                emitStatus();
                 // Offline: seguir con localStorage; intentar push de pendientes luego.
                 if (Object.keys(pendingKeys).length) {
                     setTimeout(function () { flushPush(); }, 2000);
@@ -375,7 +393,30 @@
         setTimeout(function () { bootstrap(); }, 0);
     }
 
-    // Reintento al volver online / foco.
+    // Reintento al volver online / foco / cada 45s.
+    function softPullAndApply() {
+        if (!bootDone || !getToken()) return;
+        pullAll().then(function (remoteStores) {
+            var needReload = false;
+            SYNC_KEYS.forEach(function (key) {
+                var local = readLocal(key);
+                var remote = remoteStores[key];
+                if (!remote) return;
+                if (!local || cmpIso(remote.updatedAt, local.updatedAt) > 0) {
+                    writeLocal(key, remote.value, remote.updatedAt);
+                    needReload = true;
+                }
+            });
+            emitStatus();
+            if (needReload) {
+                try {
+                    sessionStorage.setItem(RELOAD_FLAG, '1');
+                } catch (_) {}
+                location.reload();
+            }
+        }).catch(function () {});
+    }
+
     try {
         window.addEventListener('online', function () {
             if (bootDone) flushPush();
@@ -383,27 +424,12 @@
         });
         document.addEventListener('visibilitychange', function () {
             if (document.visibilityState === 'visible' && bootDone) {
-                // Soft pull periódico: si remoto ganó, recargar.
-                pullAll().then(function (remoteStores) {
-                    var needReload = false;
-                    SYNC_KEYS.forEach(function (key) {
-                        var local = readLocal(key);
-                        var remote = remoteStores[key];
-                        if (!remote) return;
-                        if (!local || cmpIso(remote.updatedAt, local.updatedAt) > 0) {
-                            writeLocal(key, remote.value, remote.updatedAt);
-                            needReload = true;
-                        }
-                    });
-                    if (needReload) {
-                        try {
-                            sessionStorage.setItem(RELOAD_FLAG, '1');
-                        } catch (_) {}
-                        location.reload();
-                    }
-                }).catch(function () {});
+                softPullAndApply();
             }
         });
+        setInterval(function () {
+            if (document.visibilityState === 'visible') softPullAndApply();
+        }, 45000);
     } catch (_) {}
 
     global.S35PanelSync = {
@@ -412,6 +438,7 @@
         schedulePush: schedulePush,
         flushPush: flushPush,
         pullAll: pullAll,
+        softPull: softPullAndApply,
         getStatus: function () {
             return Object.assign({}, status, { bootDone: bootDone, pending: Object.keys(pendingKeys) });
         }

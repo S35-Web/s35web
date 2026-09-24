@@ -245,6 +245,92 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Sync cloud del panel (mismas claves que api/panel-state.js)
+    if (pathname === '/api/panel-state') {
+        const dir = path.join(__dirname, '.data', 'panel-state');
+        const allowed = new Set([
+            's35_plant_inventory',
+            's35_plant_families',
+            's35_finished_stock',
+            's35_plant_formulas_v3',
+            's35_production_lots',
+            's35_compra_tickets',
+            's35_plant_unit_costs_v1',
+            's35_plant_count_20260922b',
+            's35_pos_prices_v4',
+            's35_pos_sales',
+            's35_sale_edits_v1',
+            's35_promo_codes_v1',
+            's35_product_families',
+            's35_product_family_overrides',
+            's35_hist_sales_imported_v13'
+        ]);
+        const readKey = (key) => {
+            try {
+                const p = path.join(dir, key + '.json');
+                if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf8'));
+            } catch (_) {}
+            return null;
+        };
+        if (req.method === 'GET') {
+            const stores = {};
+            allowed.forEach((key) => {
+                const doc = readKey(key);
+                if (doc) stores[key] = { value: doc.value, updatedAt: doc.updatedAt || null };
+            });
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: true, keys: Array.from(allowed), stores: stores, strategy: 'last-write-wins:updatedAt' }));
+            return;
+        }
+        if (req.method === 'PUT') {
+            let body = '';
+            req.on('data', chunk => { body += chunk.toString(); });
+            req.on('end', () => {
+                try {
+                    const parsed = JSON.parse(body || '{}');
+                    const incoming = parsed.stores && typeof parsed.stores === 'object' ? parsed.stores : null;
+                    if (!incoming) {
+                        res.writeHead(400, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ ok: false, error: 'Falta stores{}' }));
+                        return;
+                    }
+                    fs.mkdirSync(dir, { recursive: true });
+                    const accepted = [];
+                    const rejected = [];
+                    const out = {};
+                    Object.keys(incoming).forEach((key) => {
+                        if (!allowed.has(key)) return;
+                        const entry = incoming[key];
+                        if (!entry || typeof entry !== 'object') {
+                            rejected.push({ key: key, reason: 'invalid-entry' });
+                            return;
+                        }
+                        const updatedAt = entry.updatedAt || new Date().toISOString();
+                        const prev = readKey(key);
+                        if (prev && prev.updatedAt && Date.parse(updatedAt) < Date.parse(prev.updatedAt)) {
+                            rejected.push({ key: key, reason: 'stale', remoteUpdatedAt: prev.updatedAt });
+                            out[key] = { value: prev.value, updatedAt: prev.updatedAt };
+                            return;
+                        }
+                        const doc = { value: entry.value, updatedAt: updatedAt };
+                        fs.writeFileSync(path.join(dir, key + '.json'), JSON.stringify(doc));
+                        accepted.push(key);
+                        out[key] = doc;
+                    });
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: true, accepted: accepted, rejected: rejected, stores: out, strategy: 'last-write-wins:updatedAt' }));
+                } catch (e) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: 'Solicitud inválida' }));
+                }
+            });
+            return;
+        }
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed' }));
+        return;
+    }
+
     // Estado de planta (inventario / lotes) — archivo local en desarrollo
     if (pathname === '/api/plant-state') {
         const livePath = path.join(__dirname, '.data', 'plant-state-live.json');
