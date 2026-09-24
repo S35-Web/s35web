@@ -15,6 +15,20 @@ function requireAdmin(req) {
   }
 }
 
+/** Admin o ventas — acceso al panel Colaboradores / sync de estado. */
+function requirePanelUser(req) {
+  try {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return null;
+    const payload = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
+    if (payload.role !== 'admin' && payload.role !== 'ventas') return null;
+    return payload;
+  } catch (_) {
+    return null;
+  }
+}
+
 function signOAuthState(extra) {
   return jwt.sign(
     Object.assign({ purpose: 'gmail-oauth' }, extra || {}),
@@ -33,4 +47,4 @@ function verifyOAuthState(state) {
   }
 }
 
-module.exports = { requireAdmin, signOAuthState, verifyOAuthState };
+module.exports = { requireAdmin, requirePanelUser, signOAuthState, verifyOAuthState };
