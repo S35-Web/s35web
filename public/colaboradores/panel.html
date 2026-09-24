@@ -587,6 +587,93 @@
         #prodLotsWrap.is-danger .prod-lots-status { color: var(--danger); }
         #prodLotsWrap.is-ok .prod-lots-status { color: var(--muted); }
 
+        /* Producto (Producción): dropdown custom para colorear «falta dosis» */
+        .prod-product-picker { position: relative; }
+        .prod-product-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 10px;
+            font: inherit;
+            font-size: 13px;
+            text-align: left;
+            cursor: pointer;
+            outline: none;
+        }
+        .prod-product-trigger:focus-visible,
+        .prod-product-trigger[aria-expanded="true"] {
+            border-color: var(--border-strong);
+        }
+        .prod-product-trigger-label {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .prod-product-trigger > .fa-chevron-down {
+            flex-shrink: 0;
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .prod-product-menu {
+            position: absolute;
+            z-index: 40;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            max-height: min(320px, 50vh);
+            overflow: auto;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: var(--panel);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+            padding: 4px;
+        }
+        .prod-product-menu[hidden] { display: none !important; }
+        .prod-product-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            border: 0;
+            background: transparent;
+            color: var(--text);
+            font: inherit;
+            font-size: 13px;
+            text-align: left;
+            padding: 8px 10px;
+            border-radius: calc(var(--radius-sm) - 2px);
+            cursor: pointer;
+        }
+        .prod-product-option:hover,
+        .prod-product-option.is-active { background: var(--hover); }
+        .prod-product-option.is-selected { background: var(--active); }
+        .prod-product-option-check {
+            flex-shrink: 0;
+            width: 14px;
+            color: var(--text);
+            font-size: 12px;
+            opacity: 0;
+        }
+        .prod-product-option.is-selected .prod-product-option-check { opacity: 1; }
+        .prod-product-option-text {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .prod-product-tag { color: var(--muted); }
+        .prod-product-missing { color: var(--danger); }
+
         /* ——— Inicio · Copiloto S35 (Gemini-style) ——— */
         #dashboard.home-ai {
             --home-glow: rgba(249, 115, 22, 0.16);
@@ -5013,7 +5100,17 @@
                             <h3>Emitir ticket de lote</h3>
                             <div class="form-grid" style="margin-bottom:12px">
                                 <label>Producto
-                                    <select id="prodProduct"></select>
+                                    <div class="prod-product-picker" id="prodProductPicker">
+                                        <input type="hidden" id="prodProduct" value="" autocomplete="off">
+                                        <button type="button" class="prod-product-trigger" id="prodProductTrigger"
+                                            aria-haspopup="listbox" aria-expanded="false" aria-controls="prodProductList">
+                                            <span class="prod-product-trigger-label" id="prodProductTriggerLabel"></span>
+                                            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                        </button>
+                                        <div class="prod-product-menu" id="prodProductMenu" hidden>
+                                            <div class="prod-product-list" id="prodProductList" role="listbox" aria-label="Productos"></div>
+                                        </div>
+                                    </div>
                                 </label>
                                 <label id="prodLotsWrap" class="prod-lots-wrap is-ok">Lotes de planta
                                     <div class="prod-lots-controls">
@@ -9498,17 +9595,61 @@
         };
     }
 
+    function prodProductLabelHtml(r) {
+        const ready = formulaComplete(formulas[r.product]);
+        const lot = isPlantLot(formulas[r.product]);
+        return esc(r.name) +
+            (lot ? ' <span class="prod-product-tag">· lote planta</span>' : '') +
+            (ready ? '' : ' <span class="prod-product-missing">— falta dosis</span>');
+    }
+    function setProdProductMenuOpen(open) {
+        const menu = document.getElementById('prodProductMenu');
+        const trigger = document.getElementById('prodProductTrigger');
+        if (!menu || !trigger) return;
+        menu.hidden = !open;
+        trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
     function fillProdProducts() {
         const sel = document.getElementById('prodProduct');
-        if (!sel) return;
-        sel.innerHTML = recipes.map(function (r) {
-            const ready = formulaComplete(formulas[r.product]);
-            const lot = isPlantLot(formulas[r.product]);
-            return '<option value="' + esc(r.product) + '">' + esc(r.name) +
-                (lot ? ' · lote planta' : '') +
-                (ready ? '' : ' — falta dosis') + '</option>';
+        const list = document.getElementById('prodProductList');
+        const label = document.getElementById('prodProductTriggerLabel');
+        if (!sel || !list) return;
+        const prev = sel.value;
+        const keep = recipes.some(function (r) { return r.product === prev; }) ? prev : (recipes[0] ? recipes[0].product : '');
+        sel.value = keep;
+        list.innerHTML = recipes.map(function (r) {
+            const selected = r.product === keep;
+            return '<button type="button" role="option" class="prod-product-option' +
+                (selected ? ' is-selected' : '') +
+                '" data-product="' + esc(r.product) + '"' +
+                ' aria-selected="' + (selected ? 'true' : 'false') + '">' +
+                '<span class="prod-product-option-check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>' +
+                '<span class="prod-product-option-text">' + prodProductLabelHtml(r) + '</span>' +
+                '</button>';
         }).join('');
+        const current = recipes.find(function (r) { return r.product === keep; });
+        if (label) label.innerHTML = current ? prodProductLabelHtml(current) : '';
+        setProdProductMenuOpen(false);
         updateProdPreview();
+    }
+    function selectProdProduct(slug) {
+        const sel = document.getElementById('prodProduct');
+        if (!sel) return;
+        const changed = sel.value !== slug;
+        if (changed) sel.value = slug;
+        const list = document.getElementById('prodProductList');
+        const label = document.getElementById('prodProductTriggerLabel');
+        if (list) {
+            list.querySelectorAll('.prod-product-option').forEach(function (opt) {
+                const on = opt.getAttribute('data-product') === slug;
+                opt.classList.toggle('is-selected', on);
+                opt.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+        }
+        const current = recipes.find(function (r) { return r.product === slug; });
+        if (label) label.innerHTML = current ? prodProductLabelHtml(current) : '';
+        setProdProductMenuOpen(false);
+        if (changed) sel.dispatchEvent(new Event('change', { bubbles: true }));
     }
     function productionMpNeeds(slug, lots) {
         const f = formulas[slug];
@@ -10944,6 +11085,28 @@
     }
 
     document.getElementById('prodProduct').addEventListener('change', updateProdPreview);
+    (function initProdProductPicker() {
+        const picker = document.getElementById('prodProductPicker');
+        const trigger = document.getElementById('prodProductTrigger');
+        const list = document.getElementById('prodProductList');
+        if (!picker || !trigger || !list) return;
+        trigger.addEventListener('click', function (e) {
+            e.preventDefault();
+            const menu = document.getElementById('prodProductMenu');
+            setProdProductMenuOpen(!!(menu && menu.hidden));
+        });
+        list.addEventListener('click', function (e) {
+            const opt = e.target.closest('[data-product]');
+            if (!opt) return;
+            selectProdProduct(opt.getAttribute('data-product'));
+        });
+        document.addEventListener('click', function (e) {
+            if (!picker.contains(e.target)) setProdProductMenuOpen(false);
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') setProdProductMenuOpen(false);
+        });
+    })();
     document.getElementById('prodQty').addEventListener('input', updateProdPreview);
     const prodQtyRangeEl = document.getElementById('prodQtyRange');
     if (prodQtyRangeEl) {
