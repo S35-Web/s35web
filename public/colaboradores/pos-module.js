@@ -8301,29 +8301,7 @@
         }
     }
 
-    function init() {
-        prices = loadPrices();
-        // Persistir v3 tras merge para no depender del legacy en cada carga.
-        savePrices();
-        sales = loadSales();
-        clients = loadClients();
-        promoCodes = loadPromoCodes();
-        ensurePromoSeeds();
-        ensureHistoricalSalesImport();
-        syncClientsFromServer().then(function (res) {
-            if (res && res.ok) return;
-            if (!clients.length) {
-                return importClientsCatalog().then(function () {
-                    return pushClientsToServer();
-                });
-            }
-            return pushClientsToServer();
-        }).catch(function () {});
-        bind();
-        bindCobranza();
-        (function syncSaleCityRadios() {
-            syncSaleCityControl();
-        })();
+    function refreshPosAfterDataLoad() {
         renderChips();
         renderProducts();
         fillClientSelect();
@@ -8338,6 +8316,44 @@
         renderPrices();
         renderPromosAdmin();
         updatePosKpis();
+    }
+
+    function init() {
+        prices = loadPrices();
+        // Persistir v3 tras merge para no depender del legacy en cada carga.
+        savePrices();
+        sales = loadSales();
+        clients = loadClients();
+        promoCodes = loadPromoCodes();
+        ensurePromoSeeds();
+
+        function afterCloudReady(syncRes) {
+            if (syncRes && syncRes.reloading) return;
+            // Releer caché por si el sync aplicó remoto sin recarga.
+            prices = loadPrices();
+            sales = loadSales();
+            clients = loadClients();
+            promoCodes = loadPromoCodes();
+            ensurePromoSeeds();
+            ensureHistoricalSalesImport();
+            syncClientsFromServer().then(function (res) {
+                if (res && res.ok) return;
+                if (!clients.length) {
+                    return importClientsCatalog().then(function () {
+                        return pushClientsToServer();
+                    });
+                }
+                return pushClientsToServer();
+            }).catch(function () {});
+            refreshPosAfterDataLoad();
+        }
+
+        bind();
+        bindCobranza();
+        (function syncSaleCityRadios() {
+            syncSaleCityControl();
+        })();
+        refreshPosAfterDataLoad();
         window.S35PosModule = {
             onSectionShow: onSectionShow,
             refreshProducts: renderProducts,
@@ -8390,6 +8406,13 @@
         if (window.S35PanelAPI && typeof window.S35PanelAPI.onPosReady === 'function') {
             window.S35PanelAPI.onPosReady();
         }
+
+        var syncBoot = (window.S35PanelSync && typeof window.S35PanelSync.bootstrap === 'function')
+            ? window.S35PanelSync.bootstrap()
+            : Promise.resolve({ ok: false, reason: 'no-sync' });
+        syncBoot.then(afterCloudReady).catch(function () {
+            afterCloudReady({ ok: false });
+        });
     }
 
     if (document.readyState === 'loading') {
