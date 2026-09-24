@@ -7,8 +7,9 @@
     <title>S-35 | Colaboradores</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Fuentes no bloqueantes: fallback del sistema pinta al instante -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap"></noscript>
     <style>
         :root {
             --ink: #1a1a1a;
@@ -50,7 +51,6 @@
                 radial-gradient(ellipse 120% 100% at 50% 50%, rgba(255, 245, 235, .5) 0%, #fff 85%);
             opacity: 1;
             animation: glow-breathe 9s ease-in-out infinite;
-            will-change: opacity;
         }
         @keyframes glow-breathe {
             0%, 100% { opacity: .55; }
@@ -223,8 +223,18 @@
             cursor: pointer;
             padding: 8px;
             border-radius: 8px;
+            display: grid;
+            place-items: center;
         }
         .toggle-btn:hover { color: var(--ink); background: rgba(0,0,0,.04); }
+        .toggle-btn svg {
+            width: 18px;
+            height: 18px;
+            display: block;
+        }
+        .toggle-btn .icon-eye-slash { display: none; }
+        .toggle-btn.is-shown .icon-eye { display: none; }
+        .toggle-btn.is-shown .icon-eye-slash { display: block; }
         .btn {
             width: 100%;
             min-height: 50px;
@@ -329,7 +339,7 @@
     <div class="page">
         <main class="stage">
             <div class="brand">
-                <img src="/Assets/s35-logo-block.png" alt="S-35" width="60" height="20">
+                <img src="/Assets/s35-logo-block.png" alt="S-35" width="60" height="20" decoding="async" fetchpriority="high">
             </div>
 
             <div class="form">
@@ -344,7 +354,10 @@
                             <input class="input" id="username" name="username" type="text" placeholder="usuario" required autocapitalize="none" autocorrect="off" autocomplete="username" spellcheck="false">
                             <div class="input-wrap">
                                 <input class="input with-toggle" id="password" name="password" type="password" placeholder="contraseña" required autocomplete="current-password">
-                                <button id="toggle" type="button" class="toggle-btn" aria-label="Mostrar u ocultar contraseña"><i class="fas fa-eye"></i></button>
+                                <button id="toggle" type="button" class="toggle-btn" aria-label="Mostrar u ocultar contraseña" aria-pressed="false">
+                                    <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <svg class="icon-eye-slash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.77 21.77 0 0 1 5.06-6.94"/><path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                </button>
                             </div>
                         </div>
                         <button type="submit" class="btn" id="loginBtn">Iniciar sesión</button>
@@ -497,9 +510,10 @@
 
         document.getElementById('toggle').addEventListener('click', function () {
             const i = document.getElementById('password');
-            const icon = this.querySelector('i');
-            if (i.type === 'password') { i.type = 'text'; icon.className = 'fas fa-eye-slash'; }
-            else { i.type = 'password'; icon.className = 'fas fa-eye'; }
+            const show = i.type === 'password';
+            i.type = show ? 'text' : 'password';
+            this.classList.toggle('is-shown', show);
+            this.setAttribute('aria-pressed', show ? 'true' : 'false');
         });
 
         document.addEventListener('DOMContentLoaded', function () {
