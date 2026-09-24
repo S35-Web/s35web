@@ -8084,7 +8084,15 @@
 
     function formulaComplete(f) {
         syncActiveVersionToRoot(f);
-        return !!(f && f.items && f.items.length && f.items.every(function (it) { return Number(it.amount) > 0; }));
+        if (!f || !Array.isArray(f.items) || !f.items.length) return false;
+        // Dosis 0 = ingrediente omitido en esta versión (p. ej. V2 «Sin fina»).
+        // Basta con al menos una MP con dosis > 0; el empaque no cuenta como dosis.
+        const hasDose = f.items.some(function (it) {
+            return !isPackagingLine(it) && Number(it.amount) > 0;
+        });
+        if (!hasDose) return false;
+        if (isPlantLot(f) && !(Number(f.packSizeKg) > 0)) return false;
+        return true;
     }
     function updateRecipeKpi() {
         const el = document.getElementById('kpiRecipes');
