@@ -5851,7 +5851,6 @@
                             <div class="toolbar">
                                 <input id="productsSearch" class="search" type="search" placeholder="Buscar nombre, código o familia">
                                 <button type="button" class="btn" id="productsFamiliesBtn"><i class="fa-solid fa-tags"></i> Familias</button>
-                                <button type="button" class="btn" id="productsResetPricesBtn">Restablecer defaults</button>
                             </div>
                             <div class="chips" id="productsFamilyChips"></div>
                             <div class="table-card">
@@ -9436,15 +9435,6 @@
                     input.getAttribute('data-tier'),
                     input.value
                 );
-            });
-        }
-        const resetBtn = document.getElementById('productsResetPricesBtn');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', function () {
-                if (!window.S35PosModule || !window.S35PosModule.resetPricesToDefaults) return;
-                if (!confirm('¿Restablecer precios por defecto (lista mayorista)?')) return;
-                window.S35PosModule.resetPricesToDefaults();
-                if (hubProductSlug && hubProductTab === 'precios') renderProductPricesTab();
             });
         }
         const productsFamiliesBtn = document.getElementById('productsFamiliesBtn');
