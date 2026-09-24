@@ -9355,8 +9355,7 @@
                 : (f === PRODUCT_UNCATEGORIZED_ID ? PRODUCT_UNCATEGORIZED_LABEL : f);
             return '<button type="button" class="chip' + (f === productsFamilyFilter ? ' active' : '') + '" data-fam="' + esc(f) + '">' +
                 familyDotHtml(f) + esc(label) + '</button>';
-        }).join('') +
-            '<button type="button" class="chip" id="productsFamilyChipAdd" data-manage-product-families="1" title="Gestionar familias" aria-label="Gestionar familias"><i class="fa-solid fa-plus"></i></button>';
+        }).join('');
     }
 
     function filteredHubProducts() {
@@ -9643,10 +9642,6 @@
         const chips = document.getElementById('productsFamilyChips');
         if (chips) {
             chips.addEventListener('click', function (e) {
-                if (e.target.closest('[data-manage-product-families]')) {
-                    openProductFamiliesModal();
-                    return;
-                }
                 const btn = e.target.closest('.chip[data-fam]');
                 if (!btn) return;
                 productsFamilyFilter = btn.getAttribute('data-fam') || 'all';
