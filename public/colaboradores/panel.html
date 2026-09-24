@@ -4235,6 +4235,9 @@
         .products-catalog-card:not(.is-open) .chips {
             margin-bottom: 0;
         }
+        .materials-inventory-chart .products-inventory-row {
+            grid-template-columns: minmax(0, 1.15fr) minmax(64px, 1fr) 5.6em;
+        }
         .products-inventory-card {
             margin: 0 0 22px;
         }
@@ -5265,15 +5268,37 @@
                 <section id="materials" class="section">
                     <h1 class="page-title">Materias primas</h1>
                     <p class="page-sub">Inventario de planta. Los cambios se guardan en este navegador.</p>
-                    <div class="card">
+                    <div class="card products-inventory-card" id="materialsInventoryCard">
+                        <div class="products-inventory-head">
+                            <div>
+                                <p class="pd-section-label">Inventario</p>
+                                <p class="page-sub" id="materialsInventorySub">Materia prima</p>
+                            </div>
+                            <div class="products-inventory-kpis">
+                                <div>
+                                    <span class="label">Materiales</span>
+                                    <span class="val" id="materialsInventoryTotal">0</span>
+                                </div>
+                                <div>
+                                    <span class="label">Con stock</span>
+                                    <span class="val" id="materialsInventoryWithStock">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="products-inventory-chart materials-inventory-chart" id="materialsInventoryChart" role="group" aria-label="Inventario de todas las materias primas"></div>
+                    </div>
+                    <div class="card products-catalog-card" id="materialsCatalogCard">
                         <div class="toolbar">
                             <input id="matSearch" class="search" type="search" placeholder="Buscar materia prima">
                             <button id="matPrintBtn" class="btn" type="button" title="Reporte de conteo para llenar a mano"><i class="fa-solid fa-print"></i> Imprimir</button>
                             <button id="matFamiliesBtn" class="btn" type="button"><i class="fa-solid fa-tags"></i> Familias</button>
                             <button id="matAddBtn" class="btn primary" type="button"><i class="fa-solid fa-plus"></i> Alta</button>
+                            <button type="button" class="products-catalog-toggle" id="materialsCatalogToggle" aria-expanded="false" aria-controls="materialsCatalogTable" aria-label="Mostrar materias primas" title="Mostrar materias primas">
+                                <i class="fa-solid fa-chevron-right products-catalog-chevron" aria-hidden="true"></i>
+                            </button>
                         </div>
                         <div class="chips" id="matChips"></div>
-                        <div class="table-card">
+                        <div class="table-card" id="materialsCatalogTable" hidden>
                             <table class="inventory">
                                 <thead><tr><th>Nombre</th><th>Existencia</th><th>Costo unit.</th><th>Valor</th><th>Mínimo</th><th></th></tr></thead>
                                 <tbody id="matBody"></tbody>
@@ -7687,6 +7712,76 @@
             }
         }
         updateDashExtras();
+        renderMaterialsInventoryChart();
+    }
+    const MAT_BAR_COLORS = ['#2f7d32', '#5a5a5a', '#1a1a1a', '#e65100', '#7b1fa2', '#c41626', '#1565c0', '#00838f'];
+    function matFamilyColor(id) {
+        const s = String(id || '');
+        if (!s || s === 'all' || s === UNCATEGORIZED_ID) return '#9a9a9a';
+        let n = 0;
+        for (let i = 0; i < s.length; i++) n = (n + s.charCodeAt(i)) % MAT_BAR_COLORS.length;
+        return MAT_BAR_COLORS[n];
+    }
+    function fmtMatQty(n) {
+        return (Number(n) || 0).toLocaleString('es-MX', { maximumFractionDigits: 2 });
+    }
+    function renderMaterialsInventoryChart() {
+        const host = document.getElementById('materialsInventoryChart');
+        const totalEl = document.getElementById('materialsInventoryTotal');
+        const withEl = document.getElementById('materialsInventoryWithStock');
+        const subEl = document.getElementById('materialsInventorySub');
+        if (!host) return;
+        const list = inventory.map(function (m) {
+            const cat = normalizeCategory(m.category);
+            return {
+                id: m.id,
+                name: m.name || m.id,
+                unit: m.unit || '',
+                family: cat,
+                stock: Math.max(0, Number(m.stock) || 0)
+            };
+        }).sort(function (a, b) {
+            return b.stock - a.stock || String(a.name).localeCompare(String(b.name), 'es');
+        });
+        const withStock = list.filter(function (m) { return m.stock > 0; }).length;
+        const max = list.reduce(function (m, row) { return Math.max(m, row.stock); }, 0);
+        if (totalEl) totalEl.textContent = String(list.length);
+        if (withEl) withEl.textContent = String(withStock);
+        if (subEl) {
+            if (!list.length) subEl.textContent = 'Sin materias primas';
+            else if (!withStock) subEl.textContent = list.length + ' materiales · sin existencia';
+            else subEl.textContent = (list.length - withStock) + ' en cero · materia prima';
+        }
+        if (!list.length) {
+            host.innerHTML = '';
+            return;
+        }
+        host.innerHTML = list.map(function (m) {
+            const pct = max > 0 ? (m.stock / max) * 100 : 0;
+            const color = matFamilyColor(m.family);
+            const qty = fmtMatQty(m.stock) + (m.unit ? ' ' + m.unit : '');
+            return '<button type="button" class="products-inventory-row" data-open-plant="' + esc(m.id) + '" title="' + esc(m.name) + '">' +
+                '<span class="products-inventory-name"><span class="dot" style="background:' + esc(color) + '" aria-hidden="true"></span>' +
+                '<span>' + esc(m.name) + '</span></span>' +
+                '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
+                pct.toFixed(1) + '%;background:' + esc(color) + '"></span></span>' +
+                '<span class="products-inventory-qty' + (m.stock ? '' : ' is-zero') + '">' + esc(qty) + '</span>' +
+                '</button>';
+        }).join('');
+        host.setAttribute('aria-label', 'Inventario de materia prima. ' + list.length + ' materiales, ' + withStock + ' con existencia.');
+    }
+    function setMaterialsCatalogOpen(open) {
+        const card = document.getElementById('materialsCatalogCard');
+        const table = document.getElementById('materialsCatalogTable');
+        const toggle = document.getElementById('materialsCatalogToggle');
+        if (!card || !table || !toggle) return;
+        card.classList.toggle('is-open', open);
+        table.hidden = !open;
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        const label = open ? 'Ocultar materias primas' : 'Mostrar materias primas';
+        toggle.title = label;
+        toggle.setAttribute('aria-label', label);
+        if (open) renderMaterials();
     }
     function matCountRowHtml(m) {
         const unit = m.unit ? String(m.unit) : '—';
@@ -7894,9 +7989,29 @@
         chips.querySelectorAll('.chip[data-cat]').forEach(function (el) {
             el.classList.toggle('active', el === btn);
         });
-        renderMaterials();
+        setMaterialsCatalogOpen(true);
     });
-    document.getElementById('matSearch').addEventListener('input', renderMaterials);
+    document.getElementById('matSearch').addEventListener('input', function () {
+        const search = document.getElementById('matSearch');
+        if (search && (search.value || '').trim()) setMaterialsCatalogOpen(true);
+        else renderMaterials();
+    });
+    const materialsCatalogToggle = document.getElementById('materialsCatalogToggle');
+    if (materialsCatalogToggle) {
+        materialsCatalogToggle.addEventListener('click', function () {
+            const card = document.getElementById('materialsCatalogCard');
+            setMaterialsCatalogOpen(!(card && card.classList.contains('is-open')));
+        });
+    }
+    const materialsInventoryChart = document.getElementById('materialsInventoryChart');
+    if (materialsInventoryChart) {
+        materialsInventoryChart.addEventListener('click', function (e) {
+            const row = e.target.closest('[data-open-plant]');
+            if (!row) return;
+            const item = inventory.filter(function (m) { return m.id === row.getAttribute('data-open-plant'); })[0];
+            if (item) openPlantModal(item);
+        });
+    }
     document.getElementById('matPrintBtn').addEventListener('click', printMaterialsCount);
     document.getElementById('matFamiliesBtn').addEventListener('click', openFamiliesModal);
     document.getElementById('familiesModalClose').addEventListener('click', closeFamiliesModal);
