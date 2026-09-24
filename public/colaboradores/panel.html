@@ -4200,20 +4200,52 @@
             height: 0;
             width: 14px;
         }
-        .prod-formula-chart-legend .swatch.stock {
-            background: #c4c4c4;
-        }
-        .prod-formula-chart-legend .swatch.min {
-            background: #e8a5a5;
-        }
-        .prod-formula-chart-legend .swatch.need {
+        .prod-formula-chart-legend .swatch.cover {
             background: var(--text);
+            border-radius: 2px;
         }
-        [data-theme="dark"] .prod-formula-chart-legend .swatch.stock {
-            background: #525252;
+        .prod-formula-chart-legend .swatch.meta {
+            background: transparent;
+            border-top: 1.5px dashed var(--muted);
+            height: 0;
+            width: 14px;
         }
-        [data-theme="dark"] .prod-formula-chart-legend .swatch.min {
-            background: #c47a7a;
+        .prod-formula-chart-legend .swatch.short {
+            background: var(--danger);
+            border-radius: 2px;
+        }
+        [data-theme="dark"] .prod-formula-chart-legend .swatch.cover {
+            background: #e5e5e5;
+        }
+        .prod-formula-chart .cover-bar {
+            fill: var(--text);
+            opacity: 0.72;
+        }
+        .prod-formula-chart .cover-bar.is-warn {
+            fill: var(--warning);
+            opacity: 0.85;
+        }
+        .prod-formula-chart .cover-bar.is-danger {
+            fill: var(--danger);
+            opacity: 0.9;
+        }
+        .prod-formula-chart .cover-meta {
+            stroke: var(--muted);
+            stroke-width: 1.25;
+            stroke-dasharray: 4 3;
+            fill: none;
+            pointer-events: none;
+        }
+        .prod-formula-chart .cover-label {
+            font-size: 9px;
+            font-weight: 600;
+            fill: var(--text);
+        }
+        .prod-formula-chart .cover-label.is-danger { fill: var(--danger); }
+        .prod-formula-chart .cover-label.is-warn { fill: var(--warning); }
+        .prod-formula-chart .cover-sub {
+            font-size: 8px;
+            fill: var(--muted);
         }
         .cortes-chart {
             width: 100%;
@@ -4975,12 +5007,12 @@
                             <div class="cortes-chart-head" style="margin-bottom:8px">
                                 <div>
                                     <h3 style="margin:0">Inventario de materia prima</h3>
-                                    <div class="panel-sub" id="prodFormulaChartSub">Ingredientes · kg en inventario</div>
+                                    <div class="panel-sub" id="prodFormulaChartSub">Cobertura por MP · misma escala para todas</div>
                                 </div>
                                 <div class="cortes-chart-legend prod-formula-chart-legend" aria-hidden="true">
-                                    <span class="leg"><span class="swatch need"></span> Requerido (lote)</span>
-                                    <span class="leg"><span class="swatch stock"></span> En inventario</span>
-                                    <span class="leg"><span class="swatch min"></span> Margen hasta mínimo</span>
+                                    <span class="leg"><span class="swatch cover"></span> Cobertura (inv. ÷ req.)</span>
+                                    <span class="leg"><span class="swatch meta"></span> Meta 100%</span>
+                                    <span class="leg"><span class="swatch short"></span> Falta / precaución</span>
                                 </div>
                             </div>
                             <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Gráfica de requerido vs inventario y margen hasta mínimo por materia prima"></div>
@@ -10567,7 +10599,7 @@
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         if (!f || !r) {
             host.innerHTML = '<div class="cortes-chart-empty">Elige un producto</div>';
-            if (subEl) subEl.textContent = 'Ingredientes · kg en inventario';
+            if (subEl) subEl.textContent = 'Cobertura por MP · misma escala para todas';
             return;
         }
         ensureVersions(f);
@@ -10585,48 +10617,53 @@
             if (Math.abs(n) >= 100) return String(Math.round(n));
             return String(Math.round(n * 1000) / 1000);
         }
-        const stockVals = rows.map(function (row) { return row.have; });
-        const needVals = rows.map(function (row) { return row.need; });
-        const bufferVals = rows.map(function (row) { return row.buffer; });
-        const yMax = Math.max(1, Math.max.apply(null, stockVals.concat(needVals, bufferVals)) * 1.15);
+        function fmtCover(ratio) {
+            if (!isFinite(ratio)) return '∞';
+            if (ratio >= 10) return Math.round(ratio) + '×';
+            if (ratio >= 2) return (Math.round(ratio * 10) / 10) + '×';
+            return Math.round(ratio * 100) + '%';
+        }
+        // Cobertura = inventario / requerido. Escala común; tope visual 200% para no aplastar faltantes.
+        const COVER_CAP = 2;
+        const covers = rows.map(function (row) {
+            const need = Number(row.need) || 0;
+            const have = Math.max(0, Number(row.have) || 0);
+            if (need <= 0) return have > 0 ? COVER_CAP : 0;
+            return have / need;
+        });
+        const yMax = COVER_CAP;
         const W = 960;
         const H = 280;
-        const padL = 48;
+        const padL = 44;
         const padR = 16;
         const padT = 28;
         const padB = 54;
         const baseY = H - padB;
+        const plotW = W - padL - padR;
         const n = rows.length;
-        function ptX(i) {
-            if (n <= 1) return (padL + W - padR) / 2;
-            return padL + (i / (n - 1)) * (W - padL - padR);
+        const gap = n > 1 ? Math.min(14, plotW / n * 0.22) : 0;
+        const barW = Math.max(10, (plotW - gap * (n - 1)) / n);
+        function barX(i) {
+            return padL + i * (barW + gap);
         }
         function ptY(v) {
-            return baseY - (Math.max(0, v) / yMax) * (baseY - padT);
+            const clamped = Math.max(0, Math.min(yMax, v));
+            return baseY - (clamped / yMax) * (baseY - padT);
         }
-        function ptsFrom(vals) {
-            return vals.map(function (v, i) { return { x: ptX(i), y: ptY(v) }; });
-        }
-        const stockPts = ptsFrom(stockVals);
-        const needPts = ptsFrom(needVals);
-        const bufferPts = ptsFrom(bufferVals);
-        const stockLine = buildMonotonePath(stockPts, baseY);
-        const needLine = buildMonotonePath(needPts, baseY);
-        const minLine = buildMonotonePath(bufferPts, baseY);
-        const areaPath = stockLine +
-            ' L' + ptX(n - 1).toFixed(1) + ' ' + baseY.toFixed(1) +
-            ' L' + ptX(0).toFixed(1) + ' ' + baseY.toFixed(1) + ' Z';
         let grid = '';
         let yLabels = '';
-        [0, 0.5, 1].forEach(function (fY) {
-            const y = ptY(yMax * fY);
-            grid += '<line class="grid-line" x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '"/>';
-            const lab = fY === 0 ? '0' : (yMax * fY >= 100 ? Math.round(yMax * fY) : Math.round(yMax * fY * 10) / 10);
+        [0, 0.5, 1, 1.5, 2].forEach(function (fY) {
+            const y = ptY(fY);
+            const isMeta = fY === 1;
+            grid += '<line class="grid-line' + (isMeta ? ' cover-meta' : '') + '" x1="' + padL +
+                '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '"' +
+                (isMeta ? ' style="stroke-dasharray:4 3;opacity:0.95"' : '') + '/>';
+            const lab = fY === 0 ? '0%' : (fY === 1 ? '100%' : (fY === 2 ? '200%+' : Math.round(fY * 100) + '%'));
             yLabels += '<text class="y-label" x="' + (padL - 6) + '" y="' + (y + 3) + '" text-anchor="end">' + lab + '</text>';
         });
         let xLabels = '';
         rows.forEach(function (row, i) {
-            const x = ptX(i).toFixed(1);
+            const x = (barX(i) + barW / 2).toFixed(1);
             const lines = row.labelLines;
             let tspans = '';
             lines.forEach(function (ln, li) {
@@ -10636,66 +10673,53 @@
             xLabels += '<text class="axis-label" x="' + x + '" y="' + (H - 32) +
                 '" text-anchor="middle">' + tspans + '</text>';
         });
-        const hatchId = 'prodHatch';
-        const defs =
-            '<defs>' +
-            '<pattern id="' + hatchId + '" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)">' +
-            '<line x1="0" y1="0" x2="0" y2="7" stroke="var(--prod-line-stock)" stroke-width="1" opacity="0.4"/>' +
-            '</pattern>' +
-            '</defs>';
-        // Puntos + tooltips (requerido = serie principal)
-        let marks = '';
+        let bars = '';
         rows.forEach(function (row, i) {
-            let tip =
+            const raw = covers[i];
+            const visual = Math.min(COVER_CAP, Math.max(0, raw));
+            const x = barX(i);
+            const y = ptY(visual);
+            const h = Math.max(0, baseY - y);
+            const alertClass = row.alert === 'danger' ? ' is-danger'
+                : (row.alert === 'warning' ? ' is-warn' : '');
+            const tip =
                 esc(row.fullName) +
                 (row.isPackaging ? ' (empaque teórico)' : '') +
-                ' — requiere: ' + esc(fmtQty(row.need)) + ' ' + esc(row.unit) +
+                ' — cobertura: ' + esc(fmtCover(raw)) +
                 ' · inventario' + (row.isPackaging ? ' libre' : '') + ': ' + esc(fmtQty(row.have)) + ' ' + esc(row.unit) +
+                ' · requiere: ' + esc(fmtQty(row.need)) + ' ' + esc(row.unit) +
                 (row.isPackaging && row.reserved
                     ? ' · reservado: ' + esc(fmtQty(row.reserved))
                     : '') +
                 ' · margen hasta mín.: ' + esc(fmtQty(row.buffer)) + ' ' + esc(row.unit) +
-                ' (mín. ' + esc(fmtQty(row.minStock)) + ')';
-            if (row.missing) tip += ' · sin MP en planta';
-            else if (row.alert === 'danger') tip += ' · insuficiente';
-            else if (row.alert === 'warning') tip += ' · toca margen (precaución)';
-            const sp = stockPts[i];
-            const bp = bufferPts[i];
-            const np = needPts[i];
-            const alertFill = row.alert === 'danger' ? 'var(--danger)'
-                : (row.alert === 'warning' ? 'var(--warning)' : 'var(--prod-line-need)');
-            const labelFill = row.alert === 'danger' ? 'var(--danger)'
-                : (row.alert === 'warning' ? 'var(--warning)' : 'var(--text)');
-            marks +=
-                '<circle cx="' + bp.x.toFixed(1) + '" cy="' + bp.y.toFixed(1) +
-                '" r="2.2" fill="var(--prod-line-min)" stroke="var(--panel)" stroke-width="1">' +
-                '<title>' + tip + '</title></circle>' +
-                '<circle cx="' + sp.x.toFixed(1) + '" cy="' + sp.y.toFixed(1) +
-                '" r="2.6" fill="var(--prod-line-stock)" stroke="var(--panel)" stroke-width="1">' +
-                '<title>' + tip + '</title></circle>' +
-                '<circle cx="' + np.x.toFixed(1) + '" cy="' + np.y.toFixed(1) +
-                '" r="3.4" fill="' + alertFill +
-                '" stroke="var(--panel)" stroke-width="1.5">' +
-                '<title>' + tip + '</title></circle>' +
-                '<text class="y-label" x="' + np.x.toFixed(1) + '" y="' + (np.y - 8).toFixed(1) +
-                '" text-anchor="middle" style="fill:' + labelFill +
-                ';font-size:9px">' + esc(fmtQty(row.need)) + '</text>';
+                ' (mín. ' + esc(fmtQty(row.minStock)) + ')' +
+                (row.missing ? ' · sin MP en planta' : '') +
+                (row.alert === 'danger' ? ' · insuficiente' : '') +
+                (row.alert === 'warning' ? ' · toca margen (precaución)' : '');
+            const labelY = Math.max(padT + 10, y - 6);
+            bars +=
+                '<rect class="cover-bar' + alertClass + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
+                '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="2">' +
+                '<title>' + tip + '</title></rect>' +
+                '<text class="cover-label' + alertClass + '" x="' + (x + barW / 2).toFixed(1) +
+                '" y="' + labelY.toFixed(1) + '" text-anchor="middle">' + esc(fmtCover(raw)) + '</text>' +
+                '<text class="cover-sub" x="' + (x + barW / 2).toFixed(1) + '" y="' + (baseY + 11).toFixed(1) +
+                '" text-anchor="middle">' + esc(fmtQty(row.have)) + '/' + esc(fmtQty(row.need)) + '</text>';
         });
+        // Meta 100% line on top of bars for clarity
+        const metaY = ptY(1);
+        const metaLine = '<line class="cover-meta" x1="' + padL + '" y1="' + metaY +
+            '" x2="' + (W - padR) + '" y2="' + metaY + '"/>';
         host.innerHTML =
             '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
-            defs + grid + yLabels +
-            '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + hatchId + ')"/>' +
-            '<path class="line-min" d="' + minLine + '"/>' +
-            '<path class="line-stock" d="' + stockLine + '"/>' +
-            '<path class="line-need" d="' + needLine + '"/>' +
-            marks + xLabels +
+            grid + yLabels + bars + metaLine + xLabels +
             '</svg>';
         if (subEl) {
             const shortCount = rows.filter(function (row) { return row.alert === 'danger'; }).length;
             const atMinCount = rows.filter(function (row) { return row.alert === 'warning'; }).length;
             const packCount = rows.filter(function (row) { return row.isPackaging; }).length;
             subEl.textContent = (active ? active.name + (active.label ? ' — ' + active.label : '') : 'Versión') +
-                ' · margen = inventario − mínimo' +
+                ' · cobertura = inventario ÷ requerido (tope visual 200%)' +
                 (packCount ? ' · empaque teórico incluido' : '') +
                 (lots > 1 ? ' · vs ×' + lots + ' lotes' : ' · vs 1 lote') +
                 (atMinCount ? ' · ' + atMinCount + ' precaución' : '') +
