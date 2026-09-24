@@ -919,46 +919,72 @@
         .pos-station-top {
             display: grid;
             grid-template-columns: auto minmax(0, 1fr) auto;
-            gap: 14px 20px;
+            gap: 16px 24px;
             align-items: end;
-            padding: 12px 16px;
+            padding: 16px 20px 18px;
             border-bottom: 1px solid var(--border);
-            background: var(--panel);
+            background: color-mix(in srgb, var(--bg-soft) 55%, var(--panel));
             position: relative;
             z-index: 5;
         }
         .pos-station-top .pos-station-title {
             margin: 0;
-            font-size: 17px;
-            font-weight: 550;
-            letter-spacing: -0.02em;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
             align-self: center;
             line-height: 1;
             padding-bottom: 2px;
         }
         .pos-station-fields {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 168px;
-            gap: 12px 14px;
+            grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
+            gap: 12px 16px;
             align-items: end;
             min-width: 0;
         }
         .pos-field {
             display: grid;
-            gap: 5px;
+            gap: 7px;
             min-width: 0;
         }
         .pos-station-top .field-label,
         .pos-station-pay .field-label {
             margin: 0;
             line-height: 1;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
         }
         .pos-station-top .pos-client-picker { min-width: 0; }
         .pos-station-top .pos-client-trigger,
         .pos-select,
         .pos-station-top .btn,
         .pos-pad-tools .search {
-            height: 36px;
+            height: 44px;
+        }
+        .pos-station-top .pos-client-trigger {
+            padding: 0 14px;
+            border-width: 1.5px;
+            background: var(--panel);
+        }
+        .pos-station-top .pos-client-trigger-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .pos-station-top .pos-select {
+            padding: 0 32px 0 12px;
+            font-size: 14px;
+            font-weight: 500;
+            border-width: 1.5px;
+            background-color: var(--panel);
+        }
+        .pos-station-top .btn {
+            padding: 0 14px;
+            font-size: 13px;
+            font-weight: 550;
+            border-width: 1.5px;
+            background: var(--panel);
         }
         .pos-select {
             width: 100%;
@@ -1092,57 +1118,71 @@
         }
         .pos-station-pay {
             display: grid;
-            grid-template-columns: minmax(0, 1.35fr) 200px auto;
-            gap: 14px 20px;
+            grid-template-columns: minmax(280px, 1.1fr) minmax(200px, 240px) auto;
+            gap: 16px 28px;
             align-items: end;
-            padding: 12px 16px 14px;
+            padding: 16px 20px 18px;
             border-top: 1px solid var(--border);
-            background: color-mix(in srgb, var(--panel) 90%, var(--bg-soft));
+            background: color-mix(in srgb, var(--bg-soft) 55%, var(--panel));
         }
         .pos-pay-block,
         .pos-bill-block {
             display: grid;
-            gap: 6px;
+            gap: 8px;
             min-width: 0;
             align-content: end;
         }
         .pos-pay-checkout {
             display: flex;
             align-items: end;
-            gap: 14px;
+            gap: 16px;
             justify-content: flex-end;
         }
         .pos-station-pay .cart-total {
             display: grid;
-            gap: 3px;
+            gap: 4px;
             padding: 0;
             margin: 0;
             border: none;
             align-content: end;
             justify-items: end;
             text-align: right;
-            min-width: 110px;
+            min-width: 120px;
         }
         .pos-station-pay .cart-total .label {
             font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
             line-height: 1;
         }
         .pos-station-pay .cart-total .amount {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 600;
             letter-spacing: -0.03em;
             line-height: 1;
             font-variant-numeric: tabular-nums;
         }
         #posCheckoutBtn {
-            height: 44px;
-            min-width: 128px;
-            padding: 0 18px;
+            height: 48px;
+            min-width: 148px;
+            padding: 0 22px;
             font-size: 15px;
-            font-weight: 550;
+            font-weight: 600;
             letter-spacing: -0.01em;
         }
-        .pos-station-pay .pay-split-check { margin-top: 2px; }
+        .pos-station-pay .pay-split-check { margin-top: 4px; }
+        .pos-station-pay .seg.seg-pay label {
+            font-size: 12.5px;
+            font-weight: 550;
+            padding: 12px 8px;
+        }
+        .pos-station-pay .seg.two label {
+            font-size: 12.5px;
+            font-weight: 550;
+            padding: 12px 8px;
+        }
         .pos-layout { display: contents; }
         .pos-catalog { display: contents; }
 
@@ -4651,7 +4691,7 @@
         }
         @media (max-width: 1100px) {
             .pos-station-fields {
-                grid-template-columns: minmax(0, 1fr) 148px;
+                grid-template-columns: minmax(0, 1fr) minmax(160px, 180px);
             }
             .pos-station-pay {
                 grid-template-columns: 1fr 1fr;
