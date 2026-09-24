@@ -4205,6 +4205,36 @@
         .products-movements-block:not(.is-open) .pd-sales-range {
             display: none;
         }
+        .products-catalog-toggle {
+            width: 34px;
+            height: 34px;
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--muted);
+            cursor: pointer;
+        }
+        .products-catalog-toggle:hover { color: var(--text); background: var(--hover); }
+        .products-catalog-toggle:focus-visible {
+            outline: 2px solid var(--text);
+            outline-offset: 2px;
+        }
+        .products-catalog-chevron {
+            font-size: 11px;
+            transition: transform .15s ease;
+        }
+        .products-catalog-card.is-open .products-catalog-chevron {
+            transform: rotate(90deg);
+        }
+        .products-catalog-card:not(.is-open) .chips {
+            margin-bottom: 0;
+        }
         .pd-sales-head {
             display: flex;
             justify-content: space-between;
@@ -5847,13 +5877,16 @@
                             </div>
                         </div>
 
-                        <div class="card">
+                        <div class="card products-catalog-card" id="productsCatalogCard">
                             <div class="toolbar">
                                 <input id="productsSearch" class="search" type="search" placeholder="Buscar nombre, código o familia">
                                 <button type="button" class="btn" id="productsFamiliesBtn"><i class="fa-solid fa-tags"></i> Familias</button>
+                                <button type="button" class="products-catalog-toggle" id="productsCatalogToggle" aria-expanded="false" aria-controls="productsCatalogTable" aria-label="Mostrar productos" title="Mostrar productos">
+                                    <i class="fa-solid fa-chevron-right products-catalog-chevron" aria-hidden="true"></i>
+                                </button>
                             </div>
                             <div class="chips" id="productsFamilyChips"></div>
-                            <div class="table-card">
+                            <div class="table-card" id="productsCatalogTable" hidden>
                                 <table class="products-table">
                                     <thead>
                                         <tr>
@@ -9359,6 +9392,20 @@
         if (!opts.skipHash) syncPanelHash();
     }
 
+    function setProductsCatalogOpen(open) {
+        const card = document.getElementById('productsCatalogCard');
+        const table = document.getElementById('productsCatalogTable');
+        const toggle = document.getElementById('productsCatalogToggle');
+        if (!card || !table || !toggle) return;
+        card.classList.toggle('is-open', open);
+        table.hidden = !open;
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        const label = open ? 'Ocultar productos' : 'Mostrar productos';
+        toggle.title = label;
+        toggle.setAttribute('aria-label', label);
+        if (open) renderProductHubList();
+    }
+
     function bindProductHub() {
         const chips = document.getElementById('productsFamilyChips');
         if (chips) {
@@ -9371,11 +9418,23 @@
                 if (!btn) return;
                 productsFamilyFilter = btn.getAttribute('data-fam') || 'all';
                 renderProductHubChips();
-                renderProductHubList();
+                setProductsCatalogOpen(true);
             });
         }
         const search = document.getElementById('productsSearch');
-        if (search) search.addEventListener('input', renderProductHubList);
+        if (search) {
+            search.addEventListener('input', function () {
+                if ((search.value || '').trim()) setProductsCatalogOpen(true);
+                else renderProductHubList();
+            });
+        }
+        const catalogToggle = document.getElementById('productsCatalogToggle');
+        if (catalogToggle) {
+            catalogToggle.addEventListener('click', function () {
+                const card = document.getElementById('productsCatalogCard');
+                setProductsCatalogOpen(!(card && card.classList.contains('is-open')));
+            });
+        }
         const body = document.getElementById('productsListBody');
         if (body) {
             body.addEventListener('click', function (e) {
