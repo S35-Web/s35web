@@ -1339,12 +1339,15 @@
         if (!sale) return;
         const patch = collectSaleNoteEditForm();
         if (!patch) return;
+        const beforeItems = (sale.items || []).map(function (it) { return Object.assign({}, it); });
+        const trackStock = !isHistoricalImportSale(sale);
         Object.assign(sale, patch);
         ensureSaleNote(sale);
         if (!persistSaleRecord(sale)) {
             toast('No se pudo guardar el ticket');
             return;
         }
+        if (trackStock) applySaleInventoryChange(beforeItems, sale.items);
         setSaleNoteMode(false);
         openSaleNoteModal(sale);
         renderHistory();
@@ -1422,6 +1425,7 @@
         const label = saleReceiptLabel(sale);
         if (!confirm('¿Eliminar esta venta? No se puede deshacer')) return;
         const wasHist = isHistoricalImportSale(sale);
+        if (!wasHist) applySaleInventoryChange(sale.items, []);
         if (wasHist) {
             historicalSales = historicalSales.filter(function (s) { return s.id !== id; });
             putSaleEdit(id, { deleted: true });
@@ -3505,6 +3509,40 @@
         existing[slug].stock = Math.max(0, (Number(existing[slug].stock) || 0) - qty);
         localStorage.setItem(FINISHED_KEY, JSON.stringify({ items: existing, updatedAt: new Date().toISOString() }));
     }
+    function saleQtyByProduct(items) {
+        const map = {};
+        (items || []).forEach(function (it) {
+            const slug = it && String(it.product || '').trim();
+            const qty = Number(it && it.qty) || 0;
+            if (!slug || !(qty > 0)) return;
+            map[slug] = (map[slug] || 0) + qty;
+        });
+        return map;
+    }
+    function applySaleInventoryChange(beforeItems, afterItems) {
+        const before = saleQtyByProduct(beforeItems);
+        const after = saleQtyByProduct(afterItems);
+        const deltas = {};
+        const slugs = {};
+        Object.keys(before).forEach(function (k) { slugs[k] = true; });
+        Object.keys(after).forEach(function (k) { slugs[k] = true; });
+        Object.keys(slugs).forEach(function (slug) {
+            const soldDelta = (after[slug] || 0) - (before[slug] || 0);
+            if (soldDelta) deltas[slug] = -soldDelta;
+        });
+        if (!Object.keys(deltas).length) return;
+        if (window.S35PanelAPI && window.S35PanelAPI.adjustFinishedMap) {
+            window.S35PanelAPI.adjustFinishedMap(deltas);
+        } else {
+            Object.keys(deltas).forEach(function (slug) {
+                const delta = deltas[slug];
+                if (delta < 0) deductFinished(slug, -delta);
+            });
+        }
+        if (window.S35PanelAPI && window.S35PanelAPI.refreshStockViews) {
+            window.S35PanelAPI.refreshStockViews();
+        }
+    }
 
     let cart = [];
     let familyFilter = 'all';
@@ -5383,12 +5421,7 @@
             shareEmail: clientSnapshot ? (clientSnapshot.email || '') : ''
         };
 
-        ticket.items.forEach(function (it) {
-            deductFinished(it.product, it.qty);
-        });
-        if (window.S35PanelAPI && window.S35PanelAPI.refreshStockViews) {
-            window.S35PanelAPI.refreshStockViews();
-        }
+        applySaleInventoryChange([], ticket.items);
 
         sales.unshift(ticket);
         saveSales();

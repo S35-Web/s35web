@@ -4247,6 +4247,12 @@
         }
         .products-inventory-head .pd-section-label { margin-bottom: 4px; }
         .products-inventory-head .page-sub { margin: 0; }
+        .products-inventory-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+        }
         .products-inventory-kpis {
             display: flex;
             gap: 18px;
@@ -4332,6 +4338,7 @@
         @media (max-width: 900px) {
             .products-inventory-chart { grid-template-columns: 1fr; }
             .products-inventory-head { flex-wrap: wrap; }
+            .products-inventory-actions { flex-wrap: wrap; justify-content: flex-end; }
         }
         .pd-sales-head {
             display: flex;
@@ -5935,14 +5942,19 @@
                                     <p class="pd-section-label">Inventario</p>
                                     <p class="page-sub" id="productsInventorySub">Producto terminado</p>
                                 </div>
-                                <div class="products-inventory-kpis">
-                                    <div>
-                                        <span class="label">Total</span>
-                                        <span class="val" id="productsInventoryTotal">0</span>
-                                    </div>
-                                    <div>
-                                        <span class="label">Con stock</span>
-                                        <span class="val" id="productsInventoryWithStock">0</span>
+                                <div class="products-inventory-actions">
+                                    <button type="button" class="btn" id="productsAddInventoryBtn">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Agregar inventario
+                                    </button>
+                                    <div class="products-inventory-kpis">
+                                        <div>
+                                            <span class="label">Total</span>
+                                            <span class="val" id="productsInventoryTotal">0</span>
+                                        </div>
+                                        <div>
+                                            <span class="label">Con stock</span>
+                                            <span class="val" id="productsInventoryWithStock">0</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -6334,6 +6346,29 @@
                     <button type="button" class="btn danger" id="purchaseTicketDelete" hidden><i class="fa-solid fa-trash-can"></i> Eliminar</button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div id="addInventoryModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="addInventoryTitle" style="max-width:440px">
+            <div class="modal-head">
+                <strong id="addInventoryTitle">Agregar inventario</strong>
+                <button id="addInventoryClose" class="btn" type="button">Cerrar</button>
+            </div>
+            <form id="addInventoryForm" class="modal-body">
+                <div class="form-grid">
+                    <label>Producto
+                        <select id="addInventoryProduct" required></select>
+                    </label>
+                    <label>Cantidad a sumar
+                        <input id="addInventoryQty" type="number" min="0.001" step="any" required value="1" inputmode="decimal">
+                    </label>
+                    <p class="muted" id="addInventoryCurrent" style="margin:0">Existencia actual: 0</p>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="addInventoryCancel">Cancelar</button>
+                    <button type="submit" class="btn primary">Agregar</button>
+                </div>
+            </form>
         </div>
     </div>
     <div class="toast" id="toast"></div>
@@ -6867,18 +6902,23 @@
     const FINISHED_KEY = 's35_finished_stock';
     function loadFinished() {
         const seed = {};
-        (data.products || []).forEach(function (p) {
-            seed[p.slug] = { slug: p.slug, stock: 0, minStock: 0, unit: 'Pza' };
-        });
+        function ensure(slug) {
+            if (!slug || seed[slug]) return;
+            seed[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
+        }
+        (data.products || []).forEach(function (p) { ensure(p.slug); });
+        (data.recipes || []).forEach(function (r) { ensure(r.product || r.slug); });
         try {
             const raw = JSON.parse(localStorage.getItem(FINISHED_KEY) || 'null');
             const items = raw && raw.items ? raw.items : raw;
             if (items && typeof items === 'object') {
                 Object.keys(items).forEach(function (slug) {
-                    if (!seed[slug]) return;
-                    seed[slug].stock = Number(items[slug].stock) || 0;
-                    seed[slug].minStock = Number(items[slug].minStock) || 0;
-                    if (items[slug].unit) seed[slug].unit = items[slug].unit;
+                    const row = items[slug];
+                    if (!row || typeof row !== 'object') return;
+                    ensure(slug);
+                    seed[slug].stock = Number(row.stock) || 0;
+                    seed[slug].minStock = Number(row.minStock) || 0;
+                    if (row.unit) seed[slug].unit = row.unit;
                 });
             }
         } catch (_) {}
@@ -6894,8 +6934,31 @@
             } catch (_) {}
         }
         localStorage.setItem(FINISHED_KEY, JSON.stringify({ items: finishedStock, updatedAt: updatedAt }));
+        if (!opts.skipPush && window.S35PanelSync && typeof window.S35PanelSync.flushPush === 'function') {
+            window.S35PanelSync.flushPush();
+        }
     }
     let finishedStock = loadFinished();
+    function hydrateFinishedFromLocal() {
+        const fresh = loadFinished();
+        Object.keys(finishedStock).forEach(function (k) { delete finishedStock[k]; });
+        Object.keys(fresh).forEach(function (k) { finishedStock[k] = fresh[k]; });
+    }
+    function adjustFinishedMap(deltas) {
+        hydrateFinishedFromLocal();
+        let changed = false;
+        Object.keys(deltas || {}).forEach(function (slug) {
+            const delta = Number(deltas[slug]) || 0;
+            if (!slug || !delta) return;
+            if (!finishedStock[slug]) finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
+            const next = Math.max(0, (Number(finishedStock[slug].stock) || 0) + delta);
+            if (next === (Number(finishedStock[slug].stock) || 0)) return;
+            finishedStock[slug].stock = next;
+            changed = true;
+        });
+        if (changed) saveFinished();
+        return changed;
+    }
 
     function lowStockMaterials() {
         return inventory.filter(function (m) {
@@ -9605,6 +9668,70 @@
                 setProductsCatalogOpen(!(card && card.classList.contains('is-open')));
             });
         }
+        const addInvBtn = document.getElementById('productsAddInventoryBtn');
+        const addInvModal = document.getElementById('addInventoryModal');
+        const addInvForm = document.getElementById('addInventoryForm');
+        const addInvProduct = document.getElementById('addInventoryProduct');
+        const addInvQty = document.getElementById('addInventoryQty');
+        const addInvCurrent = document.getElementById('addInventoryCurrent');
+        function closeAddInventory() {
+            if (!addInvModal) return;
+            addInvModal.classList.remove('show');
+            addInvModal.setAttribute('aria-hidden', 'true');
+        }
+        function paintAddInventoryCurrent() {
+            if (!addInvCurrent || !addInvProduct) return;
+            const slug = addInvProduct.value;
+            const fin = finishedStock[slug];
+            const qty = fin ? (Number(fin.stock) || 0) : 0;
+            addInvCurrent.textContent = 'Existencia actual: ' + fmtStockQty(qty);
+        }
+        function openAddInventory(preselect) {
+            if (!addInvModal || !addInvProduct) return;
+            hydrateFinishedFromLocal();
+            const list = hubCatalog().slice().sort(function (a, b) {
+                return String(a.name || a.slug).localeCompare(String(b.name || b.slug), 'es');
+            });
+            addInvProduct.innerHTML = list.map(function (p) {
+                return '<option value="' + esc(p.slug) + '">' + esc(p.name || p.slug) + '</option>';
+            }).join('');
+            if (preselect && finishedStock[preselect]) addInvProduct.value = preselect;
+            if (addInvQty) addInvQty.value = '1';
+            paintAddInventoryCurrent();
+            addInvModal.classList.add('show');
+            addInvModal.setAttribute('aria-hidden', 'false');
+            if (addInvQty) addInvQty.focus();
+        }
+        if (addInvBtn) addInvBtn.addEventListener('click', function () { openAddInventory(); });
+        if (addInvProduct) addInvProduct.addEventListener('change', paintAddInventoryCurrent);
+        ['addInventoryClose', 'addInventoryCancel'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', closeAddInventory);
+        });
+        if (addInvModal) {
+            addInvModal.addEventListener('click', function (e) {
+                if (e.target === addInvModal) closeAddInventory();
+            });
+        }
+        if (addInvForm) {
+            addInvForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const slug = addInvProduct ? addInvProduct.value : '';
+                const qty = Number(addInvQty && addInvQty.value);
+                if (!slug || !(qty > 0)) return;
+                adjustFinishedMap((function () { const d = {}; d[slug] = qty; return d; })());
+                refreshStockViews();
+                closeAddInventory();
+                const name = (hubCatalog().filter(function (p) { return p.slug === slug; })[0] || {}).name || slug;
+                const toastEl = document.getElementById('toast');
+                if (toastEl) {
+                    toastEl.textContent = '+' + fmtStockQty(qty) + ' en ' + name;
+                    toastEl.classList.add('show');
+                    clearTimeout(openAddInventory._toast);
+                    openAddInventory._toast = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+                }
+            });
+        }
         const inventoryChart = document.getElementById('productsInventoryChart');
         if (inventoryChart) {
             inventoryChart.addEventListener('click', function (e) {
@@ -11731,6 +11858,7 @@
             consumePlantQty(pc.plantId, pc.actual);
         });
         if (packConsumptions.length) saveInventory(inventory);
+        hydrateFinishedFromLocal();
         if (!finishedStock[t.product]) finishedStock[t.product] = { slug: t.product, stock: 0, minStock: 0, unit: 'Pza' };
         finishedStock[t.product].stock = (Number(finishedStock[t.product].stock) || 0) + bagsOut;
         saveFinished();
@@ -11820,6 +11948,13 @@
         }
     })();
 
+    window.addEventListener('s35-sync-status', function (e) {
+        const d = (e && e.detail) || {};
+        if (!d.bootDone) return;
+        hydrateFinishedFromLocal();
+        if (typeof refreshStockViews === 'function') refreshStockViews();
+    });
+
     window.S35PanelAPI = {
         showSection: showSection,
         getFinishedQty: function (slug) {
@@ -11827,10 +11962,14 @@
             return fin ? (Number(fin.stock) || 0) : 0;
         },
         deductFinished: function (slug, qty) {
-            if (!finishedStock[slug]) finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
-            finishedStock[slug].stock = Math.max(0, (Number(finishedStock[slug].stock) || 0) - qty);
-            saveFinished();
+            adjustFinishedMap((function () { const d = {}; d[slug] = -Math.abs(Number(qty) || 0); return d; })());
         },
+        adjustFinished: function (slug, delta) {
+            const d = {};
+            d[slug] = Number(delta) || 0;
+            return adjustFinishedMap(d);
+        },
+        adjustFinishedMap: adjustFinishedMap,
         refreshStockViews: function () {
             if (typeof refreshStockViews === 'function') refreshStockViews();
             else {
@@ -11905,7 +12044,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260924-cloud-sync2"></script>
+    <script src="/colaboradores/pos-module.js?v=20260924-stock-sale"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260923-copilot-section"></script>
 </body>
