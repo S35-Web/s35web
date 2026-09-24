@@ -4235,6 +4235,104 @@
         .products-catalog-card:not(.is-open) .chips {
             margin-bottom: 0;
         }
+        .products-inventory-card {
+            margin: 0 0 22px;
+        }
+        .products-inventory-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .products-inventory-head .pd-section-label { margin-bottom: 4px; }
+        .products-inventory-head .page-sub { margin: 0; }
+        .products-inventory-kpis {
+            display: flex;
+            gap: 18px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .products-inventory-kpis .label {
+            display: block;
+            font-size: 11px;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .products-inventory-kpis .val {
+            font-size: 18px;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+        .products-inventory-chart {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 28px;
+        }
+        .products-inventory-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(64px, 1fr) 3.2em;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            margin: 0;
+            padding: 5px 6px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+        .products-inventory-row:hover { background: var(--hover); }
+        .products-inventory-row:focus-visible {
+            outline: 2px solid var(--text);
+            outline-offset: 1px;
+        }
+        .products-inventory-name {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            font-size: 12px;
+        }
+        .products-inventory-name .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: inline-block;
+        }
+        .products-inventory-name span:last-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .products-inventory-track {
+            height: 8px;
+            border-radius: 999px;
+            background: var(--hover);
+            box-shadow: inset 0 0 0 1px var(--border);
+            overflow: hidden;
+        }
+        .products-inventory-fill {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+        }
+        .products-inventory-qty {
+            font-size: 12px;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+        }
+        .products-inventory-qty.is-zero { color: var(--muted); }
+        @media (max-width: 900px) {
+            .products-inventory-chart { grid-template-columns: 1fr; }
+            .products-inventory-head { flex-wrap: wrap; }
+        }
         .pd-sales-head {
             display: flex;
             justify-content: space-between;
@@ -5830,6 +5928,26 @@
                     <div id="productsListView">
                         <h1 class="page-title">Productos</h1>
                         <p class="page-sub">Precios, presentaciones y formulaciones en un solo lugar. Se guarda en este navegador.</p>
+
+                        <div class="card products-inventory-card" id="productsInventoryCard">
+                            <div class="products-inventory-head">
+                                <div>
+                                    <p class="pd-section-label">Inventario</p>
+                                    <p class="page-sub" id="productsInventorySub">Producto terminado</p>
+                                </div>
+                                <div class="products-inventory-kpis">
+                                    <div>
+                                        <span class="label">Total</span>
+                                        <span class="val" id="productsInventoryTotal">0</span>
+                                    </div>
+                                    <div>
+                                        <span class="label">Con stock</span>
+                                        <span class="val" id="productsInventoryWithStock">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="products-inventory-chart" id="productsInventoryChart" role="group" aria-label="Inventario de todos los productos"></div>
+                        </div>
 
                         <div class="pd-sales-block products-movements-block" id="productsMovementsBlock">
                             <div class="pd-sales-head">
@@ -9191,6 +9309,57 @@
         });
     }
 
+    function fmtStockQty(n) {
+        return (Number(n) || 0).toLocaleString('es-MX', { maximumFractionDigits: 0 });
+    }
+
+    function renderProductsInventoryChart() {
+        const host = document.getElementById('productsInventoryChart');
+        const totalEl = document.getElementById('productsInventoryTotal');
+        const withEl = document.getElementById('productsInventoryWithStock');
+        const subEl = document.getElementById('productsInventorySub');
+        if (!host) return;
+        const list = hubCatalog().map(function (p) {
+            const fin = finishedStock[p.slug] || { stock: 0 };
+            return {
+                slug: p.slug,
+                name: p.name || p.slug,
+                family: p.family || '',
+                stock: Math.max(0, Number(fin.stock) || 0)
+            };
+        }).sort(function (a, b) {
+            return b.stock - a.stock || String(a.name).localeCompare(String(b.name), 'es');
+        });
+        const total = list.reduce(function (sum, p) { return sum + p.stock; }, 0);
+        const withStock = list.filter(function (p) { return p.stock > 0; }).length;
+        const max = list.reduce(function (m, p) { return Math.max(m, p.stock); }, 0);
+        if (totalEl) totalEl.textContent = fmtStockQty(total);
+        if (withEl) withEl.textContent = String(withStock);
+        if (subEl) {
+            if (!list.length) subEl.textContent = 'Sin productos';
+            else if (!withStock) subEl.textContent = list.length + ' productos · sin existencia';
+            else subEl.textContent = (list.length - withStock) + ' en cero · producto terminado';
+        }
+        if (!list.length) {
+            host.innerHTML = '';
+            return;
+        }
+        host.innerHTML = list.map(function (p) {
+            const pct = max > 0 ? (p.stock / max) * 100 : 0;
+            const color = (window.S35PosModule && window.S35PosModule.familyColor)
+                ? window.S35PosModule.familyColor(p.family)
+                : '#9a9a9a';
+            return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name) + '">' +
+                '<span class="products-inventory-name">' + familyDotHtml(p.family) +
+                '<span>' + esc(p.name) + '</span></span>' +
+                '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
+                pct.toFixed(1) + '%;background:' + esc(color) + '"></span></span>' +
+                '<span class="products-inventory-qty' + (p.stock ? '' : ' is-zero') + '">' + fmtStockQty(p.stock) + '</span>' +
+                '</button>';
+        }).join('');
+        host.setAttribute('aria-label', 'Inventario de producto terminado. Total ' + fmtStockQty(total) + '.');
+    }
+
     function renderProductHubList() {
         const tbody = document.getElementById('productsListBody');
         if (!tbody) return;
@@ -9278,6 +9447,7 @@
         if (detailView) detailView.hidden = true;
         renderProductHubChips();
         renderProductHubList();
+        renderProductsInventoryChart();
         if (window.S35PosModule && typeof window.S35PosModule.renderProductsMovementsChart === 'function') {
             window.S35PosModule.renderProductsMovementsChart();
         }
@@ -9433,6 +9603,14 @@
             catalogToggle.addEventListener('click', function () {
                 const card = document.getElementById('productsCatalogCard');
                 setProductsCatalogOpen(!(card && card.classList.contains('is-open')));
+            });
+        }
+        const inventoryChart = document.getElementById('productsInventoryChart');
+        if (inventoryChart) {
+            inventoryChart.addEventListener('click', function (e) {
+                const row = e.target.closest('[data-open-product]');
+                if (!row) return;
+                openProductHub(row.getAttribute('data-open-product'));
             });
         }
         const body = document.getElementById('productsListBody');
@@ -11297,6 +11475,7 @@
         renderMaterials();
         if (typeof renderCatalog === 'function') renderCatalog(data.products);
         renderFinished();
+        if (typeof renderProductsInventoryChart === 'function') renderProductsInventoryChart();
         updateProdPreview();
         renderProdFormulaChart();
         refreshLotTicketLists();
@@ -11662,6 +11841,7 @@
         onPosReady: function () {
             if (typeof renderProductHubChips === 'function') renderProductHubChips();
             if (typeof renderProductHubList === 'function') renderProductHubList();
+            if (typeof renderProductsInventoryChart === 'function') renderProductsInventoryChart();
             if (hubProductSlug && hubProductTab === 'precios' && typeof renderProductPricesTab === 'function') {
                 renderProductPricesTab();
             }
@@ -11684,6 +11864,7 @@
             }
             if (typeof renderProductHubChips === 'function') renderProductHubChips();
             if (typeof renderProductHubList === 'function') renderProductHubList();
+            if (typeof renderProductsInventoryChart === 'function') renderProductsInventoryChart();
             if (typeof renderProductFamiliesList === 'function' &&
                 productFamiliesModal && productFamiliesModal.classList.contains('show')) {
                 renderProductFamiliesList();
