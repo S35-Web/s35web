@@ -265,6 +265,7 @@ const server = http.createServer((req, res) => {
                     empty: true,
                     inventory: [],
                     finished: {},
+                    formulas: {},
                     lots: [],
                     purchases: [],
                     updatedAt: null
@@ -277,6 +278,7 @@ const server = http.createServer((req, res) => {
                 empty: false,
                 inventory: Array.isArray(doc.inventory) ? doc.inventory : [],
                 finished: doc.finished && typeof doc.finished === 'object' ? doc.finished : {},
+                formulas: doc.formulas && typeof doc.formulas === 'object' ? doc.formulas : {},
                 lots: Array.isArray(doc.lots) ? doc.lots : [],
                 purchases: Array.isArray(doc.purchases) ? doc.purchases : [],
                 updatedAt: doc.updatedAt || null
@@ -292,6 +294,7 @@ const server = http.createServer((req, res) => {
                     const doc = {
                         inventory: Array.isArray(parsed.inventory) ? parsed.inventory : [],
                         finished: parsed.finished && typeof parsed.finished === 'object' ? parsed.finished : {},
+                        formulas: parsed.formulas && typeof parsed.formulas === 'object' ? parsed.formulas : {},
                         lots: Array.isArray(parsed.lots) ? parsed.lots.slice(0, 300) : [],
                         purchases: Array.isArray(parsed.purchases) ? parsed.purchases.slice(0, 200) : [],
                         updatedAt: new Date().toISOString()
@@ -304,6 +307,7 @@ const server = http.createServer((req, res) => {
                         updatedAt: doc.updatedAt,
                         totals: {
                             inventory: doc.inventory.length,
+                            formulas: Object.keys(doc.formulas).length,
                             lots: doc.lots.length,
                             purchases: doc.purchases.length
                         }

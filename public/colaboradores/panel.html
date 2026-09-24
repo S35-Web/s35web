@@ -8331,10 +8331,21 @@
             persistRootToActiveVersion(formulas[slug]);
         });
         localStorage.setItem(FORMULA_KEY, JSON.stringify({ items: formulas, updatedAt: new Date().toISOString() }));
+        schedulePlantStatePush();
     }
     let formulas = loadFormulas();
     if (plantIdsRemapped) saveFormulas();
     let formulaDirty = false;
+    let formulaAutosaveTimer = null;
+    function scheduleFormulaAutosave() {
+        if (formulaAutosaveTimer) clearTimeout(formulaAutosaveTimer);
+        formulaAutosaveTimer = setTimeout(function () {
+            formulaAutosaveTimer = null;
+            if (!canEditFormulas()) return;
+            saveFormulas();
+            formulaDirty = false;
+        }, 700);
+    }
     let currentRecipe = recipes[0] ? recipes[0].product : '';
     let formulaAnimToken = 0;
 
@@ -8486,6 +8497,7 @@
         persistRootToActiveVersion(f);
         formulaDirty = true;
         updateFormulaTotalsDom();
+        scheduleFormulaAutosave();
     }
     function easeOutCubic(t) {
         return 1 - Math.pow(1 - t, 3);
@@ -8570,9 +8582,11 @@
                 formulaDirty = true;
                 updateFormulaTotalsDom();
                 renderRecipeNav();
+                scheduleFormulaAutosave();
             });
         } else {
             openRecipe(currentRecipe, true);
+            scheduleFormulaAutosave();
         }
     }
     function openRecipe(slug, force) {
@@ -8846,6 +8860,7 @@
             persistRootToActiveVersion(f);
             formulaDirty = true;
             openRecipe(currentRecipe, true);
+            scheduleFormulaAutosave();
             return;
         }
         if (e.target.closest('#formulaSaveBtn')) {
@@ -8872,6 +8887,7 @@
             persistRootToActiveVersion(formulas[currentRecipe]);
             formulaDirty = true;
             openRecipe(currentRecipe, true);
+            scheduleFormulaAutosave();
         }
     });
 
@@ -11397,9 +11413,15 @@
             };
         }
         function collectPlantState() {
+            try {
+                Object.keys(formulas || {}).forEach(function (slug) {
+                    persistRootToActiveVersion(formulas[slug]);
+                });
+            } catch (_) {}
             return {
                 inventory: inventory,
                 finished: finishedStock || {},
+                formulas: formulas || {},
                 lots: loadLotTickets(),
                 purchases: loadPurchaseTickets()
             };
@@ -11420,6 +11442,17 @@
                         updatedAt: data.updatedAt || new Date().toISOString()
                     }));
                 } catch (_) {}
+                changed = true;
+            }
+            if (data.formulas && typeof data.formulas === 'object' && Object.keys(data.formulas).length) {
+                try {
+                    localStorage.setItem(FORMULA_KEY, JSON.stringify({
+                        items: data.formulas,
+                        updatedAt: data.updatedAt || new Date().toISOString()
+                    }));
+                } catch (_) {}
+                formulas = loadFormulas();
+                formulaDirty = false;
                 changed = true;
             }
             if (Array.isArray(data.lots)) {
@@ -11506,7 +11539,9 @@
                     const remote = res.data;
                     const localHasInv = Array.isArray(inventory) && inventory.length > 0;
                     const remoteHasInv = Array.isArray(remote.inventory) && remote.inventory.length > 0;
-                    if (remoteHasInv) {
+                    const remoteHasFormulas = !!(remote.formulas && Object.keys(remote.formulas).length);
+                    const localHasFormulas = !!(formulas && Object.keys(formulas).length);
+                    if (remoteHasInv || remoteHasFormulas) {
                         applyRemotePlantState(remote);
                         try {
                             if (typeof refreshStockViews === 'function') refreshStockViews();
@@ -11517,14 +11552,29 @@
                             renderLotHistoryList();
                             renderPurchaseTicketsList();
                         } catch (_) {}
+                        try {
+                            updateRecipeKpi();
+                            renderRecipeNav();
+                            if (currentRecipe) openRecipe(currentRecipe, true);
+                            fillProdProducts();
+                            if (typeof renderProdVersionChips === 'function') renderProdVersionChips();
+                        } catch (_) {}
                         plantStateHydrated = true;
-                        panelToast('Inventario sincronizado (servidor)');
+                        // Si el servidor aún no tenía fórmulas, sube las locales en el mismo arranque.
+                        if (!remoteHasFormulas && localHasFormulas) {
+                            return pushPlantStateToServer().then(function (pushed) {
+                                if (pushed) panelToast('Fórmulas respaldadas en servidor');
+                                else panelToast('Planta sincronizada (servidor)');
+                                return { ok: true, source: 'remote+formulas-push', pushed: pushed };
+                            });
+                        }
+                        panelToast('Planta sincronizada (servidor)');
                         return { ok: true, source: 'remote' };
                     }
                     plantStateHydrated = true;
-                    if (localHasInv) {
+                    if (localHasInv || localHasFormulas) {
                         return pushPlantStateToServer().then(function (pushed) {
-                            if (pushed) panelToast('Inventario respaldado en servidor');
+                            if (pushed) panelToast('Planta respaldada en servidor');
                             return { ok: true, source: 'local-push', pushed: pushed };
                         });
                     }

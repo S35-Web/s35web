@@ -1,5 +1,6 @@
 /**
- * Estado de planta compartido (MongoDB): inventario MP, PT, lotes y tickets de compra.
+ * Estado de planta compartido (MongoDB): inventario MP, PT, fórmulas/versiones,
+ * lotes y tickets de compra.
  * GET: lee el documento
  * PUT: reemplaza el documento completo (última escritura gana)
  */
@@ -46,6 +47,7 @@ module.exports = async function handler(req, res) {
           empty: true,
           inventory: [],
           finished: {},
+          formulas: {},
           lots: [],
           purchases: [],
           updatedAt: null
@@ -57,6 +59,7 @@ module.exports = async function handler(req, res) {
         empty: false,
         inventory: asArray(doc.inventory),
         finished: asObject(doc.finished),
+        formulas: asObject(doc.formulas),
         lots: asArray(doc.lots),
         purchases: asArray(doc.purchases),
         updatedAt: doc.updatedAt || null
@@ -68,6 +71,7 @@ module.exports = async function handler(req, res) {
       const body = parseBody(req);
       const inventory = asArray(body.inventory);
       const finished = asObject(body.finished);
+      const formulas = asObject(body.formulas);
       const lots = asArray(body.lots).slice(0, 300);
       const purchases = asArray(body.purchases).slice(0, 200);
       const updatedAt = new Date().toISOString();
@@ -77,6 +81,7 @@ module.exports = async function handler(req, res) {
           $set: {
             inventory: inventory,
             finished: finished,
+            formulas: formulas,
             lots: lots,
             purchases: purchases,
             updatedAt: updatedAt,
@@ -90,6 +95,7 @@ module.exports = async function handler(req, res) {
         updatedAt: updatedAt,
         totals: {
           inventory: inventory.length,
+          formulas: Object.keys(formulas).length,
           lots: lots.length,
           purchases: purchases.length
         }
