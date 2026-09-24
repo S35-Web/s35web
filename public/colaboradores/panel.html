@@ -4243,10 +4243,14 @@
             position: relative;
             overflow: visible;
         }
+        .materials-inventory-chart .products-inventory-fill {
+            max-width: 100%;
+        }
         .mat-min-mark {
             position: absolute;
             top: 0;
             bottom: 0;
+            left: 1cm;
             width: 1px;
             margin-left: -0.5px;
             background: #1a1a1a;
@@ -4262,10 +4266,6 @@
             letter-spacing: .02em;
             color: #1a1a1a;
             white-space: nowrap;
-        }
-        .mat-min-mark.is-left span {
-            left: auto;
-            right: 2px;
         }
         .products-inventory-card {
             margin: 0 0 22px;
@@ -7774,7 +7774,6 @@
             return b.stock - a.stock || String(a.name).localeCompare(String(b.name), 'es');
         });
         const withStock = list.filter(function (m) { return m.stock > 0; }).length;
-        const max = list.reduce(function (m, row) { return Math.max(m, row.stock); }, 0);
         if (totalEl) totalEl.textContent = String(list.length);
         if (withEl) withEl.textContent = String(withStock);
         if (subEl) {
@@ -7787,21 +7786,20 @@
             return;
         }
         host.innerHTML = list.map(function (m) {
-            const pct = max > 0 ? (m.stock / max) * 100 : 0;
             const color = matFamilyColor(m.family);
             const qty = fmtMatQty(m.stock) + (m.unit ? ' ' + m.unit : '');
+            const ratio = m.minStock > 0 ? (m.stock / m.minStock) : 0;
+            const fill = (m.minStock > 0 ? ratio.toFixed(2) : '0') + 'cm';
             let mark = '';
             if (m.minStock > 0) {
-                const minPct = max > 0 ? Math.min(100, (m.minStock / max) * 100) : 100;
                 const minLabel = 'Mínimo ' + fmtMatQty(m.minStock) + (m.unit ? ' ' + m.unit : '');
-                mark = '<span class="mat-min-mark' + (minPct > 82 ? ' is-left' : '') + '" style="left:' +
-                    minPct.toFixed(1) + '%" title="' + esc(minLabel) + '"><span>min</span></span>';
+                mark = '<span class="mat-min-mark" title="' + esc(minLabel) + '"><span>min</span></span>';
             }
             return '<button type="button" class="products-inventory-row" data-open-plant="' + esc(m.id) + '" title="' + esc(m.name) + '">' +
                 '<span class="products-inventory-name"><span class="dot" style="background:' + esc(color) + '" aria-hidden="true"></span>' +
                 '<span>' + esc(m.name) + '</span></span>' +
                 '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
-                pct.toFixed(1) + '%;background:' + esc(color) + '"></span>' + mark + '</span>' +
+                fill + ';background:' + esc(color) + '"></span>' + mark + '</span>' +
                 '<span class="products-inventory-qty' + (m.stock ? '' : ' is-zero') + '">' + esc(qty) + '</span>' +
                 '</button>';
         }).join('');
