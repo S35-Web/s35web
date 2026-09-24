@@ -3246,6 +3246,17 @@
             user: row.user || 'import-historico',
             meta: row.meta || { source: 'old-panel' }
         };
+        if (Array.isArray(row.payments) && row.payments.length) {
+            base.payments = row.payments.map(function (p) {
+                return {
+                    method: isValidPayMethod(p && p.method) ? p.method : 'efectivo',
+                    amount: roundMoney(p && p.amount)
+                };
+            }).filter(function (p) { return p.amount > 0; });
+            if (base.payments.length > 1) base.paymentMethod = 'mixto';
+            else if (base.payments.length === 1) base.paymentMethod = base.payments[0].method;
+        }
+        if (row.city) base.city = row.city;
         base.city = resolveSaleCity(base);
         return applySaleEditPatch(base);
     }
