@@ -2406,6 +2406,10 @@
             gap: 8px; cursor: pointer; text-align: left;
             transition: border-color .12s, background .12s;
         }
+        .pos-client-trigger.is-placeholder .pos-client-trigger-label {
+            color: var(--muted);
+            font-weight: 400;
+        }
         .pos-client-trigger:hover { background: var(--hover); }
         .pos-client-trigger:focus-visible,
         .pos-client-trigger[aria-expanded="true"] {
@@ -4951,10 +4955,10 @@
                                     <span class="field-label">Cliente</span>
                                     <div class="pos-client-picker" id="posClientPicker">
                                         <input type="hidden" id="posClientSelect" value="" autocomplete="off">
-                                        <button type="button" class="pos-client-trigger" id="posClientTrigger"
+                                        <button type="button" class="pos-client-trigger is-placeholder" id="posClientTrigger"
                                             aria-haspopup="listbox" aria-expanded="false" aria-controls="posClientPickerList">
                                             <span class="pos-client-trigger-text">
-                                                <span class="pos-client-trigger-label" id="posClientTriggerLabel">Sin cliente (mostrador)</span>
+                                                <span class="pos-client-trigger-label" id="posClientTriggerLabel">Seleccionar cliente…</span>
                                                 <span class="pos-client-trigger-badge" id="posClientTriggerBadge" hidden></span>
                                             </span>
                                             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
