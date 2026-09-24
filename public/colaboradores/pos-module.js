@@ -42,6 +42,7 @@
     const PRODUCT_FAMILY_OVERRIDES_KEY = 's35_product_family_overrides';
     const PRODUCT_UNCATEGORIZED_ID = 'none';
     const PRODUCT_UNCATEGORIZED_LABEL = 'Sin familia';
+    const POS_CLIENT_WALKIN = 'mostrador';
     const NEW_FAMILY_PALETTE = ['#1565c0', '#6a1b9a', '#00838f', '#ef6c00', '#2e7d32', '#ad1457', '#455a64'];
 
     function slugifyProductFamily(label, existingIds) {
@@ -3957,6 +3958,12 @@
         const sel = document.getElementById('posClientSelect');
         return sel && sel.value ? sel.value : '';
     }
+    function isWalkinClientSelected() {
+        return selectedClientId() === POS_CLIENT_WALKIN;
+    }
+    function hasCheckoutClientSelection() {
+        return !!selectedClientId();
+    }
 
     let clientPickerOpen = false;
     let clientPickerActiveIdx = -1;
@@ -3964,10 +3971,33 @@
     function syncClientTrigger() {
         const labelEl = document.getElementById('posClientTriggerLabel');
         const badgeEl = document.getElementById('posClientTriggerBadge');
+        const trigger = document.getElementById('posClientTrigger');
         if (!labelEl) return;
-        const client = clientById(selectedClientId());
+        const id = selectedClientId();
+        if (!id) {
+            labelEl.textContent = 'Seleccionar cliente…';
+            if (trigger) trigger.classList.add('is-placeholder');
+            if (badgeEl) {
+                badgeEl.hidden = true;
+                badgeEl.textContent = '';
+                badgeEl.classList.remove('is-dist');
+            }
+            return;
+        }
+        if (trigger) trigger.classList.remove('is-placeholder');
+        if (id === POS_CLIENT_WALKIN) {
+            labelEl.textContent = 'Mostrador';
+            if (badgeEl) {
+                badgeEl.hidden = false;
+                badgeEl.textContent = 'Mostrador';
+                badgeEl.classList.remove('is-dist');
+            }
+            return;
+        }
+        const client = clientById(id);
         if (!client) {
-            labelEl.textContent = 'Sin cliente (mostrador)';
+            labelEl.textContent = 'Seleccionar cliente…';
+            if (trigger) trigger.classList.add('is-placeholder');
             if (badgeEl) {
                 badgeEl.hidden = true;
                 badgeEl.textContent = '';
@@ -4044,13 +4074,14 @@
             document.getElementById('posClientPickerSearch').value || '').trim();
         const rows = [];
         rows.push({
-            id: '',
+            id: POS_CLIENT_WALKIN,
             html: '<button type="button" class="pos-client-option' +
-                (!current ? ' is-selected' : '') +
-                '" role="option" data-client-id="" aria-selected="' + (!current ? 'true' : 'false') + '">' +
-                '<span class="pos-client-option-name">Sin cliente (mostrador)</span>' +
-                '<span class="badge">Mostrador</span>' +
-                '<span class="pos-client-option-meta">Precio por tramos de volumen</span>' +
+                (current === POS_CLIENT_WALKIN ? ' is-selected' : '') +
+                '" role="option" data-client-id="' + POS_CLIENT_WALKIN + '" aria-selected="' +
+                (current === POS_CLIENT_WALKIN ? 'true' : 'false') + '">' +
+                '<span class="pos-client-option-name">Mostrador</span>' +
+                '<span class="badge">Opción</span>' +
+                '<span class="pos-client-option-meta">Venta sin cliente registrado · precio por tramos</span>' +
                 '</button>'
         });
         list.forEach(function (c) {
@@ -4270,7 +4301,7 @@
         const sel = document.getElementById('posClientSelect');
         if (!sel) return;
         const current = sel.value;
-        if (current && !clientById(current)) sel.value = '';
+        if (current && current !== POS_CLIENT_WALKIN && !clientById(current)) sel.value = '';
         syncClientTrigger();
         if (clientPickerOpen) renderClientPickerList();
     }
@@ -4446,7 +4477,7 @@
                     qtyRow +
                     '</div>';
             }).join('');
-            if (btn) btn.disabled = false;
+            if (btn) btn.disabled = !hasCheckoutClientSelection();
         }
         if (totalEl) totalEl.textContent = money(cartTotal());
         updatePosKpis();
@@ -5134,6 +5165,19 @@
 
     function checkout() {
         if (!cart.length) return;
+        const clientKey = selectedClientId();
+        if (!clientKey) {
+            toast('Selecciona un cliente (o Mostrador) antes de cobrar');
+            openClientPicker();
+            return;
+        }
+        const walkin = clientKey === POS_CLIENT_WALKIN;
+        const client = walkin ? null : clientById(clientKey);
+        if (!walkin && !client) {
+            toast('Selecciona un cliente válido');
+            openClientPicker();
+            return;
+        }
         const billing = selectedBilling();
         if (['facturado', 'sin_facturar'].indexOf(billing) < 0) {
             toast('Elige opción de facturación');
@@ -5156,8 +5200,6 @@
         } else {
             payments = [{ method: paymentMethod, amount: roundMoney(total) }];
         }
-        const clientId = selectedClientId();
-        const client = clientById(clientId);
         const saleCityId = selectedSaleCity();
         savePreferredSaleCity(saleCityId);
         const clientSnapshot = client ? {
