@@ -10584,7 +10584,7 @@
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         if (!f || !r) {
             host.innerHTML = '<div class="cortes-chart-empty">Elige un producto</div>';
-            if (subEl) subEl.textContent = 'Bachadas por MP · misma escala para todas';
+            if (subEl) subEl.textContent = 'Bachadas de producto por MP · línea = plan';
             return;
         }
         ensureVersions(f);
