@@ -4469,6 +4469,30 @@
         .prod-formula-chart .area-hatch {
             opacity: 0.45;
         }
+        .prod-formula-chart .prod-dot {
+            pointer-events: none;
+            transition: opacity 0.12s ease, r 0.12s ease;
+        }
+        .prod-formula-chart .prod-dot.is-active {
+            opacity: 1;
+        }
+        .prod-formula-chart .cortes-chart-tips {
+            z-index: 8;
+        }
+        .prod-formula-chart .cortes-chart-tip.tip-head .tip-total {
+            font-size: 12px;
+        }
+        .prod-formula-chart .cortes-chart-tip.tip-status-ok {
+            --tip-accent: var(--text);
+        }
+        .prod-formula-chart .cortes-chart-tip.tip-status-warn {
+            --tip-accent: var(--warning);
+            color: var(--warning);
+        }
+        .prod-formula-chart .cortes-chart-tip.tip-status-danger {
+            --tip-accent: var(--danger);
+            color: var(--danger);
+        }
         .cortes-chart-empty {
             position: absolute;
             inset: 0;
@@ -10585,6 +10609,28 @@
             if (Math.abs(n) >= 100) return String(Math.round(n));
             return String(Math.round(n * 1000) / 1000);
         }
+        function fmtBatches(have, needForPlan) {
+            const need = Number(needForPlan) || 0;
+            const dose = lots > 0 ? need / lots : need;
+            const h = Math.max(0, Number(have) || 0);
+            if (!(dose > 0)) return h > 0 ? '∞' : '0×';
+            const b = h / dose;
+            if (b >= 10) return Math.round(b) + '×';
+            if (b >= 1) return (Math.round(b * 10) / 10) + '×';
+            if (b <= 0) return '0×';
+            return (Math.round(b * 100) / 100) + '×';
+        }
+        function statusLabel(row) {
+            if (row.missing) return 'Sin MP en planta';
+            if (row.alert === 'danger') return 'No alcanza el plan';
+            if (row.alert === 'warning') return 'Límite · toca el mínimo';
+            return 'Alcanza el plan';
+        }
+        function statusClass(row) {
+            if (row.alert === 'danger' || row.missing) return 'tip-status-danger';
+            if (row.alert === 'warning') return 'tip-status-warn';
+            return 'tip-status-ok';
+        }
         const stockVals = rows.map(function (row) { return row.have; });
         const needVals = rows.map(function (row) { return row.need; });
         const bufferVals = rows.map(function (row) { return row.buffer; });
@@ -10596,6 +10642,8 @@
         const padT = 28;
         const padB = 54;
         const baseY = H - padB;
+        const plotH = baseY - padT;
+        const plotW = W - padL - padR;
         const n = rows.length;
         function ptX(i) {
             if (n <= 1) return (padL + W - padR) / 2;
@@ -10643,22 +10691,10 @@
             '<line x1="0" y1="0" x2="0" y2="7" stroke="var(--prod-line-stock)" stroke-width="1" opacity="0.4"/>' +
             '</pattern>' +
             '</defs>';
-        // Puntos + tooltips (requerido = serie principal)
         let marks = '';
+        let hits = '';
+        const colSpan = n <= 1 ? plotW : plotW / Math.max(1, n - 1);
         rows.forEach(function (row, i) {
-            let tip =
-                esc(row.fullName) +
-                (row.isPackaging ? ' (empaque teórico)' : '') +
-                ' — requiere: ' + esc(fmtQty(row.need)) + ' ' + esc(row.unit) +
-                ' · inventario' + (row.isPackaging ? ' libre' : '') + ': ' + esc(fmtQty(row.have)) + ' ' + esc(row.unit) +
-                (row.isPackaging && row.reserved
-                    ? ' · reservado: ' + esc(fmtQty(row.reserved))
-                    : '') +
-                ' · margen hasta mín.: ' + esc(fmtQty(row.buffer)) + ' ' + esc(row.unit) +
-                ' (mín. ' + esc(fmtQty(row.minStock)) + ')';
-            if (row.missing) tip += ' · sin MP en planta';
-            else if (row.alert === 'danger') tip += ' · insuficiente';
-            else if (row.alert === 'warning') tip += ' · toca margen (precaución)';
             const sp = stockPts[i];
             const bp = bufferPts[i];
             const np = needPts[i];
@@ -10667,29 +10703,170 @@
             const labelFill = row.alert === 'danger' ? 'var(--danger)'
                 : (row.alert === 'warning' ? 'var(--warning)' : 'var(--text)');
             marks +=
-                '<circle cx="' + bp.x.toFixed(1) + '" cy="' + bp.y.toFixed(1) +
-                '" r="2.2" fill="var(--prod-line-min)" stroke="var(--panel)" stroke-width="1">' +
-                '<title>' + tip + '</title></circle>' +
-                '<circle cx="' + sp.x.toFixed(1) + '" cy="' + sp.y.toFixed(1) +
-                '" r="2.6" fill="var(--prod-line-stock)" stroke="var(--panel)" stroke-width="1">' +
-                '<title>' + tip + '</title></circle>' +
-                '<circle cx="' + np.x.toFixed(1) + '" cy="' + np.y.toFixed(1) +
+                '<circle class="prod-dot" data-idx="' + i + '" data-series="min" cx="' + bp.x.toFixed(1) + '" cy="' + bp.y.toFixed(1) +
+                '" r="2.2" fill="var(--prod-line-min)" stroke="var(--panel)" stroke-width="1"></circle>' +
+                '<circle class="prod-dot" data-idx="' + i + '" data-series="stock" cx="' + sp.x.toFixed(1) + '" cy="' + sp.y.toFixed(1) +
+                '" r="2.6" fill="var(--prod-line-stock)" stroke="var(--panel)" stroke-width="1"></circle>' +
+                '<circle class="prod-dot" data-idx="' + i + '" data-series="need" cx="' + np.x.toFixed(1) + '" cy="' + np.y.toFixed(1) +
                 '" r="3.4" fill="' + alertFill +
-                '" stroke="var(--panel)" stroke-width="1.5">' +
-                '<title>' + tip + '</title></circle>' +
+                '" stroke="var(--panel)" stroke-width="1.5"></circle>' +
                 '<text class="y-label" x="' + np.x.toFixed(1) + '" y="' + (np.y - 8).toFixed(1) +
                 '" text-anchor="middle" style="fill:' + labelFill +
                 ';font-size:9px">' + esc(fmtQty(row.need)) + '</text>';
+            const x = ptX(i);
+            const half = colSpan / 2;
+            const x0 = Math.max(padL, x - half);
+            const x1 = Math.min(W - padR, x + half);
+            hits += '<rect class="hit-zone" data-idx="' + i + '" x="' + x0.toFixed(1) +
+                '" y="' + padT + '" width="' + Math.max(1, x1 - x0).toFixed(1) +
+                '" height="' + plotH.toFixed(1) + '" fill="transparent"/>';
         });
         host.innerHTML =
+            '<div class="cortes-chart-tips" aria-hidden="true"></div>' +
             '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="color:var(--text)">' +
             defs + grid + yLabels +
             '<path class="area-hatch" d="' + areaPath + '" style="fill:url(#' + hatchId + ')"/>' +
             '<path class="line-min" d="' + minLine + '"/>' +
             '<path class="line-stock" d="' + stockLine + '"/>' +
             '<path class="line-need" d="' + needLine + '"/>' +
-            marks + xLabels +
+            marks + hits + xLabels +
             '</svg>';
+
+        const tipsHost = host.querySelector('.cortes-chart-tips');
+        let activeTipIdx = -1;
+        function hideProdTip() {
+            activeTipIdx = -1;
+            if (tipsHost) tipsHost.innerHTML = '';
+            host.querySelectorAll('.prod-dot.is-active').forEach(function (el) {
+                el.classList.remove('is-active');
+            });
+        }
+        function placeProdTips(boxes) {
+            boxes.sort(function (a, b) { return a.top - b.top; });
+            const gap = 4;
+            for (let i = 1; i < boxes.length; i++) {
+                const prev = boxes[i - 1];
+                const minTop = prev.top + prev.h + gap;
+                if (boxes[i].top < minTop) boxes[i].top = minTop;
+            }
+            const hostH = host.clientHeight || 0;
+            if (boxes.length) {
+                const last = boxes[boxes.length - 1];
+                const overflow = (last.top + last.h + 2) - hostH;
+                if (overflow > 0) boxes.forEach(function (b) { b.top -= overflow; });
+                if (boxes[0].top < 2) {
+                    const shift = 2 - boxes[0].top;
+                    boxes.forEach(function (b) { b.top += shift; });
+                }
+            }
+            const hostW = host.clientWidth || 0;
+            boxes.forEach(function (b) {
+                b.left = Math.max(4, Math.min(b.left, hostW - b.w - 4));
+                b.el.style.left = b.left + 'px';
+                b.el.style.top = b.top + 'px';
+                b.el.style.transform = 'none';
+            });
+        }
+        function showProdTip(idx) {
+            if (!tipsHost || idx < 0 || idx >= n) return;
+            activeTipIdx = idx;
+            tipsHost.innerHTML = '';
+            const row = rows[idx];
+            const svg = host.querySelector('svg');
+            if (!svg || !row) return;
+            const hostRect = host.getBoundingClientRect();
+            const svgRect = svg.getBoundingClientRect();
+            const scaleX = svgRect.width / W;
+            const scaleY = svgRect.height / H;
+            const ox = svgRect.left - hostRect.left;
+            const oy = svgRect.top - hostRect.top;
+            const px = ptX(idx);
+
+            host.querySelectorAll('.prod-dot').forEach(function (el) {
+                el.classList.toggle('is-active', Number(el.getAttribute('data-idx')) === idx);
+            });
+
+            const batches = fmtBatches(row.have, row.need);
+            const headEl = document.createElement('div');
+            headEl.className = 'cortes-chart-tip tip-head ' + statusClass(row);
+            headEl.innerHTML =
+                '<div class="tip-when">' + esc(row.fullName) + (row.isPackaging ? ' · empaque' : '') + '</div>' +
+                '<div class="tip-total">' + esc(batches) + ' batidas</div>' +
+                '<div class="tip-units tip-units-head">' + esc(statusLabel(row)) +
+                (lots > 1 ? ' · plan ×' + lots : '') + '</div>';
+            tipsHost.appendChild(headEl);
+            const headW = headEl.offsetWidth || 110;
+            const headH = headEl.offsetHeight || 36;
+            let headLeft = ox + px * scaleX - headW / 2;
+            headLeft = Math.max(4, Math.min(headLeft, hostRect.width - headW - 4));
+            const headTop = Math.max(2, oy + padT * scaleY - headH - 2);
+            headEl.style.left = headLeft + 'px';
+            headEl.style.top = headTop + 'px';
+
+            const metrics = [
+                {
+                    name: 'Inventario' + (row.isPackaging ? ' libre' : ''),
+                    amt: fmtQty(row.have) + ' ' + (row.unit || ''),
+                    color: 'var(--prod-line-stock)',
+                    y: stockPts[idx].y
+                },
+                {
+                    name: 'Requerido',
+                    amt: fmtQty(row.need) + ' ' + (row.unit || ''),
+                    color: row.alert === 'danger' ? 'var(--danger)'
+                        : (row.alert === 'warning' ? 'var(--warning)' : 'var(--prod-line-need)'),
+                    y: needPts[idx].y
+                },
+                {
+                    name: 'Margen → mín.',
+                    amt: fmtQty(row.buffer) + ' ' + (row.unit || '') +
+                        ' (mín. ' + fmtQty(row.minStock) + ')',
+                    color: 'var(--prod-line-min)',
+                    y: bufferPts[idx].y
+                }
+            ];
+            if (row.isPackaging && row.reserved) {
+                metrics.push({
+                    name: 'Reservado',
+                    amt: fmtQty(row.reserved) + ' ' + (row.unit || ''),
+                    color: 'var(--muted)',
+                    y: Math.min(stockPts[idx].y, needPts[idx].y) + 12
+                });
+            }
+            const boxes = [];
+            const axisBottom = headTop + headH + 4;
+            metrics.forEach(function (m) {
+                const el = document.createElement('div');
+                el.className = 'cortes-chart-tip tip-plain tip-city-plain';
+                el.style.setProperty('--tip-accent', m.color);
+                el.innerHTML = '<span class="tip-name">' + esc(m.name) + '</span> ' +
+                    '<span class="tip-amt">' + esc(m.amt) + '</span>';
+                tipsHost.appendChild(el);
+                const w = el.offsetWidth || 100;
+                const h = el.offsetHeight || 22;
+                const left = ox + px * scaleX - w / 2;
+                const top = Math.max(axisBottom, oy + m.y * scaleY - h - 8);
+                boxes.push({ el: el, left: left, top: top, w: w, h: h });
+            });
+            placeProdTips(boxes);
+        }
+        host.onpointerleave = function (e) {
+            if (e.pointerType === 'touch' || e.pointerType === 'pen') return;
+            hideProdTip();
+        };
+        host.querySelectorAll('.hit-zone').forEach(function (zone) {
+            const idx = Number(zone.getAttribute('data-idx'));
+            zone.addEventListener('pointerenter', function (e) {
+                if (e.pointerType === 'touch' || e.pointerType === 'pen') return;
+                showProdTip(idx);
+            });
+            zone.addEventListener('pointerdown', function (e) {
+                if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+                if (activeTipIdx === idx) hideProdTip();
+                else showProdTip(idx);
+            });
+        });
+
         if (subEl) {
             const shortCount = rows.filter(function (row) { return row.alert === 'danger'; }).length;
             const atMinCount = rows.filter(function (row) { return row.alert === 'warning'; }).length;
@@ -10699,7 +10876,8 @@
                 (packCount ? ' · empaque teórico incluido' : '') +
                 (lots > 1 ? ' · vs ×' + lots + ' lotes' : ' · vs 1 lote') +
                 (atMinCount ? ' · ' + atMinCount + ' precaución' : '') +
-                (shortCount ? ' · ' + shortCount + ' con falta' : '');
+                (shortCount ? ' · ' + shortCount + ' con falta' : '') +
+                ' · pasa el mouse por un punto';
         }
     }
     function refreshStockViews() {
