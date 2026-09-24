@@ -5015,7 +5015,7 @@
                                     <span class="leg"><span class="swatch short"></span> Falta / precaución</span>
                                 </div>
                             </div>
-                            <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Gráfica de requerido vs inventario y margen hasta mínimo por materia prima"></div>
+                            <div class="cortes-chart prod-formula-chart" id="prodFormulaChart" role="img" aria-label="Cobertura de inventario sobre requerido por materia prima"></div>
                         </div>
                         <div class="card span-7">
                             <h3>Emitir ticket de lote</h3>
@@ -10702,9 +10702,7 @@
                 '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="2">' +
                 '<title>' + tip + '</title></rect>' +
                 '<text class="cover-label' + alertClass + '" x="' + (x + barW / 2).toFixed(1) +
-                '" y="' + labelY.toFixed(1) + '" text-anchor="middle">' + esc(fmtCover(raw)) + '</text>' +
-                '<text class="cover-sub" x="' + (x + barW / 2).toFixed(1) + '" y="' + (baseY + 11).toFixed(1) +
-                '" text-anchor="middle">' + esc(fmtQty(row.have)) + '/' + esc(fmtQty(row.need)) + '</text>';
+                '" y="' + labelY.toFixed(1) + '" text-anchor="middle">' + esc(fmtCover(raw)) + '</text>';
         });
         // Meta 100% line on top of bars for clarity
         const metaY = ptY(1);
