@@ -173,7 +173,7 @@ function s35Nav() {
     '  <div class="nav-container">\n' +
     '    <div class="nav-logo"><a href="/"><img src="/Assets/Logotipo Principal.png" alt="S-35 Technology" class="logo-image"></a></div>\n' +
     '    <div class="nav-menu">\n' +
-    '      <div class="nav-dropdown"><a href="http://s-35.com/clientes/#login" class="nav-link" target="_blank" rel="noopener"><span data-i18n="nav.login">Iniciar sesión</span> <i class="fas fa-chevron-right"></i></a></div>\n' +
+    '      <div class="nav-dropdown"><a href="/colaboradores" class="nav-link"><span data-i18n="nav.login">Iniciar sesión</span> <i class="fas fa-chevron-right"></i></a></div>\n' +
     '      <a href="/#noticias" class="nav-link" data-i18n="nav.news">News</a>\n' +
     '      <a href="/productos" class="nav-link" data-i18n="nav.catalog">Catálogo</a>\n' +
     '      <a href="/laboratorio/materials" class="nav-link" data-i18n="nav.materialab">Laboratorio</a>\n' +
