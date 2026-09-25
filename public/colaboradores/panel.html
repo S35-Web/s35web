@@ -1768,6 +1768,377 @@
         tbody tr:hover { background: var(--hover); }
         #messagesBody tr { cursor: pointer; }
         .table-card { overflow: auto; }
+
+        /* —— Mensajes: bandeja 3 paneles (lista | lector | copiloto) —— */
+        #messages.section-mail {
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - var(--topbar-h) - 28px);
+            gap: 12px;
+        }
+        #messages.section-mail > .page-title { margin-bottom: 0; }
+        #messages.section-mail > .page-sub { margin-top: 2px; margin-bottom: 0; }
+        .mail-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .mail-head-text { min-width: 0; flex: 1; }
+        #gmailConnectCard.mail-connect {
+            margin: 0;
+            padding: 10px 14px;
+            flex: 0 1 auto;
+            max-width: 520px;
+        }
+        #gmailConnectCard.mail-connect .toolbar { margin: 0; }
+        .mail-workspace {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: minmax(260px, 340px) minmax(0, 1fr) minmax(280px, 340px);
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            overflow: hidden;
+        }
+        .mail-list-pane,
+        .mail-reader-pane,
+        .mail-copilot-pane {
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--panel);
+        }
+        .mail-list-pane {
+            border-right: 1px solid var(--border);
+        }
+        .mail-reader-pane {
+            border-right: 1px solid var(--border);
+            background: var(--bg);
+        }
+        .mail-pane-toolbar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            flex: 0 0 auto;
+        }
+        .mail-pane-toolbar .search { min-width: 0; }
+        .mail-list {
+            flex: 1;
+            overflow: auto;
+            padding: 4px 0;
+        }
+        .mail-row {
+            display: grid;
+            grid-template-columns: 8px minmax(0, 1fr) auto;
+            gap: 8px;
+            align-items: start;
+            width: 100%;
+            padding: 12px 14px;
+            border: 0;
+            border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+            background: transparent;
+            color: var(--text);
+            text-align: left;
+            font: inherit;
+            cursor: pointer;
+            transition: background 0.12s ease;
+        }
+        .mail-row:hover { background: var(--hover); }
+        .mail-row.is-active {
+            background: color-mix(in srgb, var(--text) 6%, var(--panel));
+        }
+        .mail-row.is-unread .mail-row-from,
+        .mail-row.is-unread .mail-row-subject {
+            font-weight: 650;
+        }
+        .mail-row-dot {
+            width: 8px;
+            height: 8px;
+            margin-top: 6px;
+            border-radius: 50%;
+            background: transparent;
+        }
+        .mail-row.is-unread .mail-row-dot {
+            background: var(--info, #3b82f6);
+        }
+        .mail-row-from {
+            font-size: 13.5px;
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mail-row-subject {
+            margin-top: 2px;
+            font-size: 13px;
+            line-height: 1.35;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mail-row-preview {
+            margin-top: 2px;
+            font-size: 12.5px;
+            color: var(--muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .mail-row-meta {
+            font-size: 11px;
+            color: var(--muted);
+            white-space: nowrap;
+            padding-top: 2px;
+        }
+        .mail-list-empty {
+            padding: 28px 18px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13.5px;
+            line-height: 1.45;
+        }
+        .mail-reader-empty,
+        .mail-reader-body {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+        }
+        .mail-reader-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            color: var(--muted);
+            text-align: center;
+            font-size: 14px;
+        }
+        .mail-reader-body { display: none; padding: 0; }
+        .mail-reader-pane.has-msg .mail-reader-empty { display: none; }
+        .mail-reader-pane.has-msg .mail-reader-body { display: flex; flex-direction: column; }
+        .mail-reader-head {
+            padding: 18px 22px 14px;
+            border-bottom: 1px solid var(--border);
+            background: var(--panel);
+            flex: 0 0 auto;
+        }
+        .mail-reader-subject {
+            margin: 0 0 10px;
+            font-family: var(--font-display), Georgia, serif;
+            font-size: 1.45rem;
+            font-weight: 500;
+            line-height: 1.25;
+            letter-spacing: -0.01em;
+        }
+        .mail-reader-from {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .mail-reader-email a { color: var(--muted); font-size: 13px; }
+        .mail-reader-date {
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .mail-reader-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .mail-reader-content {
+            padding: 18px 22px 28px;
+            flex: 1;
+        }
+        .mail-reader-meta-grid {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        .mail-reader-meta-grid .muted { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+        .mail-msg-html,
+        .mail-msg-text {
+            font-size: 14.5px;
+            line-height: 1.55;
+            color: var(--text);
+        }
+        .mail-msg-text {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .mail-msg-html {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: #fff;
+            min-height: 180px;
+            width: 100%;
+        }
+        [data-theme="dark"] .mail-msg-html { background: #111; }
+        .mail-draft {
+            display: none;
+            border-top: 1px solid var(--border);
+            background: var(--panel);
+            padding: 14px 18px 16px;
+            flex: 0 0 auto;
+        }
+        .mail-draft.is-open { display: block; }
+        .mail-draft-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .mail-draft-body {
+            width: 100%;
+            min-height: 120px;
+            resize: vertical;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--text);
+            padding: 12px;
+            font: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .mail-draft-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .mail-copilot-pane {
+            background: color-mix(in srgb, var(--panel) 94%, var(--bg));
+        }
+        .mail-copilot-head {
+            padding: 14px 16px 10px;
+            border-bottom: 1px solid var(--border);
+            flex: 0 0 auto;
+        }
+        .mail-copilot-head h2 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 650;
+            letter-spacing: 0.01em;
+        }
+        .mail-copilot-head p {
+            margin: 4px 0 0;
+            font-size: 12.5px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+        .mail-copilot-chips {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 12px 14px;
+            flex: 0 0 auto;
+        }
+        .mail-copilot-chip {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--panel);
+            color: var(--text);
+            font: inherit;
+            font-size: 13px;
+            line-height: 1.35;
+            cursor: pointer;
+            transition: background 0.12s ease, border-color 0.12s ease;
+        }
+        .mail-copilot-chip:hover {
+            background: var(--hover);
+            border-color: color-mix(in srgb, var(--text) 22%, var(--border));
+        }
+        .mail-copilot-chip strong { display: block; font-weight: 650; margin-bottom: 2px; }
+        .mail-copilot-chip span { color: var(--muted); font-size: 12px; }
+        .mail-copilot-messages {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            padding: 4px 14px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .mail-copilot-messages .copilot-bubble { max-width: 100%; }
+        .mail-copilot-composer {
+            flex: 0 0 auto;
+            padding: 10px 12px 14px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            background: linear-gradient(to top, var(--panel) 70%, transparent);
+        }
+        .mail-copilot-composer input {
+            flex: 1;
+            min-width: 0;
+            height: 40px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 16px;
+            font: inherit;
+            font-size: 13.5px;
+        }
+        .mail-copilot-composer input:focus {
+            outline: none;
+            border-color: var(--border-strong);
+        }
+        .mail-copilot-composer .btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mail-copilot-status {
+            padding: 0 16px 8px;
+            font-size: 12px;
+            color: var(--muted);
+            min-height: 1.2em;
+        }
+        @media (max-width: 1180px) {
+            .mail-workspace {
+                grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+            }
+            .mail-copilot-pane {
+                display: none;
+            }
+            .mail-workspace.is-ai-open {
+                grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+            }
+            .mail-workspace.is-ai-open .mail-list-pane { display: none; }
+            .mail-workspace.is-ai-open .mail-reader-pane { border-right: 1px solid var(--border); }
+            .mail-workspace.is-ai-open .mail-copilot-pane { display: flex; }
+        }
+        @media (max-width: 780px) {
+            .mail-workspace {
+                grid-template-columns: 1fr;
+                min-height: 70vh;
+            }
+            .mail-list-pane { border-right: 0; border-bottom: 1px solid var(--border); max-height: 40vh; }
+            .mail-reader-pane { border-right: 0; }
+            .mail-workspace.is-ai-open .mail-list-pane,
+            .mail-workspace.is-ai-open .mail-reader-pane { display: none; }
+            .mail-workspace.is-ai-open .mail-copilot-pane { display: flex; }
+        }
         .num { font-variant-numeric: tabular-nums; }
         .unit { color: var(--muted); font-weight: 400; }
 
@@ -5848,42 +6219,88 @@
                     </div>
                 </section>
 
-                <section id="messages" class="section">
-                    <h1 class="page-title">Mensajes</h1>
-                    <p class="page-sub" id="messagesPageSub">Bandeja de contacto@s35.com.mx y formulario del sitio.</p>
-                    <div class="card" id="gmailConnectCard" hidden>
-                        <div class="toolbar" style="align-items:center;gap:12px;flex-wrap:wrap">
-                            <div style="flex:1;min-width:220px">
-                                <strong id="gmailConnectTitle">Conectar Gmail</strong>
-                                <p class="muted" id="gmailConnectHint" style="margin:4px 0 0;font-size:13px">Autoriza la bandeja de contacto@s35.com.mx para verla aquí.</p>
+                <section id="messages" class="section section-mail">
+                    <div class="mail-head">
+                        <div class="mail-head-text">
+                            <h1 class="page-title">Mensajes</h1>
+                            <p class="page-sub" id="messagesPageSub">Bandeja de contacto@s35.com.mx y formulario del sitio.</p>
+                        </div>
+                        <div class="card mail-connect" id="gmailConnectCard" hidden>
+                            <div class="toolbar" style="align-items:center;gap:12px;flex-wrap:wrap">
+                                <div style="flex:1;min-width:180px">
+                                    <strong id="gmailConnectTitle">Conectar Gmail</strong>
+                                    <p class="muted" id="gmailConnectHint" style="margin:4px 0 0;font-size:13px">Autoriza la bandeja de contacto@s35.com.mx para verla aquí.</p>
+                                </div>
+                                <button id="gmailConnectBtn" class="btn primary" type="button"><i class="fa-brands fa-google"></i> Conectar Gmail</button>
+                                <button id="gmailDisconnectBtn" class="btn" type="button" hidden>Desconectar</button>
                             </div>
-                            <button id="gmailConnectBtn" class="btn primary" type="button"><i class="fa-brands fa-google"></i> Conectar Gmail</button>
-                            <button id="gmailDisconnectBtn" class="btn" type="button" hidden>Desconectar</button>
                         </div>
                     </div>
-                    <div class="card">
-                        <div class="toolbar">
-                            <div class="chips" id="messagesSourceChips" role="group" aria-label="Origen de mensajes">
-                                <button type="button" class="chip active" data-msg-source="gmail">Correo</button>
-                                <button type="button" class="chip" data-msg-source="web">Formulario web</button>
+                    <div class="mail-workspace" id="mailWorkspace">
+                        <aside class="mail-list-pane" aria-label="Bandeja">
+                            <div class="mail-pane-toolbar">
+                                <div class="chips" id="messagesSourceChips" role="group" aria-label="Origen de mensajes">
+                                    <button type="button" class="chip active" data-msg-source="gmail">Correo</button>
+                                    <button type="button" class="chip" data-msg-source="web">Formulario web</button>
+                                </div>
+                                <input id="searchInput" class="search" type="search" placeholder="Buscar…" aria-label="Buscar mensajes">
+                                <button id="refreshBtn" class="btn" type="button" title="Actualizar"><i class="fa-solid fa-rotate"></i></button>
+                                <button id="mailAiToggle" class="btn" type="button" title="Abrir copiloto" hidden><i class="fa-solid fa-comment-dots"></i></button>
                             </div>
-                            <input id="searchInput" class="search" type="search" placeholder="Buscar…">
-                            <button id="refreshBtn" class="btn" type="button"><i class="fa-solid fa-rotate"></i> Actualizar</button>
-                        </div>
-                        <div class="table-card">
-                            <table>
-                                <thead>
-                                    <tr id="messagesHeadRow">
-                                        <th>Fecha</th>
-                                        <th>De</th>
-                                        <th>Asunto</th>
-                                        <th>Vista previa</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="messagesBody"></tbody>
-                            </table>
-                        </div>
+                            <div class="mail-list" id="mailList" role="listbox" aria-label="Lista de mensajes"></div>
+                        </aside>
+                        <main class="mail-reader-pane" id="mailReader" aria-live="polite">
+                            <div class="mail-reader-empty" id="mailReaderEmpty">Selecciona un mensaje para leerlo.</div>
+                            <div class="mail-reader-body" id="mailReaderBody">
+                                <div class="mail-reader-head">
+                                    <h2 class="mail-reader-subject" id="mailSubject"></h2>
+                                    <div class="mail-reader-from" id="mailFrom"></div>
+                                    <div class="mail-reader-email" id="mailEmail"></div>
+                                    <div class="mail-reader-date" id="mailDate"></div>
+                                    <div class="mail-reader-meta-grid" id="mailExtraMeta" hidden></div>
+                                    <div class="mail-reader-actions">
+                                        <button type="button" class="btn" id="mailAskSummary"><i class="fa-solid fa-magic"></i> Resumir</button>
+                                        <button type="button" class="btn" id="mailAskDraft"><i class="fa-solid fa-pen"></i> Borrador</button>
+                                        <button type="button" class="btn danger" id="mailTrashBtn">Eliminar</button>
+                                    </div>
+                                </div>
+                                <div class="mail-reader-content" id="mailContent"></div>
+                                <div class="mail-draft" id="mailDraft">
+                                    <div class="mail-draft-label">Borrador de respuesta (revisa antes de copiar)</div>
+                                    <textarea class="mail-draft-body" id="mailDraftBody" spellcheck="true"></textarea>
+                                    <div class="mail-draft-actions">
+                                        <button type="button" class="btn primary" id="mailDraftCopy">Copiar borrador</button>
+                                        <button type="button" class="btn" id="mailDraftClose">Cerrar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </main>
+                        <aside class="mail-copilot-pane" id="mailCopilotPane" aria-label="Copiloto de correo">
+                            <div class="mail-copilot-head">
+                                <h2>Ask S35</h2>
+                                <p id="mailCopilotHint">Selecciona un correo para resumirlo, redactar o cruzarlo con clientes.</p>
+                            </div>
+                            <div class="mail-copilot-chips" id="mailCopilotChips">
+                                <button type="button" class="mail-copilot-chip" data-mail-chip="resume">
+                                    <strong>Resumir</strong>
+                                    <span>Qué pide y qué urge</span>
+                                </button>
+                                <button type="button" class="mail-copilot-chip" data-mail-chip="draft">
+                                    <strong>Borrador de respuesta</strong>
+                                    <span>Tono profesional S-35</span>
+                                </button>
+                                <button type="button" class="mail-copilot-chip" data-mail-chip="client">
+                                    <strong>¿Es cliente?</strong>
+                                    <span>Buscar en la base S35</span>
+                                </button>
+                            </div>
+                            <div class="mail-copilot-messages" id="mailCopilotMessages"></div>
+                            <div class="mail-copilot-status" id="mailCopilotStatus" aria-live="polite"></div>
+                            <form class="mail-copilot-composer" id="mailCopilotForm">
+                                <input id="mailCopilotInput" type="text" autocomplete="off" maxlength="800" placeholder="Pregunta sobre este correo…" aria-label="Pregunta al copiloto de correo">
+                                <button type="submit" class="btn primary" id="mailCopilotSend" aria-label="Enviar"><i class="fa-solid fa-arrow-up"></i></button>
+                            </form>
+                        </aside>
                     </div>
                 </section>
 
@@ -8021,57 +8438,72 @@
     const msgIndex = new Map();
     let messagesSource = 'gmail';
     let gmailStatus = { configured: false, connected: false, email: 'contacto@s35.com.mx', mongoOk: true, mongoError: null };
+    let selectedMessageId = null;
+    let selectedMessage = null;
 
-    function setMessagesHead() {
-        const row = document.getElementById('messagesHeadRow');
-        if (!row) return;
-        if (messagesSource === 'gmail') {
-            row.innerHTML = '<th>Fecha</th><th>De</th><th>Asunto</th><th>Vista previa</th><th></th>';
-        } else {
-            row.innerHTML = '<th>Fecha</th><th>Nombre</th><th>Email</th><th>Empresa</th><th>Mensaje</th><th>News</th><th></th>';
+    function mailListEl() {
+        return document.getElementById('mailList');
+    }
+
+    function clearMailSelection() {
+        selectedMessageId = null;
+        selectedMessage = null;
+        const reader = document.getElementById('mailReader');
+        if (reader) reader.classList.remove('has-msg');
+        const draft = document.getElementById('mailDraft');
+        if (draft) draft.classList.remove('is-open');
+        const draftBody = document.getElementById('mailDraftBody');
+        if (draftBody) draftBody.value = '';
+        document.querySelectorAll('.mail-row.is-active').forEach(function (el) {
+            el.classList.remove('is-active');
+        });
+        if (window.S35MailCopilot && typeof window.S35MailCopilot.setSelectedMail === 'function') {
+            window.S35MailCopilot.setSelectedMail(null);
         }
     }
 
     function renderMessages(list) {
-        const tbody = document.getElementById('messagesBody');
-        const cols = messagesSource === 'gmail' ? 5 : 7;
+        const host = mailListEl();
+        if (!host) return;
         if (!list.length) {
-            tbody.innerHTML = '<tr><td colspan="' + cols + '" class="empty">Sin resultados</td></tr>';
+            host.innerHTML = '<div class="mail-list-empty">Sin resultados</div>';
             return;
         }
-        tbody.innerHTML = '';
+        host.innerHTML = '';
         list.forEach(function (m) {
-            const tr = document.createElement('tr');
             const created = m.createdAt ? new Date(m.createdAt) : null;
             const id = m._id || m.gmailId || '';
-            tr.setAttribute('data-id', id);
-            if (m.unread) tr.style.fontWeight = '600';
             msgIndex.set(id, m);
-            if (messagesSource === 'gmail') {
-                const preview = String(m.mensaje || '');
-                const short = preview.length > 100 ? preview.slice(0, 100) + '…' : preview;
-                tr.innerHTML =
-                    '<td class="muted">' + (created ? formatRelativeDate(created) : '') + '</td>' +
-                    '<td>' + esc(m.nombre || m.email || '') +
-                    (m.email ? '<div class="muted" style="font-size:12px">' + esc(m.email) + '</div>' : '') +
-                    '</td>' +
-                    '<td>' + esc(m.asunto || '(sin asunto)') + '</td>' +
-                    '<td>' + esc(short) + '</td>' +
-                    '<td><button class="btn danger" data-id="' + esc(id) + '" type="button">Eliminar</button></td>';
-            } else {
-                const fullMsg = String(m.mensaje || '');
-                const msgShort = fullMsg.length > 120 ? fullMsg.slice(0, 120) + '…' : fullMsg;
-                tr.innerHTML =
-                    '<td class="muted">' + (created ? formatRelativeDate(created) : '') + '</td>' +
-                    '<td>' + esc(m.nombre) + '</td>' +
-                    '<td>' + esc(m.email) + '</td>' +
-                    '<td>' + esc(m.empresa) + '</td>' +
-                    '<td>' + esc(msgShort) + '</td>' +
-                    '<td>' + (m.newsletter ? '<span class="badge b-success">Sí</span>' : '<span class="badge">No</span>') + '</td>' +
-                    '<td><button class="btn danger" data-id="' + esc(id) + '" type="button">Eliminar</button></td>';
-            }
-            tbody.appendChild(tr);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'mail-row' + (m.unread ? ' is-unread' : '') + (id === selectedMessageId ? ' is-active' : '');
+            btn.setAttribute('data-id', id);
+            btn.setAttribute('role', 'option');
+            btn.setAttribute('aria-selected', id === selectedMessageId ? 'true' : 'false');
+            const from = messagesSource === 'gmail'
+                ? (m.nombre || m.email || '(sin remitente)')
+                : (m.nombre || '(sin nombre)');
+            const subject = messagesSource === 'gmail'
+                ? (m.asunto || '(sin asunto)')
+                : (m.empresa ? ('Formulario · ' + m.empresa) : 'Formulario web');
+            const preview = String(m.mensaje || '').replace(/\s+/g, ' ').trim();
+            const short = preview.length > 110 ? preview.slice(0, 110) + '…' : preview;
+            btn.innerHTML =
+                '<span class="mail-row-dot" aria-hidden="true"></span>' +
+                '<span class="mail-row-main">' +
+                '<div class="mail-row-from">' + esc(from) + '</div>' +
+                '<div class="mail-row-subject">' + esc(subject) + '</div>' +
+                (short ? '<div class="mail-row-preview">' + esc(short) + '</div>' : '') +
+                '</span>' +
+                '<span class="mail-row-meta">' + (created ? esc(formatRelativeDate(created)) : '') + '</span>';
+            host.appendChild(btn);
         });
+    }
+
+    function showMailEmpty(html) {
+        const host = mailListEl();
+        if (host) host.innerHTML = '<div class="mail-list-empty">' + html + '</div>';
+        clearMailSelection();
     }
 
     function setMessagesBadge(count) {
@@ -8163,17 +8595,15 @@
     }
 
     async function loadMessages() {
-        setMessagesHead();
-        const tbody = document.getElementById('messagesBody');
-        const cols = messagesSource === 'gmail' ? 5 : 7;
         msgIndex.clear();
         if (messagesSource === 'gmail') {
             if (!gmailStatus.connected) {
                 setMessagesBadge(0);
-                tbody.innerHTML = '<tr><td colspan="' + cols + '" class="empty">' +
+                showMailEmpty(
                     'Conecta Gmail para ver el correo de contacto@s35.com.mx. ' +
-                    '<button type="button" class="btn primary" id="gmailConnectInlineBtn" style="margin-left:8px">' +
-                    '<i class="fa-brands fa-google"></i> Conectar Gmail</button></td></tr>';
+                    '<div style="margin-top:12px"><button type="button" class="btn primary" id="gmailConnectInlineBtn">' +
+                    '<i class="fa-brands fa-google"></i> Conectar Gmail</button></div>'
+                );
                 const inline = document.getElementById('gmailConnectInlineBtn');
                 if (inline) {
                     inline.addEventListener('click', function () {
@@ -8194,12 +8624,12 @@
                 gmailStatus.connected = false;
                 updateGmailConnectUi();
                 setMessagesBadge(0);
-                tbody.innerHTML = '<tr><td colspan="' + cols + '" class="empty">Gmail no está conectado</td></tr>';
+                showMailEmpty('Gmail no está conectado');
                 return;
             }
             if (!resp.ok) {
                 setMessagesBadge(NaN);
-                tbody.innerHTML = '<tr><td colspan="' + cols + '" class="empty">No se pudo cargar el correo</td></tr>';
+                showMailEmpty('No se pudo cargar el correo');
                 return;
             }
             const payload = await resp.json();
@@ -8207,6 +8637,11 @@
             setMessagesBadge(allMessages.filter(function (m) { return m.unread; }).length || allMessages.length);
             refreshGreeting();
             renderMessages(allMessages);
+            if (selectedMessageId && msgIndex.has(selectedMessageId)) {
+                openMailMessage(selectedMessageId, { keepCopilot: true });
+            } else {
+                clearMailSelection();
+            }
             return;
         }
         const resp = await fetch('/api/messages', { headers: { Authorization: 'Bearer ' + getToken() } });
@@ -8217,7 +8652,7 @@
         }
         if (!resp.ok) {
             setMessagesBadge(NaN);
-            tbody.innerHTML = '<tr><td colspan="' + cols + '" class="empty">No se pudieron cargar los mensajes</td></tr>';
+            showMailEmpty('No se pudieron cargar los mensajes');
             return;
         }
         const payload = await resp.json();
@@ -8225,70 +8660,189 @@
         setMessagesBadge(allMessages.length);
         refreshGreeting();
         renderMessages(allMessages);
+        if (selectedMessageId && msgIndex.has(selectedMessageId)) {
+            openMailMessage(selectedMessageId, { keepCopilot: true });
+        } else {
+            clearMailSelection();
+        }
+    }
+
+    function fillMailReader(m) {
+        const reader = document.getElementById('mailReader');
+        if (!reader || !m) return;
+        reader.classList.add('has-msg');
+        const isGmail = m.source === 'gmail' || String(m._id || '').indexOf('gmail:') === 0;
+        const created = m.createdAt ? new Date(m.createdAt) : null;
+        document.getElementById('mailSubject').textContent = isGmail
+            ? (m.asunto || '(sin asunto)')
+            : 'Mensaje del formulario web';
+        document.getElementById('mailFrom').textContent = m.nombre || (isGmail ? '(sin nombre)' : 'Visitante web');
+        const emailEl = document.getElementById('mailEmail');
+        emailEl.innerHTML = m.email
+            ? '<a class="link" href="mailto:' + esc(m.email) + '">' + esc(m.email) + '</a>'
+            : '';
+        document.getElementById('mailDate').textContent = created
+            ? (formatRelativeDate(created) + ' · ' + created.toLocaleString())
+            : '';
+        const extra = document.getElementById('mailExtraMeta');
+        if (!isGmail) {
+            extra.hidden = false;
+            extra.innerHTML =
+                '<div><div class="muted">Empresa</div><div>' + esc(m.empresa || '—') + '</div></div>' +
+                '<div><div class="muted">Newsletter</div><div>' +
+                (m.newsletter ? '<span class="badge b-success">Sí</span>' : '<span class="badge">No</span>') +
+                '</div></div>';
+        } else {
+            extra.hidden = true;
+            extra.innerHTML = '';
+        }
+        const content = document.getElementById('mailContent');
+        const html = String(m.html || '').trim();
+        if (html && isGmail) {
+            content.innerHTML = '';
+            const frame = document.createElement('iframe');
+            frame.className = 'mail-msg-html';
+            frame.setAttribute('sandbox', 'allow-same-origin');
+            frame.setAttribute('title', 'Cuerpo del correo');
+            frame.srcdoc = html;
+            content.appendChild(frame);
+        } else {
+            content.innerHTML = '<div class="mail-msg-text"></div>';
+            content.querySelector('.mail-msg-text').textContent = m.mensaje || '';
+        }
+    }
+
+    async function openMailMessage(id, opts) {
+        opts = opts || {};
+        let m = msgIndex.get(id);
+        if (!m) return;
+        selectedMessageId = id;
+        document.querySelectorAll('.mail-row').forEach(function (row) {
+            const on = row.getAttribute('data-id') === id;
+            row.classList.toggle('is-active', on);
+            row.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        if (messagesSource === 'gmail') {
+            try {
+                const resp = await fetch('/api/gmail?id=' + encodeURIComponent(String(id).replace(/^gmail:/, '')), {
+                    headers: { Authorization: 'Bearer ' + getToken() }
+                });
+                if (resp.ok) {
+                    const payload = await resp.json();
+                    if (payload.item) {
+                        m = payload.item;
+                        msgIndex.set(id, m);
+                    }
+                }
+            } catch (_) {}
+        }
+        selectedMessage = m;
+        fillMailReader(m);
+        if (window.S35MailCopilot && typeof window.S35MailCopilot.setSelectedMail === 'function') {
+            window.S35MailCopilot.setSelectedMail(m, { keepChat: !!opts.keepCopilot });
+        }
+    }
+
+    async function trashSelectedMail() {
+        if (!selectedMessageId) return;
+        if (!confirm(messagesSource === 'gmail' ? '¿Mover este correo a la papelera de Gmail?' : '¿Eliminar mensaje?')) return;
+        const url = messagesSource === 'gmail'
+            ? '/api/gmail?id=' + encodeURIComponent(String(selectedMessageId).replace(/^gmail:/, ''))
+            : '/api/messages?id=' + encodeURIComponent(selectedMessageId);
+        const resp = await fetch(url, {
+            method: 'DELETE',
+            headers: { Authorization: 'Bearer ' + getToken() }
+        });
+        if (resp.ok) {
+            clearMailSelection();
+            loadMessages();
+        } else {
+            alert('No se pudo eliminar');
+        }
+    }
+
+    const mailListHost = mailListEl();
+    if (mailListHost) {
+        mailListHost.addEventListener('click', function (e) {
+            const row = e.target.closest('.mail-row[data-id]');
+            if (!row) return;
+            openMailMessage(row.getAttribute('data-id'));
+        });
+    }
+
+    const mailTrashBtn = document.getElementById('mailTrashBtn');
+    if (mailTrashBtn) mailTrashBtn.addEventListener('click', trashSelectedMail);
+    const mailAskSummary = document.getElementById('mailAskSummary');
+    if (mailAskSummary) {
+        mailAskSummary.addEventListener('click', function () {
+            if (window.S35MailCopilot) window.S35MailCopilot.ask(
+                'Resume este correo: quién escribe, qué pide, urgencia y qué deberíamos responder.'
+            );
+        });
+    }
+    const mailAskDraft = document.getElementById('mailAskDraft');
+    if (mailAskDraft) {
+        mailAskDraft.addEventListener('click', function () {
+            if (window.S35MailCopilot) window.S35MailCopilot.ask(
+                'Redacta un borrador de respuesta profesional y breve en nombre de S-35. Usa los marcadores <<<DRAFT>>> y <<<END_DRAFT>>>.'
+            );
+        });
+    }
+    const mailDraftCopy = document.getElementById('mailDraftCopy');
+    if (mailDraftCopy) {
+        mailDraftCopy.addEventListener('click', async function () {
+            const body = document.getElementById('mailDraftBody');
+            const text = body ? body.value : '';
+            if (!text) return;
+            try {
+                await navigator.clipboard.writeText(text);
+                if (typeof panelToast === 'function') panelToast('Borrador copiado');
+            } catch (_) {
+                alert('No se pudo copiar');
+            }
+        });
+    }
+    const mailDraftClose = document.getElementById('mailDraftClose');
+    if (mailDraftClose) {
+        mailDraftClose.addEventListener('click', function () {
+            const draft = document.getElementById('mailDraft');
+            if (draft) draft.classList.remove('is-open');
+        });
+    }
+    const mailAiToggle = document.getElementById('mailAiToggle');
+    if (mailAiToggle) {
+        const mq = window.matchMedia('(max-width: 1180px)');
+        function syncAiToggle() {
+            mailAiToggle.hidden = !mq.matches;
+        }
+        syncAiToggle();
+        if (mq.addEventListener) mq.addEventListener('change', syncAiToggle);
+        mailAiToggle.addEventListener('click', function () {
+            const ws = document.getElementById('mailWorkspace');
+            if (ws) ws.classList.toggle('is-ai-open');
+        });
     }
 
     const modal = document.getElementById('detailModal');
     function openDetail(m) {
-        const createdDate = m.createdAt ? new Date(m.createdAt) : null;
-        const isGmail = m.source === 'gmail' || String(m._id || '').indexOf('gmail:') === 0;
-        document.getElementById('dFecha').textContent = createdDate ? formatRelativeDate(createdDate) + ' (' + createdDate.toLocaleString() + ')' : '';
-        document.getElementById('dNombre').textContent = m.nombre || '';
-        document.getElementById('dEmail').innerHTML = m.email ? '<a class="link" href="mailto:' + esc(m.email) + '">' + esc(m.email) + '</a>' : '';
-        const asuntoField = document.getElementById('dAsuntoField');
-        const empresaField = document.getElementById('dEmpresaField');
-        const newsField = document.getElementById('dNewsletterField');
-        if (asuntoField) {
-            asuntoField.hidden = !isGmail;
-            document.getElementById('dAsunto').textContent = m.asunto || '';
-        }
-        if (empresaField) empresaField.hidden = isGmail;
-        if (newsField) newsField.hidden = isGmail;
-        if (!isGmail) {
-            document.getElementById('dEmpresa').textContent = m.empresa || '';
-            document.getElementById('dNewsletter').innerHTML = m.newsletter ? '<span class="badge b-success">Sí</span>' : '<span class="badge">No</span>';
-        }
-        document.getElementById('dMensaje').textContent = m.mensaje || '';
-        modal.classList.add('show');
-        modal.setAttribute('aria-hidden', 'false');
-    }
-    function closeDetail() { modal.classList.remove('show'); modal.setAttribute('aria-hidden', 'true'); }
-    document.getElementById('detailClose').addEventListener('click', closeDetail);
-    modal.addEventListener('click', function (e) { if (e.target === modal) closeDetail(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDetail(); });
-
-    document.getElementById('messagesBody').addEventListener('click', async function (e) {
-        const delBtn = e.target.closest('button[data-id]');
-        if (delBtn) {
-            const id = delBtn.getAttribute('data-id');
-            if (!confirm(messagesSource === 'gmail' ? '¿Mover este correo a la papelera de Gmail?' : '¿Eliminar mensaje?')) return;
-            const url = messagesSource === 'gmail'
-                ? '/api/gmail?id=' + encodeURIComponent(String(id).replace(/^gmail:/, ''))
-                : '/api/messages?id=' + encodeURIComponent(id);
-            const resp = await fetch(url, {
-                method: 'DELETE',
-                headers: { Authorization: 'Bearer ' + getToken() }
-            });
-            if (resp.ok) loadMessages(); else alert('No se pudo eliminar');
+        if (m && (m._id || m.gmailId)) {
+            openMailMessage(m._id || m.gmailId);
             return;
         }
-        const row = e.target.closest('tr[data-id]');
-        if (row) {
-            const id = row.getAttribute('data-id');
-            let m = msgIndex.get(id);
-            if (messagesSource === 'gmail' && m) {
-                try {
-                    const resp = await fetch('/api/gmail?id=' + encodeURIComponent(String(id).replace(/^gmail:/, '')), {
-                        headers: { Authorization: 'Bearer ' + getToken() }
-                    });
-                    if (resp.ok) {
-                        const payload = await resp.json();
-                        if (payload.item) m = payload.item;
-                    }
-                } catch (_) {}
-            }
-            if (m) openDetail(m);
+        if (!modal || !m) return;
+        fillMailReader(m);
+    }
+    function closeDetail() {
+        if (modal) {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
         }
-    });
+    }
+    const detailClose = document.getElementById('detailClose');
+    if (detailClose) detailClose.addEventListener('click', closeDetail);
+    if (modal) {
+        modal.addEventListener('click', function (e) { if (e.target === modal) closeDetail(); });
+    }
 
     document.getElementById('refreshBtn').addEventListener('click', loadMessages);
     document.getElementById('searchInput').addEventListener('input', function (e) {
@@ -8313,6 +8867,7 @@
             el.classList.toggle('active', el === btn);
         });
         document.getElementById('searchInput').value = '';
+        clearMailSelection();
         loadMessages();
     });
 
@@ -13592,6 +14147,7 @@
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
     <script src="/colaboradores/pos-module.js?v=20260925-copilot-links"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
+    <script src="/colaboradores/mail-copilot.js?v=20260925-mail-ai"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>
 </body>
 </html>

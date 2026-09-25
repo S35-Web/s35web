@@ -250,6 +250,29 @@ function systemPrompt(context) {
   ].join('\n');
 }
 
+function mailSystemPrompt(context) {
+  const ctx = context && typeof context === 'object' ? context : {};
+  const mail = ctx.mail && typeof ctx.mail === 'object' ? ctx.mail : null;
+  return [
+    'Eres el copiloto de correo de S-35 Midday (materiales de construcción, México).',
+    'Responde siempre en español, breve y claro. Markdown ligero: **negritas**, listas con -.',
+    'Sin tablas, sin # encabezados, sin HTML crudo.',
+    'Trabajas sobre el mensaje seleccionado en CORREO ACTUAL. Si no hay correo, dilo y pide que seleccionen uno.',
+    'Puedes: resumir, detectar intención (cotización, queja, pedido, spam), proponer borrador de respuesta, sugerir siguiente paso.',
+    'Si el usuario pide borrador: escribe el cuerpo listo para enviar (saludo + respuesta + cierre S-35). ' +
+      'Envuélvelo entre marcadores exactamente así:\n<<<DRAFT>>>\n…texto…\n<<<END_DRAFT>>>',
+    'Si parece cliente o hay email/nombre, puedes usar lookup_client para cruzar con clientes S35.',
+    'ENLACES: [[client:id|nombre]] cuando lookup_client traiga id. No inventes ids.',
+    'No digas que puedes enviar el correo desde aquí: hoy solo ayudas a leer y redactar.',
+    '',
+    'CORREO ACTUAL (JSON):',
+    JSON.stringify(mail || { selected: false }).slice(0, 12000),
+    '',
+    'CONTEXTO EXTRA:',
+    JSON.stringify({ note: ctx.note || null, now: ctx.now || null }).slice(0, 2000)
+  ].join('\n');
+}
+
 function sanitizeMessages(messagesIn) {
   const out = [];
   (Array.isArray(messagesIn) ? messagesIn : []).forEach(function (m) {
@@ -311,7 +334,8 @@ async function trackUsage(usage, model) {
   }
 }
 
-async function openaiChat(messages) {
+async function openaiChat(messages, opts) {
+  opts = opts || {};
   const key = process.env.OPENAI_API_KEY;
   if (!key) {
     const err = new Error('Falta OPENAI_API_KEY en el servidor');
@@ -319,19 +343,22 @@ async function openaiChat(messages) {
     throw err;
   }
   const model = process.env.S35_AI_MODEL || 'gpt-4o-mini';
+  const payload = {
+    model: model,
+    temperature: opts.temperature != null ? opts.temperature : 0.2,
+    messages: messages
+  };
+  if (!opts.noTools) {
+    payload.tools = Array.isArray(opts.tools) ? opts.tools : TOOLS;
+    payload.tool_choice = 'auto';
+  }
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       Authorization: 'Bearer ' + key,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      model: model,
-      temperature: 0.2,
-      messages: messages,
-      tools: TOOLS,
-      tool_choice: 'auto'
-    })
+    body: JSON.stringify(payload)
   });
   const data = await res.json().catch(function () {
     return {};
@@ -408,16 +435,27 @@ module.exports = async function handler(req, res) {
   const body = parseBody(req);
   const context = body.context || {};
   const cleaned = sanitizeMessages(body.messages);
+  const isMailMode = body.mode === 'mail';
 
   if (!cleaned.length) {
     res.status(400).json({ ok: false, error: 'Falta mensaje' });
     return;
   }
 
-  const apiMessages = [{ role: 'system', content: systemPrompt(context) }].concat(cleaned);
+  const mailTools = TOOLS.filter(function (t) {
+    const n = t && t.function && t.function.name;
+    return n === 'lookup_client' || n === 'navigate';
+  });
+
+  const apiMessages = [
+    { role: 'system', content: isMailMode ? mailSystemPrompt(context) : systemPrompt(context) }
+  ].concat(cleaned);
 
   try {
-    const data = await openaiChat(apiMessages);
+    const data = await openaiChat(apiMessages, {
+      tools: isMailMode ? mailTools : TOOLS,
+      temperature: isMailMode ? 0.35 : 0.2
+    });
     const choice = data.choices && data.choices[0];
     const message = choice && choice.message;
     const modelName = process.env.S35_AI_MODEL || 'gpt-4o-mini';
