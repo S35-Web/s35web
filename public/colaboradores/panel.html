@@ -1772,35 +1772,38 @@
         /* —— Mensajes: bandeja 3 paneles (lista | lector | copiloto) —— */
         #messages.section-mail {
             flex-direction: column;
-            min-height: calc(100vh - var(--topbar-h) - 28px);
-            gap: 12px;
+            min-height: calc(100vh - var(--topbar-h) - 16px);
+            gap: 0;
         }
         #messages.section-mail.section.active { display: flex; }
-        #messages.section-mail > .page-title { margin-bottom: 0; }
-        #messages.section-mail > .page-sub { margin-top: 2px; margin-bottom: 0; }
-        .mail-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
+        .content:has(#messages.active) {
+            padding-top: 12px;
+            padding-bottom: 12px;
         }
-        .mail-head-text { min-width: 0; flex: 1; }
-        .mail-head-actions {
+        /* Acciones flotantes: Ask S35 + Gmail (sin header alto) */
+        .mail-float-actions {
+            position: fixed;
+            z-index: 55;
+            top: calc(var(--topbar-h) + 10px);
+            right: 20px;
             display: flex;
             align-items: center;
+            justify-content: flex-end;
             gap: 10px;
-            flex: 0 0 auto;
-            margin-left: auto;
+            flex-wrap: wrap;
+            max-width: min(520px, calc(100vw - 40px));
+            pointer-events: none;
         }
+        .mail-float-actions > * { pointer-events: auto; }
         #gmailConnectCard.mail-connect {
             margin: 0;
-            padding: 0;
+            padding: 8px 10px;
             flex: 0 0 auto;
             max-width: min(280px, 42vw);
-            border: 0;
-            background: transparent;
-            box-shadow: none;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: color-mix(in srgb, var(--panel) 94%, var(--bg));
+            box-shadow: 0 4px 16px rgba(10, 10, 10, 0.08);
         }
         #gmailConnectCard.mail-connect .mail-connect-row {
             display: flex;
@@ -1839,6 +1842,11 @@
             align-items: center;
             opacity: 0.55;
             line-height: 0;
+            padding: 8px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            box-shadow: 0 1px 2px rgba(10, 10, 10, 0.04);
             transition: opacity 0.12s ease;
         }
         .mail-gmail-mini:hover { opacity: 1; }
@@ -1865,7 +1873,9 @@
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 1px 2px rgba(10, 10, 10, 0.04);
+            box-shadow:
+                0 2px 8px rgba(10, 10, 10, 0.08),
+                0 1px 2px rgba(10, 10, 10, 0.04);
             transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
         }
         .mail-copilot-launch:hover {
@@ -2429,8 +2439,16 @@
                 width: auto;
                 height: min(72vh, 560px);
             }
+            .mail-float-actions {
+                top: calc(var(--topbar-h) + 8px);
+                right: 12px;
+                max-width: calc(100vw - 24px);
+            }
             .mail-copilot-launch-label { display: none; }
             .mail-copilot-launch { padding: 0 10px; width: 36px; justify-content: center; }
+            #gmailConnectCard.mail-connect {
+                max-width: min(240px, calc(100vw - 80px));
+            }
         }
         .num { font-variant-numeric: tabular-nums; }
         .unit { color: var(--muted); font-weight: 400; }
@@ -6513,32 +6531,26 @@
                 </section>
 
                 <section id="messages" class="section section-mail">
-                    <div class="mail-head">
-                        <div class="mail-head-text">
-                            <h1 class="page-title">Mensajes</h1>
-                            <p class="page-sub" id="messagesPageSub">contacto@s35.com.mx</p>
-                        </div>
-                        <div class="mail-head-actions">
-                            <div class="card mail-connect" id="gmailConnectCard" hidden>
-                                <div class="mail-connect-row">
-                                    <div class="mail-connect-copy">
-                                        <strong id="gmailConnectTitle">Conectar Gmail</strong>
-                                        <p class="muted" id="gmailConnectHint">Autoriza la bandeja de contacto@s35.com.mx.</p>
-                                    </div>
-                                    <div class="mail-connect-actions">
-                                        <button id="gmailConnectBtn" class="btn primary" type="button">Conectar</button>
-                                        <button id="gmailDisconnectBtn" class="btn" type="button" hidden>Desconectar</button>
-                                    </div>
+                    <div class="mail-float-actions" id="mailFloatActions">
+                        <div class="card mail-connect" id="gmailConnectCard" hidden>
+                            <div class="mail-connect-row">
+                                <div class="mail-connect-copy">
+                                    <strong id="gmailConnectTitle">Conectar Gmail</strong>
+                                    <p class="muted" id="gmailConnectHint">Autoriza la bandeja de contacto@s35.com.mx.</p>
+                                </div>
+                                <div class="mail-connect-actions">
+                                    <button id="gmailConnectBtn" class="btn primary" type="button">Conectar</button>
+                                    <button id="gmailDisconnectBtn" class="btn" type="button" hidden>Desconectar</button>
                                 </div>
                             </div>
-                            <a class="mail-gmail-mini" id="mailGmailMini" href="https://gmail.com" target="_blank" rel="noopener noreferrer" title="Abrir Gmail" hidden>
-                                <img src="/Assets/gmail-wordmark.png" width="48" height="12" alt="Gmail">
-                            </a>
-                            <button type="button" class="mail-copilot-launch" id="mailCopilotLaunch" aria-expanded="false" aria-controls="mailCopilotPane" title="Ask S35">
-                                <span class="mail-copilot-launch-orb" aria-hidden="true"></span>
-                                <span class="mail-copilot-launch-label">Ask S35</span>
-                            </button>
                         </div>
+                        <a class="mail-gmail-mini" id="mailGmailMini" href="https://gmail.com" target="_blank" rel="noopener noreferrer" title="Abrir Gmail" hidden>
+                            <img src="/Assets/gmail-wordmark.png" width="48" height="12" alt="Gmail">
+                        </a>
+                        <button type="button" class="mail-copilot-launch" id="mailCopilotLaunch" aria-expanded="false" aria-controls="mailCopilotPane" title="Ask S35">
+                            <span class="mail-copilot-launch-orb" aria-hidden="true"></span>
+                            <span class="mail-copilot-launch-label">Ask S35</span>
+                        </button>
                     </div>
                     <div class="mail-workspace" id="mailWorkspace">
                         <aside class="mail-list-pane" aria-label="Bandeja">
@@ -8909,11 +8921,7 @@
         const hint = document.getElementById('gmailConnectHint');
         const connectBtn = document.getElementById('gmailConnectBtn');
         const disconnectBtn = document.getElementById('gmailDisconnectBtn');
-        const pageSub = document.getElementById('messagesPageSub');
         const mini = document.getElementById('mailGmailMini');
-        if (pageSub) {
-            pageSub.textContent = (gmailStatus && gmailStatus.email) || 'contacto@s35.com.mx';
-        }
         if (!card) return;
         card.classList.remove('is-connected');
         if (mini) {
