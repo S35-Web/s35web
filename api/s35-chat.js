@@ -82,11 +82,17 @@ const TOOLS = [
     type: 'function',
     function: {
       name: 'search_sales',
-      description: 'Busca tickets/notas por folio, cliente, RFC o texto.',
+      description:
+        'Busca tickets/notas por folio, cliente, RFC, UUID CFDI o producto (nombre, slug o código). ' +
+        'Úsala para «quién compró X», «última nota de Pulido», «microconcreto blanco», etc. ' +
+        'Los resultados vienen ordenados por relevancia y fecha (más recientes primero) e incluyen items[], client y total.',
       parameters: {
         type: 'object',
         properties: {
-          query: { type: 'string' },
+          query: {
+            type: 'string',
+            description: 'Texto libre: folio, cliente, RFC o producto (ej. "Pulido", "microconcreto blanco")'
+          },
           limit: { type: 'integer', description: 'Máx resultados, default 8' }
         },
         required: ['query']
@@ -224,6 +230,8 @@ function systemPrompt(context) {
     'Si top_clients trae note sobre tickets sin cliente, menciónalo breve y lista el top de items[] (nunca digas que no hay top 10 si items tiene filas).',
     'El CONTEXTO es solo un snapshot rápido. Si falta un dato (ej. antier o top 10), llama la tool correspondiente.',
     'No inventes tickets ni totales. Si la tool devuelve vacío, dilo.',
+    'Para «último cliente que compró X / nota de producto X» usa search_sales con el nombre del producto; responde con cliente, folio, fecha, total e ítems relevantes de results[0] (ya vienen los más recientes primero).',
+    'Si search_sales encuentra notas, cita folio/cliente/total/fecha; ofrece navigate a salesHistory si el usuario quiere verlas.',
     'Para abrir pantallas usa navigate. Para solo informar cifras, no navegues salvo que el usuario lo pida.',
     '',
     'SNAPSHOT (JSON):',

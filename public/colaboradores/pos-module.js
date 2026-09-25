@@ -5119,14 +5119,29 @@
             }
             if (name === 'search_sales') {
                 const hits = searchSales(args.query, args.limit || 8).map(function (s) {
+                    const items = (s.items || []).slice(0, 12).map(function (it) {
+                        return {
+                            name: it.name || it.product || null,
+                            product: it.product || null,
+                            code: it.code || null,
+                            qty: Number(it.qty) || 0,
+                            price: Number(it.price) || 0,
+                            lineTotal: Number(it.lineTotal != null ? it.lineTotal : (Number(it.qty) || 0) * (Number(it.price) || 0)) || 0
+                        };
+                    });
                     return {
                         id: s.id,
                         folio: s.folio || null,
+                        receiptId: saleReceiptId(s) || null,
                         total: Number(s.total) || 0,
                         createdAt: s.createdAt,
                         client: saleClientLabel(s),
                         city: cityLabel(saleCity(s)),
-                        billing: s.billing || null
+                        billing: s.billing || null,
+                        paymentMethod: s.paymentMethod || null,
+                        matchedVia: s._matchedVia || null,
+                        items: items,
+                        itemsPreview: saleItemsPreview(s)
                     };
                 });
                 return { ok: true, query: args.query, results: hits };
@@ -5257,32 +5272,104 @@
         renderCortes();
     }
 
-    function searchSales(query, limit) {
-        const needle = String(query || '').toLowerCase().trim();
+    function normalizeSearchText(raw) {
+        return String(raw || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[_/]+/g, ' ')
+            .replace(/-/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function searchTokens(query) {
+        const needle = normalizeSearchText(query);
         if (!needle || needle.length < 2) return [];
+        return needle.split(' ').filter(function (t) { return t.length >= 2; });
+    }
+
+    function textMatchesTokens(hayRaw, tokens, needle) {
+        const hay = normalizeSearchText(hayRaw);
+        if (!hay) return false;
+        if (needle && hay.indexOf(needle) >= 0) return true;
+        if (!tokens.length) return false;
+        for (let i = 0; i < tokens.length; i++) {
+            if (hay.indexOf(tokens[i]) < 0) return false;
+        }
+        return true;
+    }
+
+    function searchSales(query, limit) {
+        const needle = normalizeSearchText(query);
+        if (!needle || needle.length < 2) return [];
+        const tokens = searchTokens(query);
         const max = limit || 8;
         const all = salesForAnalytics();
         const out = [];
-        for (let i = all.length - 1; i >= 0 && out.length < max * 3; i--) {
+        for (let i = all.length - 1; i >= 0 && out.length < max * 4; i--) {
             const s = all[i];
             if (!s) continue;
-            const folio = String(s.folio || '').toLowerCase();
-            const id = String(s.id || '').toLowerCase();
-            const cust = s.customer || {};
-            const clientName = String(cust.name || s.clientName || s.client || '').toLowerCase();
-            const cfdiFolio = String((s.meta && s.meta.cfdi && s.meta.cfdi.folio) || '').toLowerCase();
-            const uuid = String((s.meta && s.meta.cfdi && s.meta.cfdi.uuid) || '').toLowerCase();
+            const folio = normalizeSearchText(s.folio);
+            const id = normalizeSearchText(s.id);
+            const rid = normalizeSearchText(saleReceiptId(s));
+            const clientName = normalizeSearchText(saleClientLabel(s));
+            const clientRfc = normalizeSearchText(
+                (s.client && (s.client.rfc || s.client.RFC)) ||
+                (typeof s.customer === 'object' && s.customer && s.customer.rfc) ||
+                s.clientRfc ||
+                ''
+            );
+            const cfdiFolio = normalizeSearchText((s.meta && s.meta.cfdi && s.meta.cfdi.folio) || '');
+            const uuid = normalizeSearchText((s.meta && s.meta.cfdi && s.meta.cfdi.uuid) || '');
+            const itemParts = (s.items || []).map(function (it) {
+                return [it.name, it.product, it.code].filter(Boolean).join(' ');
+            });
+            const itemsHay = normalizeSearchText(itemParts.join(' '));
+
             let score = 0;
-            if (folio === needle || id === needle || cfdiFolio === needle) score = 100;
-            else if (folio.indexOf(needle) === 0 || cfdiFolio.indexOf(needle) === 0) score = 85;
-            else if (folio.indexOf(needle) >= 0 || id.indexOf(needle) >= 0 || cfdiFolio.indexOf(needle) >= 0) score = 70;
-            else if (clientName.indexOf(needle) >= 0) score = 55;
-            else if (uuid.indexOf(needle) >= 0) score = 50;
-            else if (String(s.total || '').indexOf(needle) >= 0) score = 40;
+            let matchedVia = null;
+            if (folio === needle || id === needle || cfdiFolio === needle || rid === needle) {
+                score = 100;
+                matchedVia = 'folio';
+            } else if (
+                (folio && folio.indexOf(needle) === 0) ||
+                (cfdiFolio && cfdiFolio.indexOf(needle) === 0) ||
+                (rid && rid.indexOf(needle) === 0)
+            ) {
+                score = 85;
+                matchedVia = 'folio';
+            } else if (
+                (folio && folio.indexOf(needle) >= 0) ||
+                (id && id.indexOf(needle) >= 0) ||
+                (cfdiFolio && cfdiFolio.indexOf(needle) >= 0) ||
+                (rid && rid.indexOf(needle) >= 0)
+            ) {
+                score = 70;
+                matchedVia = 'folio';
+            } else if (itemsHay && textMatchesTokens(itemsHay, tokens, needle)) {
+                score = 80;
+                matchedVia = 'product';
+            } else if (clientName && textMatchesTokens(clientName, tokens, needle)) {
+                score = 55;
+                matchedVia = 'client';
+            } else if (clientRfc && clientRfc.indexOf(needle.replace(/\s+/g, '')) >= 0) {
+                score = 52;
+                matchedVia = 'rfc';
+            } else if (uuid && uuid.indexOf(needle.replace(/\s+/g, '')) >= 0) {
+                score = 50;
+                matchedVia = 'uuid';
+            } else if (String(s.total || '').indexOf(needle) >= 0) {
+                score = 40;
+                matchedVia = 'total';
+            }
             if (score <= 0) continue;
-            out.push(Object.assign({}, s, { _score: score }));
+            out.push(Object.assign({}, s, { _score: score, _matchedVia: matchedVia }));
         }
-        out.sort(function (a, b) { return b._score - a._score; });
+        out.sort(function (a, b) {
+            if (b._score !== a._score) return b._score - a._score;
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
         return out.slice(0, max);
     }
 
