@@ -1868,20 +1868,86 @@
             border-right: 1px solid var(--border);
             background: var(--bg);
         }
+        .mail-source-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border-bottom: 1px solid var(--border);
+            flex: 0 0 auto;
+            background: color-mix(in srgb, var(--panel) 92%, var(--bg));
+        }
+        .mail-source-tab {
+            appearance: none;
+            border: 0;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            background: transparent;
+            color: var(--muted);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 560;
+            padding: 12px 10px 11px;
+            cursor: pointer;
+            transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+        }
+        .mail-source-tab:hover {
+            color: var(--text);
+            background: var(--hover);
+        }
+        .mail-source-tab.active {
+            color: var(--text);
+            border-bottom-color: var(--text);
+            font-weight: 650;
+        }
         .mail-pane-toolbar {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
-            flex-wrap: wrap;
-            padding: 12px 14px;
+            flex-wrap: nowrap;
+            padding: 10px 12px;
             border-bottom: 1px solid var(--border);
             flex: 0 0 auto;
         }
-        .mail-pane-toolbar .search { min-width: 0; }
+        .mail-pane-toolbar .search {
+            min-width: 0;
+            flex: 1;
+            height: 32px;
+            font-size: 13px;
+        }
+        .mail-tool-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+        .mail-tool-btn:hover { background: var(--hover); }
+        .mail-tool-btn.is-on {
+            background: color-mix(in srgb, var(--text) 10%, var(--bg));
+            border-color: color-mix(in srgb, var(--text) 28%, var(--border));
+        }
+        .mail-tool-btn:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+        .mail-tool-btn.danger:not(:disabled):hover {
+            color: var(--danger);
+            border-color: color-mix(in srgb, var(--danger) 35%, var(--border));
+        }
         .mail-list {
             flex: 1;
             overflow: auto;
             padding: 4px 0;
+        }
+        .mail-list.is-selecting .mail-row {
+            grid-template-columns: 28px 8px minmax(0, 1fr) auto;
         }
         .mail-row {
             display: grid;
@@ -1898,6 +1964,17 @@
             font: inherit;
             cursor: pointer;
             transition: background 0.12s ease;
+        }
+        .mail-row-check {
+            display: none;
+            margin-top: 4px;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--text);
+        }
+        .mail-list.is-selecting .mail-row-check { display: block; }
+        .mail-row.is-checked {
+            background: color-mix(in srgb, var(--text) 5%, var(--panel));
         }
         .mail-row:hover { background: var(--hover); }
         .mail-row.is-active {
@@ -6347,14 +6424,18 @@
                     </div>
                     <div class="mail-workspace" id="mailWorkspace">
                         <aside class="mail-list-pane" aria-label="Bandeja">
+                            <div class="mail-source-tabs" id="messagesSourceChips" role="tablist" aria-label="Origen de mensajes">
+                                <button type="button" class="mail-source-tab active" role="tab" aria-selected="true" data-msg-source="gmail">Correo</button>
+                                <button type="button" class="mail-source-tab" role="tab" aria-selected="false" data-msg-source="web">Formulario web</button>
+                            </div>
                             <div class="mail-pane-toolbar">
-                                <div class="chips" id="messagesSourceChips" role="group" aria-label="Origen de mensajes">
-                                    <button type="button" class="chip active" data-msg-source="gmail">Correo</button>
-                                    <button type="button" class="chip" data-msg-source="web">Formulario web</button>
-                                </div>
+                                <button type="button" class="mail-tool-btn" id="mailSelectToggle" title="Seleccionar" aria-pressed="false"><i class="fa-regular fa-square-check"></i></button>
+                                <button type="button" class="mail-tool-btn" id="mailFilterUnread" title="Solo no leídos" aria-pressed="false"><i class="fa-regular fa-envelope"></i></button>
+                                <button type="button" class="mail-tool-btn" id="mailMarkReadBtn" title="Marcar leído" disabled><i class="fa-solid fa-envelope-open"></i></button>
+                                <button type="button" class="mail-tool-btn danger" id="mailDeleteSelected" title="Eliminar" disabled><i class="fa-regular fa-trash-can"></i></button>
                                 <input id="searchInput" class="search" type="search" placeholder="Buscar…" aria-label="Buscar mensajes">
-                                <button id="refreshBtn" class="btn" type="button" title="Actualizar"><i class="fa-solid fa-rotate"></i></button>
-                                <button id="mailAiToggle" class="btn" type="button" title="Abrir copiloto" hidden><i class="fa-solid fa-comment-dots"></i></button>
+                                <button id="refreshBtn" class="mail-tool-btn" type="button" title="Actualizar"><i class="fa-solid fa-rotate"></i></button>
+                                <button id="mailAiToggle" class="mail-tool-btn" type="button" title="Abrir copiloto" hidden><i class="fa-solid fa-comment-dots"></i></button>
                             </div>
                             <div class="mail-list" id="mailList" role="listbox" aria-label="Lista de mensajes"></div>
                         </aside>
@@ -8550,9 +8631,60 @@
     let gmailStatus = { configured: false, connected: false, email: 'contacto@s35.com.mx', mongoOk: true, mongoError: null };
     let selectedMessageId = null;
     let selectedMessage = null;
+    let mailSelectMode = false;
+    let mailFilterUnread = false;
+    const mailCheckedIds = new Set();
+    let mailSearchQuery = '';
 
     function mailListEl() {
         return document.getElementById('mailList');
+    }
+
+    function syncMailToolbar() {
+        const list = mailListEl();
+        if (list) list.classList.toggle('is-selecting', mailSelectMode);
+        const selectBtn = document.getElementById('mailSelectToggle');
+        if (selectBtn) {
+            selectBtn.classList.toggle('is-on', mailSelectMode);
+            selectBtn.setAttribute('aria-pressed', mailSelectMode ? 'true' : 'false');
+        }
+        const unreadBtn = document.getElementById('mailFilterUnread');
+        if (unreadBtn) {
+            unreadBtn.classList.toggle('is-on', mailFilterUnread);
+            unreadBtn.setAttribute('aria-pressed', mailFilterUnread ? 'true' : 'false');
+            unreadBtn.hidden = messagesSource !== 'gmail';
+        }
+        const markBtn = document.getElementById('mailMarkReadBtn');
+        const delBtn = document.getElementById('mailDeleteSelected');
+        const n = mailCheckedIds.size;
+        const canBulk = mailSelectMode && n > 0;
+        if (markBtn) {
+            markBtn.disabled = !(canBulk && messagesSource === 'gmail');
+            markBtn.hidden = messagesSource !== 'gmail';
+        }
+        if (delBtn) delBtn.disabled = !canBulk && !(selectedMessageId && !mailSelectMode);
+        if (delBtn && !mailSelectMode) delBtn.disabled = !selectedMessageId;
+    }
+
+    function visibleMailList() {
+        let list = allMessages.slice();
+        if (mailFilterUnread && messagesSource === 'gmail') {
+            list = list.filter(function (m) { return !!m.unread; });
+        }
+        const q = mailSearchQuery;
+        if (q) {
+            list = list.filter(function (m) {
+                return [m.nombre, m.email, m.empresa, m.asunto, m.mensaje].some(function (v) {
+                    return String(v || '').toLowerCase().indexOf(q) >= 0;
+                });
+            });
+        }
+        return list;
+    }
+
+    function refreshMailList() {
+        renderMessages(visibleMailList());
+        syncMailToolbar();
     }
 
     function clearMailSelection() {
@@ -8570,13 +8702,16 @@
         if (window.S35MailCopilot && typeof window.S35MailCopilot.setSelectedMail === 'function') {
             window.S35MailCopilot.setSelectedMail(null);
         }
+        syncMailToolbar();
     }
 
     function renderMessages(list) {
         const host = mailListEl();
         if (!host) return;
         if (!list.length) {
-            host.innerHTML = '<div class="mail-list-empty">Sin resultados</div>';
+            host.innerHTML = '<div class="mail-list-empty">' +
+                (mailFilterUnread ? 'No hay correos no leídos' : 'Sin resultados') +
+                '</div>';
             return;
         }
         host.innerHTML = '';
@@ -8586,7 +8721,11 @@
             msgIndex.set(id, m);
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = 'mail-row' + (m.unread ? ' is-unread' : '') + (id === selectedMessageId ? ' is-active' : '');
+            const checked = mailCheckedIds.has(id);
+            btn.className = 'mail-row' +
+                (m.unread ? ' is-unread' : '') +
+                (id === selectedMessageId ? ' is-active' : '') +
+                (checked ? ' is-checked' : '');
             btn.setAttribute('data-id', id);
             btn.setAttribute('role', 'option');
             btn.setAttribute('aria-selected', id === selectedMessageId ? 'true' : 'false');
@@ -8599,6 +8738,7 @@
             const preview = String(m.mensaje || '').replace(/\s+/g, ' ').trim();
             const short = preview.length > 110 ? preview.slice(0, 110) + '…' : preview;
             btn.innerHTML =
+                '<input class="mail-row-check" type="checkbox" tabindex="-1"' + (checked ? ' checked' : '') + ' aria-label="Seleccionar">' +
                 '<span class="mail-row-dot" aria-hidden="true"></span>' +
                 '<span class="mail-row-main">' +
                 '<div class="mail-row-from">' + esc(from) + '</div>' +
@@ -8608,6 +8748,7 @@
                 '<span class="mail-row-meta">' + (created ? esc(formatRelativeDate(created)) : '') + '</span>';
             host.appendChild(btn);
         });
+        syncMailToolbar();
     }
 
     function showMailEmpty(html) {
@@ -8748,7 +8889,7 @@
             allMessages = payload.items || [];
             setMessagesBadge(allMessages.filter(function (m) { return m.unread; }).length || allMessages.length);
             refreshGreeting();
-            renderMessages(allMessages);
+            refreshMailList();
             if (selectedMessageId && msgIndex.has(selectedMessageId)) {
                 openMailMessage(selectedMessageId, { keepCopilot: true });
             } else {
@@ -8771,7 +8912,7 @@
         allMessages = payload.items || [];
         setMessagesBadge(allMessages.length);
         refreshGreeting();
-        renderMessages(allMessages);
+        refreshMailList();
         if (selectedMessageId && msgIndex.has(selectedMessageId)) {
             openMailMessage(selectedMessageId, { keepCopilot: true });
         } else {
@@ -8958,24 +9099,84 @@
         if (window.S35MailCopilot && typeof window.S35MailCopilot.setSelectedMail === 'function') {
             window.S35MailCopilot.setSelectedMail(m, { keepChat: !!opts.keepCopilot });
         }
+        if (messagesSource === 'gmail' && m.unread && !opts.skipMarkRead) {
+            markMailRead(id, true);
+        }
+        syncMailToolbar();
+    }
+
+    async function markMailRead(id, silent) {
+        const raw = String(id || '').replace(/^gmail:/, '');
+        if (!raw || messagesSource !== 'gmail') return;
+        try {
+            const resp = await fetch('/api/gmail?id=' + encodeURIComponent(raw) + '&action=read', {
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + getToken() }
+            });
+            if (!resp.ok) return;
+            const m = msgIndex.get(id) || msgIndex.get('gmail:' + raw);
+            if (m) m.unread = false;
+            allMessages.forEach(function (row) {
+                if ((row._id || row.gmailId) === id || row.gmailId === raw) row.unread = false;
+            });
+            setMessagesBadge(allMessages.filter(function (x) { return x.unread; }).length);
+            if (!silent) refreshMailList();
+            else {
+                const row = document.querySelector('.mail-row[data-id="' + CSS.escape(id) + '"]');
+                if (row) row.classList.remove('is-unread');
+            }
+        } catch (_) {}
+    }
+
+    async function trashMailIds(ids) {
+        const list = (ids || []).filter(Boolean);
+        if (!list.length) return false;
+        const label = messagesSource === 'gmail'
+            ? (list.length === 1 ? '¿Mover este correo a la papelera de Gmail?' : ('¿Mover ' + list.length + ' correos a la papelera?'))
+            : (list.length === 1 ? '¿Eliminar mensaje?' : ('¿Eliminar ' + list.length + ' mensajes?'));
+        if (!confirm(label)) return false;
+        let ok = 0;
+        for (let i = 0; i < list.length; i++) {
+            const id = list[i];
+            const url = messagesSource === 'gmail'
+                ? '/api/gmail?id=' + encodeURIComponent(String(id).replace(/^gmail:/, ''))
+                : '/api/messages?id=' + encodeURIComponent(id);
+            try {
+                const resp = await fetch(url, {
+                    method: 'DELETE',
+                    headers: { Authorization: 'Bearer ' + getToken() }
+                });
+                if (resp.ok) ok += 1;
+            } catch (_) {}
+        }
+        if (ok) {
+            mailCheckedIds.clear();
+            if (list.indexOf(selectedMessageId) >= 0) clearMailSelection();
+            await loadMessages();
+            if (typeof panelToast === 'function') panelToast(ok === 1 ? 'Eliminado' : (ok + ' eliminados'));
+            return true;
+        }
+        alert('No se pudo eliminar');
+        return false;
     }
 
     async function trashSelectedMail() {
-        if (!selectedMessageId) return;
-        if (!confirm(messagesSource === 'gmail' ? '¿Mover este correo a la papelera de Gmail?' : '¿Eliminar mensaje?')) return;
-        const url = messagesSource === 'gmail'
-            ? '/api/gmail?id=' + encodeURIComponent(String(selectedMessageId).replace(/^gmail:/, ''))
-            : '/api/messages?id=' + encodeURIComponent(selectedMessageId);
-        const resp = await fetch(url, {
-            method: 'DELETE',
-            headers: { Authorization: 'Bearer ' + getToken() }
-        });
-        if (resp.ok) {
-            clearMailSelection();
-            loadMessages();
-        } else {
-            alert('No se pudo eliminar');
+        if (mailSelectMode && mailCheckedIds.size) {
+            await trashMailIds(Array.from(mailCheckedIds));
+            return;
         }
+        if (!selectedMessageId) return;
+        await trashMailIds([selectedMessageId]);
+    }
+
+    async function markCheckedRead() {
+        if (messagesSource !== 'gmail' || !mailCheckedIds.size) return;
+        const ids = Array.from(mailCheckedIds);
+        for (let i = 0; i < ids.length; i++) {
+            await markMailRead(ids[i], true);
+        }
+        mailCheckedIds.clear();
+        refreshMailList();
     }
 
     const mailListHost = mailListEl();
@@ -8983,7 +9184,18 @@
         mailListHost.addEventListener('click', function (e) {
             const row = e.target.closest('.mail-row[data-id]');
             if (!row) return;
-            openMailMessage(row.getAttribute('data-id'));
+            const id = row.getAttribute('data-id');
+            if (mailSelectMode || e.target.classList.contains('mail-row-check')) {
+                e.preventDefault();
+                if (mailCheckedIds.has(id)) mailCheckedIds.delete(id);
+                else mailCheckedIds.add(id);
+                row.classList.toggle('is-checked', mailCheckedIds.has(id));
+                const box = row.querySelector('.mail-row-check');
+                if (box) box.checked = mailCheckedIds.has(id);
+                syncMailToolbar();
+                return;
+            }
+            openMailMessage(id);
         });
     }
 
@@ -9063,27 +9275,44 @@
 
     document.getElementById('refreshBtn').addEventListener('click', loadMessages);
     document.getElementById('searchInput').addEventListener('input', function (e) {
-        const q = String(e.target.value || '').trim().toLowerCase();
-        if (!q) {
-            renderMessages(allMessages);
-            return;
-        }
-        const filtered = allMessages.filter(function (m) {
-            return [m.nombre, m.email, m.empresa, m.asunto, m.mensaje].some(function (v) {
-                return String(v || '').toLowerCase().indexOf(q) >= 0;
-            });
-        });
-        renderMessages(filtered);
+        mailSearchQuery = String(e.target.value || '').trim().toLowerCase();
+        refreshMailList();
     });
+
+    const mailSelectToggle = document.getElementById('mailSelectToggle');
+    if (mailSelectToggle) {
+        mailSelectToggle.addEventListener('click', function () {
+            mailSelectMode = !mailSelectMode;
+            if (!mailSelectMode) mailCheckedIds.clear();
+            refreshMailList();
+        });
+    }
+    const mailFilterUnreadBtn = document.getElementById('mailFilterUnread');
+    if (mailFilterUnreadBtn) {
+        mailFilterUnreadBtn.addEventListener('click', function () {
+            mailFilterUnread = !mailFilterUnread;
+            refreshMailList();
+        });
+    }
+    const mailDeleteSelected = document.getElementById('mailDeleteSelected');
+    if (mailDeleteSelected) mailDeleteSelected.addEventListener('click', trashSelectedMail);
+    const mailMarkReadBtn = document.getElementById('mailMarkReadBtn');
+    if (mailMarkReadBtn) mailMarkReadBtn.addEventListener('click', markCheckedRead);
 
     document.getElementById('messagesSourceChips').addEventListener('click', function (e) {
         const btn = e.target.closest('[data-msg-source]');
         if (!btn) return;
         messagesSource = btn.getAttribute('data-msg-source') || 'gmail';
         document.querySelectorAll('#messagesSourceChips [data-msg-source]').forEach(function (el) {
-            el.classList.toggle('active', el === btn);
+            const on = el === btn;
+            el.classList.toggle('active', on);
+            el.setAttribute('aria-selected', on ? 'true' : 'false');
         });
         document.getElementById('searchInput').value = '';
+        mailSearchQuery = '';
+        mailFilterUnread = false;
+        mailSelectMode = false;
+        mailCheckedIds.clear();
         clearMailSelection();
         loadMessages();
     });

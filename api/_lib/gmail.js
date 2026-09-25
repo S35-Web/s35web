@@ -382,6 +382,19 @@ async function trashMessage(id) {
   await gmail.users.messages.trash({ userId: 'me', id: id });
 }
 
+async function setMessageUnread(id, unread) {
+  const { client } = await getAuthedClient();
+  const gmail = google.gmail({ version: 'v1', auth: client });
+  const body = unread
+    ? { addLabelIds: ['UNREAD'] }
+    : { removeLabelIds: ['UNREAD'] };
+  await gmail.users.messages.modify({
+    userId: 'me',
+    id: id,
+    requestBody: body,
+  });
+}
+
 module.exports = {
   GMAIL_SCOPES,
   TOKEN_DOC_ID,
@@ -396,4 +409,5 @@ module.exports = {
   getMessage,
   getAttachment,
   trashMessage,
+  setMessageUnread,
 };
