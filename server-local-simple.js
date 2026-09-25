@@ -259,6 +259,7 @@ const server = http.createServer((req, res) => {
             's35_plant_count_20260922b',
             's35_pos_prices_v4',
             's35_pos_sales',
+            's35_caja_gastos_v1',
             's35_sale_edits_v1',
             's35_promo_codes_v1',
             's35_product_families',
@@ -266,6 +267,78 @@ const server = http.createServer((req, res) => {
             's35_product_catalog_v1',
             's35_hist_sales_imported_v13'
         ]);
+        const mergeItemsKeys = new Set([
+            's35_pos_sales',
+            's35_caja_gastos_v1',
+            's35_production_lots',
+            's35_compra_tickets',
+            's35_promo_codes_v1'
+        ]);
+        const mergeMapKeys = new Set(['s35_sale_edits_v1']);
+        const isHistImport = (row) => {
+            if (!row) return false;
+            if (row.user === 'import-historico') return true;
+            const src = row.meta && row.meta.source;
+            return src === 'old-panel';
+        };
+        const itemRecency = (row) => {
+            if (!row || typeof row !== 'object') return 0;
+            return Date.parse(row.editedAt || row.updatedAt || row.createdAt || '') || 0;
+        };
+        const extractItems = (value) => {
+            if (!value) return [];
+            if (Array.isArray(value)) return value;
+            if (value && Array.isArray(value.items)) return value.items;
+            return [];
+        };
+        const mergeItemLists = (a, b, dropHistorical) => {
+            const byId = Object.create(null);
+            const order = [];
+            const consider = (row) => {
+                if (!row || typeof row !== 'object') return;
+                if (dropHistorical && isHistImport(row)) return;
+                const id = row.id != null ? String(row.id) : (row.code != null ? String(row.code) : '');
+                if (!id) return;
+                if (!byId[id]) {
+                    byId[id] = row;
+                    order.push(id);
+                    return;
+                }
+                if (itemRecency(row) >= itemRecency(byId[id])) byId[id] = row;
+            };
+            (a || []).forEach(consider);
+            (b || []).forEach(consider);
+            return order.map((id) => byId[id]);
+        };
+        const mergeItemsValue = (key, prevValue, nextValue, updatedAt) => {
+            const merged = mergeItemLists(
+                extractItems(prevValue),
+                extractItems(nextValue),
+                key === 's35_pos_sales'
+            );
+            const base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
+                ? nextValue
+                : ((prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue)) ? prevValue : {});
+            const out = Object.assign({}, base, { items: merged });
+            if (updatedAt) out.updatedAt = updatedAt;
+            return out;
+        };
+        const mergeByIdMaps = (prevValue, nextValue, updatedAt) => {
+            const prevMap = (prevValue && prevValue.byId && typeof prevValue.byId === 'object') ? prevValue.byId : {};
+            const nextMap = (nextValue && nextValue.byId && typeof nextValue.byId === 'object') ? nextValue.byId : {};
+            const outMap = Object.assign({}, prevMap);
+            Object.keys(nextMap).forEach((id) => {
+                const a = outMap[id];
+                const b = nextMap[id];
+                if (!a) { outMap[id] = b; return; }
+                if (!b) return;
+                outMap[id] = itemRecency(b) >= itemRecency(a) ? Object.assign({}, a, b) : Object.assign({}, b, a);
+            });
+            const base = (nextValue && typeof nextValue === 'object') ? nextValue : (prevValue || {});
+            const out = Object.assign({}, base, { byId: outMap });
+            if (updatedAt) out.updatedAt = updatedAt;
+            return out;
+        };
         const readKey = (key) => {
             try {
                 const p = path.join(dir, key + '.json');
@@ -308,12 +381,38 @@ const server = http.createServer((req, res) => {
                         }
                         const updatedAt = entry.updatedAt || new Date().toISOString();
                         const prev = readKey(key);
-                        if (prev && prev.updatedAt && Date.parse(updatedAt) < Date.parse(prev.updatedAt)) {
+                        const isMergeKey = mergeItemsKeys.has(key) || mergeMapKeys.has(key);
+                        if (!isMergeKey && prev && prev.updatedAt && Date.parse(updatedAt) < Date.parse(prev.updatedAt)) {
                             rejected.push({ key: key, reason: 'stale', remoteUpdatedAt: prev.updatedAt });
                             out[key] = { value: prev.value, updatedAt: prev.updatedAt };
                             return;
                         }
-                        const doc = { value: entry.value, updatedAt: updatedAt };
+                        let valueToStore = entry.value;
+                        let tsToStore = updatedAt;
+                        if (isMergeKey && prev && prev.value != null) {
+                            if (mergeItemsKeys.has(key)) {
+                                valueToStore = mergeItemsValue(key, prev.value, entry.value, updatedAt);
+                            } else if (mergeMapKeys.has(key)) {
+                                valueToStore = mergeByIdMaps(prev.value, entry.value, updatedAt);
+                            }
+                            if (prev.updatedAt && Date.parse(updatedAt) < Date.parse(prev.updatedAt)) {
+                                const prevCount = mergeItemsKeys.has(key)
+                                    ? extractItems(prev.value).length
+                                    : Object.keys((prev.value && prev.value.byId) || {}).length;
+                                const nextCount = mergeItemsKeys.has(key)
+                                    ? extractItems(valueToStore).length
+                                    : Object.keys((valueToStore && valueToStore.byId) || {}).length;
+                                tsToStore = nextCount > prevCount
+                                    ? new Date().toISOString()
+                                    : prev.updatedAt;
+                                if (valueToStore && typeof valueToStore === 'object') {
+                                    valueToStore = Object.assign({}, valueToStore, { updatedAt: tsToStore });
+                                }
+                            }
+                        } else if (mergeItemsKeys.has(key)) {
+                            valueToStore = mergeItemsValue(key, null, entry.value, updatedAt);
+                        }
+                        const doc = { value: valueToStore, updatedAt: tsToStore };
                         fs.writeFileSync(path.join(dir, key + '.json'), JSON.stringify(doc));
                         accepted.push(key);
                         out[key] = doc;

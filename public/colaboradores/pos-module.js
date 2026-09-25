@@ -3136,9 +3136,15 @@
         } catch (_) {}
         return [];
     }
+    function flushCloudSoon() {
+        if (!window.S35PanelSync || typeof window.S35PanelSync.flushPush !== 'function') return;
+        try { window.S35PanelSync.flushPush(); } catch (_) {}
+    }
     function saveSales() {
         invalidateAnalyticsSalesCache();
         localStorage.setItem(SALES_KEY, JSON.stringify({ items: sales, updatedAt: new Date().toISOString() }));
+        // Subir de inmediato: el debounce solo no basta si cierran la pestaña tras una venta.
+        flushCloudSoon();
     }
 
     function loadCajaGastos() {
@@ -3153,6 +3159,7 @@
             items: cajaGastos,
             updatedAt: new Date().toISOString()
         }));
+        flushCloudSoon();
     }
     function gastoCity(g) {
         return normalizeCityId((g && g.city) || 'culiacan');
@@ -9035,8 +9042,15 @@
 
     function init() {
         prices = loadPrices();
-        // Persistir v3 tras merge para no depender del legacy en cada carga.
-        savePrices();
+        // Solo migrar legacy→v4 una vez. Reescribir precios en cada carga bumpaba
+        // updatedAt a "ahora" y el LWW local ganaba a la nube (pisaba sync).
+        try {
+            const hasV4 = !!localStorage.getItem(PRICE_KEY);
+            const stored = readStoredPrices();
+            if (!hasV4 || (stored && stored.fromLegacy)) savePrices();
+        } catch (_) {
+            savePrices();
+        }
         sales = loadSales();
         cajaGastos = loadCajaGastos();
         clients = loadClients();
