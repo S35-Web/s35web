@@ -9846,8 +9846,8 @@
             host.innerHTML = '';
             return;
         }
-        const avgMap = (window.S35PosModule && window.S35PosModule.averageSalePriceMapLastMonth)
-            ? window.S35PosModule.averageSalePriceMapLastMonth()
+        const avgMap = (window.S35PosModule && window.S35PosModule.monthAverageUnitPriceMap)
+            ? window.S35PosModule.monthAverageUnitPriceMap()
             : {};
         host.innerHTML = list.map(function (p) {
             const pct = max > 0 ? (p.stock / max) * 100 : 0;
@@ -9857,8 +9857,8 @@
             const avg = avgMap[p.slug] || 0;
             const value = Math.round(p.stock * avg * 100) / 100;
             const valueTitle = avg > 0
-                ? ('Precio promedio del último mes ' + moneyMx(avg))
-                : 'Sin ventas en el último mes';
+                ? ('Precio promedio del mes ' + moneyMx(avg))
+                : 'Sin ventas en el mes';
             return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name) + '">' +
                 '<span class="products-inventory-name">' + familyDotHtml(p.family) +
                 '<span class="products-inventory-label">' + esc(p.name) + '</span>' +
@@ -12560,7 +12560,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260924-avg-sale-once"></script>
+    <script src="/colaboradores/pos-module.js?v=20260924-month-avg"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260923-copilot-section"></script>
 </body>

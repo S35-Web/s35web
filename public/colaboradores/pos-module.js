@@ -2941,55 +2941,70 @@
     let historicalSales = [];
     let analyticsSalesCache = null;
 
-    let avgSalePriceCache = null;
+    let monthAvgPriceCache = null;
     function invalidateAnalyticsSalesCache() {
         analyticsSalesCache = null;
-        avgSalePriceCache = null;
+        monthAvgPriceCache = null;
     }
 
-    function averageSalePriceMapLastMonth() {
-        if (avgSalePriceCache) return avgSalePriceCache;
-        const since = Date.now() - 30 * 86400000;
-        const edits = loadSaleEditsMap();
+    /**
+     * Precio promedio del mes en curso, el mismo que el botón Mes de la ficha
+     * (unitSum / unitCount de productContribution). Un solo recorrido, sin
+     * concatenar el historial.
+     */
+    function monthAverageUnitPriceMap() {
+        if (monthAvgPriceCache) return monthAvgPriceCache;
+        const bounds = periodBounds('month', 0);
+        const start = bounds.start.getTime();
+        const end = bounds.end.getTime();
+        const idToSlug = {};
+        const codeToSlug = {};
+        getRecipes().forEach(function (r) {
+            const slug = r && r.product;
+            if (!slug) return;
+            const keys = productMatchKeys(slug);
+            Object.keys(keys.ids).forEach(function (id) {
+                if (id && !idToSlug[id]) idToSlug[id] = slug;
+            });
+            Object.keys(keys.codes).forEach(function (code) {
+                if (code && !codeToSlug[code]) codeToSlug[code] = slug;
+            });
+        });
         const totals = {};
         function scan(list) {
-        for (let i = 0; i < list.length; i++) {
-            const raw = list[i];
-            if (!raw) continue;
-            const patch = raw.id ? edits[raw.id] : null;
-            if (patch && patch.deleted) continue;
-            const t = Date.parse((patch && patch.createdAt) || raw.createdAt);
-            if (!isFinite(t) || t < since) continue;
-            const items = (patch && patch.items) || raw.items;
-            if (!items || !items.length) continue;
-            for (let j = 0; j < items.length; j++) {
-                const it = items[j];
-                if (!it || !it.product) continue;
-                const q = Number(it.qty) || 0;
-                if (!(q > 0)) continue;
-                const line = it.lineTotal != null ? Number(it.lineTotal) : q * (Number(it.price) || 0);
-                if (!isFinite(line)) continue;
-                let row = totals[it.product];
-                if (!row) totals[it.product] = row = { qty: 0, money: 0 };
-                row.qty += q;
-                row.money += line;
+            for (let i = 0; i < list.length; i++) {
+                const sale = list[i];
+                if (!sale) continue;
+                const t = Date.parse(sale.createdAt);
+                if (!isFinite(t) || t < start || t >= end) continue;
+                const items = sale.items;
+                if (!items || !items.length) continue;
+                for (let j = 0; j < items.length; j++) {
+                    const it = items[j];
+                    if (!it) continue;
+                    const slug = (it.product && idToSlug[it.product]) ||
+                        (it.code && codeToSlug[String(it.code).trim()]);
+                    if (!slug) continue;
+                    const q = Number(it.qty) || 0;
+                    if (!(q > 0)) continue;
+                    const amt = lineAmount(it);
+                    const price = Number(it.price) || (amt / q);
+                    let row = totals[slug];
+                    if (!row) totals[slug] = row = { unitSum: 0, unitCount: 0 };
+                    row.unitSum += price * q;
+                    row.unitCount += q;
+                }
             }
-        }
         }
         scan(historicalSales);
         scan(sales);
         const map = {};
-        const keys = Object.keys(totals);
-        for (let k = 0; k < keys.length; k++) {
-            const row = totals[keys[k]];
-            map[keys[k]] = row.qty > 0 ? Math.round((row.money / row.qty) * 100) / 100 : 0;
-        }
-        avgSalePriceCache = map;
+        Object.keys(totals).forEach(function (slug) {
+            const row = totals[slug];
+            map[slug] = row.unitCount ? row.unitSum / row.unitCount : 0;
+        });
+        monthAvgPriceCache = map;
         return map;
-    }
-
-    function averageSalePriceLastMonth(slug) {
-        return averageSalePriceMapLastMonth()[String(slug || '')] || 0;
     }
 
     function salesForAnalytics() {
@@ -8580,8 +8595,7 @@
             importHistoricalSales: importHistoricalSales,
             renderCobranza: renderCobranza,
             baseUnitPrice: baseUnitPrice,
-            averageSalePriceLastMonth: averageSalePriceLastMonth,
-            averageSalePriceMapLastMonth: averageSalePriceMapLastMonth,
+            monthAverageUnitPriceMap: monthAverageUnitPriceMap,
             unitFor: unitFor,
             getPromoCodes: function () { return promoCodes.slice(); },
             renderPromosAdmin: renderPromosAdmin
