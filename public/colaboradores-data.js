@@ -5457,7 +5457,20 @@ window.S35_PANEL_DATA = {
       "image": "",
       "imageAlt": "Aditivo sp85",
       "items": [],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 1,
+        "packagingPlantId": "cubeta-19l",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "items": []
+          }
+        ]
+      },
       "suggested": []
     },
     {
