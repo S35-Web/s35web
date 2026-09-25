@@ -1788,11 +1788,48 @@
         .mail-head-text { min-width: 0; flex: 1; }
         #gmailConnectCard.mail-connect {
             margin: 0;
-            padding: 10px 14px;
-            flex: 0 1 auto;
-            max-width: 520px;
+            padding: 8px 12px;
+            flex: 0 0 auto;
+            max-width: none;
+            border: 0;
+            background: transparent;
+            box-shadow: none;
         }
-        #gmailConnectCard.mail-connect .toolbar { margin: 0; }
+        #gmailConnectCard.mail-connect .mail-connect-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+        #gmailConnectCard.mail-connect .mail-connect-logo {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            flex: 0 0 auto;
+            display: block;
+        }
+        #gmailConnectCard.mail-connect .mail-connect-copy {
+            min-width: 0;
+            line-height: 1.25;
+        }
+        #gmailConnectCard.mail-connect .mail-connect-copy strong {
+            display: block;
+            font-size: 13px;
+            font-weight: 650;
+        }
+        #gmailConnectCard.mail-connect .mail-connect-copy .muted {
+            margin: 2px 0 0;
+            font-size: 12px;
+        }
+        #gmailConnectCard.mail-connect .mail-connect-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: 4px;
+        }
+        #gmailConnectCard.mail-connect.is-connected .mail-connect-actions {
+            display: none;
+        }
         .mail-workspace {
             flex: 1;
             min-height: 0;
@@ -6226,13 +6263,16 @@
                             <p class="page-sub" id="messagesPageSub">Bandeja de contacto@s35.com.mx y formulario del sitio.</p>
                         </div>
                         <div class="card mail-connect" id="gmailConnectCard" hidden>
-                            <div class="toolbar" style="align-items:center;gap:12px;flex-wrap:wrap">
-                                <div style="flex:1;min-width:180px">
+                            <div class="mail-connect-row">
+                                <img class="mail-connect-logo" src="/Assets/gmail-logo.png" width="28" height="28" alt="Gmail">
+                                <div class="mail-connect-copy">
                                     <strong id="gmailConnectTitle">Conectar Gmail</strong>
-                                    <p class="muted" id="gmailConnectHint" style="margin:4px 0 0;font-size:13px">Autoriza la bandeja de contacto@s35.com.mx para verla aquí.</p>
+                                    <p class="muted" id="gmailConnectHint">Autoriza la bandeja de contacto@s35.com.mx para verla aquí.</p>
                                 </div>
-                                <button id="gmailConnectBtn" class="btn primary" type="button"><i class="fa-brands fa-google"></i> Conectar Gmail</button>
-                                <button id="gmailDisconnectBtn" class="btn" type="button" hidden>Desconectar</button>
+                                <div class="mail-connect-actions">
+                                    <button id="gmailConnectBtn" class="btn primary" type="button">Conectar</button>
+                                    <button id="gmailDisconnectBtn" class="btn" type="button" hidden>Desconectar</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -8536,34 +8576,36 @@
         const disconnectBtn = document.getElementById('gmailDisconnectBtn');
         if (!card) return;
         card.hidden = false;
+        card.classList.remove('is-connected');
         if (!gmailStatus.configured) {
             title.textContent = 'Gmail pendiente de configurar';
-            hint.textContent = 'Faltan GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Vercel. Cuando estén, recarga y conecta.';
+            hint.textContent = 'Faltan GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Vercel.';
             connectBtn.hidden = true;
             disconnectBtn.hidden = true;
             return;
         }
         if (gmailStatus.mongoOk === false) {
             title.textContent = 'MongoDB no responde';
-            hint.textContent = 'Google OAuth necesita MONGODB_URI válido en Vercel (badge «Needs Attention»). ' +
-                'Corrige el connection string en Atlas, pégalo de nuevo y Redeploy. ' +
-                (gmailStatus.mongoError ? 'Detalle: ' + gmailStatus.mongoError : '');
+            hint.textContent = gmailStatus.mongoError
+                ? ('Detalle: ' + gmailStatus.mongoError)
+                : 'Revisa MONGODB_URI en Vercel y vuelve a desplegar.';
             connectBtn.hidden = true;
             disconnectBtn.hidden = true;
             return;
         }
-        connectBtn.hidden = false;
         if (gmailStatus.connected) {
+            card.classList.add('is-connected');
             title.textContent = 'Gmail conectado';
             hint.textContent = 'Bandeja: ' + (gmailStatus.email || 'contacto@s35.com.mx');
-            connectBtn.innerHTML = '<i class="fa-brands fa-google"></i> Reconectar';
-            disconnectBtn.hidden = false;
-        } else {
-            title.textContent = 'Conectar Gmail';
-            hint.textContent = 'Autoriza la bandeja de contacto@s35.com.mx para verla aquí.';
-            connectBtn.innerHTML = '<i class="fa-brands fa-google"></i> Conectar Gmail';
+            connectBtn.hidden = true;
             disconnectBtn.hidden = true;
+            return;
         }
+        title.textContent = 'Conectar Gmail';
+        hint.textContent = 'Autoriza la bandeja de contacto@s35.com.mx.';
+        connectBtn.hidden = false;
+        connectBtn.textContent = 'Conectar';
+        disconnectBtn.hidden = true;
     }
 
     async function loadGmailStatus() {
