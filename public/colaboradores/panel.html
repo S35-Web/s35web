@@ -1802,8 +1802,8 @@
             margin: 0;
         }
         #gmailConnectCard.mail-connect .mail-connect-logo {
-            width: 28px;
-            height: 28px;
+            width: auto;
+            height: 22px;
             object-fit: contain;
             flex: 0 0 auto;
             display: block;
@@ -1819,7 +1819,16 @@
         }
         #gmailConnectCard.mail-connect .mail-connect-copy .muted {
             margin: 2px 0 0;
-            font-size: 12px;
+            font-size: 12.5px;
+        }
+        #gmailConnectCard.mail-connect.is-connected .mail-connect-copy strong {
+            display: none;
+        }
+        #gmailConnectCard.mail-connect.is-connected .mail-connect-copy .muted {
+            margin: 0;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 500;
         }
         #gmailConnectCard.mail-connect .mail-connect-actions {
             display: flex;
@@ -1829,6 +1838,9 @@
         }
         #gmailConnectCard.mail-connect.is-connected .mail-connect-actions {
             display: none;
+        }
+        [data-theme="dark"] #gmailConnectCard.mail-connect .mail-connect-logo {
+            filter: brightness(1.15);
         }
         .mail-workspace {
             flex: 1;
@@ -6321,10 +6333,10 @@
                         </div>
                         <div class="card mail-connect" id="gmailConnectCard" hidden>
                             <div class="mail-connect-row">
-                                <img class="mail-connect-logo" src="/Assets/gmail-logo.png" width="28" height="28" alt="Gmail">
+                                <img class="mail-connect-logo" src="/Assets/gmail-wordmark.png" width="88" height="22" alt="Gmail">
                                 <div class="mail-connect-copy">
                                     <strong id="gmailConnectTitle">Conectar Gmail</strong>
-                                    <p class="muted" id="gmailConnectHint">Autoriza la bandeja de contacto@s35.com.mx para verla aquí.</p>
+                                    <p class="muted" id="gmailConnectHint">contacto@s35.com.mx</p>
                                 </div>
                                 <div class="mail-connect-actions">
                                     <button id="gmailConnectBtn" class="btn primary" type="button">Conectar</button>
@@ -8654,7 +8666,7 @@
         if (gmailStatus.connected) {
             card.classList.add('is-connected');
             title.textContent = 'Gmail conectado';
-            hint.textContent = 'Bandeja: ' + (gmailStatus.email || 'contacto@s35.com.mx');
+            hint.textContent = gmailStatus.email || 'contacto@s35.com.mx';
             connectBtn.hidden = true;
             disconnectBtn.hidden = true;
             return;
