@@ -480,6 +480,25 @@
             font-size: 18px;
             letter-spacing: -0.01em;
         }
+        .pd-name-input {
+            display: block;
+            width: 100%;
+            max-width: 36rem;
+            margin: 0 0 4px;
+            padding: 2px 8px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            letter-spacing: inherit;
+        }
+        .pd-name-input:hover,
+        .pd-name-input:focus {
+            border-color: var(--border);
+            background: var(--panel);
+            outline: none;
+        }
         .page-sub {
             margin: 0 0 22px;
             color: var(--muted);
@@ -6119,6 +6138,7 @@
                             <div class="toolbar">
                                 <input id="productsSearch" class="search" type="search" placeholder="Buscar nombre, código o familia">
                                 <button type="button" class="btn" id="productsFamiliesBtn"><i class="fa-solid fa-tags"></i> Familias</button>
+                                <button type="button" class="btn primary" id="productsAddBtn"><i class="fa-solid fa-plus"></i> Alta</button>
                                 <button type="button" class="products-catalog-toggle" id="productsCatalogToggle" aria-expanded="false" aria-controls="productsCatalogTable" aria-label="Mostrar productos" title="Mostrar productos">
                                     <i class="fa-solid fa-chevron-right products-catalog-chevron" aria-hidden="true"></i>
                                 </button>
@@ -6145,7 +6165,7 @@
                         <button type="button" class="pd-back" id="productsBackBtn"><i class="fa-solid fa-arrow-left"></i> Volver a productos</button>
                         <div class="pd-hero">
                             <div>
-                                <h1 class="page-title" id="pdName">Producto</h1>
+                                <input id="pdName" class="page-title pd-name-input" type="text" value="Producto" aria-label="Nombre del producto" autocomplete="off" spellcheck="false">
                                 <div class="pd-hero-meta" id="pdMeta"></div>
                             </div>
                             <div class="toolbar" style="margin:0">
@@ -6454,6 +6474,35 @@
                     <button type="button" class="btn danger" id="purchaseTicketDelete" hidden><i class="fa-solid fa-trash-can"></i> Eliminar</button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div id="addProductModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="addProductTitle" style="max-width:440px">
+            <div class="modal-head">
+                <strong id="addProductTitle">Alta de producto</strong>
+                <button id="addProductClose" class="btn" type="button">Cerrar</button>
+            </div>
+            <form id="addProductForm" class="modal-body">
+                <div class="form-grid">
+                    <label>Nombre
+                        <input id="addProductName" type="text" required autocomplete="off" placeholder="Nombre comercial">
+                    </label>
+                    <label>Familia
+                        <select id="addProductFamily"></select>
+                    </label>
+                    <label>Presentación
+                        <select id="addProductKind">
+                            <option value="seco">Saco</option>
+                            <option value="liquido">Líquido (cubeta)</option>
+                        </select>
+                    </label>
+                    <p class="muted" style="margin:0">El código se asigna solo y no cambia si después le cambias el nombre.</p>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="addProductCancel">Cancelar</button>
+                    <button type="submit" class="btn primary">Crear</button>
+                </div>
+            </form>
         </div>
     </div>
     <div id="addInventoryModal" class="modal-backdrop" aria-hidden="true">
@@ -8258,6 +8307,143 @@
     renderMaterials();
 
     const recipes = data.recipes || [];
+    const PRODUCT_CATALOG_KEY = 's35_product_catalog_v1';
+    function loadProductCatalog() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(PRODUCT_CATALOG_KEY) || 'null');
+            if (!raw || typeof raw !== 'object') return { names: {}, added: [] };
+            return {
+                names: raw.names && typeof raw.names === 'object' ? raw.names : {},
+                added: Array.isArray(raw.added) ? raw.added : []
+            };
+        } catch (_) {
+            return { names: {}, added: [] };
+        }
+    }
+    function saveProductCatalog(store) {
+        localStorage.setItem(PRODUCT_CATALOG_KEY, JSON.stringify({
+            names: store.names || {},
+            added: store.added || [],
+            updatedAt: new Date().toISOString()
+        }));
+        if (window.S35PanelSync && window.S35PanelSync.flushPush) window.S35PanelSync.flushPush();
+    }
+    function slugifyProductName(name, taken) {
+        let base = String(name || 'producto').toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '') || 'producto';
+        let id = base;
+        let n = 2;
+        while (taken[id]) {
+            id = base + '-' + n;
+            n += 1;
+        }
+        return id;
+    }
+    function productSlugTakenMap() {
+        const taken = {};
+        (data.products || []).forEach(function (p) { if (p && p.slug) taken[p.slug] = true; });
+        (data.recipes || []).forEach(function (r) { if (r && r.product) taken[r.product] = true; });
+        (data.presentations || []).forEach(function (p) { if (p && p.productSlug) taken[p.productSlug] = true; });
+        return taken;
+    }
+    function nextCustomProductCode(added) {
+        let max = 0;
+        function scan(code) {
+            const m = String(code || '').match(/^FT-NP-(\d+)$/i);
+            if (m) max = Math.max(max, Number(m[1]));
+        }
+        (data.products || []).forEach(function (p) { scan(p && p.code); });
+        (data.recipes || []).forEach(function (r) { scan(r && r.code); });
+        (added || []).forEach(function (p) { scan(p && p.code); });
+        return 'FT-NP-' + String(max + 1).padStart(3, '0');
+    }
+    function recipeFromCustom(item) {
+        const liquid = item.kind === 'liquido';
+        return {
+            product: item.slug,
+            name: item.name,
+            code: item.code,
+            family: item.family || '',
+            kind: liquid ? 'liquido' : 'seco',
+            water: '',
+            status: 'pendiente',
+            note: '',
+            image: '',
+            imageAlt: item.name,
+            items: [],
+            batchDose: {
+                mode: 'plant-lot',
+                packSizeKg: liquid ? 19 : 25,
+                packagingPlantId: liquid ? 'cubeta-19l' : 'saco-rafia-general',
+                defaultVersionId: 'v1',
+                versions: [{ id: 'v1', name: 'V1', label: 'Estándar', items: [] }]
+            },
+            suggested: [],
+            custom: true
+        };
+    }
+    function applyProductCatalog() {
+        const store = loadProductCatalog();
+        (store.added || []).forEach(function (item) {
+            if (!item || !item.slug) return;
+            if (!recipes.some(function (r) { return r.product === item.slug; })) {
+                recipes.push(recipeFromCustom(item));
+            }
+        });
+        Object.keys(store.names || {}).forEach(function (slug) {
+            const name = String(store.names[slug] || '').trim();
+            if (!name) return;
+            (data.products || []).forEach(function (p) {
+                if (p && p.slug === slug) p.name = name;
+            });
+            recipes.forEach(function (r) {
+                if (r && r.product === slug) {
+                    r.name = name;
+                    r.imageAlt = name;
+                }
+            });
+        });
+        return store;
+    }
+    applyProductCatalog();
+    function renameProduct(slug, rawName) {
+        const name = String(rawName || '').trim().replace(/\s+/g, ' ');
+        if (!slug || !name) return false;
+        const store = loadProductCatalog();
+        store.names[slug] = name;
+        (store.added || []).forEach(function (item) {
+            if (item && item.slug === slug) item.name = name;
+        });
+        saveProductCatalog(store);
+        applyProductCatalog();
+        if (window.S35PosModule && window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
+        return true;
+    }
+    function addCustomProduct(rawName, family, kind) {
+        const name = String(rawName || '').trim().replace(/\s+/g, ' ');
+        if (!name) return null;
+        const store = loadProductCatalog();
+        const slug = slugifyProductName(name, productSlugTakenMap());
+        const item = {
+            slug: slug,
+            name: name,
+            code: nextCustomProductCode(store.added),
+            family: String(family || '').trim(),
+            kind: kind === 'liquido' ? 'liquido' : 'seco'
+        };
+        store.added.push(item);
+        store.names[slug] = name;
+        saveProductCatalog(store);
+        applyProductCatalog();
+        if (!finishedStock[slug]) finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
+        if (window.S35PosModule && window.S35PosModule.ensureProductPrice) {
+            window.S35PosModule.ensureProductPrice(slug, item.kind === 'liquido' ? null : 25);
+        }
+        if (window.S35PosModule && window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
+        return item;
+    }
     const FORMULA_KEY = 's35_plant_formulas_v3';
     function parseFirstNumber(text) {
         const m = String(text || '').match(/(\d+(?:[.,]\d+)?)/);
@@ -9779,7 +9965,8 @@
         if (listView) listView.hidden = true;
         if (detailView) detailView.hidden = false;
 
-        document.getElementById('pdName').textContent = item.name;
+        const nameInput = document.getElementById('pdName');
+        if (nameInput) nameInput.value = item.name;
         document.getElementById('pdMeta').innerHTML =
             '<span>' + esc(item.code || 'Sin código FT') + '</span>' +
             '<span>' + esc(item.family || PRODUCT_UNCATEGORIZED_LABEL) + '</span>' +
@@ -10048,6 +10235,74 @@
         }
         const productsFamiliesBtn = document.getElementById('productsFamiliesBtn');
         if (productsFamiliesBtn) productsFamiliesBtn.addEventListener('click', openProductFamiliesModal);
+        const nameInput = document.getElementById('pdName');
+        if (nameInput) {
+            nameInput.addEventListener('change', function () {
+                if (!hubProductSlug) return;
+                const item = hubCatalog().filter(function (p) { return p.slug === hubProductSlug; })[0];
+                const next = String(nameInput.value || '').trim();
+                if (!next) {
+                    nameInput.value = item ? item.name : '';
+                    return;
+                }
+                if (item && next === item.name) return;
+                renameProduct(hubProductSlug, next);
+                openProductHub(hubProductSlug, { skipHash: true, tab: hubProductTab });
+                renderProductsInventoryChart();
+                panelToast('Nombre actualizado. El código no cambió.');
+            });
+        }
+        const addProductModal = document.getElementById('addProductModal');
+        const addProductForm = document.getElementById('addProductForm');
+        const addProductName = document.getElementById('addProductName');
+        const addProductFamily = document.getElementById('addProductFamily');
+        function closeAddProduct() {
+            if (!addProductModal) return;
+            addProductModal.classList.remove('show');
+            addProductModal.setAttribute('aria-hidden', 'true');
+        }
+        function openAddProduct() {
+            if (!addProductModal) return;
+            if (addProductFamily && window.S35PosModule && window.S35PosModule.productFamilySelectHtml) {
+                addProductFamily.innerHTML = window.S35PosModule.productFamilySelectHtml('');
+            }
+            if (addProductName) addProductName.value = '';
+            const kind = document.getElementById('addProductKind');
+            if (kind) kind.value = 'seco';
+            addProductModal.classList.add('show');
+            addProductModal.setAttribute('aria-hidden', 'false');
+            if (addProductName) addProductName.focus();
+        }
+        const productsAddBtn = document.getElementById('productsAddBtn');
+        if (productsAddBtn) productsAddBtn.addEventListener('click', openAddProduct);
+        ['addProductClose', 'addProductCancel'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', closeAddProduct);
+        });
+        if (addProductModal) {
+            addProductModal.addEventListener('click', function (e) {
+                if (e.target === addProductModal) closeAddProduct();
+            });
+        }
+        if (addProductForm) {
+            addProductForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const kindEl = document.getElementById('addProductKind');
+                const created = addCustomProduct(
+                    addProductName ? addProductName.value : '',
+                    addProductFamily ? addProductFamily.value : '',
+                    kindEl ? kindEl.value : 'seco'
+                );
+                if (!created) return;
+                closeAddProduct();
+                productsFamilyFilter = 'all';
+                setProductsCatalogOpen(true);
+                renderProductHubChips();
+                renderProductsInventoryChart();
+                openProductHub(created.slug, { tab: 'formula' });
+                panelToast(created.name + ' · ' + created.code);
+            });
+        }
         const movBlock = document.getElementById('productsMovementsBlock');
         const movToggle = document.getElementById('productsMovementsToggle');
         const movBody = document.getElementById('productsMovementsBody');
@@ -12197,7 +12452,9 @@
         const d = (e && e.detail) || {};
         if (!d.bootDone) return;
         hydrateFinishedFromLocal();
+        applyProductCatalog();
         if (typeof refreshStockViews === 'function') refreshStockViews();
+        if (window.S35PosModule && window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
     });
 
     window.S35PanelAPI = {
@@ -12289,7 +12546,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260924-stock-sale"></script>
+    <script src="/colaboradores/pos-module.js?v=20260924-product-catalog"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260923-copilot-section"></script>
 </body>

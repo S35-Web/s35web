@@ -8504,6 +8504,12 @@
             getPriceEntry: function (id) { return prices[id] || null; },
             getDistributorPrice: getDistributorPrice,
             setTierPrice: setTierPrice,
+            ensureProductPrice: function (id, presentationKg) {
+                if (!id || prices[id]) return prices[id] || null;
+                ensurePriceEntry(id, presentationKg);
+                savePrices();
+                return prices[id];
+            },
             setDistributorPrice: setDistributorPrice,
             resetPricesToDefaults: resetPricesToDefaults,
             priceEditorHtml: priceEditorHtml,

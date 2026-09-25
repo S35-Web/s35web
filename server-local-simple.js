@@ -263,6 +263,7 @@ const server = http.createServer((req, res) => {
             's35_promo_codes_v1',
             's35_product_families',
             's35_product_family_overrides',
+            's35_product_catalog_v1',
             's35_hist_sales_imported_v13'
         ]);
         const readKey = (key) => {
