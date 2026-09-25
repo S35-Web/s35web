@@ -1,12 +1,15 @@
 /**
  * Copiloto de correo (Ask S35) — modo mail de /api/s35-chat.
+ * Ventana flotante redimensionable; trigger en el header de Mensajes.
  */
 (function () {
     'use strict';
 
+    const GEOM_KEY = 's35_mail_copilot_geom';
     const history = [];
     let busy = false;
     let selectedMail = null;
+    let openState = false;
 
     function el(id) {
         return document.getElementById(id);
@@ -232,11 +235,236 @@
         }
     }
 
+    function loadGeom() {
+        try {
+            const raw = localStorage.getItem(GEOM_KEY);
+            if (!raw) return null;
+            const g = JSON.parse(raw);
+            if (!g || typeof g !== 'object') return null;
+            return g;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function saveGeom(pane) {
+        if (!pane) return;
+        const rect = pane.getBoundingClientRect();
+        try {
+            localStorage.setItem(GEOM_KEY, JSON.stringify({
+                left: Math.round(rect.left),
+                top: Math.round(rect.top),
+                width: Math.round(rect.width),
+                height: Math.round(rect.height)
+            }));
+        } catch (_) {}
+    }
+
+    function clampGeom(g) {
+        const pad = 8;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const minW = 300;
+        const minH = 360;
+        let width = Math.max(minW, Math.min(Number(g.width) || 420, vw - pad * 2));
+        let height = Math.max(minH, Math.min(Number(g.height) || 640, vh - pad * 2));
+        let left = Number.isFinite(g.left) ? g.left : (vw - width - 20);
+        let top = Number.isFinite(g.top) ? g.top : (vh - height - 20);
+        left = Math.max(pad, Math.min(left, vw - width - pad));
+        top = Math.max(pad, Math.min(top, vh - height - pad));
+        return { left: left, top: top, width: width, height: height };
+    }
+
+    function applyGeom(pane, g) {
+        if (!pane || !g) return;
+        const c = clampGeom(g);
+        pane.style.left = c.left + 'px';
+        pane.style.top = c.top + 'px';
+        pane.style.right = 'auto';
+        pane.style.bottom = 'auto';
+        pane.style.width = c.width + 'px';
+        pane.style.height = c.height + 'px';
+    }
+
+    function syncLaunchUi(isOpen) {
+        const launch = el('mailCopilotLaunch');
+        if (launch) {
+            launch.classList.toggle('is-open', !!isOpen);
+            launch.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        }
+    }
+
+    function openFloat() {
+        const pane = el('mailCopilotPane');
+        if (!pane) return;
+        if (!openState) {
+            const saved = loadGeom();
+            if (saved) applyGeom(pane, saved);
+            else {
+                applyGeom(pane, {
+                    width: Math.min(420, window.innerWidth - 32),
+                    height: Math.min(640, window.innerHeight - 96),
+                    left: window.innerWidth - Math.min(420, window.innerWidth - 32) - 20,
+                    top: window.innerHeight - Math.min(640, window.innerHeight - 96) - 20
+                });
+            }
+        }
+        pane.hidden = false;
+        pane.setAttribute('aria-hidden', 'false');
+        pane.classList.add('is-open');
+        openState = true;
+        syncLaunchUi(true);
+        const input = el('mailCopilotInput');
+        if (input) {
+            try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); }
+        }
+    }
+
+    function closeFloat() {
+        const pane = el('mailCopilotPane');
+        if (pane) {
+            if (openState) saveGeom(pane);
+            pane.classList.remove('is-open');
+            pane.hidden = true;
+            pane.setAttribute('aria-hidden', 'true');
+        }
+        openState = false;
+        syncLaunchUi(false);
+    }
+
+    function toggleFloat() {
+        if (openState) closeFloat();
+        else openFloat();
+    }
+
+    function bindWindowChrome() {
+        const pane = el('mailCopilotPane');
+        const launch = el('mailCopilotLaunch');
+        const closeBtn = el('mailCopilotClose');
+        const drag = el('mailCopilotDrag');
+        const resize = el('mailCopilotResize');
+        if (!pane) return;
+
+        if (launch && !launch.dataset.bound) {
+            launch.dataset.bound = '1';
+            launch.addEventListener('click', function () {
+                toggleFloat();
+            });
+        }
+        if (closeBtn && !closeBtn.dataset.bound) {
+            closeBtn.dataset.bound = '1';
+            closeBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                closeFloat();
+            });
+        }
+
+        if (drag && !drag.dataset.bound) {
+            drag.dataset.bound = '1';
+            let dragging = false;
+            let startX = 0;
+            let startY = 0;
+            let origLeft = 0;
+            let origTop = 0;
+
+            drag.addEventListener('pointerdown', function (e) {
+                if (e.button != null && e.button !== 0) return;
+                if (e.target && e.target.closest && e.target.closest('#mailCopilotClose')) return;
+                dragging = true;
+                const rect = pane.getBoundingClientRect();
+                startX = e.clientX;
+                startY = e.clientY;
+                origLeft = rect.left;
+                origTop = rect.top;
+                pane.style.left = origLeft + 'px';
+                pane.style.top = origTop + 'px';
+                pane.style.right = 'auto';
+                pane.style.bottom = 'auto';
+                try { drag.setPointerCapture(e.pointerId); } catch (_) {}
+                e.preventDefault();
+            });
+            drag.addEventListener('pointermove', function (e) {
+                if (!dragging) return;
+                applyGeom(pane, {
+                    left: origLeft + (e.clientX - startX),
+                    top: origTop + (e.clientY - startY),
+                    width: pane.getBoundingClientRect().width,
+                    height: pane.getBoundingClientRect().height
+                });
+            });
+            function endDrag(e) {
+                if (!dragging) return;
+                dragging = false;
+                try { drag.releasePointerCapture(e.pointerId); } catch (_) {}
+                saveGeom(pane);
+            }
+            drag.addEventListener('pointerup', endDrag);
+            drag.addEventListener('pointercancel', endDrag);
+        }
+
+        if (resize && !resize.dataset.bound) {
+            resize.dataset.bound = '1';
+            let resizing = false;
+            let startX = 0;
+            let startY = 0;
+            let origW = 0;
+            let origH = 0;
+            let origLeft = 0;
+            let origTop = 0;
+
+            resize.addEventListener('pointerdown', function (e) {
+                if (e.button != null && e.button !== 0) return;
+                resizing = true;
+                const rect = pane.getBoundingClientRect();
+                startX = e.clientX;
+                startY = e.clientY;
+                origW = rect.width;
+                origH = rect.height;
+                origLeft = rect.left;
+                origTop = rect.top;
+                try { resize.setPointerCapture(e.pointerId); } catch (_) {}
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            resize.addEventListener('pointermove', function (e) {
+                if (!resizing) return;
+                applyGeom(pane, {
+                    left: origLeft,
+                    top: origTop,
+                    width: origW + (e.clientX - startX),
+                    height: origH + (e.clientY - startY)
+                });
+            });
+            function endResize(e) {
+                if (!resizing) return;
+                resizing = false;
+                try { resize.releasePointerCapture(e.pointerId); } catch (_) {}
+                saveGeom(pane);
+            }
+            resize.addEventListener('pointerup', endResize);
+            resize.addEventListener('pointercancel', endResize);
+        }
+
+        if (!window.__s35MailCopilotResizeBound) {
+            window.__s35MailCopilotResizeBound = true;
+            window.addEventListener('resize', function () {
+                if (!openState || !pane) return;
+                const rect = pane.getBoundingClientRect();
+                applyGeom(pane, {
+                    left: rect.left,
+                    top: rect.top,
+                    width: rect.width,
+                    height: rect.height
+                });
+            });
+        }
+    }
+
     async function ask(text) {
         const content = String(text || '').trim();
         if (!content || busy) return;
 
-        // Bloquear de inmediato para evitar doble clic / dos handlers
+        openFloat();
         setBusy(true, 'Pensando…');
 
         const mail = resolveSelectedMail();
@@ -311,6 +539,8 @@
     }
 
     function bind() {
+        bindWindowChrome();
+
         const form = el('mailCopilotForm');
         if (form && !form.dataset.bound) {
             form.dataset.bound = '1';
@@ -332,7 +562,6 @@
             });
         });
 
-        // Re-sincronizar si el panel ya tenía un correo abierto al cargar este script
         const synced = resolveSelectedMail();
         if (synced) updateHint(synced);
     }
@@ -347,6 +576,10 @@
         ask: ask,
         clear: clearChat,
         setSelectedMail: setSelectedMail,
-        bind: bind
+        bind: bind,
+        open: openFloat,
+        close: closeFloat,
+        toggle: toggleFloat,
+        isOpen: function () { return openState; }
     };
 })();

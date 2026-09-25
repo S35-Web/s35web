@@ -1780,51 +1780,33 @@
         #messages.section-mail > .page-sub { margin-top: 2px; margin-bottom: 0; }
         .mail-head {
             display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-        .mail-head {
-            display: flex;
-            align-items: flex-end;
+            align-items: center;
             justify-content: space-between;
             gap: 16px;
             flex-wrap: wrap;
         }
         .mail-head-text { min-width: 0; flex: 1; }
+        .mail-head-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 0 0 auto;
+            margin-left: auto;
+        }
         #gmailConnectCard.mail-connect {
             margin: 0;
             padding: 0;
             flex: 0 0 auto;
-            max-width: none;
+            max-width: min(280px, 42vw);
             border: 0;
             background: transparent;
             box-shadow: none;
-            align-self: center;
         }
         #gmailConnectCard.mail-connect .mail-connect-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             margin: 0;
-        }
-        #gmailConnectCard.mail-connect .mail-connect-logo-link {
-            display: inline-flex;
-            align-items: center;
-            line-height: 0;
-            opacity: 0.72;
-            transition: opacity 0.12s ease;
-        }
-        #gmailConnectCard.mail-connect .mail-connect-logo-link:hover {
-            opacity: 1;
-        }
-        #gmailConnectCard.mail-connect .mail-connect-logo {
-            width: auto;
-            height: 14px;
-            object-fit: contain;
-            flex: 0 0 auto;
-            display: block;
         }
         #gmailConnectCard.mail-connect .mail-connect-copy {
             min-width: 0;
@@ -1832,33 +1814,86 @@
         }
         #gmailConnectCard.mail-connect .mail-connect-copy strong {
             display: block;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 650;
         }
         #gmailConnectCard.mail-connect .mail-connect-copy .muted {
             margin: 2px 0 0;
-            font-size: 12.5px;
+            font-size: 11.5px;
         }
-        #gmailConnectCard.mail-connect.is-connected .mail-connect-copy {
+        #gmailConnectCard.mail-connect.is-connected {
             display: none;
         }
         #gmailConnectCard.mail-connect .mail-connect-actions {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
-            margin-left: 4px;
         }
-        #gmailConnectCard.mail-connect.is-connected .mail-connect-actions {
+        #gmailConnectCard.mail-connect .mail-connect-actions .btn {
+            height: 32px;
+            padding: 0 12px;
+            font-size: 12.5px;
+        }
+        .mail-gmail-mini {
             display: none;
+            align-items: center;
+            opacity: 0.55;
+            line-height: 0;
+            transition: opacity 0.12s ease;
         }
-        [data-theme="dark"] #gmailConnectCard.mail-connect .mail-connect-logo {
-            filter: brightness(1.2);
+        .mail-gmail-mini:hover { opacity: 1; }
+        .mail-gmail-mini.is-on { display: inline-flex; }
+        .mail-gmail-mini img {
+            width: auto;
+            height: 12px;
+            object-fit: contain;
+            display: block;
+        }
+        [data-theme="dark"] .mail-gmail-mini img { filter: brightness(1.2); }
+        .mail-copilot-launch {
+            appearance: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 36px;
+            padding: 0 12px 0 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(10, 10, 10, 0.04);
+            transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+        }
+        .mail-copilot-launch:hover {
+            background: var(--hover);
+            border-color: color-mix(in srgb, #f97316 35%, var(--border));
+        }
+        .mail-copilot-launch.is-open {
+            border-color: color-mix(in srgb, #f97316 45%, var(--border));
+            box-shadow:
+                0 0 0 1px color-mix(in srgb, #f97316 18%, transparent),
+                0 0 14px rgba(249, 115, 22, 0.18);
+        }
+        .mail-copilot-launch-orb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid #f97316;
+            box-sizing: border-box;
+            box-shadow:
+                0 0 8px 2px rgba(249, 115, 22, 0.45),
+                0 0 14px 3px rgba(249, 115, 22, 0.22);
+            flex: 0 0 auto;
         }
         .mail-workspace {
             flex: 1;
             min-height: 0;
             display: grid;
-            grid-template-columns: minmax(260px, 340px) minmax(0, 1fr) minmax(280px, 340px);
+            grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
             gap: 0;
             border: 1px solid var(--border);
             border-radius: var(--radius);
@@ -1866,8 +1901,7 @@
             overflow: hidden;
         }
         .mail-list-pane,
-        .mail-reader-pane,
-        .mail-copilot-pane {
+        .mail-reader-pane {
             min-height: 0;
             display: flex;
             flex-direction: column;
@@ -1877,7 +1911,6 @@
             border-right: 1px solid var(--border);
         }
         .mail-reader-pane {
-            border-right: 1px solid var(--border);
             background: var(--bg);
         }
         .mail-source-tabs {
@@ -2211,13 +2244,68 @@
             margin-top: 10px;
             flex-wrap: wrap;
         }
-        .mail-copilot-pane {
-            background: color-mix(in srgb, var(--panel) 94%, var(--bg));
+        .mail-copilot-float {
+            position: fixed;
+            z-index: 80;
+            display: none;
+            flex-direction: column;
+            width: min(420px, calc(100vw - 32px));
+            height: min(640px, calc(100vh - 96px));
+            min-width: 300px;
+            min-height: 360px;
+            max-width: calc(100vw - 16px);
+            max-height: calc(100vh - 24px);
+            right: 20px;
+            bottom: 20px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: color-mix(in srgb, var(--panel) 96%, var(--bg));
+            box-shadow:
+                0 8px 28px rgba(10, 10, 10, 0.12),
+                0 2px 8px rgba(10, 10, 10, 0.06);
+            overflow: hidden;
+            color: var(--text);
         }
-        .mail-copilot-head {
-            padding: 14px 16px 10px;
+        .mail-copilot-float.is-open {
+            display: flex;
+        }
+        .mail-copilot-float-bar {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 12px 10px 10px 16px;
             border-bottom: 1px solid var(--border);
             flex: 0 0 auto;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            background: var(--panel);
+        }
+        .mail-copilot-float-bar:active { cursor: grabbing; }
+        .mail-copilot-float-bar .mail-copilot-head {
+            flex: 1;
+            min-width: 0;
+            padding: 0;
+            border: 0;
+        }
+        .mail-copilot-float-close {
+            width: 32px;
+            height: 32px;
+            margin-top: -2px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+        .mail-copilot-float-close:hover {
+            background: var(--hover);
+            color: var(--text);
         }
         .mail-copilot-head h2 {
             margin: 0;
@@ -2309,19 +2397,24 @@
             color: var(--muted);
             min-height: 1.2em;
         }
-        @media (max-width: 1180px) {
-            .mail-workspace {
-                grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
-            }
-            .mail-copilot-pane {
-                display: none;
-            }
-            .mail-workspace.is-ai-open {
-                grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
-            }
-            .mail-workspace.is-ai-open .mail-list-pane { display: none; }
-            .mail-workspace.is-ai-open .mail-reader-pane { border-right: 1px solid var(--border); }
-            .mail-workspace.is-ai-open .mail-copilot-pane { display: flex; }
+        .mail-copilot-resize {
+            position: absolute;
+            right: 2px;
+            bottom: 2px;
+            width: 16px;
+            height: 16px;
+            cursor: nwse-resize;
+            touch-action: none;
+        }
+        .mail-copilot-resize::before {
+            content: '';
+            position: absolute;
+            right: 4px;
+            bottom: 4px;
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid color-mix(in srgb, var(--muted) 70%, transparent);
+            border-bottom: 2px solid color-mix(in srgb, var(--muted) 70%, transparent);
         }
         @media (max-width: 780px) {
             .mail-workspace {
@@ -2329,10 +2422,15 @@
                 min-height: 70vh;
             }
             .mail-list-pane { border-right: 0; border-bottom: 1px solid var(--border); max-height: 40vh; }
-            .mail-reader-pane { border-right: 0; }
-            .mail-workspace.is-ai-open .mail-list-pane,
-            .mail-workspace.is-ai-open .mail-reader-pane { display: none; }
-            .mail-workspace.is-ai-open .mail-copilot-pane { display: flex; }
+            .mail-copilot-float {
+                right: 10px;
+                left: 10px;
+                bottom: 10px;
+                width: auto;
+                height: min(72vh, 560px);
+            }
+            .mail-copilot-launch-label { display: none; }
+            .mail-copilot-launch { padding: 0 10px; width: 36px; justify-content: center; }
         }
         .num { font-variant-numeric: tabular-nums; }
         .unit { color: var(--muted); font-weight: 400; }
@@ -6420,20 +6518,26 @@
                             <h1 class="page-title">Mensajes</h1>
                             <p class="page-sub" id="messagesPageSub">contacto@s35.com.mx</p>
                         </div>
-                        <div class="card mail-connect" id="gmailConnectCard" hidden>
-                            <div class="mail-connect-row">
-                                <a class="mail-connect-logo-link" href="https://gmail.com" target="_blank" rel="noopener noreferrer" title="Abrir Gmail">
-                                    <img class="mail-connect-logo" src="/Assets/gmail-wordmark.png" width="56" height="14" alt="Gmail">
-                                </a>
-                                <div class="mail-connect-copy">
-                                    <strong id="gmailConnectTitle">Conectar Gmail</strong>
-                                    <p class="muted" id="gmailConnectHint">Autoriza la bandeja de contacto@s35.com.mx.</p>
-                                </div>
-                                <div class="mail-connect-actions">
-                                    <button id="gmailConnectBtn" class="btn primary" type="button">Conectar</button>
-                                    <button id="gmailDisconnectBtn" class="btn" type="button" hidden>Desconectar</button>
+                        <div class="mail-head-actions">
+                            <div class="card mail-connect" id="gmailConnectCard" hidden>
+                                <div class="mail-connect-row">
+                                    <div class="mail-connect-copy">
+                                        <strong id="gmailConnectTitle">Conectar Gmail</strong>
+                                        <p class="muted" id="gmailConnectHint">Autoriza la bandeja de contacto@s35.com.mx.</p>
+                                    </div>
+                                    <div class="mail-connect-actions">
+                                        <button id="gmailConnectBtn" class="btn primary" type="button">Conectar</button>
+                                        <button id="gmailDisconnectBtn" class="btn" type="button" hidden>Desconectar</button>
+                                    </div>
                                 </div>
                             </div>
+                            <a class="mail-gmail-mini" id="mailGmailMini" href="https://gmail.com" target="_blank" rel="noopener noreferrer" title="Abrir Gmail" hidden>
+                                <img src="/Assets/gmail-wordmark.png" width="48" height="12" alt="Gmail">
+                            </a>
+                            <button type="button" class="mail-copilot-launch" id="mailCopilotLaunch" aria-expanded="false" aria-controls="mailCopilotPane" title="Ask S35">
+                                <span class="mail-copilot-launch-orb" aria-hidden="true"></span>
+                                <span class="mail-copilot-launch-label">Ask S35</span>
+                            </button>
                         </div>
                     </div>
                     <div class="mail-workspace" id="mailWorkspace">
@@ -6449,7 +6553,6 @@
                                 <button type="button" class="mail-tool-btn danger" id="mailDeleteSelected" title="Eliminar" disabled><i class="fa-regular fa-trash-can"></i></button>
                                 <input id="searchInput" class="search" type="search" placeholder="Buscar…" aria-label="Buscar mensajes">
                                 <button id="refreshBtn" class="mail-tool-btn" type="button" title="Actualizar"><i class="fa-solid fa-rotate"></i></button>
-                                <button id="mailAiToggle" class="mail-tool-btn" type="button" title="Abrir copiloto" hidden><i class="fa-solid fa-comment-dots"></i></button>
                             </div>
                             <div class="mail-list" id="mailList" role="listbox" aria-label="Lista de mensajes"></div>
                         </aside>
@@ -6480,33 +6583,39 @@
                                 </div>
                             </div>
                         </main>
-                        <aside class="mail-copilot-pane" id="mailCopilotPane" aria-label="Copiloto de correo">
+                    </div>
+                    <aside class="mail-copilot-float" id="mailCopilotPane" role="dialog" aria-label="Ask S35" aria-hidden="true" hidden>
+                        <div class="mail-copilot-float-bar" id="mailCopilotDrag">
                             <div class="mail-copilot-head">
                                 <h2>Ask S35</h2>
                                 <p id="mailCopilotHint">Selecciona un correo para resumirlo, redactar o cruzarlo con clientes.</p>
                             </div>
-                            <div class="mail-copilot-chips" id="mailCopilotChips">
-                                <button type="button" class="mail-copilot-chip" data-mail-chip="resume">
-                                    <strong>Resumir</strong>
-                                    <span>Qué pide y qué urge</span>
-                                </button>
-                                <button type="button" class="mail-copilot-chip" data-mail-chip="draft">
-                                    <strong>Borrador de respuesta</strong>
-                                    <span>Tono profesional S-35</span>
-                                </button>
-                                <button type="button" class="mail-copilot-chip" data-mail-chip="client">
-                                    <strong>¿Es cliente?</strong>
-                                    <span>Buscar en la base S35</span>
-                                </button>
-                            </div>
-                            <div class="mail-copilot-messages" id="mailCopilotMessages"></div>
-                            <div class="mail-copilot-status" id="mailCopilotStatus" aria-live="polite"></div>
-                            <form class="mail-copilot-composer" id="mailCopilotForm">
-                                <input id="mailCopilotInput" type="text" autocomplete="off" maxlength="800" placeholder="Pregunta sobre este correo…" aria-label="Pregunta al copiloto de correo">
-                                <button type="submit" class="btn primary" id="mailCopilotSend" aria-label="Enviar"><i class="fa-solid fa-arrow-up"></i></button>
-                            </form>
-                        </aside>
-                    </div>
+                            <button type="button" class="mail-copilot-float-close" id="mailCopilotClose" title="Cerrar" aria-label="Cerrar Ask S35">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="mail-copilot-chips" id="mailCopilotChips">
+                            <button type="button" class="mail-copilot-chip" data-mail-chip="resume">
+                                <strong>Resumir</strong>
+                                <span>Qué pide y qué urge</span>
+                            </button>
+                            <button type="button" class="mail-copilot-chip" data-mail-chip="draft">
+                                <strong>Borrador de respuesta</strong>
+                                <span>Tono profesional S-35</span>
+                            </button>
+                            <button type="button" class="mail-copilot-chip" data-mail-chip="client">
+                                <strong>¿Es cliente?</strong>
+                                <span>Buscar en la base S35</span>
+                            </button>
+                        </div>
+                        <div class="mail-copilot-messages" id="mailCopilotMessages"></div>
+                        <div class="mail-copilot-status" id="mailCopilotStatus" aria-live="polite"></div>
+                        <form class="mail-copilot-composer" id="mailCopilotForm">
+                            <input id="mailCopilotInput" type="text" autocomplete="off" maxlength="800" placeholder="Pregunta sobre este correo…" aria-label="Pregunta al copiloto de correo">
+                            <button type="submit" class="btn primary" id="mailCopilotSend" aria-label="Enviar"><i class="fa-solid fa-arrow-up"></i></button>
+                        </form>
+                        <div class="mail-copilot-resize" id="mailCopilotResize" aria-hidden="true"></div>
+                    </aside>
                 </section>
 
                 <section id="materials" class="section">
@@ -8800,13 +8909,18 @@
         const connectBtn = document.getElementById('gmailConnectBtn');
         const disconnectBtn = document.getElementById('gmailDisconnectBtn');
         const pageSub = document.getElementById('messagesPageSub');
+        const mini = document.getElementById('mailGmailMini');
         if (pageSub) {
             pageSub.textContent = (gmailStatus && gmailStatus.email) || 'contacto@s35.com.mx';
         }
         if (!card) return;
-        card.hidden = false;
         card.classList.remove('is-connected');
+        if (mini) {
+            mini.hidden = true;
+            mini.classList.remove('is-on');
+        }
         if (!gmailStatus.configured) {
+            card.hidden = false;
             title.textContent = 'Gmail pendiente de configurar';
             hint.textContent = 'Faltan GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Vercel.';
             connectBtn.hidden = true;
@@ -8814,6 +8928,7 @@
             return;
         }
         if (gmailStatus.mongoOk === false) {
+            card.hidden = false;
             title.textContent = 'MongoDB no responde';
             hint.textContent = gmailStatus.mongoError
                 ? ('Detalle: ' + gmailStatus.mongoError)
@@ -8823,17 +8938,20 @@
             return;
         }
         if (gmailStatus.connected) {
+            card.hidden = true;
             card.classList.add('is-connected');
             title.textContent = 'Gmail conectado';
             hint.textContent = '';
-            const logoLink = card.querySelector('.mail-connect-logo-link');
-            if (logoLink) {
-                logoLink.title = 'Abrir Gmail · ' + (gmailStatus.email || 'contacto@s35.com.mx');
-            }
             connectBtn.hidden = true;
             disconnectBtn.hidden = true;
+            if (mini) {
+                mini.hidden = false;
+                mini.classList.add('is-on');
+                mini.title = 'Abrir Gmail · ' + (gmailStatus.email || 'contacto@s35.com.mx');
+            }
             return;
         }
+        card.hidden = false;
         title.textContent = 'Conectar Gmail';
         hint.textContent = 'Autoriza la bandeja de contacto@s35.com.mx.';
         connectBtn.hidden = false;
@@ -9228,6 +9346,9 @@
     if (mailAskSummary && !mailAskSummary.dataset.bound) {
         mailAskSummary.dataset.bound = '1';
         mailAskSummary.addEventListener('click', function () {
+            if (window.S35MailCopilot && typeof window.S35MailCopilot.open === 'function') {
+                window.S35MailCopilot.open();
+            }
             if (window.S35MailCopilot) window.S35MailCopilot.ask(
                 'Resume este correo: quién escribe, qué pide, urgencia y qué deberíamos responder.'
             );
@@ -9237,6 +9358,9 @@
     if (mailAskDraft && !mailAskDraft.dataset.bound) {
         mailAskDraft.dataset.bound = '1';
         mailAskDraft.addEventListener('click', function () {
+            if (window.S35MailCopilot && typeof window.S35MailCopilot.open === 'function') {
+                window.S35MailCopilot.open();
+            }
             if (window.S35MailCopilot) window.S35MailCopilot.ask(
                 'Redacta un borrador de respuesta profesional y breve en nombre de S-35. Usa los marcadores <<<DRAFT>>> y <<<END_DRAFT>>>.'
             );
@@ -9261,19 +9385,6 @@
         mailDraftClose.addEventListener('click', function () {
             const draft = document.getElementById('mailDraft');
             if (draft) draft.classList.remove('is-open');
-        });
-    }
-    const mailAiToggle = document.getElementById('mailAiToggle');
-    if (mailAiToggle) {
-        const mq = window.matchMedia('(max-width: 1180px)');
-        function syncAiToggle() {
-            mailAiToggle.hidden = !mq.matches;
-        }
-        syncAiToggle();
-        if (mq.addEventListener) mq.addEventListener('change', syncAiToggle);
-        mailAiToggle.addEventListener('click', function () {
-            const ws = document.getElementById('mailWorkspace');
-            if (ws) ws.classList.toggle('is-ai-open');
         });
     }
 
@@ -14624,7 +14735,7 @@
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
     <script src="/colaboradores/pos-module.js?v=20260925-cloud-sync3"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
-    <script src="/colaboradores/mail-copilot.js?v=20260925-mail-sync2"></script>
+    <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>
 </body>
 </html>
