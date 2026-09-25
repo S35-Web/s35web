@@ -2945,6 +2945,31 @@
         analyticsSalesCache = null;
     }
 
+    function averageSalePriceLastMonth(slug) {
+        const key = String(slug || '');
+        if (!key) return 0;
+        const since = Date.now() - 30 * 86400000;
+        let qty = 0;
+        let money = 0;
+        salesForAnalytics().forEach(function (raw) {
+            if (!raw || isSaleEditDeleted(raw.id)) return;
+            const sale = applySaleEditPatch(raw);
+            const t = new Date(sale.createdAt).getTime();
+            if (!isFinite(t) || t < since) return;
+            (sale.items || []).forEach(function (it) {
+                if (!it || String(it.product || '') !== key) return;
+                const q = Number(it.qty) || 0;
+                if (!(q > 0)) return;
+                const line = it.lineTotal != null ? Number(it.lineTotal) : q * (Number(it.price) || 0);
+                if (!isFinite(line)) return;
+                qty += q;
+                money += line;
+            });
+        });
+        if (!(qty > 0)) return 0;
+        return Math.round((money / qty) * 100) / 100;
+    }
+
     function salesForAnalytics() {
         if (!historicalSales.length) return sales;
         if (!analyticsSalesCache) {
@@ -8533,6 +8558,7 @@
             importHistoricalSales: importHistoricalSales,
             renderCobranza: renderCobranza,
             baseUnitPrice: baseUnitPrice,
+            averageSalePriceLastMonth: averageSalePriceLastMonth,
             unitFor: unitFor,
             getPromoCodes: function () { return promoCodes.slice(); },
             renderPromosAdmin: renderPromosAdmin
