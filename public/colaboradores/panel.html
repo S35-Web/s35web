@@ -1771,11 +1771,11 @@
 
         /* —— Mensajes: bandeja 3 paneles (lista | lector | copiloto) —— */
         #messages.section-mail {
-            display: flex;
             flex-direction: column;
             min-height: calc(100vh - var(--topbar-h) - 28px);
             gap: 12px;
         }
+        #messages.section-mail.section.active { display: flex; }
         #messages.section-mail > .page-title { margin-bottom: 0; }
         #messages.section-mail > .page-sub { margin-top: 2px; margin-bottom: 0; }
         .mail-head {
