@@ -4411,6 +4411,14 @@
             color: var(--text);
         }
         .products-print-btn i { font-size: 13px; }
+        .products-sort-btn {
+            height: 34px;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .01em;
+        }
+        .products-sort-btn i { font-size: 12px; }
         .products-inventory-chart {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -6187,6 +6195,10 @@
                                     <div class="products-inventory-btns">
                                         <button type="button" class="btn products-print-btn" id="productsPrintBtn" title="Imprimir reporte de inventario" aria-label="Imprimir reporte de inventario">
                                             <i class="fa-solid fa-print" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="btn products-sort-btn" id="productsInventorySortBtn" data-sort="az" title="Orden alfabético A-Z. Cambiar a familias" aria-label="Orden alfabético activo. Cambiar a orden por familias">
+                                            <i class="fa-solid fa-arrow-down-a-z" aria-hidden="true"></i>
+                                            <span class="products-sort-label">A-Z</span>
                                         </button>
                                         <button type="button" class="btn" id="productsAddInventoryBtn">
                                             <i class="fa-solid fa-plus" aria-hidden="true"></i> Agregar inventario
@@ -10013,6 +10025,58 @@
         return (Number(n) || 0).toLocaleString('es-MX', { maximumFractionDigits: 0 });
     }
 
+    const PRODUCTS_INV_SORT_KEY = 's35_pt_ord';
+    let productsInventorySort = 'az';
+    try {
+        const savedInvSort = localStorage.getItem(PRODUCTS_INV_SORT_KEY);
+        if (savedInvSort === 'fam' || savedInvSort === 'az') productsInventorySort = savedInvSort;
+    } catch (_) {}
+
+    function cmpEsMx(a, b) {
+        return String(a || '').localeCompare(String(b || ''), 'es-MX');
+    }
+
+    function sortFinishedInventory(list) {
+        list.sort(function (a, b) {
+            if (productsInventorySort === 'fam') {
+                const fa = String(a.family || '').trim();
+                const fb = String(b.family || '').trim();
+                if (!fa !== !fb) return fa ? -1 : 1;
+                const byFam = cmpEsMx(fa, fb);
+                if (byFam) return byFam;
+            }
+            const byName = cmpEsMx(a.name, b.name);
+            if (byName) return byName;
+            return cmpEsMx(a.slug, b.slug);
+        });
+        return list;
+    }
+
+    function syncProductsInventorySortBtn() {
+        const btn = document.getElementById('productsInventorySortBtn');
+        if (!btn) return;
+        const byFamily = productsInventorySort === 'fam';
+        btn.dataset.sort = productsInventorySort;
+        btn.title = byFamily
+            ? 'Orden por familias. Cambiar a A-Z'
+            : 'Orden alfabético A-Z. Cambiar a familias';
+        btn.setAttribute('aria-label', byFamily
+            ? 'Orden por familias activo. Cambiar a orden alfabético'
+            : 'Orden alfabético activo. Cambiar a orden por familias');
+        const label = btn.querySelector('.products-sort-label');
+        if (label) label.textContent = byFamily ? 'Familias' : 'A-Z';
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.className = byFamily ? 'fa-solid fa-palette' : 'fa-solid fa-arrow-down-a-z';
+        }
+    }
+
+    function setProductsInventorySort(mode) {
+        productsInventorySort = mode === 'fam' ? 'fam' : 'az';
+        try { localStorage.setItem(PRODUCTS_INV_SORT_KEY, productsInventorySort); } catch (_) {}
+        renderProductsInventoryChart();
+    }
+
     function renderProductsInventoryChart() {
         const host = document.getElementById('productsInventoryChart');
         const totalEl = document.getElementById('productsInventoryTotal');
@@ -10020,7 +10084,7 @@
         const valueEl = document.getElementById('productsInventoryValue');
         const subEl = document.getElementById('productsInventorySub');
         if (!host) return;
-        const list = hubCatalog().map(function (p) {
+        const list = sortFinishedInventory(hubCatalog().map(function (p) {
             const fin = finishedStock[p.slug] || { stock: 0 };
             return {
                 slug: p.slug,
@@ -10028,9 +10092,7 @@
                 family: p.family || '',
                 stock: Math.max(0, Number(fin.stock) || 0)
             };
-        }).sort(function (a, b) {
-            return b.stock - a.stock || String(a.name).localeCompare(String(b.name), 'es');
-        });
+        }));
         list.forEach(function (p) {
             const raw = (window.S35PosModule && window.S35PosModule.baseUnitPrice)
                 ? window.S35PosModule.baseUnitPrice(p.slug)
@@ -10054,6 +10116,7 @@
         }
         if (!list.length) {
             host.innerHTML = '';
+            syncProductsInventorySortBtn();
             return;
         }
         host.innerHTML = list.map(function (p) {
@@ -10077,6 +10140,7 @@
         }).join('');
         host.setAttribute('aria-label', 'Inventario de producto terminado. Total ' + fmtStockQty(total) + '.');
         syncProductsQtyColumn(host);
+        syncProductsInventorySortBtn();
     }
 
     function syncProductsQtyColumn(host) {
@@ -10488,6 +10552,12 @@
         }
         const productsPrintBtn = document.getElementById('productsPrintBtn');
         if (productsPrintBtn) productsPrintBtn.addEventListener('click', printFinishedCount);
+        const productsSortBtn = document.getElementById('productsInventorySortBtn');
+        if (productsSortBtn) {
+            productsSortBtn.addEventListener('click', function () {
+                setProductsInventorySort(productsInventorySort === 'fam' ? 'az' : 'fam');
+            });
+        }
         const inventoryChart = document.getElementById('productsInventoryChart');
         if (inventoryChart) {
             inventoryChart.addEventListener('click', function (e) {
