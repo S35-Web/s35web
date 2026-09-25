@@ -4237,7 +4237,24 @@
         }
         .materials-inventory-chart .products-inventory-row {
             grid-template-columns: minmax(0, 1.15fr) minmax(64px, 1fr) 5.6em;
-            padding-top: 12px;
+        }
+        .mat-kpis {
+            grid-template-columns: repeat(5, 1fr);
+            margin-bottom: 16px;
+        }
+        .mat-kpis .kpi {
+            min-height: 0;
+            padding: 12px 14px;
+            border-bottom: none;
+        }
+        .mat-kpis .kpi:nth-child(3n) { border-right: 1px solid var(--border); }
+        .mat-kpis .kpi:last-child { border-right: none; }
+        .mat-kpis .kpi .val { font-size: 22px; }
+        @media (max-width: 900px) {
+            .mat-kpis { grid-template-columns: 1fr 1fr; }
+            .mat-kpis .kpi { border-bottom: 1px solid var(--border); }
+            .mat-kpis .kpi:nth-child(2n) { border-right: none; }
+            .mat-kpis .kpi:nth-last-child(-n+2) { border-bottom: none; }
         }
         .materials-inventory-chart .products-inventory-track {
             position: relative;
@@ -4258,11 +4275,12 @@
         }
         .mat-min-mark span {
             position: absolute;
-            left: 2px;
-            bottom: calc(100% + 1px);
-            font-size: 8px;
+            left: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 7px;
             line-height: 1;
-            font-weight: 500;
+            font-weight: 600;
             letter-spacing: .02em;
             color: #1a1a1a;
             white-space: nowrap;
@@ -5313,21 +5331,33 @@
                 <section id="materials" class="section">
                     <h1 class="page-title">Materias primas</h1>
                     <p class="page-sub">Inventario de planta. Los cambios se guardan en este navegador.</p>
+                    <div class="kpis mat-kpis" id="materialsKpis">
+                        <div class="kpi">
+                            <div class="label">Materiales</div>
+                            <div class="val" id="materialsKpiCount">0</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Con stock</div>
+                            <div class="val" id="materialsKpiWithStock">0</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">En cero</div>
+                            <div class="val" id="materialsKpiZero">0</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Bajo mínimo</div>
+                            <div class="val" id="materialsKpiBelow">0</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Valor</div>
+                            <div class="val" id="materialsKpiValue">$0.00</div>
+                        </div>
+                    </div>
                     <div class="card products-inventory-card" id="materialsInventoryCard">
                         <div class="products-inventory-head">
                             <div>
                                 <p class="pd-section-label">Inventario</p>
                                 <p class="page-sub" id="materialsInventorySub">Materia prima</p>
-                            </div>
-                            <div class="products-inventory-kpis">
-                                <div>
-                                    <span class="label">Materiales</span>
-                                    <span class="val" id="materialsInventoryTotal">0</span>
-                                </div>
-                                <div>
-                                    <span class="label">Con stock</span>
-                                    <span class="val" id="materialsInventoryWithStock">0</span>
-                                </div>
                             </div>
                         </div>
                         <div class="products-inventory-chart materials-inventory-chart" id="materialsInventoryChart" role="group" aria-label="Inventario de todas las materias primas"></div>
@@ -7772,8 +7802,11 @@
     }
     function renderMaterialsInventoryChart() {
         const host = document.getElementById('materialsInventoryChart');
-        const totalEl = document.getElementById('materialsInventoryTotal');
-        const withEl = document.getElementById('materialsInventoryWithStock');
+        const countEl = document.getElementById('materialsKpiCount');
+        const withEl = document.getElementById('materialsKpiWithStock');
+        const zeroEl = document.getElementById('materialsKpiZero');
+        const belowEl = document.getElementById('materialsKpiBelow');
+        const valueEl = document.getElementById('materialsKpiValue');
         const subEl = document.getElementById('materialsInventorySub');
         if (!host) return;
         const list = inventory.map(function (m) {
@@ -7790,8 +7823,16 @@
             return b.stock - a.stock || String(a.name).localeCompare(String(b.name), 'es');
         });
         const withStock = list.filter(function (m) { return m.stock > 0; }).length;
-        if (totalEl) totalEl.textContent = String(list.length);
+        const belowMin = inventory.filter(function (m) {
+            const min = Math.max(0, Number(m.minStock) || 0);
+            return min > 0 && (Number(m.stock) || 0) < min;
+        }).length;
+        const value = inventory.reduce(function (sum, m) { return sum + materialInventoryValue(m); }, 0);
+        if (countEl) countEl.textContent = String(list.length);
         if (withEl) withEl.textContent = String(withStock);
+        if (zeroEl) zeroEl.textContent = String(Math.max(0, list.length - withStock));
+        if (belowEl) belowEl.textContent = String(belowMin);
+        if (valueEl) valueEl.textContent = moneyMx(value);
         if (subEl) {
             if (!list.length) subEl.textContent = 'Sin materias primas';
             else if (!withStock) subEl.textContent = list.length + ' materiales · sin existencia';
