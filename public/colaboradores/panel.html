@@ -9122,8 +9122,9 @@
             setMessagesBadge(allMessages.filter(function (x) { return x.unread; }).length);
             if (!silent) refreshMailList();
             else {
-                const row = document.querySelector('.mail-row[data-id="' + CSS.escape(id) + '"]');
-                if (row) row.classList.remove('is-unread');
+                document.querySelectorAll('.mail-row').forEach(function (row) {
+                    if (row.getAttribute('data-id') === id) row.classList.remove('is-unread');
+                });
             }
         } catch (_) {}
     }
