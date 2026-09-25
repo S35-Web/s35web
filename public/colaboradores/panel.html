@@ -883,6 +883,52 @@
             border-radius: 6px;
             background: color-mix(in srgb, var(--text) 8%, transparent);
         }
+        .copilot-deep-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+        }
+        .copilot-deep-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0 2px;
+            padding: 2px 8px;
+            border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--panel) 70%, transparent);
+            color: var(--text);
+            font: inherit;
+            font-size: 12.5px;
+            font-weight: 560;
+            line-height: 1.35;
+            cursor: pointer;
+            vertical-align: baseline;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .copilot-deep-link.is-block {
+            margin: 0;
+            padding: 7px 12px;
+            font-size: 13px;
+        }
+        .copilot-deep-link:hover {
+            background: color-mix(in srgb, var(--text) 8%, var(--panel));
+            border-color: color-mix(in srgb, var(--text) 35%, transparent);
+        }
+        .copilot-deep-link:active {
+            transform: translateY(1px);
+        }
+        .copilot-deep-link[data-s35-kind="note"]::before {
+            content: '';
+            width: 0.55em;
+            height: 0.55em;
+            border-radius: 2px;
+            background: currentColor;
+            opacity: 0.55;
+        }
 
         .copilot-composer-wrap {
             flex: 0 0 auto;
@@ -13279,6 +13325,33 @@
             el.value = q || '';
             el.dispatchEvent(new Event('input'));
         },
+        openMaterial: function (idOrQuery) {
+            const key = String(idOrQuery || '').trim();
+            if (!key) return false;
+            showSection('materials', { skipHash: true });
+            const byId = inventory.filter(function (m) { return m && m.id === key; })[0];
+            if (byId && typeof openPlantModal === 'function') {
+                openPlantModal(byId);
+                return true;
+            }
+            const q = key.toLowerCase();
+            const byName = inventory.filter(function (m) {
+                if (!m) return false;
+                const blob = [m.name, m.id, m.labSlug].join(' ').toLowerCase();
+                return blob.indexOf(q) >= 0;
+            })[0];
+            if (byName && typeof openPlantModal === 'function') {
+                openPlantModal(byName);
+                return true;
+            }
+            const el = document.getElementById('matSearch');
+            if (el) {
+                el.value = key;
+                el.dispatchEvent(new Event('input'));
+                el.focus();
+            }
+            return !!byName;
+        },
         focusProductSearch: function (q) {
             const el = document.getElementById('productsSearch');
             if (!el) return;
@@ -13289,8 +13362,8 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260924-month-avg"></script>
+    <script src="/colaboradores/pos-module.js?v=20260925-copilot-links"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
-    <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-md"></script>
+    <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>
 </body>
 </html>

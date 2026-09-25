@@ -5120,15 +5120,19 @@
             if (name === 'search_sales') {
                 const hits = searchSales(args.query, args.limit || 8).map(function (s) {
                     const items = (s.items || []).slice(0, 12).map(function (it) {
+                        const slug = it.product || null;
+                        const label = it.name || it.product || 'Producto';
                         return {
-                            name: it.name || it.product || null,
-                            product: it.product || null,
+                            name: label,
+                            product: slug,
                             code: it.code || null,
                             qty: Number(it.qty) || 0,
                             price: Number(it.price) || 0,
-                            lineTotal: Number(it.lineTotal != null ? it.lineTotal : (Number(it.qty) || 0) * (Number(it.price) || 0)) || 0
+                            lineTotal: Number(it.lineTotal != null ? it.lineTotal : (Number(it.qty) || 0) * (Number(it.price) || 0)) || 0,
+                            open: slug ? ('[[product:' + slug + '|' + label + ']]') : null
                         };
                     });
+                    const folio = s.folio || saleReceiptId(s) || s.id;
                     return {
                         id: s.id,
                         folio: s.folio || null,
@@ -5136,12 +5140,14 @@
                         total: Number(s.total) || 0,
                         createdAt: s.createdAt,
                         client: saleClientLabel(s),
+                        clientId: s.clientId || (s.client && s.client.id) || null,
                         city: cityLabel(saleCity(s)),
                         billing: s.billing || null,
                         paymentMethod: s.paymentMethod || null,
                         matchedVia: s._matchedVia || null,
                         items: items,
-                        itemsPreview: saleItemsPreview(s)
+                        itemsPreview: saleItemsPreview(s),
+                        open: s.id ? ('[[note:' + s.id + '|Ver nota ' + folio + ']]') : null
                     };
                 });
                 return { ok: true, query: args.query, results: hits };
@@ -5164,7 +5170,8 @@
                         type: normalizeClientType(c.type),
                         phone: c.phone || '',
                         tickets: sales.length,
-                        total: Math.round(total * 100) / 100
+                        total: Math.round(total * 100) / 100,
+                        open: c.id ? ('[[client:' + c.id + '|' + (c.name || 'Cliente') + ']]') : null
                     };
                 });
                 return { ok: true, query: args.query, results: hits };
@@ -5187,7 +5194,11 @@
                         offset: o,
                         city: cityId,
                         label: formatPeriodLabel(p, bounds.start, bounds.end),
-                        items: topProductsInSales(list, limit)
+                        items: topProductsInSales(list, limit).map(function (it) {
+                            return Object.assign({}, it, {
+                                open: it.slug ? ('[[product:' + it.slug + '|' + (it.name || it.slug) + ']]') : null
+                            });
+                        })
                     };
                 }
                 const ranked = topClientsInSales(list, limit, { excludePlaceholders: true });
@@ -5197,7 +5208,11 @@
                     offset: o,
                     city: cityId,
                     label: formatPeriodLabel(p, bounds.start, bounds.end),
-                    items: ranked.items,
+                    items: ranked.items.map(function (it) {
+                        return Object.assign({}, it, {
+                            open: it.clientId ? ('[[client:' + it.clientId + '|' + (it.name || 'Cliente') + ']]') : null
+                        });
+                    }),
                     note: ranked.meta.excludedPlaceholderTickets
                         ? ('«Histórico importado» no es un cliente: son tickets migrados del sistema anterior sin nombre de cliente. ' +
                             'Se excluyeron ' + ranked.meta.excludedPlaceholderTickets +
@@ -5213,14 +5228,21 @@
                     (window.S35PanelAPI.getLowStockMaterials() || []).slice(0, 12).forEach(function (m) {
                         attention.push({
                             type: 'stock',
+                            id: m.id || null,
                             name: m.name || m.id,
                             free: m.free != null ? m.free : m.stock,
-                            minStock: m.minStock
+                            minStock: m.minStock,
+                            open: m.id ? ('[[material:' + m.id + '|' + (m.name || m.id) + ']]') : null
                         });
                     });
                 }
                 (typeof computeDashStaleProducts === 'function' ? computeDashStaleProducts(8) : []).forEach(function (p) {
-                    attention.push({ type: 'stale', name: p.name, slug: p.slug });
+                    attention.push({
+                        type: 'stale',
+                        name: p.name,
+                        slug: p.slug,
+                        open: p.slug ? ('[[product:' + p.slug + '|' + (p.name || p.slug) + ']]') : null
+                    });
                 });
                 return { ok: true, alerts: attention };
             }

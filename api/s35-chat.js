@@ -170,7 +170,8 @@ const TOOLS = [
     function: {
       name: 'navigate',
       description:
-        'Navega el panel a una sección. Úsalo cuando el usuario quiera VER algo (corte, cliente, producto), no solo preguntar cifras.',
+        'Navega el panel a una sección o abre un recurso. Úsalo cuando el usuario quiera VER algo (corte, cliente, producto, nota), no solo preguntar cifras. ' +
+        'Preferible: en respuestas de texto incluye links [[note:id|…]] / [[product:slug|…]] / [[material:id|…]] / [[client:id|…]] para que el usuario abra con un clic.',
       parameters: {
         type: 'object',
         properties: {
@@ -200,6 +201,8 @@ const TOOLS = [
           },
           clientId: { type: 'string' },
           productSlug: { type: 'string' },
+          saleId: { type: 'string', description: 'ID de nota/ticket para abrir el modal' },
+          materialId: { type: 'string', description: 'ID o nombre de materia prima' },
           reason: { type: 'string' }
         },
         required: ['section']
@@ -226,6 +229,11 @@ function systemPrompt(context) {
     'Formato: usa Markdown ligero que el chat renderiza (negritas **así**, listas con - o 1.). ' +
       'Para una nota/ticket: 1 frase con el dato clave (cliente/total), luego lista Folio / Fecha / Total / Ítems. ' +
       'Sin tablas, sin # encabezados, sin HTML. No pidas confirmación de más info al final salvo que falte un dato.',
+    'ENLACES CLICABLES: el chat convierte [[tipo:id|etiqueta]] en botones. Tipos: note (id de venta), product (slug), material (id), client (id). ' +
+      'Cuando cites una nota, incluye al final exactamente el campo open de results[] (ej. [[note:sale-…|Ver nota HIST-R64069]]). ' +
+      'Si hay productos relevantes con open/product, añade también [[product:slug|nombre]]. ' +
+      'Si citas un cliente con id, [[client:id|nombre]]. Para materias primas de stock_alerts usa su open. ' +
+      'Copia los ids de las tools; no inventes ids ni slugs.',
     'Eres el cerebro del panel: para cifras de periodos, ciudades, clientes, productos o stock DEBES usar tools.',
     'Offsets de día: 0=hoy, -1=ayer, -2=antier. Semana/mes/año igual (0 actual, -1 anterior).',
     'Para «toda la historia / histórico / all time» usa period=historial (no inventes tops).',
@@ -233,9 +241,9 @@ function systemPrompt(context) {
     'Si top_clients trae note sobre tickets sin cliente, menciónalo breve y lista el top de items[] (nunca digas que no hay top 10 si items tiene filas).',
     'El CONTEXTO es solo un snapshot rápido. Si falta un dato (ej. antier o top 10), llama la tool correspondiente.',
     'No inventes tickets ni totales. Si la tool devuelve vacío, dilo.',
-    'Para «último cliente que compró X / nota de producto X» usa search_sales con el nombre del producto; responde con cliente, folio, fecha, total e ítems relevantes de results[0] (ya vienen los más recientes primero).',
-    'Si search_sales encuentra notas, cita folio/cliente/total/fecha; ofrece navigate a salesHistory si el usuario quiere verlas.',
-    'Para abrir pantallas usa navigate. Para solo informar cifras, no navegues salvo que el usuario lo pida.',
+    'Para «último cliente que compró X / nota de producto X» usa search_sales con el nombre del producto; responde con cliente, folio, fecha, total e ítems relevantes de results[0] (ya vienen los más recientes primero) y su link open.',
+    'Si search_sales encuentra notas, cita folio/cliente/total/fecha e incluye el botón [[note:…]].',
+    'Para abrir pantallas de inmediato (sin esperar clic) usa navigate. Para solo informar, no navegues: deja los botones [[…]] en el texto.',
     '',
     'SNAPSHOT (JSON):',
     JSON.stringify(ctx).slice(0, 10000)
@@ -360,6 +368,8 @@ function extractNavigateActions(message) {
       city: args.city || null,
       clientId: args.clientId || null,
       productSlug: args.productSlug || null,
+      saleId: args.saleId || null,
+      materialId: args.materialId || null,
       reason: args.reason || ''
     });
   });

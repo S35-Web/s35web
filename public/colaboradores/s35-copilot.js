@@ -41,12 +41,83 @@
             .replace(/"/g, '&quot;');
     }
 
+    const DEEP_LINK_RE = /\[\[(note|product|material|client):([^\]|]+)\|([^\]]+)\]\]/gi;
+    const DEEP_LINK_KINDS = { note: 1, product: 1, material: 1, client: 1 };
+
+    function sanitizeDeepId(raw) {
+        return String(raw || '').trim().slice(0, 120).replace(/[<>"']/g, '');
+    }
+
+    function sanitizeDeepLabel(raw) {
+        return String(raw || '').trim().slice(0, 80).replace(/\s+/g, ' ');
+    }
+
+    function parseDeepLinkToken(kind, id, label) {
+        const k = String(kind || '').toLowerCase();
+        if (!DEEP_LINK_KINDS[k]) return null;
+        const cleanId = sanitizeDeepId(id);
+        if (!cleanId) return null;
+        return {
+            kind: k,
+            id: cleanId,
+            label: sanitizeDeepLabel(label) || cleanId
+        };
+    }
+
+    function parseDeepLinksFromText(text) {
+        const out = [];
+        const seen = {};
+        String(text || '').replace(DEEP_LINK_RE, function (_, kind, id, label) {
+            const link = parseDeepLinkToken(kind, id, label);
+            if (!link) return '';
+            const key = link.kind + ':' + link.id;
+            if (!seen[key]) {
+                seen[key] = 1;
+                out.push(link);
+            }
+            return '';
+        });
+        return out;
+    }
+
+    function deepLinkButtonHtml(link, opts) {
+        opts = opts || {};
+        const cls = opts.block ? 'copilot-deep-link is-block' : 'copilot-deep-link';
+        return (
+            '<button type="button" class="' + cls + '"' +
+            ' data-s35-kind="' + escapeHtml(link.kind) + '"' +
+            ' data-s35-id="' + escapeHtml(link.id) + '"' +
+            ' title="Abrir">' +
+            escapeHtml(link.label) +
+            '</button>'
+        );
+    }
+
+    function stripDeepLinkTokens(text) {
+        return String(text || '')
+            .replace(DEEP_LINK_RE, '')
+            .replace(/[ \t]+\n/g, '\n')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+    }
+
     /** Markdown ligero y seguro para burbujas del asistente (sin HTML crudo). */
     function formatInlineMd(raw) {
-        let s = escapeHtml(raw);
+        const tokens = [];
+        let s = String(raw == null ? '' : raw).replace(DEEP_LINK_RE, function (_, kind, id, label) {
+            const link = parseDeepLinkToken(kind, id, label);
+            if (!link) return '';
+            const idx = tokens.length;
+            tokens.push(deepLinkButtonHtml(link));
+            return '\u0000DL' + idx + '\u0000';
+        });
+        s = escapeHtml(s);
         s = s.replace(/`([^`\n]+)`/g, '<code>$1</code>');
         s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
         s = s.replace(/(^|[^*\w])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+        s = s.replace(/\u0000DL(\d+)\u0000/g, function (_, n) {
+            return tokens[Number(n)] || '';
+        });
         return s;
     }
 
@@ -133,6 +204,111 @@
         return parts.join('') || ('<p>' + formatInlineMd(src) + '</p>');
     }
 
+    function collectLinksFromToolPayload(payload, into, seen) {
+        if (!payload) return;
+        if (typeof payload === 'string') {
+            try { payload = JSON.parse(payload); } catch (_) { return; }
+        }
+        if (typeof payload !== 'object') return;
+
+        function add(link) {
+            if (!link || !link.kind || !link.id) return;
+            const key = link.kind + ':' + link.id;
+            if (seen[key]) return;
+            seen[key] = 1;
+            into.push(link);
+        }
+
+        function fromOpen(open) {
+            if (!open || typeof open !== 'string') return;
+            parseDeepLinksFromText(open).forEach(add);
+        }
+
+        if (Array.isArray(payload.results)) {
+            payload.results.slice(0, 2).forEach(function (r, idx) {
+                fromOpen(r && r.open);
+                if (r && r.id && !r.open && (r.folio || r.total != null)) {
+                    add(parseDeepLinkToken('note', r.id, 'Ver nota ' + (r.folio || r.id)));
+                }
+                if (idx === 0 && r && r.clientId) {
+                    add(parseDeepLinkToken('client', r.clientId, r.client || r.name || 'Cliente'));
+                }
+                if (idx === 0) {
+                    (r && r.items || []).slice(0, 2).forEach(function (it) {
+                        fromOpen(it && it.open);
+                        if (it && it.product) {
+                            add(parseDeepLinkToken('product', it.product, it.name || it.product));
+                        }
+                    });
+                }
+            });
+        }
+        if (Array.isArray(payload.items)) {
+            payload.items.slice(0, 5).forEach(function (it) {
+                fromOpen(it && it.open);
+                if (it && it.slug) add(parseDeepLinkToken('product', it.slug, it.name || it.slug));
+                if (it && it.clientId) add(parseDeepLinkToken('client', it.clientId, it.name || 'Cliente'));
+            });
+        }
+        if (Array.isArray(payload.alerts)) {
+            payload.alerts.slice(0, 6).forEach(function (a) {
+                fromOpen(a && a.open);
+                if (a && a.type === 'stock' && a.id) {
+                    add(parseDeepLinkToken('material', a.id, a.name || a.id));
+                }
+                if (a && a.type === 'stale' && a.slug) {
+                    add(parseDeepLinkToken('product', a.slug, a.name || a.slug));
+                }
+            });
+        }
+    }
+
+    function mergeDeepLinks() {
+        const out = [];
+        const seen = {};
+        for (let a = 0; a < arguments.length; a++) {
+            (arguments[a] || []).forEach(function (link) {
+                if (!link || !link.kind || !link.id) return;
+                const key = link.kind + ':' + link.id;
+                if (seen[key]) return;
+                seen[key] = 1;
+                out.push(link);
+            });
+        }
+        return out;
+    }
+
+    function openDeepLink(kind, id) {
+        const api = window.S35PanelAPI || {};
+        const pos = window.S35PosModule || {};
+        const k = String(kind || '').toLowerCase();
+        const target = sanitizeDeepId(id);
+        if (!target) return;
+
+        if (k === 'note') {
+            if (typeof api.showSection === 'function') api.showSection('salesHistory');
+            if (typeof pos.openSaleNoteById === 'function') pos.openSaleNoteById(target);
+            return;
+        }
+        if (k === 'product') {
+            if (typeof api.showSection === 'function') api.showSection('products', { slug: target });
+            else if (typeof api.openProduct === 'function') api.openProduct(target);
+            return;
+        }
+        if (k === 'material') {
+            if (typeof api.openMaterial === 'function') api.openMaterial(target);
+            else if (typeof api.showSection === 'function') {
+                api.showSection('materials');
+                if (typeof api.focusMaterialSearch === 'function') api.focusMaterialSearch(target);
+            }
+            return;
+        }
+        if (k === 'client') {
+            if (typeof api.showSection === 'function') api.showSection('clients');
+            if (typeof pos.openClientDashboard === 'function') pos.openClientDashboard(target);
+        }
+    }
+
     function formatTokens(n) {
         n = Number(n) || 0;
         if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(/\.0$/, '') + 'M';
@@ -205,20 +381,47 @@
         root.classList.toggle('is-chatting', !!on);
     }
 
-    function appendBubble(role, text) {
+    function appendBubble(role, text, extraLinks) {
         const host = el('copilotMessages');
-        if (!host) return;
+        if (!host) return null;
         setChatting(true);
         const div = document.createElement('div');
         div.className = 'copilot-bubble is-' + role;
         if (role === 'assistant') {
             div.classList.add('has-md');
-            div.innerHTML = renderAssistantMarkdown(text);
+            const inlineLinks = parseDeepLinksFromText(text);
+            const bodyText = stripDeepLinkTokens(text);
+            div.innerHTML = renderAssistantMarkdown(bodyText || text);
+            const footerLinks = mergeDeepLinks(extraLinks, inlineLinks).filter(function (link) {
+                // Prefer footer buttons; avoid duplicates already rendered if body kept tokens
+                return !!link;
+            });
+            // If body still had tokens (fallback), stripDeepLinkTokens removed them from display;
+            // show unique actions in a button row.
+            if (footerLinks.length) {
+                const bar = document.createElement('div');
+                bar.className = 'copilot-deep-links';
+                // Prefer note first, then product/client/material; cap to 6
+                const order = { note: 0, product: 1, client: 2, material: 3 };
+                footerLinks
+                    .slice()
+                    .sort(function (a, b) {
+                        return (order[a.kind] != null ? order[a.kind] : 9) - (order[b.kind] != null ? order[b.kind] : 9);
+                    })
+                    .slice(0, 6)
+                    .forEach(function (link) {
+                        const wrap = document.createElement('span');
+                        wrap.innerHTML = deepLinkButtonHtml(link, { block: true });
+                        bar.appendChild(wrap.firstChild);
+                    });
+                div.appendChild(bar);
+            }
         } else {
             div.textContent = text;
         }
         host.appendChild(div);
         host.scrollTop = host.scrollHeight;
+        return div;
     }
 
     function clearChat() {
@@ -241,6 +444,14 @@
         const pos = window.S35PosModule || {};
         actions.forEach(function (a) {
             if (!a || a.type !== 'navigate') return;
+            if (a.saleId) {
+                openDeepLink('note', a.saleId);
+                return;
+            }
+            if (a.materialId) {
+                openDeepLink('material', a.materialId);
+                return;
+            }
             if (typeof api.showSection === 'function' && a.section) {
                 const opts = {};
                 if (a.productSlug) {
@@ -326,6 +537,8 @@
             let wire = history.slice(-12);
             let finalReply = '';
             let actions = [];
+            const toolLinks = [];
+            const toolLinkSeen = {};
 
             for (let round = 0; round < 5; round++) {
                 const data = await postChat(wire);
@@ -351,6 +564,9 @@
                         })
                     };
                     const toolMsgs = executeToolCalls(data.toolCalls);
+                    toolMsgs.forEach(function (tm) {
+                        collectLinksFromToolPayload(tm.content, toolLinks, toolLinkSeen);
+                    });
                     wire = wire.concat([assistantMsg]).concat(toolMsgs);
                     continue;
                 }
@@ -363,7 +579,7 @@
             if (!finalReply) {
                 finalReply = 'Consulté el sistema pero no pude armar una respuesta. Intenta de nuevo.';
             }
-            appendBubble('assistant', finalReply);
+            appendBubble('assistant', finalReply, toolLinks);
             history.push({ role: 'assistant', content: finalReply });
             runActions(actions);
         } catch (err) {
@@ -397,6 +613,17 @@
                 const v = input ? input.value : '';
                 if (input) input.value = '';
                 ask(v);
+            });
+        }
+
+        const msgs = el('copilotMessages');
+        if (msgs && !msgs.dataset.deepBound) {
+            msgs.dataset.deepBound = '1';
+            msgs.addEventListener('click', function (e) {
+                const btn = e.target && e.target.closest ? e.target.closest('[data-s35-kind]') : null;
+                if (!btn || !msgs.contains(btn)) return;
+                e.preventDefault();
+                openDeepLink(btn.getAttribute('data-s35-kind'), btn.getAttribute('data-s35-id'));
             });
         }
 
