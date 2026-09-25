@@ -10037,9 +10037,10 @@
             const color = (window.S35PosModule && window.S35PosModule.familyColor)
                 ? window.S35PosModule.familyColor(p.family)
                 : '#9a9a9a';
+            const qtyPlain = String(Math.round(Number(p.stock) || 0));
             const valueTitle = p.unitPrice > 0
-                ? ('Precio público 1 a 100 ' + moneyMx(p.unitPrice))
-                : 'Sin precio público 1 a 100';
+                ? (qtyPlain + ' x ' + moneyMx(p.unitPrice) + ' (PP)')
+                : 'Sin precio público';
             return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name) + '">' +
                 '<span class="products-inventory-name">' + familyDotHtml(p.family) +
                 '<span class="products-inventory-label">' + esc(p.name) + '</span>' +
