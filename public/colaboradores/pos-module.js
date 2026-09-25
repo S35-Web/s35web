@@ -840,8 +840,9 @@
         return '' +
             '<div class="snd-top">' +
             '<div class="snd-brand">' +
-            '<div class="snd-logo">S-35</div>' +
-            '<div class="snd-company">S-35 Midday</div>' +
+            '<div class="snd-logo">' +
+            '<img src="/Assets/s35-logo-compuesto-negro.png" alt="S-35 Construction Tech" width="160" height="18" decoding="async">' +
+            '</div>' +
             (city || store
                 ? '<div class="snd-company-sub">' + esc([city, store].filter(Boolean).join(' · ')) + '</div>'
                 : '') +
