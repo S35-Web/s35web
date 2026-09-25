@@ -8811,7 +8811,12 @@
                     if (!map[slug] || !items[slug]) return;
                     const saved = items[slug];
                     const seeded = map[slug];
-                    if (seeded.mode === 'plant-lot' && saved.mode !== 'plant-lot') return;
+                    if (seeded.mode === 'plant-lot' && saved.mode !== 'plant-lot') {
+                        if (slug !== 'aditivo-sp85') return;
+                        saved.mode = 'plant-lot';
+                        if (!(Number(saved.packSizeKg) > 0)) saved.packSizeKg = seeded.packSizeKg || 1;
+                        plantIdsRemapped = true;
+                    }
                     if (Array.isArray(saved.versions) && saved.versions.length) {
                         map[slug].mode = saved.mode || seeded.mode;
                         map[slug].packagingPlantId = saved.packagingPlantId || seeded.packagingPlantId;
@@ -9181,6 +9186,15 @@
         }
         currentRecipe = slug;
         if (!formulas[slug]) formulas[slug] = seedFormula(r);
+        if (slug === 'aditivo-sp85' && formulas[slug] && formulas[slug].mode !== 'plant-lot') {
+            formulas[slug].mode = 'plant-lot';
+            formulas[slug].batchUnit = 'Kg';
+            formulas[slug].batchLabel = 'lote';
+            if (!(Number(formulas[slug].packSizeKg) > 0)) formulas[slug].packSizeKg = 1;
+            ensureVersions(formulas[slug]);
+            syncActiveVersionToRoot(formulas[slug]);
+            saveFormulas();
+        }
         ensureVersions(formulas[slug]);
         syncActiveVersionToRoot(formulas[slug]);
         const f = formulas[slug];
