@@ -7511,6 +7511,7 @@
                             <button type="button" role="tab" data-pd-tab="resumen" class="active" aria-selected="true">Resumen</button>
                             <button type="button" role="tab" data-pd-tab="precios" aria-selected="false">Precios</button>
                             <button type="button" role="tab" data-pd-tab="formula" id="pdTabFormulaBtn" aria-selected="false">Formulación</button>
+                            <button type="button" role="tab" id="pdTabProductionBtn" data-pd-goto="production" aria-selected="false" title="Abrir producción con este producto">Producción</button>
                         </div>
                         <div class="pd-tab-panel" id="pdPanelResumen" data-pd-panel="resumen">
                             <div id="pdSummaryMount"></div>
@@ -12194,12 +12195,43 @@
             /* Admin edita; ventas no ve el tab de formulación (mismo criterio que antes). */
             formulaBtn.hidden = !canEditFormulas();
         }
+        const prodBtn = document.getElementById('pdTabProductionBtn');
+        if (prodBtn) {
+            /* Visible en todos los productos si el rol puede entrar a Producción. */
+            prodBtn.hidden = !canAccess('production');
+        }
 
         let tab = opts.tab || 'resumen';
         if (tab === 'formula' && !canEditFormulas()) tab = 'resumen';
         if (tab === 'formula' && !item.hasRecipe) tab = 'resumen';
         setProductTab(tab);
         if (!opts.skipHash) syncPanelHash();
+    }
+
+    /** Desde la ficha: ir a Producción con este producto preseleccionado. */
+    function openProductProduction(slug) {
+        const target = slug || hubProductSlug;
+        if (!target) {
+            showSection('production');
+            return;
+        }
+        if (!canAccess('production')) {
+            panelToast('Sin acceso a Producción');
+            return;
+        }
+        if (pricesEditing) cancelPricesEdit({ skipRender: true });
+        showSection('production', { skipHash: false });
+        if (typeof fillProdProducts === 'function') fillProdProducts();
+        const inRecipes = recipes.some(function (r) { return r.product === target; });
+        if (inRecipes && typeof selectProdProduct === 'function') {
+            selectProdProduct(target);
+        } else {
+            panelToast('Este producto aún no tiene receta de planta en Producción');
+        }
+        const emitBlock = document.getElementById('prodEmitBlock') || document.querySelector('#production .prod-emit, #production .card');
+        if (emitBlock && typeof emitBlock.scrollIntoView === 'function') {
+            try { emitBlock.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+        }
     }
 
     function setProductsCatalogOpen(open) {
@@ -12358,6 +12390,14 @@
         const tabs = document.getElementById('pdTabs');
         if (tabs) {
             tabs.addEventListener('click', function (e) {
+                const goto = e.target.closest('[data-pd-goto]');
+                if (goto && !goto.hidden) {
+                    e.preventDefault();
+                    if (goto.getAttribute('data-pd-goto') === 'production') {
+                        openProductProduction(hubProductSlug);
+                    }
+                    return;
+                }
                 const btn = e.target.closest('[data-pd-tab]');
                 if (!btn || btn.hidden) return;
                 setProductTab(btn.getAttribute('data-pd-tab'));
