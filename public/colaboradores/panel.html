@@ -2017,8 +2017,65 @@
             background: #fff;
             min-height: 180px;
             width: 100%;
+            height: min(62vh, 720px);
         }
         [data-theme="dark"] .mail-msg-html { background: #111; }
+        .mail-attachments {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0 0 14px;
+        }
+        .mail-attach {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--panel);
+            color: var(--text);
+            font: inherit;
+            font-size: 12.5px;
+            text-align: left;
+            cursor: pointer;
+        }
+        .mail-attach:hover { background: var(--hover); }
+        .mail-attach img {
+            width: 36px;
+            height: 36px;
+            object-fit: cover;
+            border-radius: 6px;
+            flex: 0 0 auto;
+            background: var(--bg-soft);
+        }
+        .mail-attach-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: color-mix(in srgb, var(--text) 8%, transparent);
+            color: var(--muted);
+            flex: 0 0 auto;
+        }
+        .mail-attach-meta {
+            min-width: 0;
+        }
+        .mail-attach-name {
+            display: block;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+        .mail-attach-size {
+            color: var(--muted);
+            font-size: 11.5px;
+        }
         .mail-draft {
             display: none;
             border-top: 1px solid var(--border);
@@ -6304,6 +6361,7 @@
                                         <button type="button" class="btn danger" id="mailTrashBtn">Eliminar</button>
                                     </div>
                                 </div>
+                                <div class="mail-attachments" id="mailAttachments" hidden></div>
                                 <div class="mail-reader-content" id="mailContent"></div>
                                 <div class="mail-draft" id="mailDraft">
                                     <div class="mail-draft-label">Borrador de respuesta (revisa antes de copiar)</div>
@@ -8738,6 +8796,50 @@
             extra.hidden = true;
             extra.innerHTML = '';
         }
+
+        const attachHost = document.getElementById('mailAttachments');
+        const attachments = Array.isArray(m.attachments) ? m.attachments : [];
+        const visibleAttach = attachments.filter(function (a) {
+            // Hide pure inline CID images from the chip list if they already render in HTML
+            if (a.inline && a.previewUrl && a.contentId) return false;
+            return true;
+        });
+        if (attachHost) {
+            if (!visibleAttach.length) {
+                attachHost.hidden = true;
+                attachHost.innerHTML = '';
+            } else {
+                attachHost.hidden = false;
+                attachHost.innerHTML = '';
+                visibleAttach.forEach(function (a) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'mail-attach';
+                    btn.title = 'Descargar ' + (a.filename || 'adjunto');
+                    const isImg = String(a.mimeType || '').indexOf('image/') === 0;
+                    if (isImg && a.previewUrl) {
+                        btn.innerHTML =
+                            '<img src="' + a.previewUrl.replace(/"/g, '') + '" alt="">' +
+                            '<span class="mail-attach-meta">' +
+                            '<span class="mail-attach-name">' + esc(a.filename || 'imagen') + '</span>' +
+                            '<span class="mail-attach-size">' + esc(a.sizeLabel || '') + '</span>' +
+                            '</span>';
+                    } else {
+                        btn.innerHTML =
+                            '<span class="mail-attach-icon"><i class="fa-solid fa-paperclip"></i></span>' +
+                            '<span class="mail-attach-meta">' +
+                            '<span class="mail-attach-name">' + esc(a.filename || 'adjunto') + '</span>' +
+                            '<span class="mail-attach-size">' + esc(a.sizeLabel || a.mimeType || '') + '</span>' +
+                            '</span>';
+                    }
+                    btn.addEventListener('click', function () {
+                        downloadMailAttachment(m, a);
+                    });
+                    attachHost.appendChild(btn);
+                });
+            }
+        }
+
         const content = document.getElementById('mailContent');
         const html = String(m.html || '').trim();
         if (html && isGmail) {
@@ -8746,11 +8848,72 @@
             frame.className = 'mail-msg-html';
             frame.setAttribute('sandbox', 'allow-same-origin');
             frame.setAttribute('title', 'Cuerpo del correo');
-            frame.srcdoc = html;
+            const wrapped =
+                '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+                '<style>' +
+                'html,body{margin:0;padding:12px;font:14px/1.5 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#111;background:#fff;word-break:break-word;}' +
+                'img{max-width:100%!important;height:auto!important;}' +
+                'table{max-width:100%!important;}' +
+                'a{color:#1a73e8;}' +
+                '</style></head><body>' + html + '</body></html>';
+            frame.srcdoc = wrapped;
+            frame.addEventListener('load', function () {
+                try {
+                    const doc = frame.contentDocument;
+                    if (!doc) return;
+                    const h = Math.min(Math.max(doc.documentElement.scrollHeight || 0, 180), 900);
+                    frame.style.height = h + 'px';
+                } catch (_) {}
+            });
             content.appendChild(frame);
         } else {
             content.innerHTML = '<div class="mail-msg-text"></div>';
             content.querySelector('.mail-msg-text').textContent = m.mensaje || '';
+        }
+    }
+
+    async function downloadMailAttachment(message, attachment) {
+        if (!message || !attachment) return;
+        if (attachment.previewUrl && String(attachment.mimeType || '').indexOf('image/') === 0 && !attachment.downloadable) {
+            const a = document.createElement('a');
+            a.href = attachment.previewUrl;
+            a.download = attachment.filename || 'imagen';
+            a.click();
+            return;
+        }
+        if (!attachment.downloadable || String(attachment.id || '').indexOf('inline-') === 0) {
+            if (attachment.previewUrl) {
+                const a = document.createElement('a');
+                a.href = attachment.previewUrl;
+                a.download = attachment.filename || 'adjunto';
+                a.click();
+                return;
+            }
+            alert('Este adjunto no se puede descargar desde aquí');
+            return;
+        }
+        const msgId = String(message.gmailId || message._id || '').replace(/^gmail:/, '');
+        const url = '/api/gmail?id=' + encodeURIComponent(msgId) +
+            '&attachment=' + encodeURIComponent(attachment.id) +
+            '&filename=' + encodeURIComponent(attachment.filename || 'adjunto') +
+            '&mime=' + encodeURIComponent(attachment.mimeType || 'application/octet-stream');
+        try {
+            const resp = await fetch(url, { headers: { Authorization: 'Bearer ' + getToken() } });
+            if (!resp.ok) {
+                alert('No se pudo descargar el adjunto');
+                return;
+            }
+            const blob = await resp.blob();
+            const href = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = href;
+            a.download = attachment.filename || 'adjunto';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(function () { URL.revokeObjectURL(href); }, 2000);
+        } catch (_) {
+            alert('No se pudo descargar el adjunto');
         }
     }
 
