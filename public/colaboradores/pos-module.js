@@ -7542,23 +7542,6 @@
         if (clientSearch) clientSearch.addEventListener('input', renderClients);
         const addClient = document.getElementById('posClientAddBtn');
         if (addClient) addClient.addEventListener('click', function () { openClientModal(null); });
-        const importClientsBtn = document.getElementById('posClientImportBtn');
-        if (importClientsBtn) {
-            importClientsBtn.addEventListener('click', function () {
-                if (!confirm('¿Importar clientes faltantes del catálogo base (~1000)?\n\nSolo agrega registros nuevos y rellena campos vacíos.\nNo sobrescribe nombre, teléfono, email ni dirección ya guardados (tus ediciones se conservan).')) return;
-                importClientsBtn.disabled = true;
-                importClientsCatalog()
-                    .then(function (res) {
-                        toast('Import: +' + res.added + ' · campos vacíos ' + res.updated + ' · sin cambio ' + (res.skipped || 0) + ' · total ' + res.total);
-                    })
-                    .catch(function (err) {
-                        toast((err && err.message) || 'Error al importar');
-                    })
-                    .then(function () {
-                        importClientsBtn.disabled = false;
-                    });
-            });
-        }
         const clientsBody = document.getElementById('posClientsBody');
         if (clientsBody) {
             clientsBody.addEventListener('click', function (e) {
