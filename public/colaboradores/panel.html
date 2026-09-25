@@ -9225,7 +9225,8 @@
     const mailTrashBtn = document.getElementById('mailTrashBtn');
     if (mailTrashBtn) mailTrashBtn.addEventListener('click', trashSelectedMail);
     const mailAskSummary = document.getElementById('mailAskSummary');
-    if (mailAskSummary) {
+    if (mailAskSummary && !mailAskSummary.dataset.bound) {
+        mailAskSummary.dataset.bound = '1';
         mailAskSummary.addEventListener('click', function () {
             if (window.S35MailCopilot) window.S35MailCopilot.ask(
                 'Resume este correo: quién escribe, qué pide, urgencia y qué deberíamos responder.'
@@ -9233,7 +9234,8 @@
         });
     }
     const mailAskDraft = document.getElementById('mailAskDraft');
-    if (mailAskDraft) {
+    if (mailAskDraft && !mailAskDraft.dataset.bound) {
+        mailAskDraft.dataset.bound = '1';
         mailAskDraft.addEventListener('click', function () {
             if (window.S35MailCopilot) window.S35MailCopilot.ask(
                 'Redacta un borrador de respuesta profesional y breve en nombre de S-35. Usa los marcadores <<<DRAFT>>> y <<<END_DRAFT>>>.'
@@ -14609,6 +14611,12 @@
             if (!el) return;
             el.value = q || '';
             el.dispatchEvent(new Event('input'));
+        },
+        getSelectedMail: function () {
+            return selectedMessage || null;
+        },
+        getSelectedMailId: function () {
+            return selectedMessageId || null;
         }
     };
 
@@ -14616,7 +14624,7 @@
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
     <script src="/colaboradores/pos-module.js?v=20260925-cloud-sync3"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
-    <script src="/colaboradores/mail-copilot.js?v=20260925-mail-ai"></script>
+    <script src="/colaboradores/mail-copilot.js?v=20260925-mail-sync2"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>
 </body>
 </html>

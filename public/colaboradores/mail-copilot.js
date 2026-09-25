@@ -30,6 +30,10 @@
         document.querySelectorAll('[data-mail-chip]').forEach(function (btn) {
             btn.disabled = busy;
         });
+        const summary = el('mailAskSummary');
+        const draft = el('mailAskDraft');
+        if (summary) summary.disabled = busy;
+        if (draft) draft.disabled = busy;
         setStatus(busy ? (statusText || 'Pensando…') : '');
     }
 
@@ -87,6 +91,19 @@
         return { body: body, draft: draft };
     }
 
+    function resolveSelectedMail() {
+        if (selectedMail) return selectedMail;
+        const api = window.S35PanelAPI;
+        if (api && typeof api.getSelectedMail === 'function') {
+            const fromPanel = api.getSelectedMail();
+            if (fromPanel) {
+                selectedMail = fromPanel;
+                return selectedMail;
+            }
+        }
+        return null;
+    }
+
     function appendBubble(role, text) {
         const host = el('mailCopilotMessages');
         if (!host) return;
@@ -105,38 +122,59 @@
         setStatus('');
     }
 
+    function updateHint(mail) {
+        const hint = el('mailCopilotHint');
+        if (!hint) return;
+        if (!mail) {
+            hint.textContent = 'Selecciona un correo para resumirlo, redactar o cruzarlo con clientes.';
+            return;
+        }
+        const who = mail.nombre || mail.email || 'remitente';
+        hint.textContent = 'Contexto: ' + who + (mail.asunto ? ' · ' + mail.asunto : '');
+    }
+
     function setSelectedMail(mail, opts) {
         opts = opts || {};
         const nextId = mail ? (mail._id || mail.gmailId || null) : null;
         const prevId = selectedMail ? (selectedMail._id || selectedMail.gmailId || null) : null;
         selectedMail = mail || null;
-        const hint = el('mailCopilotHint');
-        if (hint) {
-            if (!selectedMail) {
-                hint.textContent = 'Selecciona un correo para resumirlo, redactar o cruzarlo con clientes.';
-            } else {
-                const who = selectedMail.nombre || selectedMail.email || 'remitente';
-                hint.textContent = 'Contexto: ' + who + (selectedMail.asunto ? ' · ' + selectedMail.asunto : '');
-            }
-        }
+        updateHint(selectedMail);
         if (!opts.keepChat && nextId !== prevId) clearChat();
     }
 
     function mailContext() {
-        if (!selectedMail) return { mail: { selected: false }, now: new Date().toISOString() };
+        const mail = resolveSelectedMail();
+        if (!mail) return { mail: { selected: false }, now: new Date().toISOString() };
+        const bodyText = String(mail.mensaje || '').trim();
+        const htmlText = String(mail.html || '')
+            .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+            .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
         return {
             now: new Date().toISOString(),
             mail: {
                 selected: true,
-                id: selectedMail._id || selectedMail.gmailId || null,
-                source: selectedMail.source || (String(selectedMail._id || '').indexOf('gmail:') === 0 ? 'gmail' : 'web'),
-                fromName: selectedMail.nombre || null,
-                fromEmail: selectedMail.email || null,
-                subject: selectedMail.asunto || null,
-                date: selectedMail.createdAt || null,
-                company: selectedMail.empresa || null,
-                newsletter: !!selectedMail.newsletter,
-                body: String(selectedMail.mensaje || '').slice(0, 8000)
+                id: mail._id || mail.gmailId || null,
+                source: mail.source || (String(mail._id || '').indexOf('gmail:') === 0 ? 'gmail' : 'web'),
+                fromName: mail.nombre || null,
+                fromEmail: mail.email || null,
+                subject: mail.asunto || null,
+                date: mail.createdAt || null,
+                company: mail.empresa || null,
+                newsletter: !!mail.newsletter,
+                body: (bodyText || htmlText).slice(0, 8000),
+                hasHtml: !!String(mail.html || '').trim(),
+                attachments: Array.isArray(mail.attachments)
+                    ? mail.attachments.slice(0, 8).map(function (a) {
+                        return {
+                            filename: a.filename || null,
+                            mimeType: a.mimeType || null,
+                            sizeLabel: a.sizeLabel || null
+                        };
+                    })
+                    : []
             }
         };
     }
@@ -197,14 +235,22 @@
     async function ask(text) {
         const content = String(text || '').trim();
         if (!content || busy) return;
-        if (!selectedMail) {
+
+        // Bloquear de inmediato para evitar doble clic / dos handlers
+        setBusy(true, 'Pensando…');
+
+        const mail = resolveSelectedMail();
+        if (!mail) {
+            setBusy(false);
             appendBubble('assistant', 'Selecciona un mensaje de la bandeja para poder ayudarte con ese correo.');
+            updateHint(null);
             return;
         }
+        selectedMail = mail;
+        updateHint(mail);
 
         appendBubble('user', content);
         history.push({ role: 'user', content: content });
-        setBusy(true, 'Pensando…');
 
         try {
             let wire = history.slice(-10);
@@ -238,7 +284,8 @@
 
             if (!finalReply) finalReply = 'No pude armar una respuesta. Intenta de nuevo.';
             const parsed = extractDraft(finalReply);
-            appendBubble('assistant', parsed.body || finalReply);
+            const shown = (parsed.body || finalReply).trim() || finalReply;
+            appendBubble('assistant', shown);
             history.push({ role: 'assistant', content: finalReply });
             if (parsed.draft) applyDraft(parsed.draft);
         } catch (err) {
@@ -256,7 +303,8 @@
             return 'Redacta un borrador de respuesta profesional y breve en nombre de S-35. Usa los marcadores <<<DRAFT>>> y <<<END_DRAFT>>>.';
         }
         if (kind === 'client') {
-            const q = (selectedMail && (selectedMail.email || selectedMail.nombre)) || '';
+            const mail = resolveSelectedMail();
+            const q = (mail && (mail.email || mail.nombre)) || '';
             return '¿Este remitente parece cliente de S35? Busca por «' + q + '» y dime si hay coincidencia.';
         }
         return '';
@@ -283,10 +331,10 @@
                 if (q) ask(q);
             });
         });
-        const msgs = el('mailCopilotMessages');
-        if (msgs && !msgs.dataset.deepBound && window.S35Copilot) {
-            /* deep links handled if we reuse openDeepLink later */
-        }
+
+        // Re-sincronizar si el panel ya tenía un correo abierto al cargar este script
+        const synced = resolveSelectedMail();
+        if (synced) updateHint(synced);
     }
 
     if (document.readyState === 'loading') {
