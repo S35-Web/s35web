@@ -9083,6 +9083,43 @@
     function isPlantLot(f) {
         return !!(f && f.mode === 'plant-lot');
     }
+    /** ¿Hay al menos una MP con dosis > 0? (empaque no cuenta). */
+    function formulaHasMaterialDose(f) {
+        if (!f) return false;
+        const lists = [];
+        if (Array.isArray(f.items)) lists.push(f.items);
+        (f.versions || []).forEach(function (ver) {
+            if (ver && Array.isArray(ver.items)) lists.push(ver.items);
+        });
+        for (let i = 0; i < lists.length; i++) {
+            for (let j = 0; j < lists[i].length; j++) {
+                const it = lists[i][j];
+                if (!it || isPackagingLine(it)) continue;
+                if (Number(it.amount) > 0) return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * Formato nuevo = mode plant-lot (sin campos Tamaño/Unidad/Lote/Agua).
+     * Conserva items; solo cambia el schema de UI / producción.
+     */
+    function migrateFormulaToPlantLot(f, seeded) {
+        if (!f || f.mode === 'plant-lot') return false;
+        const liquid = seeded && seeded.batchUnit === 'L';
+        f.mode = 'plant-lot';
+        f.batchUnit = 'Kg';
+        f.batchLabel = 'lote';
+        if (!(Number(f.packSizeKg) > 0)) {
+            if (seeded && Number(seeded.packSizeKg) > 0) f.packSizeKg = Number(seeded.packSizeKg);
+            else if (Number(f.batchSize) > 0) f.packSizeKg = Number(f.batchSize);
+            else f.packSizeKg = liquid ? 19 : 25;
+        }
+        if (!f.packagingPlantId && seeded && seeded.packagingPlantId) {
+            f.packagingPlantId = seeded.packagingPlantId;
+        }
+        return true;
+    }
     function theoreticalBags(f) {
         const pack = Number(f.packSizeKg) || 25;
         const total = recipeTotalKg(f);
@@ -9333,13 +9370,14 @@
             const mat = plantById(pack);
             items.push({ plantId: pack, amount: 1, unit: (mat && mat.unit) || 'Pza', role: 'Empaque' });
         }
+        const packKg = liquid ? 19 : (sack ? Number(sack[1]) : 25);
         const f = {
             product: recipe.product,
-            mode: 'unit',
-            batchSize: liquid ? 19 : (sack ? Number(sack[1]) : 25),
-            batchUnit: liquid ? 'L' : 'Kg',
-            batchLabel: liquid ? 'cubeta' : 'saco',
-            packSizeKg: liquid ? 0 : (sack ? Number(sack[1]) : 25),
+            mode: 'plant-lot',
+            batchSize: 0,
+            batchUnit: 'Kg',
+            batchLabel: 'lote',
+            packSizeKg: packKg,
             packagingPlantId: packagingId(recipe),
             activeVersionId: 'v1',
             versions: [{
@@ -9349,7 +9387,7 @@
                 yieldMin: 0,
                 yieldMax: 0,
                 water: parseFirstNumber(recipe.water),
-                packSizeKg: liquid ? 0 : (sack ? Number(sack[1]) : 25),
+                packSizeKg: packKg,
                 items: items
             }],
             items: items,
@@ -9357,7 +9395,11 @@
             yieldMin: 0,
             yieldMax: 0
         };
-        return syncActiveVersionToRoot(f);
+        syncActiveVersionToRoot(f);
+        syncFormulaPackagingAmounts(f);
+        orderFormulaItemsMaterialsFirst(f);
+        persistRootToActiveVersion(f);
+        return f;
     }
     function pointPastablockSack(f) {
         if (!f) return false;
@@ -9432,6 +9474,7 @@
         const map = {};
         recipes.forEach(function (r) { map[r.product] = seedFormula(r); });
         let formulasMergedFromSeed = false;
+        let formulasFormatMigrated = false;
         try {
             const raw = JSON.parse(localStorage.getItem(FORMULA_KEY) || 'null');
             const items = raw && raw.items ? raw.items : raw;
@@ -9441,10 +9484,12 @@
                     const saved = items[slug];
                     const seeded = map[slug];
                     if (seeded.mode === 'plant-lot' && saved.mode !== 'plant-lot') {
-                        if (slug !== 'aditivo-sp85') return;
-                        saved.mode = 'plant-lot';
-                        if (!(Number(saved.packSizeKg) > 0)) saved.packSizeKg = seeded.packSizeKg || 1;
-                        plantIdsRemapped = true;
+                        const savedHas = formulaHasMaterialDose(saved);
+                        const seedHas = formulaHasMaterialDose(seeded);
+                        // Seed canónico con dosis (Waxtard…) gana sobre unit vacío/viejo.
+                        // Si el usuario ya cargó dosis en formato unit, migrarlas a plant-lot.
+                        if (!savedHas && seedHas) return;
+                        if (migrateFormulaToPlantLot(saved, seeded)) formulasFormatMigrated = true;
                     }
                     if (Array.isArray(saved.versions) && saved.versions.length) {
                         map[slug].mode = saved.mode || seeded.mode;
@@ -9506,12 +9551,16 @@
         } catch (_) {}
         Object.keys(map).forEach(function (slug) {
             ensureVersions(map[slug]);
+            if (map[slug].mode !== 'plant-lot') {
+                if (migrateFormulaToPlantLot(map[slug], map[slug])) formulasFormatMigrated = true;
+            }
             if (slug === 'pegaxpress-block' && pointPastablockSack(map[slug])) plantIdsRemapped = true;
             syncActiveVersionToRoot(map[slug]);
             const recipe = recipes.filter(function (r) { return r.product === slug; })[0];
             ensureFormulaPackagingLine(map[slug], recipe);
         });
         if (formulasMergedFromSeed) plantIdsRemapped = true; // reutiliza el flush a localStorage
+        loadFormulas._formatMigrated = formulasFormatMigrated;
         return map;
     }
     function saveFormulas(opts) {
@@ -9527,9 +9576,16 @@
             } catch (_) {}
         }
         localStorage.setItem(FORMULA_KEY, JSON.stringify({ items: formulas, updatedAt: updatedAt }));
+        if (!opts.skipPush && window.S35PanelSync && typeof window.S35PanelSync.flushPush === 'function') {
+            window.S35PanelSync.flushPush();
+        }
     }
     let formulas = loadFormulas();
-    if (plantIdsRemapped) saveFormulas({ preserveUpdatedAt: true });
+    // Migración unit→plant-lot debe subir a la nube (nuevo updatedAt).
+    // Remapes de plantId / merge de seed sin cambio de formato: conservar timestamp.
+    // skipPush: el setItem encola pendingKeys; bootstrap hace el primer push (evita carrera).
+    if (loadFormulas._formatMigrated) saveFormulas({ skipPush: true });
+    else if (plantIdsRemapped) saveFormulas({ preserveUpdatedAt: true, skipPush: true });
     let formulaDirty = false;
     let formulaAutosaveTimer = null;
     function scheduleFormulaAutosave() {
@@ -9844,14 +9900,12 @@
         }
         currentRecipe = slug;
         if (!formulas[slug]) formulas[slug] = seedFormula(r);
-        if (slug === 'aditivo-sp85' && formulas[slug] && formulas[slug].mode !== 'plant-lot') {
-            formulas[slug].mode = 'plant-lot';
-            formulas[slug].batchUnit = 'Kg';
-            formulas[slug].batchLabel = 'lote';
-            if (!(Number(formulas[slug].packSizeKg) > 0)) formulas[slug].packSizeKg = 1;
-            ensureVersions(formulas[slug]);
-            syncActiveVersionToRoot(formulas[slug]);
-            saveFormulas();
+        if (formulas[slug] && formulas[slug].mode !== 'plant-lot') {
+            if (migrateFormulaToPlantLot(formulas[slug], formulas[slug])) {
+                ensureVersions(formulas[slug]);
+                syncActiveVersionToRoot(formulas[slug]);
+                saveFormulas();
+            }
         }
         ensureVersions(formulas[slug]);
         syncActiveVersionToRoot(formulas[slug]);

@@ -5007,7 +5007,30 @@ window.S35_PANEL_DATA = {
       "image": "/Assets/productos_thumbs/nanotech-hidrofobico.jpg",
       "imageAlt": "Envase de 1 L de Nanotech Sellador hidrofóbico S-35",
       "items": [],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 19,
+        "packagingPlantId": "cubeta-19l",
+        "note": "Lote de planta. Receta pendiente de cargar.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
+            "items": []
+          }
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
+      },
       "suggested": []
     },
     {
@@ -5022,7 +5045,30 @@ window.S35_PANEL_DATA = {
       "image": "/Assets/productos_thumbs/sellador-premium-pintura.jpg",
       "imageAlt": "Envase de 1 L de Sellador premium adhesivo s-35",
       "items": [],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 19,
+        "packagingPlantId": "cubeta-19l",
+        "note": "Lote de planta. Receta pendiente de cargar.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
+            "items": []
+          }
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
+      },
       "suggested": []
     },
     {
@@ -5037,7 +5083,30 @@ window.S35_PANEL_DATA = {
       "image": "/Assets/productos_thumbs/adhesivo-darawell.jpg",
       "imageAlt": "Envase de 1 L de Adhesivo Darawell S-35",
       "items": [],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 19,
+        "packagingPlantId": "cubeta-19l",
+        "note": "Lote de planta. Receta pendiente de cargar.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
+            "items": []
+          }
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
+      },
       "suggested": []
     },
     {
@@ -5052,7 +5121,30 @@ window.S35_PANEL_DATA = {
       "image": "/Assets/productos_thumbs/adhesivo-heavy-duty.jpg",
       "imageAlt": "Envase de 1 L de Adhesivo Heavy Duty S-35",
       "items": [],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 19,
+        "packagingPlantId": "cubeta-19l",
+        "note": "Lote de planta. Receta pendiente de cargar.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
+            "items": []
+          }
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
+      },
       "suggested": []
     },
     {
@@ -5116,7 +5208,30 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta. Dosificación pendiente de cargar.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
+            "items": []
+          }
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
+      },
       "suggested": [
         {
           "plantId": "cemento-portland-blanco",
@@ -5206,7 +5321,30 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta. Dosificación pendiente de cargar.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
+            "items": []
+          }
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
+      },
       "suggested": [
         {
           "plantId": "cemento-portland-blanco",
@@ -5304,7 +5442,30 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta FT-MC-002. Dosificación en panel / sync (no pisar dosis locales con dosis > 0).",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
+            "items": []
+          }
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
+      },
       "suggested": [
         {
           "plantId": "cemento-portland-blanco",
@@ -5370,7 +5531,30 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta. Dosificación pendiente de cargar.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
+            "items": []
+          }
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
+      },
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -5426,7 +5610,30 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta. Dosificación pendiente de cargar.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
+            "items": []
+          }
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
+      },
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
@@ -5461,15 +5668,25 @@ window.S35_PANEL_DATA = {
         "mode": "plant-lot",
         "packSizeKg": 1,
         "packagingPlantId": "cubeta-19l",
+        "note": "Lote de planta FT-PR-014. Receta pendiente de cargar.",
         "defaultVersionId": "v1",
         "versions": [
           {
             "id": "v1",
             "name": "V1",
             "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
             "items": []
           }
-        ]
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
       },
       "suggested": []
     },
@@ -5534,7 +5751,30 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-waxtard",
+        "note": "Lote de planta. Dosificación pendiente de cargar.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
+            "items": []
+          }
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
+      },
       "suggested": [
         {
           "plantId": "cemento-portland-blanco",
@@ -5624,7 +5864,30 @@ window.S35_PANEL_DATA = {
           "note": ""
         }
       ],
-      "batchDose": null,
+      "batchDose": {
+        "mode": "plant-lot",
+        "packSizeKg": 25,
+        "packagingPlantId": "saco-rafia-general",
+        "note": "Lote de planta FT-PP-002. Dosificación pendiente de cargar.",
+        "defaultVersionId": "v1",
+        "versions": [
+          {
+            "id": "v1",
+            "name": "V1",
+            "label": "Estándar",
+            "yieldMin": 0,
+            "yieldMax": 0,
+            "yieldTheoretical": 0,
+            "totalKg": 0,
+            "items": []
+          }
+        ],
+        "yieldMin": 0,
+        "yieldMax": 0,
+        "yieldTheoretical": 0,
+        "totalKg": 0,
+        "items": []
+      },
       "suggested": [
         {
           "plantId": "cemento-portland-gris",
