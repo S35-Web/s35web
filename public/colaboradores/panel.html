@@ -4393,8 +4393,15 @@
             display: inline-block;
         }
         .products-inventory-name .products-inventory-label {
+            min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .product-sack-cost {
+            flex-shrink: 0;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
             white-space: nowrap;
         }
         .pd-missing-dose,
@@ -9196,6 +9203,35 @@
         if (!productNeedsDose(slug)) return '';
         return '<span class="pd-missing-dose" title="Falta dosis" aria-label="Falta dosis">!</span>';
     }
+    /** Costo de un saco/cubeta: MP del lote ÷ sacos teóricos, más el empaque. */
+    function productSackCost(slug) {
+        const f = formulas[slug];
+        if (!f || !formulaComplete(f)) return null;
+        let lotCost = 0;
+        (f.items || []).forEach(function (it) {
+            if (!it || isPackagingLine(it)) return;
+            const mat = plantById(it.plantId);
+            lotCost += (Number(it.amount) || 0) * (mat ? (Number(mat.unitCost) || 0) : 0);
+        });
+        let units = 1;
+        if (isPlantLot(f)) {
+            units = theoreticalBags(f);
+            if (!(units > 0)) return null;
+        }
+        const recipe = recipes.filter(function (r) { return r.product === slug; })[0];
+        const spec = packagingSpec(f, recipe);
+        let packCost = 0;
+        if (spec) {
+            const mat = plantById(spec.plantId);
+            packCost = (Number(spec.piecesPerBag) || 1) * (mat ? (Number(mat.unitCost) || 0) : 0);
+        }
+        return Math.round((lotCost / units + packCost) * 100) / 100;
+    }
+    function productNameCostMark(slug) {
+        const cost = productSackCost(slug);
+        if (cost == null) return missingDoseMark(slug);
+        return '<span class="product-sack-cost" title="Costo de materias primas por saco">/ ' + esc(moneyMx(cost)) + '</span>';
+    }
     function materialMissingCost(m) {
         return !(Number(m && m.unitCost) > 0);
     }
@@ -9931,7 +9967,7 @@
             return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name) + '">' +
                 '<span class="products-inventory-name">' + familyDotHtml(p.family) +
                 '<span class="products-inventory-label">' + esc(p.name) + '</span>' +
-                missingDoseMark(p.slug) + '</span>' +
+                productNameCostMark(p.slug) + '</span>' +
                 '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
                 pct.toFixed(1) + '%;background:' + esc(color) + '"></span></span>' +
                 '<span class="products-inventory-qty' + (p.stock ? '' : ' is-zero') + '" title="' + esc(valueTitle) + '">' +
