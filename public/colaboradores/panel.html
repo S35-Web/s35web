@@ -8821,7 +8821,11 @@
         if (gmailStatus.connected) {
             card.classList.add('is-connected');
             title.textContent = 'Gmail conectado';
-            hint.textContent = gmailStatus.email || 'contacto@s35.com.mx';
+            hint.textContent = '';
+            const logoLink = card.querySelector('.mail-connect-logo-link');
+            if (logoLink) {
+                logoLink.title = 'Abrir Gmail · ' + (gmailStatus.email || 'contacto@s35.com.mx');
+            }
             connectBtn.hidden = true;
             disconnectBtn.hidden = true;
             return;
