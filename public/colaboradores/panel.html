@@ -4344,10 +4344,26 @@
             flex-shrink: 0;
             display: inline-block;
         }
-        .products-inventory-name span:last-child {
+        .products-inventory-name .products-inventory-label {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+        .pd-missing-dose {
+            flex-shrink: 0;
+            width: 13px;
+            height: 13px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 2px;
+            border-radius: 50%;
+            background: var(--text);
+            color: var(--bg);
+            font-size: 9px;
+            font-weight: 600;
+            line-height: 1;
+            vertical-align: middle;
         }
         .products-inventory-track {
             height: 8px;
@@ -8853,6 +8869,15 @@
         if (isPlantLot(f) && !(Number(f.packSizeKg) > 0)) return false;
         return true;
     }
+    function productNeedsDose(slug) {
+        const hasRecipe = recipes.some(function (r) { return r.product === slug; });
+        if (!hasRecipe) return false;
+        return !formulaComplete(formulas[slug]);
+    }
+    function missingDoseMark(slug) {
+        if (!productNeedsDose(slug)) return '';
+        return '<span class="pd-missing-dose" title="Falta dosis" aria-label="Falta dosis">!</span>';
+    }
     function updateRecipeKpi() {
         const el = document.getElementById('kpiRecipes');
         if (!el) return;
@@ -9563,7 +9588,8 @@
                 : '#9a9a9a';
             return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name) + '">' +
                 '<span class="products-inventory-name">' + familyDotHtml(p.family) +
-                '<span>' + esc(p.name) + '</span></span>' +
+                '<span class="products-inventory-label">' + esc(p.name) + '</span>' +
+                missingDoseMark(p.slug) + '</span>' +
                 '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
                 pct.toFixed(1) + '%;background:' + esc(color) + '"></span></span>' +
                 '<span class="products-inventory-qty' + (p.stock ? '' : ' is-zero') + '">' + fmtStockQty(p.stock) + '</span>' +
@@ -9587,7 +9613,7 @@
                 : '<span class="muted">—</span>';
             return '<tr data-open-product="' + esc(p.slug) + '">' +
                 '<td class="muted">' + esc(p.code || '—') + '</td>' +
-                '<td>' + (p.family ? '<span class="fam">' + familyDotHtml(p.family) + '</span> ' : '') + esc(p.name) + '</td>' +
+                '<td>' + (p.family ? '<span class="fam">' + familyDotHtml(p.family) + '</span> ' : '') + esc(p.name) + missingDoseMark(p.slug) + '</td>' +
                 '<td class="muted">' + esc(p.family || PRODUCT_UNCATEGORIZED_LABEL) + '</td>' +
                 '<td class="muted">' + esc(presLabels) + '</td>' +
                 '<td>' + recipeBadge + '</td>' +
