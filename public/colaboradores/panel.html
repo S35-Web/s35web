@@ -4367,7 +4367,8 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .pd-missing-dose {
+        .pd-missing-dose,
+        .pd-missing-cost {
             flex-shrink: 0;
             width: 13px;
             height: 13px;
@@ -4383,6 +4384,7 @@
             line-height: 1;
             vertical-align: middle;
         }
+        .pd-missing-cost { font-size: 8px; }
         .products-inventory-track {
             height: 8px;
             border-radius: 999px;
@@ -7854,7 +7856,7 @@
             }
             return '<button type="button" class="products-inventory-row" data-open-plant="' + esc(m.id) + '" title="' + esc(m.name) + '">' +
                 '<span class="products-inventory-name"><span class="dot" style="background:' + esc(color) + '" aria-hidden="true"></span>' +
-                '<span>' + esc(m.name) + '</span></span>' +
+                '<span class="products-inventory-label">' + esc(m.name) + '</span></span>' +
                 '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
                 fill + ';background:' + esc(color) + '"></span>' + mark + '</span>' +
                 '<span class="products-inventory-qty' + (m.stock ? '' : ' is-zero') + '">' + esc(qty) + '</span>' +
@@ -8919,6 +8921,27 @@
         if (!productNeedsDose(slug)) return '';
         return '<span class="pd-missing-dose" title="Falta dosis" aria-label="Falta dosis">!</span>';
     }
+    function materialMissingCost(m) {
+        return !(Number(m && m.unitCost) > 0);
+    }
+    function productNeedsCost(slug) {
+        const hasRecipe = recipes.some(function (r) { return r.product === slug; });
+        if (!hasRecipe) return false;
+        const f = formulas[slug];
+        if (!f || !Array.isArray(f.items)) return false;
+        const dosed = f.items.filter(function (it) {
+            return !isPackagingLine(it) && Number(it.amount) > 0;
+        });
+        if (!dosed.length) return false;
+        return dosed.some(function (it) {
+            const mat = plantById(it.plantId);
+            return !mat || materialMissingCost(mat);
+        });
+    }
+    function missingCostMark(needed) {
+        if (!needed) return '';
+        return '<span class="pd-missing-cost" title="Falta costeo" aria-label="Falta costeo">$</span>';
+    }
     function updateRecipeKpi() {
         const el = document.getElementById('kpiRecipes');
         if (!el) return;
@@ -9630,7 +9653,7 @@
             return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name) + '">' +
                 '<span class="products-inventory-name">' + familyDotHtml(p.family) +
                 '<span class="products-inventory-label">' + esc(p.name) + '</span>' +
-                missingDoseMark(p.slug) + '</span>' +
+                missingDoseMark(p.slug) + missingCostMark(productNeedsCost(p.slug)) + '</span>' +
                 '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
                 pct.toFixed(1) + '%;background:' + esc(color) + '"></span></span>' +
                 '<span class="products-inventory-qty' + (p.stock ? '' : ' is-zero') + '">' + fmtStockQty(p.stock) + '</span>' +
@@ -9654,7 +9677,7 @@
                 : '<span class="muted">—</span>';
             return '<tr data-open-product="' + esc(p.slug) + '">' +
                 '<td class="muted">' + esc(p.code || '—') + '</td>' +
-                '<td>' + (p.family ? '<span class="fam">' + familyDotHtml(p.family) + '</span> ' : '') + esc(p.name) + missingDoseMark(p.slug) + '</td>' +
+                '<td>' + (p.family ? '<span class="fam">' + familyDotHtml(p.family) + '</span> ' : '') + esc(p.name) + missingDoseMark(p.slug) + missingCostMark(productNeedsCost(p.slug)) + '</td>' +
                 '<td class="muted">' + esc(p.family || PRODUCT_UNCATEGORIZED_LABEL) + '</td>' +
                 '<td class="muted">' + esc(presLabels) + '</td>' +
                 '<td>' + recipeBadge + '</td>' +
