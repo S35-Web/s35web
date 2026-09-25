@@ -398,6 +398,7 @@
     // Reintento al volver online / foco / cada 45s.
     function softPullAndApply() {
         if (!bootDone || !getToken()) return;
+        if (typeof window !== 'undefined' && window.__s35BlockSyncReload) return;
         pullAll().then(function (remoteStores) {
             var needReload = false;
             SYNC_KEYS.forEach(function (key) {
@@ -411,6 +412,7 @@
             });
             emitStatus();
             if (needReload) {
+                if (typeof window !== 'undefined' && window.__s35BlockSyncReload) return;
                 try {
                     sessionStorage.setItem(RELOAD_FLAG, '1');
                 } catch (_) {}

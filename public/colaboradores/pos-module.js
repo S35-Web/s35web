@@ -2872,32 +2872,63 @@
         return set;
     }
 
+    function unwrapPricesPayload(raw) {
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+        let src = raw;
+        if (src.map && typeof src.map === 'object' && !Array.isArray(src.map)) src = src.map;
+        else if (src.byId && typeof src.byId === 'object' && !Array.isArray(src.byId)) src = src.byId;
+        else if (src.items && typeof src.items === 'object' && !Array.isArray(src.items)) src = src.items;
+        else if (src.value && typeof src.value === 'object' && !Array.isArray(src.value)) {
+            const inner = src.value;
+            const looksLikePrices = Object.keys(inner).some(function (k) {
+                if (k === 'updatedAt') return false;
+                const e = inner[k];
+                return typeof e === 'number' ||
+                    (e && typeof e === 'object' && (Array.isArray(e.tiers) || e.presentationKg != null || 'distributorPrice' in e));
+            });
+            if (looksLikePrices) src = inner;
+        }
+        const out = {};
+        Object.keys(src).forEach(function (id) {
+            if (id === 'updatedAt' || id === 'items' || id === 'byId' || id === 'map' || id === 'value') return;
+            const e = src[id];
+            if (e == null) return;
+            if (typeof e === 'number' ||
+                (typeof e === 'object' && (Array.isArray(e.tiers) || e.presentationKg != null || 'distributorPrice' in e))) {
+                out[id] = e;
+            }
+        });
+        return out;
+    }
+
     function readStoredPrices() {
         try {
             const current = JSON.parse(localStorage.getItem(PRICE_KEY) || 'null');
-            if (current && typeof current === 'object') {
-                return { raw: current, fromLegacy: false };
+            const currentMap = unwrapPricesPayload(current);
+            if (currentMap && Object.keys(currentMap).length) {
+                return { raw: currentMap, fromLegacy: false };
             }
             let legacy = JSON.parse(localStorage.getItem(PRICE_KEY_LEGACY) || 'null');
             let fromV3 = !!(legacy && typeof legacy === 'object');
             if (!fromV3) {
                 legacy = JSON.parse(localStorage.getItem(PRICE_KEY_LEGACY_V2) || 'null');
             }
-            if (!legacy || typeof legacy !== 'object') return null;
+            const legacyMap = unwrapPricesPayload(legacy);
+            if (!legacyMap || !Object.keys(legacyMap).length) return null;
             const mergeTargets = {};
             Object.keys(PRICE_MERGE_FROM).forEach(function (dup) {
                 mergeTargets[PRICE_MERGE_FROM[dup]] = true;
             });
             const migrated = {};
-            Object.keys(legacy).forEach(function (id) {
+            Object.keys(legacyMap).forEach(function (id) {
                 if (PRICE_MERGE_FROM[id] || mergeTargets[id]) return;
-                migrated[id] = legacy[id];
+                migrated[id] = legacyMap[id];
             });
             // Duplicados slug → canónico (solo en migración antigua v2).
             if (!fromV3) {
                 Object.keys(PRICE_MERGE_FROM).forEach(function (dup) {
                     const target = PRICE_MERGE_FROM[dup];
-                    if (legacy[dup] != null) migrated[target] = legacy[dup];
+                    if (legacyMap[dup] != null) migrated[target] = legacyMap[dup];
                 });
             }
             return { raw: migrated, fromLegacy: true, reseedOfficial: true };
@@ -2938,10 +2969,37 @@
         } catch (_) {}
         return seed;
     }
-    function savePrices() {
-        localStorage.setItem(PRICE_KEY, JSON.stringify(prices));
-        try { localStorage.removeItem(PRICE_KEY_LEGACY); } catch (_) {}
-        try { localStorage.removeItem(PRICE_KEY_LEGACY_V2); } catch (_) {}
+
+    function reloadPricesFromStorage() {
+        prices = loadPrices();
+        return prices;
+    }
+
+    function savePrices(opts) {
+        opts = opts || {};
+        try {
+            localStorage.setItem(PRICE_KEY, JSON.stringify(prices));
+            try { localStorage.removeItem(PRICE_KEY_LEGACY); } catch (_) {}
+            try { localStorage.removeItem(PRICE_KEY_LEGACY_V2); } catch (_) {}
+        } catch (err) {
+            console.warn('[S35] savePrices', err);
+            return Promise.resolve({ ok: false, error: (err && err.message) || String(err) });
+        }
+        if (opts.flushCloud && window.S35PanelSync) {
+            try {
+                if (typeof window.S35PanelSync.schedulePush === 'function') {
+                    window.S35PanelSync.schedulePush(PRICE_KEY);
+                }
+            } catch (_) {}
+            if (typeof window.S35PanelSync.flushPush === 'function') {
+                return window.S35PanelSync.flushPush().then(function (res) {
+                    return res || { ok: true };
+                }).catch(function (err) {
+                    return { ok: false, error: (err && err.message) || String(err) };
+                });
+            }
+        }
+        return Promise.resolve({ ok: true });
     }
 
     /** % vs precio de lista (positivo = sobreprecio, negativo = descuento). */
@@ -7738,7 +7796,10 @@
         toast('Precios restablecidos');
     }
 
-    function priceEditorHtml(slug) {
+    function priceEditorHtml(slug, opts) {
+        opts = opts || {};
+        const editing = !!opts.editing;
+        const disabledAttr = editing ? '' : ' disabled';
         const rows = presentationsForSlug(slug);
         const list = rows.length
             ? rows
@@ -7758,7 +7819,7 @@
         if (!list.length) {
             return '<div class="empty">Sin presentaciones de venta para este producto.</div>';
         }
-        return '<div class="pd-price-blocks">' + list.map(function (pres) {
+        return '<div class="pd-price-blocks' + (editing ? ' is-editing' : '') + '">' + list.map(function (pres) {
             const id = pres.id;
             const entry = prices[id] || { presentationKg: pres.size, tiers: sixTiers(400), distributorPrice: null };
             const kg = entry.presentationKg != null ? entry.presentationKg : (pres.size != null ? pres.size : '—');
@@ -7770,7 +7831,8 @@
                 return '<label class="pd-tier-row">' +
                     '<span class="muted">' + esc(label) + '</span>' +
                     '<input class="price-input num" type="number" min="0" step="0.01" ' +
-                    'data-price-id="' + esc(id) + '" data-tier="' + i + '" value="' + esc(String(val)) + '">' +
+                    'data-price-id="' + esc(id) + '" data-tier="' + i + '" value="' + esc(String(val)) + '"' +
+                    disabledAttr + '>' +
                     '</label>';
             }).join('');
             const distVal = entry.distributorPrice != null && entry.distributorPrice !== ''
@@ -7783,7 +7845,7 @@
                 '<span class="muted">Precio distribuidores</span>' +
                 '<input class="price-input num" type="number" min="0" step="0.01" ' +
                 'data-price-id="' + esc(id) + '" data-price-field="distributor" ' +
-                'placeholder="—" value="' + esc(distVal) + '">' +
+                'placeholder="—" value="' + esc(distVal) + '"' + disabledAttr + '>' +
                 '</label></div>';
             return '<div class="pd-price-card" data-pres-id="' + esc(id) + '">' +
                 '<div class="pd-price-card-head">' +
@@ -7794,6 +7856,46 @@
                 '<div class="pd-tier-grid">' + tierRows + '</div>' +
                 distBlock + '</div>';
         }).join('') + '</div>';
+    }
+
+    /** Aplica inputs del editor de precios al mapa en memoria (sin guardar). */
+    function applyPriceEditorInputs(root) {
+        if (!root) return { ok: false, count: 0 };
+        let count = 0;
+        root.querySelectorAll('[data-price-id]').forEach(function (input) {
+            const id = input.getAttribute('data-price-id');
+            if (!id) return;
+            if (input.getAttribute('data-price-field') === 'distributor') {
+                ensurePriceEntry(id);
+                const raw = String(input.value == null ? '' : input.value).trim();
+                prices[id].distributorPrice = raw === '' ? null : Math.max(0, roundMoney(raw));
+                count += 1;
+                return;
+            }
+            const tier = Number(input.getAttribute('data-tier'));
+            if (!isFinite(tier) || tier < 0 || tier > 5) return;
+            ensurePriceEntry(id);
+            prices[id].tiers[tier] = Math.max(0, roundMoney(input.value));
+            count += 1;
+        });
+        return { ok: true, count: count };
+    }
+
+    function commitPriceEditor(root, opts) {
+        opts = opts || {};
+        const applied = applyPriceEditorInputs(root);
+        if (!applied.ok) return Promise.resolve({ ok: false, error: 'Sin editor' });
+        applyCartTierPrices();
+        renderProducts();
+        renderCart();
+        return savePrices({ flushCloud: opts.flushCloud !== false }).then(function (res) {
+            return {
+                ok: !!(res && res.ok !== false),
+                count: applied.count,
+                sync: res || null,
+                error: res && res.error
+            };
+        });
     }
 
     function addFtSiblingCodes(code, into) {
@@ -9003,6 +9105,9 @@
             setDistributorPrice: setDistributorPrice,
             resetPricesToDefaults: resetPricesToDefaults,
             priceEditorHtml: priceEditorHtml,
+            commitPriceEditor: commitPriceEditor,
+            reloadPricesFromStorage: reloadPricesFromStorage,
+            savePrices: function (opts) { return savePrices(opts || {}); },
             renderProductSalesAnalytics: renderProductSalesAnalytics,
             renderProductsMovementsChart: renderProductsMovementsChart,
             renderCortes: renderCortes,

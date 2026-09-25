@@ -4985,6 +4985,21 @@
         .products-table tbody tr { cursor: pointer; }
         .products-table tbody tr:hover { background: var(--hover); }
         .pd-price-blocks { display: grid; gap: 14px; }
+        .pd-prices-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px 16px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .pd-prices-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .pd-prices-actions .btn { height: 34px; }
         .pd-price-card {
             border: 1px solid var(--border);
             border-radius: var(--radius);
@@ -5018,6 +5033,16 @@
             font-variant-numeric: tabular-nums;
             width: 100%;
             box-sizing: border-box;
+        }
+        .pd-tier-row input:disabled {
+            opacity: 1;
+            color: var(--text);
+            background: var(--bg-soft);
+            cursor: default;
+        }
+        .pd-price-blocks.is-editing .pd-tier-row input:not(:disabled) {
+            background: var(--bg);
+            border-color: var(--border-strong);
         }
         .pd-distributor-block {
             margin-top: 14px;
@@ -6761,7 +6786,18 @@
                         </div>
                         <div class="pd-tab-panel" id="pdPanelPrecios" data-pd-panel="precios" hidden>
                             <div class="card">
-                                <p class="page-sub" style="margin-top:0">Tramos mayoristas (MXN). El escalón del POS depende del volumen del ticket. Precio distribuidores es fijo por unidad, aparte de los tramos.</p>
+                                <div class="pd-prices-head">
+                                    <p class="page-sub" style="margin:0">Tramos mayoristas (MXN). El escalón del POS depende del volumen del ticket. Precio distribuidores es fijo por unidad, aparte de los tramos.</p>
+                                    <div class="pd-prices-actions">
+                                        <button type="button" class="btn" id="pdPricesEditBtn">
+                                            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Editar
+                                        </button>
+                                        <button type="button" class="btn" id="pdPricesCancelBtn" hidden>Cancelar</button>
+                                        <button type="button" class="btn primary" id="pdPricesSaveBtn" hidden>
+                                            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i> Guardar
+                                        </button>
+                                    </div>
+                                </div>
                                 <div id="pdPricesMount"></div>
                             </div>
                         </div>
@@ -7760,6 +7796,7 @@
 
     let hubProductSlug = null;
     let hubProductTab = 'resumen';
+    let pricesEditing = false;
 
     function parseHash() {
         const raw = (location.hash || '').replace(/^#/, '').trim();
@@ -10778,6 +10815,7 @@
     }
 
     function setProductTab(tab) {
+        if (pricesEditing && tab !== 'precios') cancelPricesEdit({ skipRender: true });
         hubProductTab = tab || 'resumen';
         if (hubProductTab === 'formula' && !canEditFormulas() && currentRole === 'ventas') {
             /* ventas puede ver fórmula en solo lectura si el tab está visible; ocultamos el tab abajo */
@@ -10795,11 +10833,79 @@
         syncPanelHash();
     }
 
+    function syncPricesEditChrome() {
+        const editBtn = document.getElementById('pdPricesEditBtn');
+        const saveBtn = document.getElementById('pdPricesSaveBtn');
+        const cancelBtn = document.getElementById('pdPricesCancelBtn');
+        if (editBtn) editBtn.hidden = pricesEditing;
+        if (saveBtn) {
+            saveBtn.hidden = !pricesEditing;
+            saveBtn.disabled = false;
+        }
+        if (cancelBtn) {
+            cancelBtn.hidden = !pricesEditing;
+            cancelBtn.disabled = false;
+        }
+    }
+
+    function cancelPricesEdit(opts) {
+        opts = opts || {};
+        pricesEditing = false;
+        try { window.__s35BlockSyncReload = false; } catch (_) {}
+        syncPricesEditChrome();
+        if (!opts.skipRender) renderProductPricesTab();
+    }
+
+    function beginPricesEdit() {
+        if (!hubProductSlug || pricesEditing) return;
+        pricesEditing = true;
+        try { window.__s35BlockSyncReload = true; } catch (_) {}
+        syncPricesEditChrome();
+        renderProductPricesTab();
+        const first = document.querySelector('#pdPricesMount input.price-input:not(:disabled)');
+        if (first) first.focus();
+    }
+
+    function savePricesEdit() {
+        if (!pricesEditing || !window.S35PosModule || !window.S35PosModule.commitPriceEditor) return;
+        const mount = document.getElementById('pdPricesMount');
+        const saveBtn = document.getElementById('pdPricesSaveBtn');
+        const cancelBtn = document.getElementById('pdPricesCancelBtn');
+        if (saveBtn) saveBtn.disabled = true;
+        if (cancelBtn) cancelBtn.disabled = true;
+        window.S35PosModule.commitPriceEditor(mount, { flushCloud: true })
+            .then(function (res) {
+                if (!res || !res.ok) {
+                    panelToast((res && res.error) || 'No se pudieron guardar los precios');
+                    if (saveBtn) saveBtn.disabled = false;
+                    if (cancelBtn) cancelBtn.disabled = false;
+                    return;
+                }
+                pricesEditing = false;
+                try { window.__s35BlockSyncReload = false; } catch (_) {}
+                syncPricesEditChrome();
+                renderProductPricesTab();
+                if (window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
+                const syncOk = !res.sync || res.sync.ok !== false;
+                panelToast(syncOk
+                    ? 'Precios guardados y sincronizados en la nube'
+                    : 'Precios guardados en este dispositivo (nube pendiente)');
+            })
+            .catch(function (err) {
+                panelToast((err && err.message) || 'Error al guardar precios');
+                if (saveBtn) saveBtn.disabled = false;
+                if (cancelBtn) cancelBtn.disabled = false;
+            });
+    }
+
     function renderProductPricesTab() {
         const mount = document.getElementById('pdPricesMount');
         if (!mount || !hubProductSlug) return;
+        syncPricesEditChrome();
         if (window.S35PosModule && window.S35PosModule.priceEditorHtml) {
-            mount.innerHTML = window.S35PosModule.priceEditorHtml(hubProductSlug);
+            mount.innerHTML = window.S35PosModule.priceEditorHtml(hubProductSlug, {
+                editing: pricesEditing
+            });
         } else {
             mount.innerHTML = '<div class="empty">Cargando precios…</div>';
         }
@@ -10833,6 +10939,7 @@
 
     function showProductList(opts) {
         opts = opts || {};
+        if (pricesEditing) cancelPricesEdit({ skipRender: true });
         hubProductSlug = null;
         hubProductTab = 'resumen';
         const listView = document.getElementById('productsListView');
@@ -10850,6 +10957,7 @@
 
     function openProductHub(slug, opts) {
         opts = opts || {};
+        if (pricesEditing && slug !== hubProductSlug) cancelPricesEdit({ skipRender: true });
         const item = hubCatalog().filter(function (p) { return p.slug === slug; })[0];
         if (!item) {
             showProductList(opts);
@@ -11120,23 +11228,22 @@
         }
         const pricesMount = document.getElementById('pdPricesMount');
         if (pricesMount) {
-            pricesMount.addEventListener('change', function (e) {
-                const input = e.target.closest('[data-price-id]');
-                if (!input || !window.S35PosModule) return;
-                const id = input.getAttribute('data-price-id');
-                if (input.getAttribute('data-price-field') === 'distributor') {
-                    if (window.S35PosModule.setDistributorPrice) {
-                        window.S35PosModule.setDistributorPrice(id, input.value);
-                    }
-                    return;
+            // Los precios del hub solo se guardan con el botón Guardar (evita races con sync).
+            pricesMount.addEventListener('keydown', function (e) {
+                if (!pricesEditing) return;
+                if (e.key === 'Enter' && e.target && e.target.matches('input.price-input')) {
+                    e.preventDefault();
+                    savePricesEdit();
                 }
-                window.S35PosModule.setTierPrice(
-                    id,
-                    input.getAttribute('data-tier'),
-                    input.value
-                );
+                if (e.key === 'Escape') cancelPricesEdit();
             });
         }
+        const pdPricesEditBtn = document.getElementById('pdPricesEditBtn');
+        if (pdPricesEditBtn) pdPricesEditBtn.addEventListener('click', beginPricesEdit);
+        const pdPricesSaveBtn = document.getElementById('pdPricesSaveBtn');
+        if (pdPricesSaveBtn) pdPricesSaveBtn.addEventListener('click', savePricesEdit);
+        const pdPricesCancelBtn = document.getElementById('pdPricesCancelBtn');
+        if (pdPricesCancelBtn) pdPricesCancelBtn.addEventListener('click', function () { cancelPricesEdit(); });
         const productsFamiliesBtn = document.getElementById('productsFamiliesBtn');
         if (productsFamiliesBtn) productsFamiliesBtn.addEventListener('click', openProductFamiliesModal);
         const nameInput = document.getElementById('pdName');
@@ -13358,7 +13465,13 @@
         hydrateFinishedFromLocal();
         applyProductCatalog();
         if (typeof refreshStockViews === 'function') refreshStockViews();
+        if (window.S35PosModule && window.S35PosModule.reloadPricesFromStorage) {
+            window.S35PosModule.reloadPricesFromStorage();
+        }
         if (window.S35PosModule && window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
+        if (!pricesEditing && hubProductSlug && hubProductTab === 'precios' && typeof renderProductPricesTab === 'function') {
+            renderProductPricesTab();
+        }
     });
 
     window.S35PanelAPI = {
