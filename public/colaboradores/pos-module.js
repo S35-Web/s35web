@@ -809,9 +809,10 @@
 
     function buildNoteHtml(sale) {
         const items = sale.items || [];
-        const rows = items.map(function (it) {
+        const rows = items.map(function (it, idx) {
             const line = it.lineTotal != null ? it.lineTotal : it.qty * it.price;
             return '<tr>' +
+                '<td class="num snd-idx">' + (idx + 1) + '</td>' +
                 '<td><span class="line-name">' + esc(it.name) + '</span>' +
                 (it.unit ? '<span class="line-unit">' + esc(it.unit) + '</span>' : '') + '</td>' +
                 '<td class="num">' + esc(String(it.qty)) + '</td>' +
@@ -821,33 +822,83 @@
         }).join('');
         const receiptLabel = saleReceiptLabel(sale);
         const store = saleStoreName(sale);
-        return '<div class="sale-note-brand">' +
-            '<div class="mark">S-35<span>Midday</span></div>' +
-            '<div class="folio">' + esc(receiptLabel) + '</div>' +
+        const city = cityLabel(saleCity(sale));
+        const seller = saleUserLabel(sale);
+        let client = sale.client || null;
+        if (!client && sale.clientId) client = clientById(sale.clientId);
+        const addr = clientAddress(client);
+        const refLine = saleReceiptId(sale)
+            ? 'HIST-R' + saleReceiptId(sale)
+            : (sale.meta && sale.meta.kind === 'invoice' && sale.meta.invoiceFolio != null
+                ? 'CFDI-' + sale.meta.invoiceFolio
+                : (sale.folio || ''));
+        const originName = store || city || 'POS';
+        const originSub = [
+            city && store ? city : '',
+            seller ? ('Vendedor: ' + seller) : ''
+        ].filter(Boolean).join(' · ');
+        return '' +
+            '<div class="snd-top">' +
+            '<div class="snd-brand">' +
+            '<div class="snd-logo">S-35</div>' +
+            '<div class="snd-company">S-35 Midday</div>' +
+            (city || store
+                ? '<div class="snd-company-sub">' + esc([city, store].filter(Boolean).join(' · ')) + '</div>'
+                : '') +
             '</div>' +
-            '<div class="sale-note-meta">' +
-            '<div class="row"><span class="k">Fecha</span><span class="v">' + esc(formatSaleDateTime(sale.createdAt)) + '</span></div>' +
-            '<div class="row"><span class="k">Ciudad</span><span class="v">' + esc(cityLabel(saleCity(sale))) + '</span></div>' +
-            (store
-                ? '<div class="row"><span class="k">Sucursal</span><span class="v">' + esc(store) + '</span></div>'
-                : '') +
-            '<div class="row"><span class="k">Cliente</span><span class="v">' + esc(saleClientLabel(sale)) + '</span></div>' +
-            (saleUserLabel(sale)
-                ? '<div class="row"><span class="k">Vendedor</span><span class="v">' + esc(saleUserLabel(sale)) + '</span></div>'
-                : '') +
-            '<div class="row"><span class="k">Pago</span><span class="v">' + esc(formatSalePayLabel(sale)) + '</span></div>' +
-            '<div class="row"><span class="k">Facturación</span><span class="v">' + esc(billLabel(sale.billing)) + '</span></div>' +
-            (saleReceiptId(sale)
-                ? '<div class="row"><span class="k">Referencia</span><span class="v">' + esc('HIST-R' + saleReceiptId(sale)) + '</span></div>'
-                : (sale.meta && sale.meta.kind === 'invoice' && sale.meta.invoiceFolio != null
-                    ? '<div class="row"><span class="k">Factura</span><span class="v">' + esc('CFDI-' + sale.meta.invoiceFolio) + '</span></div>'
-                    : '')) +
+            '<div class="snd-doctype">NOTA DE VENTA</div>' +
+            '</div>' +
+            '<div class="snd-summary">' +
+            '<div class="snd-sum-cell">' +
+            '<span class="lbl">Total</span>' +
+            '<span class="val">' + money(sale.total) + '</span>' +
+            '</div>' +
+            '<div class="snd-sum-cell">' +
+            '<span class="lbl">Fecha</span>' +
+            '<span class="val">' + esc(formatSaleDateTime(sale.createdAt)) + '</span>' +
+            '</div>' +
+            '<div class="snd-sum-cell">' +
+            '<span class="lbl">Folio</span>' +
+            '<span class="val">' + esc(receiptLabel) + '</span>' +
+            '</div>' +
+            '<div class="snd-sum-cell">' +
+            '<span class="lbl">Facturación</span>' +
+            '<span class="val">' + esc(billLabel(sale.billing)) + '</span>' +
+            '</div>' +
+            '</div>' +
+            '<div class="snd-parties">' +
+            '<div class="snd-party">' +
+            '<div class="lbl">Cliente</div>' +
+            '<div class="name">' + esc(saleClientLabel(sale)) + '</div>' +
+            (addr ? '<div class="sub">' + esc(addr) + '</div>' : '') +
+            (refLine ? '<div class="sub">Ref. ' + esc(refLine) + '</div>' : '') +
+            '</div>' +
+            '<div class="snd-party">' +
+            '<div class="lbl">Origen</div>' +
+            '<div class="name">' + esc(originName) + '</div>' +
+            (originSub ? '<div class="sub">' + esc(originSub) + '</div>' : '') +
+            '</div>' +
             '</div>' +
             '<table class="sale-note-lines">' +
-            '<thead><tr><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Importe</th></tr></thead>' +
-            '<tbody>' + (rows || '<tr><td colspan="4" class="muted">Sin líneas</td></tr>') + '</tbody>' +
+            '<thead><tr>' +
+            '<th class="num snd-idx">#</th>' +
+            '<th>Descripción</th>' +
+            '<th class="num">Cant.</th>' +
+            '<th class="num">Precio</th>' +
+            '<th class="num">Importe</th>' +
+            '</tr></thead>' +
+            '<tbody>' + (rows || '<tr><td colspan="5" class="muted">Sin líneas</td></tr>') + '</tbody>' +
             '</table>' +
-            '<div class="sale-note-total"><span class="label">Total</span><span class="amount">' + money(sale.total) + '</span></div>';
+            '<div class="snd-bottom">' +
+            '<div class="snd-pay">' +
+            '<div class="lbl">Método de pago</div>' +
+            '<div class="val">' + esc(formatSalePayLabel(sale)) + '</div>' +
+            '</div>' +
+            '<div class="snd-totals">' +
+            '<div class="row"><span>Subtotal</span><span>' + money(sale.total) + '</span></div>' +
+            '<div class="row total"><span>Total</span><span>' + money(sale.total) + '</span></div>' +
+            '</div>' +
+            '</div>';
     }
 
     function isAdminRole() {
