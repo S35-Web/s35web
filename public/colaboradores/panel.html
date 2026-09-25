@@ -4500,10 +4500,27 @@
         }
         .products-inventory-qty.is-zero { color: var(--muted); }
         #productsInventoryChart .products-inventory-row {
-            grid-template-columns: minmax(0, max-content) minmax(0, 1fr) 12.5em;
+            grid-template-columns: minmax(0, 1.2fr) minmax(72px, 1fr) 12.5em;
+        }
+        #productsInventoryChart .products-inventory-name {
+            min-width: 0;
+            overflow: hidden;
+        }
+        #productsInventoryChart .products-inventory-name .products-inventory-label {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #productsInventoryChart .products-inventory-name .product-sack-cost,
+        #productsInventoryChart .products-inventory-name .pd-missing-dose {
+            flex: 0 0 auto;
+            flex-shrink: 0;
         }
         #productsInventoryChart .products-inventory-track {
-            min-width: 0;
+            min-width: 72px;
+            width: 100%;
         }
         #productsInventoryChart .products-inventory-qty { white-space: nowrap; }
         #productsInventoryChart .mat-inv-value { color: var(--muted); }
