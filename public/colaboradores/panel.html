@@ -4500,7 +4500,10 @@
         }
         .products-inventory-qty.is-zero { color: var(--muted); }
         #productsInventoryChart .products-inventory-row {
-            grid-template-columns: minmax(0, 1.15fr) minmax(64px, 1fr) 12.5em;
+            grid-template-columns: minmax(0, max-content) minmax(0, 1fr) 12.5em;
+        }
+        #productsInventoryChart .products-inventory-track {
+            min-width: 0;
         }
         #productsInventoryChart .products-inventory-qty { white-space: nowrap; }
         #productsInventoryChart .mat-inv-value { color: var(--muted); }
