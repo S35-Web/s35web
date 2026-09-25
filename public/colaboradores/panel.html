@@ -6418,7 +6418,7 @@
                     <div class="mail-head">
                         <div class="mail-head-text">
                             <h1 class="page-title">Mensajes</h1>
-                            <p class="page-sub" id="messagesPageSub">Bandeja de contacto@s35.com.mx y formulario del sitio.</p>
+                            <p class="page-sub" id="messagesPageSub">contacto@s35.com.mx</p>
                         </div>
                         <div class="card mail-connect" id="gmailConnectCard" hidden>
                             <div class="mail-connect-row">
@@ -8799,6 +8799,10 @@
         const hint = document.getElementById('gmailConnectHint');
         const connectBtn = document.getElementById('gmailConnectBtn');
         const disconnectBtn = document.getElementById('gmailDisconnectBtn');
+        const pageSub = document.getElementById('messagesPageSub');
+        if (pageSub) {
+            pageSub.textContent = (gmailStatus && gmailStatus.email) || 'contacto@s35.com.mx';
+        }
         if (!card) return;
         card.hidden = false;
         card.classList.remove('is-connected');
