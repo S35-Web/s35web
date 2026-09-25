@@ -2941,33 +2941,55 @@
     let historicalSales = [];
     let analyticsSalesCache = null;
 
+    let avgSalePriceCache = null;
     function invalidateAnalyticsSalesCache() {
         analyticsSalesCache = null;
+        avgSalePriceCache = null;
+    }
+
+    function averageSalePriceMapLastMonth() {
+        if (avgSalePriceCache) return avgSalePriceCache;
+        const since = Date.now() - 30 * 86400000;
+        const edits = loadSaleEditsMap();
+        const totals = {};
+        function scan(list) {
+        for (let i = 0; i < list.length; i++) {
+            const raw = list[i];
+            if (!raw) continue;
+            const patch = raw.id ? edits[raw.id] : null;
+            if (patch && patch.deleted) continue;
+            const t = Date.parse((patch && patch.createdAt) || raw.createdAt);
+            if (!isFinite(t) || t < since) continue;
+            const items = (patch && patch.items) || raw.items;
+            if (!items || !items.length) continue;
+            for (let j = 0; j < items.length; j++) {
+                const it = items[j];
+                if (!it || !it.product) continue;
+                const q = Number(it.qty) || 0;
+                if (!(q > 0)) continue;
+                const line = it.lineTotal != null ? Number(it.lineTotal) : q * (Number(it.price) || 0);
+                if (!isFinite(line)) continue;
+                let row = totals[it.product];
+                if (!row) totals[it.product] = row = { qty: 0, money: 0 };
+                row.qty += q;
+                row.money += line;
+            }
+        }
+        }
+        scan(historicalSales);
+        scan(sales);
+        const map = {};
+        const keys = Object.keys(totals);
+        for (let k = 0; k < keys.length; k++) {
+            const row = totals[keys[k]];
+            map[keys[k]] = row.qty > 0 ? Math.round((row.money / row.qty) * 100) / 100 : 0;
+        }
+        avgSalePriceCache = map;
+        return map;
     }
 
     function averageSalePriceLastMonth(slug) {
-        const key = String(slug || '');
-        if (!key) return 0;
-        const since = Date.now() - 30 * 86400000;
-        let qty = 0;
-        let money = 0;
-        salesForAnalytics().forEach(function (raw) {
-            if (!raw || isSaleEditDeleted(raw.id)) return;
-            const sale = applySaleEditPatch(raw);
-            const t = new Date(sale.createdAt).getTime();
-            if (!isFinite(t) || t < since) return;
-            (sale.items || []).forEach(function (it) {
-                if (!it || String(it.product || '') !== key) return;
-                const q = Number(it.qty) || 0;
-                if (!(q > 0)) return;
-                const line = it.lineTotal != null ? Number(it.lineTotal) : q * (Number(it.price) || 0);
-                if (!isFinite(line)) return;
-                qty += q;
-                money += line;
-            });
-        });
-        if (!(qty > 0)) return 0;
-        return Math.round((money / qty) * 100) / 100;
+        return averageSalePriceMapLastMonth()[String(slug || '')] || 0;
     }
 
     function salesForAnalytics() {
@@ -8559,6 +8581,7 @@
             renderCobranza: renderCobranza,
             baseUnitPrice: baseUnitPrice,
             averageSalePriceLastMonth: averageSalePriceLastMonth,
+            averageSalePriceMapLastMonth: averageSalePriceMapLastMonth,
             unitFor: unitFor,
             getPromoCodes: function () { return promoCodes.slice(); },
             renderPromosAdmin: renderPromosAdmin

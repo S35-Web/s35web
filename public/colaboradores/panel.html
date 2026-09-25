@@ -9846,14 +9846,15 @@
             host.innerHTML = '';
             return;
         }
+        const avgMap = (window.S35PosModule && window.S35PosModule.averageSalePriceMapLastMonth)
+            ? window.S35PosModule.averageSalePriceMapLastMonth()
+            : {};
         host.innerHTML = list.map(function (p) {
             const pct = max > 0 ? (p.stock / max) * 100 : 0;
             const color = (window.S35PosModule && window.S35PosModule.familyColor)
                 ? window.S35PosModule.familyColor(p.family)
                 : '#9a9a9a';
-            const avg = (window.S35PosModule && window.S35PosModule.averageSalePriceLastMonth)
-                ? window.S35PosModule.averageSalePriceLastMonth(p.slug)
-                : 0;
+            const avg = avgMap[p.slug] || 0;
             const value = Math.round(p.stock * avg * 100) / 100;
             const valueTitle = avg > 0
                 ? ('Precio promedio del último mes ' + moneyMx(avg))
@@ -12559,7 +12560,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260924-avg-sale"></script>
+    <script src="/colaboradores/pos-module.js?v=20260924-avg-sale-once"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260923-copilot-section"></script>
 </body>
