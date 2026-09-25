@@ -33,6 +33,106 @@
         return document.getElementById(id);
     }
 
+    function escapeHtml(raw) {
+        return String(raw == null ? '' : raw)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    /** Markdown ligero y seguro para burbujas del asistente (sin HTML crudo). */
+    function formatInlineMd(raw) {
+        let s = escapeHtml(raw);
+        s = s.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+        s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/(^|[^*\w])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+        return s;
+    }
+
+    function renderAssistantMarkdown(text) {
+        const src = String(text == null ? '' : text).replace(/\r\n/g, '\n').trim();
+        if (!src) return '';
+        const lines = src.split('\n');
+        const parts = [];
+        let i = 0;
+
+        function flushParagraph(buf) {
+            if (!buf.length) return;
+            parts.push('<p>' + formatInlineMd(buf.join(' ')) + '</p>');
+            buf.length = 0;
+        }
+
+        function listItemDepth(line) {
+            const m = line.match(/^(\s*)([-*•]|\d+[.)])\s+/);
+            if (!m) return -1;
+            return Math.min(2, Math.floor(m[1].length / 2));
+        }
+
+        function consumeList(ordered) {
+            const root = [];
+            const stack = [{ depth: -1, items: root }];
+
+            while (i < lines.length) {
+                const raw = lines[i];
+                if (!raw.trim()) break;
+                const depth = listItemDepth(raw);
+                if (depth < 0) break;
+                const m = raw.trim().match(/^[-*•]\s+(.+)$/) || raw.trim().match(/^\d+[.)]\s+(.+)$/);
+                if (!m) break;
+                while (stack.length > 1 && stack[stack.length - 1].depth >= depth) stack.pop();
+                const parent = stack[stack.length - 1].items;
+                const node = { html: formatInlineMd(m[1]), children: [] };
+                parent.push(node);
+                stack.push({ depth: depth, items: node.children });
+                i += 1;
+            }
+
+            function renderNodes(nodes, asOrdered) {
+                if (!nodes.length) return '';
+                const tag = asOrdered ? 'ol' : 'ul';
+                return '<' + tag + '>' + nodes.map(function (n) {
+                    const nested = n.children.length ? renderNodes(n.children, false) : '';
+                    return '<li>' + n.html + nested + '</li>';
+                }).join('') + '</' + tag + '>';
+            }
+
+            parts.push(renderNodes(root, ordered));
+        }
+
+        while (i < lines.length) {
+            const line = lines[i];
+            const trimmed = line.trim();
+
+            if (!trimmed) {
+                i += 1;
+                continue;
+            }
+
+            if (/^[-*•]\s+/.test(trimmed)) {
+                consumeList(false);
+                continue;
+            }
+
+            if (/^\d+[.)]\s+/.test(trimmed)) {
+                consumeList(true);
+                continue;
+            }
+
+            const para = [];
+            while (i < lines.length) {
+                const t = lines[i].trim();
+                if (!t) break;
+                if (/^[-*•]\s+/.test(t) || /^\d+[.)]\s+/.test(t)) break;
+                para.push(t);
+                i += 1;
+            }
+            flushParagraph(para);
+        }
+
+        return parts.join('') || ('<p>' + formatInlineMd(src) + '</p>');
+    }
+
     function formatTokens(n) {
         n = Number(n) || 0;
         if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(/\.0$/, '') + 'M';
@@ -111,7 +211,12 @@
         setChatting(true);
         const div = document.createElement('div');
         div.className = 'copilot-bubble is-' + role;
-        div.textContent = text;
+        if (role === 'assistant') {
+            div.classList.add('has-md');
+            div.innerHTML = renderAssistantMarkdown(text);
+        } else {
+            div.textContent = text;
+        }
         host.appendChild(div);
         host.scrollTop = host.scrollHeight;
     }
