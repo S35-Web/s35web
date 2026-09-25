@@ -13,6 +13,7 @@
         'waxtard-basecoat-gris-plus': 'basecoat-plus-gris'
     };
     const SALES_KEY = 's35_pos_sales';
+    const CAJA_GASTOS_KEY = 's35_caja_gastos_v1';
     const SALE_EDITS_KEY = 's35_sale_edits_v1';
     const CLIENTS_KEY = 's35_pos_clients';
     const FINISHED_KEY = 's35_finished_stock';
@@ -2940,6 +2941,9 @@
     /** Ventas históricas (import v3): solo en memoria; no caben en localStorage (~26 MB). */
     let historicalSales = [];
     let analyticsSalesCache = null;
+    /** Gastos de caja (efectivo saliente). */
+    let cajaGastos = [];
+    let posMode = 'venta';
 
     let monthAvgPriceCache = null;
     function invalidateAnalyticsSalesCache() {
@@ -3025,6 +3029,62 @@
     function saveSales() {
         invalidateAnalyticsSalesCache();
         localStorage.setItem(SALES_KEY, JSON.stringify({ items: sales, updatedAt: new Date().toISOString() }));
+    }
+
+    function loadCajaGastos() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(CAJA_GASTOS_KEY) || 'null');
+            if (raw && Array.isArray(raw.items)) return raw.items;
+        } catch (_) {}
+        return [];
+    }
+    function saveCajaGastos() {
+        localStorage.setItem(CAJA_GASTOS_KEY, JSON.stringify({
+            items: cajaGastos,
+            updatedAt: new Date().toISOString()
+        }));
+    }
+    function gastoCity(g) {
+        return normalizeCityId((g && g.city) || 'culiacan');
+    }
+    function filterGastosByCity(list, cityFilter) {
+        const f = cityFilter == null ? 'all' : cityFilter;
+        if (!f || f === 'all') return list || [];
+        const id = normalizeCityId(f);
+        return (list || []).filter(function (g) { return gastoCity(g) === id; });
+    }
+    function gastosInRange(list, start, end) {
+        return (list || []).filter(function (g) {
+            const t = new Date(g.createdAt).getTime();
+            if (isNaN(t)) return false;
+            return t >= start.getTime() && t < end.getTime();
+        });
+    }
+    function sumGastos(list) {
+        return (list || []).reduce(function (n, g) { return n + (Number(g.amount) || 0); }, 0);
+    }
+    function currentUserSnapshot() {
+        let soldBy = { id: 'admin', username: 'admin', name: 'Admin', role: 'admin' };
+        try {
+            if (window.S35Roles && typeof window.S35Roles.userSnapshotForSale === 'function') {
+                soldBy = window.S35Roles.userSnapshotForSale();
+            } else if (window.S35PanelAPI && window.S35PanelAPI.getCurrentUser) {
+                soldBy = window.S35Roles
+                    ? window.S35Roles.userSnapshotForSale(window.S35PanelAPI.getCurrentUser())
+                    : window.S35PanelAPI.getCurrentUser();
+            } else {
+                const u = JSON.parse(localStorage.getItem('s35_admin_user') || '{}');
+                if (u.username) {
+                    soldBy = {
+                        id: u.id || u.username,
+                        username: u.username,
+                        name: u.name || u.username,
+                        role: u.role || 'admin'
+                    };
+                }
+            }
+        } catch (_) {}
+        return soldBy;
     }
 
     // —— Clients ——
@@ -5414,26 +5474,7 @@
             type: normalizeClientType(client.type || client.kind)
         } : null;
 
-        let soldBy = { id: 'admin', username: 'admin', name: 'Admin', role: 'admin' };
-        try {
-            if (window.S35Roles && typeof window.S35Roles.userSnapshotForSale === 'function') {
-                soldBy = window.S35Roles.userSnapshotForSale();
-            } else if (window.S35PanelAPI && window.S35PanelAPI.getCurrentUser) {
-                soldBy = window.S35Roles
-                    ? window.S35Roles.userSnapshotForSale(window.S35PanelAPI.getCurrentUser())
-                    : window.S35PanelAPI.getCurrentUser();
-            } else {
-                const u = JSON.parse(localStorage.getItem('s35_admin_user') || '{}');
-                if (u.username) {
-                    soldBy = {
-                        id: u.id || u.username,
-                        username: u.username,
-                        name: u.name || u.username,
-                        role: u.role || 'admin'
-                    };
-                }
-            }
-        } catch (_) {}
+        let soldBy = currentUserSnapshot();
 
         const ticket = {
             id: 'sale-' + Date.now().toString(36),
@@ -5584,6 +5625,194 @@
                 '<span class="amt">' + money(r.amount) + '</span>' +
                 '</div>';
         }).join('');
+    }
+
+    /**
+     * Método de pago en Cortes: desglose por método + neto de efectivo
+     * (efectivo cobrado − gastos de caja = total efectivo).
+     */
+    function renderCortesPayBreakdown(payRows, total, efectivoCobrado, gastosTotal) {
+        const rowsEl = document.getElementById('cortesPayRows');
+        const barEl = document.getElementById('cortesPayBar');
+        if (!rowsEl) return;
+
+        const gastos = roundMoney(gastosTotal);
+        const cobrado = roundMoney(efectivoCobrado);
+        const totalEfectivo = roundMoney(cobrado - gastos);
+        const hasCashDetail = cobrado > 0 || gastos > 0;
+        const otherRows = (payRows || []).filter(function (r) { return r.key !== 'efectivo'; });
+        const barRows = [];
+        if (hasCashDetail) {
+            barRows.push({
+                key: 'efectivo',
+                label: 'Total efectivo',
+                amount: Math.max(0, totalEfectivo)
+            });
+        }
+        otherRows.forEach(function (r) { barRows.push(r); });
+
+        if (!barRows.length && !hasCashDetail) {
+            rowsEl.innerHTML = '<div class="cortes-empty">Sin datos en este periodo</div>';
+            if (barEl) barEl.innerHTML = '';
+            return;
+        }
+
+        const barBase = total > 0 ? total : (barRows.reduce(function (n, r) { return n + r.amount; }, 0) || 1);
+        if (barEl) {
+            barEl.innerHTML = barRows.filter(function (r) { return r.amount > 0; }).map(function (r) {
+                const pct = Math.max(0, (r.amount / barBase) * 100);
+                return '<span class="seg-' + esc(r.key) + '" style="width:' + pct + '%" title="' + esc(r.label) + '"></span>';
+            }).join('');
+        }
+
+        let html = '';
+        if (hasCashDetail) {
+            html += '<div class="cortes-group">' +
+                '<div class="cortes-row is-sub">' +
+                '<div class="left"><span class="dot efectivo"></span><span class="name">Efectivo cobrado</span></div>' +
+                '<span class="amt">' + money(cobrado) + '</span>' +
+                '</div>' +
+                '<div class="cortes-row is-sub is-cash-expense">' +
+                '<div class="left"><span class="dot por_cobrar"></span><span class="name">Gastos de caja</span></div>' +
+                '<span class="amt">−' + money(gastos) + '</span>' +
+                '</div>' +
+                '<div class="cortes-row is-group is-cash-total">' +
+                '<div class="left"><span class="dot efectivo"></span><span class="name">Total efectivo</span></div>' +
+                '<span class="amt">' + money(totalEfectivo) + '</span>' +
+                '</div>' +
+                '</div>';
+        }
+        html += otherRows.map(function (r) {
+            return '<div class="cortes-row">' +
+                '<div class="left"><span class="dot ' + esc(r.key) + '"></span><span class="name">' + esc(r.label) + '</span></div>' +
+                '<span class="amt">' + money(r.amount) + '</span>' +
+                '</div>';
+        }).join('');
+        rowsEl.innerHTML = html || '<div class="cortes-empty">Sin datos en este periodo</div>';
+    }
+
+    function setPosMode(mode) {
+        posMode = mode === 'gastos' ? 'gastos' : 'venta';
+        document.querySelectorAll('#posModeTabs [data-pos-mode]').forEach(function (btn) {
+            const active = btn.getAttribute('data-pos-mode') === posMode;
+            btn.classList.toggle('active', active);
+            btn.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        const ventaPanel = document.getElementById('posModeVenta');
+        const gastosPanel = document.getElementById('posModeGastos');
+        if (ventaPanel) ventaPanel.hidden = posMode !== 'venta';
+        if (gastosPanel) gastosPanel.hidden = posMode !== 'gastos';
+        if (posMode === 'gastos') {
+            syncGastoCityControl();
+            renderGastosPanel();
+        }
+    }
+
+    function syncGastoCityControl() {
+        const sel = document.getElementById('posGastoCity');
+        if (!sel) return;
+        const preferred = loadPreferredSaleCity();
+        if (cityById(preferred)) sel.value = preferred;
+    }
+
+    function renderGastosPanel() {
+        const listEl = document.getElementById('posGastosList');
+        const countEl = document.getElementById('posGastosListCount');
+        const todayEl = document.getElementById('posGastosTodayTotal');
+        if (!listEl) return;
+
+        const todayBounds = periodBounds('day', 0);
+        const todayList = gastosInRange(cajaGastos, todayBounds.start, todayBounds.end);
+        if (todayEl) todayEl.textContent = money(sumGastos(todayList));
+
+        const sorted = cajaGastos.slice().sort(function (a, b) {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        const cap = 100;
+        const shown = sorted.length > cap ? sorted.slice(0, cap) : sorted;
+        if (countEl) {
+            countEl.textContent = sorted.length + (sorted.length === 1 ? ' gasto' : ' gastos');
+        }
+        if (!shown.length) {
+            listEl.innerHTML = '<div class="pos-gasto-row"><div class="empty">Sin gastos registrados.</div></div>';
+            return;
+        }
+        listEl.innerHTML = shown.map(function (g) {
+            const d = new Date(g.createdAt);
+            const who = g.userName || (g.user && (g.user.name || g.user.username)) || '';
+            const note = String(g.note || '').trim();
+            return '<div class="pos-gasto-row" data-gasto-id="' + esc(g.id) + '">' +
+                '<div>' +
+                    '<div class="concept">' + esc(g.concept || 'Gasto') + '</div>' +
+                    '<div class="meta">' + esc(formatInvoiceDate(d)) +
+                        ' · ' + esc(cityLabel(gastoCity(g))) +
+                        (who ? ' · ' + esc(who) : '') +
+                        (note ? ' · ' + esc(note) : '') +
+                    '</div>' +
+                '</div>' +
+                '<span class="amt">−' + money(g.amount) + '</span>' +
+                '<button type="button" class="iconbtn" data-rm-gasto="' + esc(g.id) + '" title="Eliminar" aria-label="Eliminar gasto">' +
+                    '<i class="fa-solid fa-trash-can" aria-hidden="true"></i>' +
+                '</button>' +
+                '</div>';
+        }).join('') +
+            (sorted.length > cap
+                ? '<div class="pos-gasto-row"><div class="empty muted">Mostrando ' + cap + ' de ' + sorted.length + '</div></div>'
+                : '');
+    }
+
+    function registerCajaGasto(ev) {
+        if (ev) ev.preventDefault();
+        const conceptEl = document.getElementById('posGastoConcept');
+        const amountEl = document.getElementById('posGastoAmount');
+        const cityEl = document.getElementById('posGastoCity');
+        const noteEl = document.getElementById('posGastoNote');
+        const concept = String((conceptEl && conceptEl.value) || '').trim().replace(/\s+/g, ' ');
+        const amount = roundMoney(amountEl && amountEl.value);
+        const city = normalizeCityId((cityEl && cityEl.value) || loadPreferredSaleCity());
+        const note = String((noteEl && noteEl.value) || '').trim();
+        if (!concept) {
+            toast('Escribe el concepto del gasto');
+            if (conceptEl) conceptEl.focus();
+            return;
+        }
+        if (!(amount > 0)) {
+            toast('El monto debe ser mayor a 0');
+            if (amountEl) amountEl.focus();
+            return;
+        }
+        const user = currentUserSnapshot();
+        const gasto = {
+            id: 'gasto-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7),
+            createdAt: new Date().toISOString(),
+            concept: concept,
+            amount: amount,
+            city: city,
+            note: note,
+            user: user,
+            userId: user.id,
+            userName: user.name || user.username
+        };
+        cajaGastos.unshift(gasto);
+        saveCajaGastos();
+        savePreferredSaleCity(city);
+        if (conceptEl) conceptEl.value = '';
+        if (amountEl) amountEl.value = '';
+        if (noteEl) noteEl.value = '';
+        if (conceptEl) conceptEl.focus();
+        renderGastosPanel();
+        renderCortes();
+        toast('Gasto registrado · ' + money(amount));
+    }
+
+    function removeCajaGasto(id) {
+        const idx = cajaGastos.findIndex(function (g) { return g.id === id; });
+        if (idx < 0) return;
+        cajaGastos.splice(idx, 1);
+        saveCajaGastos();
+        renderGastosPanel();
+        renderCortes();
+        toast('Gasto eliminado');
     }
 
     /** Facturación: grupo (Total facturado / Total sin facturar) + subfilas por método de pago. */
@@ -5773,7 +6002,15 @@
             }, 0);
             return { key: k, label: payLabel(k), amount: amount };
         }).filter(function (r) { return r.amount > 0; });
-        renderBreakdownRows('cortesPayRows', 'cortesPayBar', payRows, total);
+        const efectivoCobrado = list.reduce(function (n, s) {
+            return n + amountPaidByMethod(s, 'efectivo');
+        }, 0);
+        const gastosPeriodo = filterGastosByCity(
+            gastosInRange(cajaGastos, bounds.start, bounds.end),
+            cortesCityFilter
+        );
+        const gastosTotal = sumGastos(gastosPeriodo);
+        renderCortesPayBreakdown(payRows, total, efectivoCobrado, gastosTotal);
 
         const billPayMethods = [
             { pay: 'efectivo', label: 'Efectivo' },
@@ -6523,6 +6760,29 @@
 
     function bind() {
         bindPeriodRangePicker();
+
+        const modeTabs = document.getElementById('posModeTabs');
+        if (modeTabs) {
+            modeTabs.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-pos-mode]');
+                if (!btn) return;
+                setPosMode(btn.getAttribute('data-pos-mode'));
+            });
+        }
+        const gastoForm = document.getElementById('posGastoForm');
+        if (gastoForm) gastoForm.addEventListener('submit', registerCajaGasto);
+        const gastosList = document.getElementById('posGastosList');
+        if (gastosList) {
+            gastosList.addEventListener('click', function (e) {
+                const rm = e.target.closest('[data-rm-gasto]');
+                if (!rm) return;
+                const id = rm.getAttribute('data-rm-gasto');
+                if (!id) return;
+                if (!window.confirm('¿Eliminar este gasto de caja?')) return;
+                removeCajaGasto(id);
+            });
+        }
+
         const chips = document.getElementById('posFamilyChips');
         if (chips) {
             chips.addEventListener('click', function (e) {
@@ -8458,11 +8718,13 @@
 
     function onSectionShow(id) {
         if (id === 'venta') {
+            setPosMode(posMode || 'venta');
             renderChips();
             renderProducts();
             fillClientSelect();
             renderCart();
             updatePosKpis();
+            if (posMode === 'gastos') renderGastosPanel();
         } else if (id === 'clients') {
             renderClients();
             if (clientDashId) {
@@ -8498,6 +8760,7 @@
         fillHistoryClientFilter();
         renderHistory();
         renderCortes();
+        renderGastosPanel();
         renderProductsMovementsChart();
         renderClients();
         renderCobranza();
@@ -8512,6 +8775,7 @@
         // Persistir v3 tras merge para no depender del legacy en cada carga.
         savePrices();
         sales = loadSales();
+        cajaGastos = loadCajaGastos();
         clients = loadClients();
         promoCodes = loadPromoCodes();
         ensurePromoSeeds();
@@ -8521,6 +8785,7 @@
             // Releer caché por si el sync aplicó remoto sin recarga.
             prices = loadPrices();
             sales = loadSales();
+            cajaGastos = loadCajaGastos();
             clients = loadClients();
             promoCodes = loadPromoCodes();
             ensurePromoSeeds();
@@ -8542,6 +8807,8 @@
         bindCobranza();
         (function syncSaleCityRadios() {
             syncSaleCityControl();
+            syncGastoCityControl();
+            setPosMode('venta');
         })();
         refreshPosAfterDataLoad();
         window.S35PosModule = {

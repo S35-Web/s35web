@@ -1024,6 +1024,203 @@
             padding-top: 12px;
             padding-bottom: 12px;
         }
+        .pos-mode-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex: 0 0 auto;
+            margin-bottom: 10px;
+        }
+        .pos-mode-bar .seg-control {
+            width: fit-content;
+            max-width: 100%;
+        }
+        .pos-mode-panel {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .pos-mode-panel[hidden] {
+            display: none !important;
+        }
+        .pos-gastos {
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr);
+            gap: 0;
+            flex: 1;
+            min-height: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            overflow: hidden;
+        }
+        .pos-gastos-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 20px 18px;
+            border-bottom: 1px solid var(--border);
+            background: color-mix(in srgb, var(--bg-soft) 55%, var(--panel));
+        }
+        .pos-gastos-head h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+        .pos-gastos-head .page-sub {
+            margin: 6px 0 0;
+        }
+        .pos-gastos-kpi {
+            text-align: right;
+        }
+        .pos-gastos-kpi .label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+        .pos-gastos-kpi .val {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            margin-top: 4px;
+        }
+        .pos-gastos-body {
+            display: grid;
+            grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+            min-height: 0;
+            flex: 1;
+        }
+        .pos-gastos-form-wrap {
+            padding: 20px;
+            border-right: 1px solid var(--border);
+            background: var(--bg);
+            overflow: auto;
+        }
+        .pos-gastos-form {
+            display: grid;
+            gap: 14px;
+        }
+        .pos-gastos-form label {
+            display: grid;
+            gap: 7px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .pos-gastos-form input,
+        .pos-gastos-form select,
+        .pos-gastos-form textarea {
+            width: 100%;
+            height: 44px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--panel);
+            color: var(--text);
+            padding: 0 12px;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        .pos-gastos-form textarea {
+            height: auto;
+            min-height: 88px;
+            padding: 10px 12px;
+            resize: vertical;
+            text-transform: none;
+            letter-spacing: normal;
+            font-weight: 400;
+        }
+        .pos-gastos-form input:focus,
+        .pos-gastos-form select:focus,
+        .pos-gastos-form textarea:focus {
+            border-color: var(--border-strong);
+        }
+        .pos-gastos-form .btn.primary {
+            height: 44px;
+            margin-top: 4px;
+        }
+        .pos-gastos-list-wrap {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            background: var(--panel);
+        }
+        .pos-gastos-list-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .pos-gastos-list-head h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .pos-gastos-list {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            padding: 8px 12px 16px;
+        }
+        .pos-gasto-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            gap: 10px 14px;
+            align-items: center;
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .pos-gasto-row:last-child { border-bottom: none; }
+        .pos-gasto-row .concept {
+            font-weight: 550;
+            font-size: 14px;
+        }
+        .pos-gasto-row .meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        .pos-gasto-row .amt {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            color: #b45309;
+        }
+        .pos-gasto-row .empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--muted);
+            padding: 40px 16px;
+            font-size: 14px;
+        }
+        @media (max-width: 900px) {
+            .pos-gastos-body {
+                grid-template-columns: 1fr;
+            }
+            .pos-gastos-form-wrap {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            .pos-gastos-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .pos-gastos-kpi { text-align: left; }
+        }
         .pos-station {
             display: grid;
             grid-template-rows: auto minmax(0, 1fr) auto;
@@ -5014,6 +5211,9 @@
             font-size: 13px;
             color: var(--muted);
         }
+        .cortes-row.is-cash-expense .amt { color: #b45309; }
+        .cortes-row.is-cash-total .name,
+        .cortes-row.is-cash-total .amt { font-weight: 600; color: var(--text); }
         .cortes-secondary {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -5599,6 +5799,14 @@
 
 
                 <section id="venta" class="section">
+                    <div class="pos-mode-bar">
+                        <div class="seg-control" id="posModeTabs" role="tablist" aria-label="Modo de caja">
+                            <button type="button" role="tab" data-pos-mode="venta" class="active" aria-selected="true">Venta</button>
+                            <button type="button" role="tab" data-pos-mode="gastos" aria-selected="false">Gastos de caja</button>
+                        </div>
+                    </div>
+
+                    <div class="pos-mode-panel" id="posModeVenta" data-pos-panel="venta">
                     <div class="pos-station">
                         <header class="pos-station-top">
                             <h1 class="pos-station-title">Venta</h1>
@@ -5706,6 +5914,55 @@
                             </div>
                         </footer>
                     </div>
+                    </div>
+
+                    <div class="pos-mode-panel" id="posModeGastos" data-pos-panel="gastos" hidden>
+                        <div class="pos-gastos">
+                            <header class="pos-gastos-head">
+                                <div>
+                                    <h1>Gastos de caja</h1>
+                                    <p class="page-sub">Salidas en efectivo · se restan del total efectivo en Cortes</p>
+                                </div>
+                                <div class="pos-gastos-kpi">
+                                    <div class="label">Hoy</div>
+                                    <div class="val" id="posGastosTodayTotal">$0.00</div>
+                                </div>
+                            </header>
+                            <div class="pos-gastos-body">
+                                <div class="pos-gastos-form-wrap">
+                                    <form class="pos-gastos-form" id="posGastoForm" autocomplete="off">
+                                        <label for="posGastoConcept">Concepto
+                                            <input id="posGastoConcept" type="text" required maxlength="120" placeholder="Ej. gasolina, agua, mandado…">
+                                        </label>
+                                        <label for="posGastoAmount">Monto
+                                            <input id="posGastoAmount" type="number" required min="0.01" step="0.01" inputmode="decimal" placeholder="0.00">
+                                        </label>
+                                        <label for="posGastoCity">Ciudad
+                                            <select id="posGastoCity" class="pos-select" aria-label="Ciudad del gasto">
+                                                <option value="culiacan">Culiacán</option>
+                                                <option value="mochis">Los Mochis</option>
+                                                <option value="mazatlan">Mazatlán</option>
+                                            </select>
+                                        </label>
+                                        <label for="posGastoNote">Nota (opcional)
+                                            <textarea id="posGastoNote" rows="3" maxlength="240" placeholder="Detalle breve"></textarea>
+                                        </label>
+                                        <button type="submit" class="btn primary" id="posGastoSubmitBtn">
+                                            <i class="fa-solid fa-plus" aria-hidden="true"></i> Registrar gasto
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="pos-gastos-list-wrap">
+                                    <div class="pos-gastos-list-head">
+                                        <h3>Registrados</h3>
+                                        <span class="muted" id="posGastosListCount">0 gastos</span>
+                                    </div>
+                                    <div class="pos-gastos-list" id="posGastosList"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <button type="button" id="posPromoCartBtn" hidden aria-hidden="true" tabindex="-1"></button>
                 </section>
 
@@ -6140,7 +6397,7 @@
                     <div class="cortes-breakdowns">
                         <div class="cortes-panel">
                             <h3>Método de pago</h3>
-                            <p class="panel-sub">Por monto</p>
+                            <p class="panel-sub">Por monto · efectivo neto de gastos de caja</p>
                             <div class="cortes-bar" id="cortesPayBar" aria-hidden="true"></div>
                             <div class="cortes-rows" id="cortesPayRows"></div>
                         </div>

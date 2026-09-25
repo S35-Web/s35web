@@ -19,6 +19,7 @@
         's35_plant_count_20260922b',
         's35_pos_prices_v4',
         's35_pos_sales',
+        's35_caja_gastos_v1',
         's35_sale_edits_v1',
         's35_promo_codes_v1',
         's35_product_families',
