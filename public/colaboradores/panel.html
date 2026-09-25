@@ -4344,8 +4344,10 @@
         .mat-kpis .kpi:nth-child(3n) { border-right: 1px solid var(--border); }
         .mat-kpis .kpi:last-child { border-right: none; }
         .mat-kpis .kpi .val { font-size: 22px; }
+        .kpis.products-kpis { grid-template-columns: repeat(3, 1fr); }
         @media (max-width: 900px) {
             .mat-kpis { grid-template-columns: 1fr 1fr; }
+            .kpis.products-kpis { grid-template-columns: 1fr 1fr; }
             .mat-kpis .kpi { border-bottom: 1px solid var(--border); }
             .mat-kpis .kpi:nth-child(2n) { border-right: none; }
             .mat-kpis .kpi:nth-last-child(-n+2) { border-bottom: none; }
@@ -4409,25 +4411,6 @@
             color: var(--text);
         }
         .products-print-btn i { font-size: 13px; }
-        .products-inventory-kpis {
-            display: flex;
-            gap: 18px;
-            text-align: right;
-            flex-shrink: 0;
-        }
-        .products-inventory-kpis .label {
-            display: block;
-            font-size: 11px;
-            letter-spacing: .04em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-        .products-inventory-kpis .val {
-            font-size: 18px;
-            font-weight: 500;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -0.02em;
-        }
         .products-inventory-chart {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -6156,6 +6139,20 @@
                         <h1 class="page-title">Productos</h1>
                         <p class="page-sub">Precios, presentaciones y formulaciones en un solo lugar. Se guarda en este navegador.</p>
 
+                        <div class="kpis mat-kpis products-kpis" id="productsInventoryKpis">
+                            <div class="kpi">
+                                <div class="label">Total</div>
+                                <div class="val" id="productsInventoryTotal">0</div>
+                            </div>
+                            <div class="kpi">
+                                <div class="label">Sin stock</div>
+                                <div class="val" id="productsInventoryZero">0</div>
+                            </div>
+                            <div class="kpi">
+                                <div class="label">Valor</div>
+                                <div class="val" id="productsInventoryValue">$0.00</div>
+                            </div>
+                        </div>
                         <div class="card products-inventory-card" id="productsInventoryCard">
                             <div class="products-inventory-head">
                                 <div>
@@ -6163,16 +6160,6 @@
                                     <p class="page-sub" id="productsInventorySub">Producto terminado</p>
                                 </div>
                                 <div class="products-inventory-actions">
-                                    <div class="products-inventory-kpis">
-                                        <div>
-                                            <span class="label">Total</span>
-                                            <span class="val" id="productsInventoryTotal">0</span>
-                                        </div>
-                                        <div>
-                                            <span class="label">Con stock</span>
-                                            <span class="val" id="productsInventoryWithStock">0</span>
-                                        </div>
-                                    </div>
                                     <div class="products-inventory-btns">
                                         <button type="button" class="btn products-print-btn" id="productsPrintBtn" title="Imprimir reporte de inventario" aria-label="Imprimir reporte de inventario">
                                             <i class="fa-solid fa-print" aria-hidden="true"></i>
@@ -10005,7 +9992,8 @@
     function renderProductsInventoryChart() {
         const host = document.getElementById('productsInventoryChart');
         const totalEl = document.getElementById('productsInventoryTotal');
-        const withEl = document.getElementById('productsInventoryWithStock');
+        const zeroEl = document.getElementById('productsInventoryZero');
+        const valueEl = document.getElementById('productsInventoryValue');
         const subEl = document.getElementById('productsInventorySub');
         if (!host) return;
         const list = hubCatalog().map(function (p) {
@@ -10019,11 +10007,22 @@
         }).sort(function (a, b) {
             return b.stock - a.stock || String(a.name).localeCompare(String(b.name), 'es');
         });
+        const avgMap = (window.S35PosModule && window.S35PosModule.monthAverageUnitPriceMap)
+            ? window.S35PosModule.monthAverageUnitPriceMap()
+            : {};
+        list.forEach(function (p) {
+            const avg = avgMap[p.slug] || 0;
+            p.avg = avg;
+            p.value = Math.round(p.stock * avg * 100) / 100;
+        });
         const total = list.reduce(function (sum, p) { return sum + p.stock; }, 0);
         const withStock = list.filter(function (p) { return p.stock > 0; }).length;
+        const zeroStock = list.filter(function (p) { return p.stock === 0; }).length;
+        const valueSum = Math.round(list.reduce(function (sum, p) { return sum + p.value; }, 0) * 100) / 100;
         const max = list.reduce(function (m, p) { return Math.max(m, p.stock); }, 0);
         if (totalEl) totalEl.textContent = fmtStockQty(total);
-        if (withEl) withEl.textContent = String(withStock);
+        if (zeroEl) zeroEl.textContent = String(zeroStock);
+        if (valueEl) valueEl.textContent = moneyMx(valueSum);
         if (subEl) {
             if (!list.length) subEl.textContent = 'Sin productos';
             else if (!withStock) subEl.textContent = list.length + ' productos · sin existencia';
@@ -10033,18 +10032,13 @@
             host.innerHTML = '';
             return;
         }
-        const avgMap = (window.S35PosModule && window.S35PosModule.monthAverageUnitPriceMap)
-            ? window.S35PosModule.monthAverageUnitPriceMap()
-            : {};
         host.innerHTML = list.map(function (p) {
             const pct = max > 0 ? (p.stock / max) * 100 : 0;
             const color = (window.S35PosModule && window.S35PosModule.familyColor)
                 ? window.S35PosModule.familyColor(p.family)
                 : '#9a9a9a';
-            const avg = avgMap[p.slug] || 0;
-            const value = Math.round(p.stock * avg * 100) / 100;
-            const valueTitle = avg > 0
-                ? ('Precio promedio del mes ' + moneyMx(avg))
+            const valueTitle = p.avg > 0
+                ? ('Precio promedio del mes ' + moneyMx(p.avg))
                 : 'Sin ventas en el mes';
             return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name) + '">' +
                 '<span class="products-inventory-name">' + familyDotHtml(p.family) +
@@ -10053,7 +10047,7 @@
                 '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
                 pct.toFixed(1) + '%;background:' + esc(color) + '"></span></span>' +
                 '<span class="products-inventory-qty' + (p.stock ? '' : ' is-zero') + '" title="' + esc(valueTitle) + '">' +
-                fmtStockQty(p.stock) + ' <span class="mat-inv-value">/ ' + esc(moneyMx(value)) + '</span></span>' +
+                fmtStockQty(p.stock) + ' <span class="mat-inv-value">/ ' + esc(moneyMx(p.value)) + '</span></span>' +
                 '</button>';
         }).join('');
         host.setAttribute('aria-label', 'Inventario de producto terminado. Total ' + fmtStockQty(total) + '.');
