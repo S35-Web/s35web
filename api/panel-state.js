@@ -26,6 +26,7 @@ const ALLOWED_KEYS = [
   's35_plant_count_20260922b',
   's35_pos_prices_v4',
   's35_pos_sales',
+  's35_caja_gastos_v1',
   's35_sale_edits_v1',
   's35_promo_codes_v1',
   's35_product_families',
@@ -35,6 +36,99 @@ const ALLOWED_KEYS = [
 ];
 
 const ALLOWED_SET = new Set(ALLOWED_KEYS);
+
+/**
+ * Colecciones que se fusionan por id (unión) en vez de LWW puro.
+ * Evita que un tab con menos tickets/gastos borre los de otro dispositivo.
+ * Ventas: además se excluyen imports históricos (viven en JSON, no en s35_pos_sales).
+ */
+const MERGE_ITEMS_KEYS = new Set([
+  's35_pos_sales',
+  's35_caja_gastos_v1',
+  's35_production_lots',
+  's35_compra_tickets',
+  's35_promo_codes_v1'
+]);
+
+const MERGE_MAP_KEYS = new Set([
+  's35_sale_edits_v1'
+]);
+
+function isHistoricalImportSale(row) {
+  if (!row) return false;
+  if (row.user === 'import-historico') return true;
+  const src = row.meta && row.meta.source;
+  return src === 'old-panel';
+}
+
+function itemRecency(row) {
+  if (!row || typeof row !== 'object') return 0;
+  return Date.parse(row.editedAt || row.updatedAt || row.createdAt || '') || 0;
+}
+
+function extractItems(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (value && Array.isArray(value.items)) return value.items;
+  return [];
+}
+
+function mergeItemLists(a, b, opts) {
+  opts = opts || {};
+  const dropHistorical = !!opts.dropHistoricalSales;
+  const byId = Object.create(null);
+  const order = [];
+  function consider(row) {
+    if (!row || typeof row !== 'object') return;
+    if (dropHistorical && isHistoricalImportSale(row)) return;
+    const id = row.id != null ? String(row.id) : (row.code != null ? String(row.code) : '');
+    if (!id) return;
+    if (!byId[id]) {
+      byId[id] = row;
+      order.push(id);
+      return;
+    }
+    if (itemRecency(row) >= itemRecency(byId[id])) byId[id] = row;
+  }
+  (a || []).forEach(consider);
+  (b || []).forEach(consider);
+  return order.map(function (id) { return byId[id]; });
+}
+
+function mergeItemsValue(key, prevValue, nextValue, updatedAt) {
+  const dropHistorical = key === 's35_pos_sales';
+  const merged = mergeItemLists(
+    extractItems(prevValue),
+    extractItems(nextValue),
+    { dropHistoricalSales: dropHistorical }
+  );
+  const base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
+    ? nextValue
+    : ((prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue)) ? prevValue : {});
+  const out = Object.assign({}, base, { items: merged });
+  if (updatedAt) out.updatedAt = updatedAt;
+  return out;
+}
+
+function mergeByIdMaps(prevValue, nextValue, updatedAt) {
+  const prevMap = (prevValue && prevValue.byId && typeof prevValue.byId === 'object') ? prevValue.byId : {};
+  const nextMap = (nextValue && nextValue.byId && typeof nextValue.byId === 'object') ? nextValue.byId : {};
+  const outMap = Object.assign({}, prevMap);
+  Object.keys(nextMap).forEach(function (id) {
+    const a = outMap[id];
+    const b = nextMap[id];
+    if (!a) {
+      outMap[id] = b;
+      return;
+    }
+    if (!b) return;
+    outMap[id] = itemRecency(b) >= itemRecency(a) ? Object.assign({}, a, b) : Object.assign({}, b, a);
+  });
+  const base = (nextValue && typeof nextValue === 'object') ? nextValue : (prevValue || {});
+  const out = Object.assign({}, base, { byId: outMap });
+  if (updatedAt) out.updatedAt = updatedAt;
+  return out;
+}
 
 /** Migra un documento legado `plant_state` (sync anterior) a claves panel_state. */
 async function migrateFromPlantState(db, col) {
@@ -185,7 +279,11 @@ module.exports = async function handler(req, res) {
         }
         const updatedAt = normalizeIso(entry.updatedAt) || new Date().toISOString();
         const prev = byId[key];
-        if (prev && prev.updatedAt && cmpIso(updatedAt, prev.updatedAt) < 0) {
+        const isMergeKey = MERGE_ITEMS_KEYS.has(key) || MERGE_MAP_KEYS.has(key);
+
+        // Colecciones: fusionar siempre (aunque el cliente venga "stale") para no
+        // perder tickets/gastos únicos del otro lado. El resto sigue LWW estricto.
+        if (!isMergeKey && prev && prev.updatedAt && cmpIso(updatedAt, prev.updatedAt) < 0) {
           rejected.push({
             key: key,
             reason: 'stale',
@@ -194,19 +292,49 @@ module.exports = async function handler(req, res) {
           out[key] = { value: prev.value, updatedAt: prev.updatedAt };
           continue;
         }
+
+        let valueToStore = entry.value;
+        let tsToStore = updatedAt;
+        if (isMergeKey && prev && prev.value != null) {
+          if (MERGE_ITEMS_KEYS.has(key)) {
+            valueToStore = mergeItemsValue(key, prev.value, entry.value, updatedAt);
+          } else if (MERGE_MAP_KEYS.has(key)) {
+            valueToStore = mergeByIdMaps(prev.value, entry.value, updatedAt);
+          }
+          // Si el remoto era más nuevo, conservar su marca salvo que el merge
+          // aportó ítems nuevos (entonces "ahora" para propagar la unión).
+          if (prev.updatedAt && cmpIso(updatedAt, prev.updatedAt) < 0) {
+            const prevCount = MERGE_ITEMS_KEYS.has(key)
+              ? extractItems(prev.value).length
+              : Object.keys((prev.value && prev.value.byId) || {}).length;
+            const nextCount = MERGE_ITEMS_KEYS.has(key)
+              ? extractItems(valueToStore).length
+              : Object.keys((valueToStore && valueToStore.byId) || {}).length;
+            tsToStore = nextCount > prevCount
+              ? new Date().toISOString()
+              : (normalizeIso(prev.updatedAt) || prev.updatedAt);
+            if (valueToStore && typeof valueToStore === 'object') {
+              valueToStore = Object.assign({}, valueToStore, { updatedAt: tsToStore });
+            }
+          }
+        } else if (MERGE_ITEMS_KEYS.has(key)) {
+          // Primera escritura: igual limpiar imports históricos de ventas.
+          valueToStore = mergeItemsValue(key, null, entry.value, updatedAt);
+        }
+
         await col.updateOne(
           { _id: key },
           {
             $set: {
-              value: entry.value,
-              updatedAt: updatedAt,
+              value: valueToStore,
+              updatedAt: tsToStore,
               updatedBy: who
             }
           },
           { upsert: true }
         );
         accepted.push(key);
-        out[key] = { value: entry.value, updatedAt: updatedAt };
+        out[key] = { value: valueToStore, updatedAt: tsToStore };
       }
 
       res.status(200).json({
