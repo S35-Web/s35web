@@ -4500,7 +4500,7 @@
         }
         .products-inventory-qty.is-zero { color: var(--muted); }
         #productsInventoryChart .products-inventory-row {
-            grid-template-columns: minmax(0, 1.2fr) minmax(72px, 1fr) 12.5em;
+            grid-template-columns: minmax(0, 1.2fr) minmax(72px, 1fr) var(--products-qty-col, max-content);
         }
         #productsInventoryChart .products-inventory-name {
             min-width: 0;
@@ -4522,7 +4522,11 @@
             min-width: 72px;
             width: 100%;
         }
-        #productsInventoryChart .products-inventory-qty { white-space: nowrap; }
+        #productsInventoryChart .products-inventory-qty {
+            white-space: nowrap;
+            justify-self: end;
+            width: max-content;
+        }
         #productsInventoryChart .mat-inv-value { color: var(--muted); }
         @media (max-width: 900px) {
             .products-inventory-chart { grid-template-columns: 1fr; }
@@ -10072,6 +10076,28 @@
                 '</button>';
         }).join('');
         host.setAttribute('aria-label', 'Inventario de producto terminado. Total ' + fmtStockQty(total) + '.');
+        syncProductsQtyColumn(host);
+    }
+
+    function syncProductsQtyColumn(host) {
+        if (!host) return;
+        const nodes = host.querySelectorAll('.products-inventory-qty');
+        if (!nodes.length) {
+            host.style.removeProperty('--products-qty-col');
+            return;
+        }
+        const probe = document.createElement('span');
+        probe.className = 'products-inventory-qty';
+        probe.style.cssText = 'position:absolute;left:0;top:0;visibility:hidden;white-space:nowrap;width:max-content;max-width:none;pointer-events:none;';
+        host.appendChild(probe);
+        let max = 0;
+        nodes.forEach(function (el) {
+            probe.innerHTML = el.innerHTML;
+            const w = probe.getBoundingClientRect().width;
+            if (w > max) max = w;
+        });
+        probe.remove();
+        if (max > 0) host.style.setProperty('--products-qty-col', Math.ceil(max) + 'px');
     }
 
     function buildFinishedCountReportHtml(list) {
