@@ -1,7 +1,7 @@
 {
-  "version": 9,
-  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000",
-  "generatedAt": "2026-09-24",
+  "version": 10,
+  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura",
+  "generatedAt": "2026-09-25",
   "items": [
     {
       "id": "sale-cfdi-11667",
@@ -2904,6 +2904,252 @@
         "month": 9,
         "day": 23,
         "city": "culiacan"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64073",
+      "folio": "HIST-R64073",
+      "createdAt": "2026-09-24T12:26:00",
+      "customer": "RODRIGO ORLANDO RODRIGUEZ MARTINEZ",
+      "clientId": "c_e08c40b359f2",
+      "client": {
+        "id": "c_e08c40b359f2",
+        "name": "RODRIGO ORLANDO RODRIGUEZ MARTINEZ",
+        "phone": "",
+        "email": "rodrigo_1_3@live.com.mx",
+        "company": "",
+        "rfc": "ROMR860419KC8",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-psp",
+          "name": "Adhesivo PSP PRO+ S35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 265,
+          "qty": 3,
+          "lineTotal": 795
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 1005,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64073,
+        "noteSuffix": "a-1",
+        "observations": "Mostr fac efe Rodrigo Orlando",
+        "year": 2026,
+        "month": 9,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-09-24T13:26:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64074",
+      "folio": "HIST-R64074",
+      "createdAt": "2026-09-24T14:25:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 2,
+          "lineTotal": 420
+        }
+      ],
+      "total": 420,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64074,
+        "noteSuffix": "a-2",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 9,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-09-24T15:25:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64075",
+      "folio": "HIST-R64075",
+      "createdAt": "2026-09-24T15:12:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64075,
+        "noteSuffix": "a-3",
+        "observations": "Mostr tarje perso",
+        "year": 2026,
+        "month": 9,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-09-24T16:12:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64076",
+      "folio": "HIST-R64076",
+      "createdAt": "2026-09-24T15:17:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 1,
+          "lineTotal": 335
+        }
+      ],
+      "total": 335,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64076,
+        "noteSuffix": "a-4",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 9,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-09-24T16:17:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64077",
+      "folio": "HIST-R64077",
+      "createdAt": "2026-09-24T15:29:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "pegaxpress-psp",
+          "name": "Adhesivo PSP PRO+ S35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 265,
+          "qty": 6,
+          "lineTotal": 1590
+        }
+      ],
+      "total": 1590,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64077,
+        "noteSuffix": "a-5",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 9,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-09-24T16:29:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64078",
+      "folio": "HIST-R64078",
+      "createdAt": "2026-09-24T15:37:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 3,
+          "lineTotal": 630
+        }
+      ],
+      "total": 630,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64078,
+        "noteSuffix": "a-6",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 9,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-09-24T16:37:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
       },
       "city": "culiacan"
     }
