@@ -1800,6 +1800,11 @@
         .lot-ticket-chemistry .chem-kg { font-weight: 600; white-space: nowrap; }
 
         .form-grid { display: grid; gap: 12px; }
+        .plant-view { display: grid; gap: 14px; }
+        .plant-view-row { display: grid; gap: 3px; }
+        .plant-view-row .k { font-size: 12px; color: var(--muted); }
+        .plant-view-row .v { font-size: 14px; color: var(--text); font-weight: 500; line-height: 1.35; }
+        .plant-view-row .hint { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 2px; }
         .form-grid label,
         .form-grid .field-block { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
         .form-grid .field-label { font-size: 12px; color: var(--muted); }
@@ -6540,10 +6545,12 @@
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="plantModalTitle" style="max-width:480px">
             <div class="modal-head">
                 <strong id="plantModalTitle">Materia prima</strong>
+                <button type="button" class="btn" id="plantModalEdit" hidden>Editar</button>
             </div>
             <form id="plantForm" class="modal-body">
                 <input type="hidden" id="plantId" value="">
-                <div class="form-grid">
+                <div id="plantView" class="plant-view" hidden></div>
+                <div class="form-grid" id="plantFormFields">
                     <label>Nombre
                         <input id="plantName" type="text" required autocomplete="off">
                     </label>
@@ -6574,8 +6581,9 @@
                     </label>
                 </div>
                 <div class="modal-actions">
+                    <button type="button" class="btn" id="plantModalClose" hidden>Cerrar</button>
                     <button type="button" class="btn" id="plantModalCancel">Cancelar</button>
-                    <button type="submit" class="btn primary">Guardar</button>
+                    <button type="submit" class="btn primary" id="plantModalSave">Guardar</button>
                 </div>
             </form>
         </div>
@@ -8210,13 +8218,37 @@
     plantLab.innerHTML = '<option value="">Ninguna</option>' + (data.materials || []).map(function (m) {
         return '<option value="' + esc(m.slug) + '">' + esc(m.name) + '</option>';
     }).join('');
-    function closePlantModal() {
-        plantModal.classList.remove('show');
-        plantModal.setAttribute('aria-hidden', 'true');
+    let plantViewItem = null;
+    let plantModalMode = 'edit';
+    function plantLabLabel(slug) {
+        if (!slug) return 'Ninguna';
+        const list = data.materials || [];
+        for (let i = 0; i < list.length; i++) {
+            if (list[i].slug === slug) return list[i].name;
+        }
+        return slug;
     }
-    function openPlantModal(item) {
+    function renderPlantView(item) {
+        const unit = item.unit || 'Sin unidad';
+        const res = materialReserved(item);
+        const stockHint = res > 0
+            ? '<div class="hint">Reservado en lotes abiertos: ' + esc(String(res)) + ' · libre ' + esc(String(materialFreeStock(item))) + '</div>'
+            : '';
+        const rows = [
+            ['Nombre', esc(item.name || '—')],
+            ['Unidad', esc(unit)],
+            ['Existencia', esc(String(item.stock)) + stockHint],
+            ['Costo unitario (MXN)', esc(moneyMx(Number(item.unitCost) || 0))],
+            ['Mínimo aceptable', esc(String(item.minStock))],
+            ['Categoría', esc(familyLabel(normalizeCategory(item.category)))],
+            ['Ficha de laboratorio', esc(plantLabLabel(item.labSlug))]
+        ];
+        document.getElementById('plantView').innerHTML = rows.map(function (row) {
+            return '<div class="plant-view-row"><span class="k">' + row[0] + '</span><div class="v">' + row[1] + '</div></div>';
+        }).join('');
+    }
+    function fillPlantForm(item) {
         fillPlantCategorySelect(item ? normalizeCategory(item.category) : (plantFamilies[0] && plantFamilies[0].id) || UNCATEGORIZED_ID);
-        document.getElementById('plantModalTitle').textContent = item ? 'Editar materia prima' : 'Alta de materia prima';
         document.getElementById('plantId').value = item ? item.id : '';
         document.getElementById('plantName').value = item ? item.name : '';
         document.getElementById('plantUnit').value = item ? (item.unit || '') : 'Kg';
@@ -8243,9 +8275,34 @@
                 : '';
             reservedHint.hidden = res <= 0;
         }
+    }
+    function setPlantModalMode(mode) {
+        const viewing = mode === 'view' && !!plantViewItem;
+        plantModalMode = viewing ? 'view' : 'edit';
+        document.getElementById('plantView').hidden = !viewing;
+        document.getElementById('plantFormFields').hidden = viewing;
+        document.getElementById('plantModalEdit').hidden = !viewing;
+        document.getElementById('plantModalClose').hidden = !viewing;
+        document.getElementById('plantModalCancel').hidden = viewing;
+        document.getElementById('plantModalSave').hidden = viewing;
+        document.getElementById('plantModalTitle').textContent = viewing
+            ? 'Información de materia prima'
+            : (plantViewItem ? 'Editar materia prima' : 'Alta de materia prima');
+        if (viewing) renderPlantView(plantViewItem);
+        else document.getElementById('plantName').focus();
+    }
+    function closePlantModal() {
+        plantModal.classList.remove('show');
+        plantModal.setAttribute('aria-hidden', 'true');
+        plantViewItem = null;
+        plantModalMode = 'edit';
+    }
+    function openPlantModal(item) {
+        plantViewItem = item || null;
+        fillPlantForm(item);
+        setPlantModalMode(item ? 'view' : 'edit');
         plantModal.classList.add('show');
         plantModal.setAttribute('aria-hidden', 'false');
-        document.getElementById('plantName').focus();
     }
     function slugifyPlant(name) {
         return 'custom-' + String(name || 'item').toLowerCase()
@@ -8256,13 +8313,25 @@
     document.getElementById('plantMin').addEventListener('focus', function () { this.select(); });
     document.getElementById('plantUnitCost').addEventListener('focus', function () { this.select(); });
     document.getElementById('matAddBtn').addEventListener('click', function () { openPlantModal(null); });
-    document.getElementById('plantModalCancel').addEventListener('click', closePlantModal);
+    document.getElementById('plantModalEdit').addEventListener('click', function () {
+        setPlantModalMode('edit');
+    });
+    document.getElementById('plantModalClose').addEventListener('click', closePlantModal);
+    document.getElementById('plantModalCancel').addEventListener('click', function () {
+        if (plantViewItem && plantModalMode === 'edit') {
+            fillPlantForm(plantViewItem);
+            setPlantModalMode('view');
+            return;
+        }
+        closePlantModal();
+    });
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
         closeFamiliesModal();
     });
     document.getElementById('plantForm').addEventListener('submit', function (e) {
         e.preventDefault();
+        if (plantModalMode === 'view') return;
         const id = document.getElementById('plantId').value;
         const prev = id ? inventory.filter(function (m) { return m.id === id; })[0] : null;
         const stock = Math.max(0, Number(document.getElementById('plantStock').value) || 0);
