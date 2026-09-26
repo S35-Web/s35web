@@ -266,17 +266,21 @@ recipes.forEach(function (r) {
       });
     }
     function versionMeta(items, ver) {
-      const totalKg = items.reduce(function (sum, it) {
-        return sum + ((it.unit || 'Kg') === 'Kg' ? (Number(it.amount) || 0) : 0);
+      const totalQty = items.reduce(function (sum, it) {
+        if (it && it.role === 'Empaque') return sum;
+        const unit = it.unit || 'Kg';
+        if (unit === 'Kg' || unit === 'L') return sum + (Number(it.amount) || 0);
+        return sum;
       }, 0);
+      const packUse = pack > 0 ? pack : (r.kind === 'liquido' ? 1 : 25);
       return {
         id: ver.id,
         name: ver.name || ver.id,
         label: ver.label || '',
         yieldMin: Number(ver.yieldMin != null ? ver.yieldMin : dose.yieldMin) || 0,
         yieldMax: Number(ver.yieldMax != null ? ver.yieldMax : dose.yieldMax) || 0,
-        yieldTheoretical: pack > 0 ? Math.round((totalKg / pack) * 100) / 100 : 0,
-        totalKg: Math.round(totalKg * 1000) / 1000,
+        yieldTheoretical: packUse > 0 ? Math.round((totalQty / packUse) * 100) / 100 : 0,
+        totalKg: Math.round(totalQty * 1000) / 1000,
         items: items,
       };
     }

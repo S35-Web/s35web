@@ -20,6 +20,7 @@ module.exports = [
   // stock del seed = valor del conteo 22-sep; NO se reaplica en clientes existentes (ver panel applyPhysicalCount).
   { id: "cemento-portland-blanco", name: "Cemento portland blanco", unit: "Kg", minStock: 250, category: "aglutinante", labSlug: "cemento-blanco", unitCost: 9.31, stock: 0 },
   { id: "cubeta-19l", name: "Cubeta 19L", unit: "Pza", minStock: 100, category: "packaging", labSlug: null, stock: 87 },
+  { id: "bote-1l", name: "Botella 1L", unit: "Pza", minStock: 100, category: "packaging", labSlug: null, stock: 0 },
   { id: "estearato", name: "Estearato", unit: "Kg", minStock: 20, category: "chemical", labSlug: null, unitCost: 47.20, stock: 0 },
   { id: "formol", name: "Formol", unit: "Kg", minStock: 0, category: "chemical", labSlug: null, stock: 174 },
   { id: "fibra-de-polipropileno", name: "Fibra de polipropileno", unit: "Kg", minStock: 20, category: "fiber", labSlug: null, unitCost: 100.00, stock: 15 },

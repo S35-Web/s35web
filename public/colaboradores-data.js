@@ -1321,6 +1321,16 @@ window.S35_PANEL_DATA = {
       "stock": 87
     },
     {
+      "id": "bote-1l",
+      "name": "Botella 1L",
+      "unit": "Pza",
+      "minStock": 100,
+      "category": "packaging",
+      "labSlug": null,
+      "unitCost": 0,
+      "stock": 0
+    },
+    {
       "id": "estearato",
       "name": "Estearato",
       "unit": "Kg",
@@ -5009,8 +5019,8 @@ window.S35_PANEL_DATA = {
       "items": [],
       "batchDose": {
         "mode": "plant-lot",
-        "packSizeKg": 19,
-        "packagingPlantId": "cubeta-19l",
+        "packSizeKg": 1,
+        "packagingPlantId": "bote-1l",
         "note": "Lote de planta. Receta pendiente de cargar.",
         "defaultVersionId": "v1",
         "versions": [

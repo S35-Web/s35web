@@ -391,8 +391,8 @@ module.exports = {
   /* ── Cascarones plant-lot (UI nueva). Dosis se cargan en panel / sync. ── */
   'nanotech-hidrofobico': {
     mode: 'plant-lot',
-    packSizeKg: 19,
-    packagingPlantId: 'cubeta-19l',
+    packSizeKg: 1,
+    packagingPlantId: 'bote-1l',
     note: 'Lote de planta. Receta pendiente de cargar.',
     defaultVersionId: 'v1',
     versions: [{ id: 'v1', name: 'V1', label: 'Estándar', items: [] }],

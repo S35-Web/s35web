@@ -3025,8 +3025,11 @@
             text-transform: uppercase;
         }
         .formula-pack-fill {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
             margin-bottom: 10px;
-            max-width: 220px;
+            max-width: 520px;
         }
         .formula-line.formula-line-pack input[data-field="amount"] {
             opacity: 0.78;
@@ -9358,10 +9361,13 @@
             '<span class="note-dose">$1</span>'
         );
     }
-    function plantLotDoseNoteHtml(totalKg, theo) {
-        const kg = Math.round(Number(totalKg) * 1000) / 1000;
+    function plantLotDoseNoteHtml(totalKg, theo, f) {
+        const qty = Math.round(Number(totalKg) * 1000) / 1000;
         const bags = Number(theo) || 0;
-        const dose = esc(String(kg)) + ' kg → ~' + esc(String(bags)) + ' sacos';
+        const liquid = isLiquidFormula(f);
+        const unit = liquid ? 'L' : 'kg';
+        const out = theoreticalUnitWord(f, bags);
+        const dose = esc(String(qty)) + ' ' + unit + ' → ~' + esc(String(bags)) + ' ' + out;
         return 'Dosificación de planta por lote (<span class="note-dose">' + dose + '</span>).';
     }
     function formatRelativeDate(isoOrDate) {
@@ -11130,10 +11136,29 @@
             };
         });
     }
-    function recipeTotalKg(f) {
+    function recipeBatchQty(f) {
         return (f.items || []).reduce(function (sum, it) {
-            return sum + ((it.unit || 'Kg') === 'Kg' ? (Number(it.amount) || 0) : 0);
+            if (!it || isPackagingLine(it)) return sum;
+            const unit = normalizeUnit(it.unit || 'Kg') || 'Kg';
+            if (unit === 'Kg' || unit === 'L') return sum + (Number(it.amount) || 0);
+            return sum;
         }, 0);
+    }
+    function recipeTotalKg(f) {
+        return recipeBatchQty(f);
+    }
+    function formulaRecipeOf(f) {
+        const slug = (f && f.product) || currentRecipe;
+        return recipes.filter(function (r) { return r.product === slug; })[0] || null;
+    }
+    function isLiquidFormula(f) {
+        const r = formulaRecipeOf(f);
+        if (r && r.kind === 'liquido') return true;
+        return !!(f && normalizeUnit(f.batchUnit) === 'L');
+    }
+    function theoreticalUnitWord(f, n) {
+        if (isLiquidFormula(f)) return Number(n) === 1 ? 'envase' : 'envases';
+        return Number(n) === 1 ? 'saco' : 'sacos';
     }
     function isPlantLot(f) {
         return !!(f && f.mode === 'plant-lot');
@@ -11192,8 +11217,9 @@
         return true;
     }
     function theoreticalBags(f) {
-        const pack = Number(f.packSizeKg) || 25;
-        const total = recipeTotalKg(f);
+        const liquid = isLiquidFormula(f);
+        const pack = Number(f && f.packSizeKg) || (liquid ? 1 : 25);
+        const total = recipeBatchQty(f);
         return pack > 0 ? Math.round((total / pack) * 100) / 100 : 0;
     }
     function activeVersion(f) {
@@ -11221,7 +11247,7 @@
         ver.yieldMin = Number(f.yieldMin) || 0;
         ver.yieldMax = Number(f.yieldMax) || 0;
         ver.water = Number(f.water) || 0;
-        ver.packSizeKg = Number(f.packSizeKg) || 25;
+        ver.packSizeKg = Number(f.packSizeKg) || (isLiquidFormula(f) ? 1 : 25);
         ver.totalKg = recipeTotalKg(f);
         ver.yieldTheoretical = theoreticalBags(f);
     }
@@ -11383,7 +11409,10 @@
                     });
                 }
                 const totalKg = items.reduce(function (s, it) {
-                    return s + ((it.unit || 'Kg') === 'Kg' ? it.amount : 0);
+                    if (isPackagingLine(it)) return s;
+                    const unit = it.unit || 'Kg';
+                    if (unit === 'Kg' || unit === 'L') return s + (Number(it.amount) || 0);
+                    return s;
                 }, 0);
                 return {
                     id: ver.id || 'v1',
@@ -11392,7 +11421,7 @@
                     yieldMin: Number(ver.yieldMin != null ? ver.yieldMin : dose.yieldMin) || 0,
                     yieldMax: Number(ver.yieldMax != null ? ver.yieldMax : dose.yieldMax) || 0,
                     water: parseFirstNumber(recipe.water),
-                    packSizeKg: Number(dose.packSizeKg) || 25,
+                    packSizeKg: Number(dose.packSizeKg) || (recipe.kind === 'liquido' ? 1 : 25),
                     totalKg: Math.round(totalKg * 1000) / 1000,
                     items: items
                 };
@@ -11401,9 +11430,9 @@
             const f = {
                 product: recipe.product,
                 mode: 'plant-lot',
-                batchUnit: 'Kg',
+                batchUnit: recipe.kind === 'liquido' ? 'L' : 'Kg',
                 batchLabel: 'lote',
-                packSizeKg: Number(dose.packSizeKg) || 25,
+                packSizeKg: Number(dose.packSizeKg) || (recipe.kind === 'liquido' ? 1 : 25),
                 packagingPlantId: dose.packagingPlantId || packagingId(recipe),
                 activeVersionId: activeId,
                 versions: versions,
@@ -11977,10 +12006,11 @@
             if (el) el.textContent = '';
             return;
         }
-        if (doseNote) doseNote.innerHTML = plantLotDoseNoteHtml(totalKg, theo);
+        if (doseNote) doseNote.innerHTML = plantLotDoseNoteHtml(totalKg, theo, f);
         if (el) {
-            el.innerHTML = 'Total <strong>' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg</strong> · ' +
-                esc(String(theo)) + ' sacos teóricos';
+            const qtyUnit = isLiquidFormula(f) ? 'L' : 'kg';
+            el.innerHTML = 'Total <strong>' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' ' + qtyUnit +
+                '</strong> · ' + esc(String(theo)) + ' ' + theoreticalUnitWord(f, theo) + ' teóricos';
         }
     }
     function readFormulaFromDom() {
@@ -12204,7 +12234,7 @@
                 return '<div class="formula-line formula-line-pack" data-line="' + idx + '"' + packAttr + '>' +
                     '<select data-field="plantId">' + plantOptions(it.plantId, { packagingOnly: true }) + '</select>' +
                     '<input data-field="amount" type="number" min="0" step="any" value="' + esc(String(it.amount)) + '"' + amountRo +
-                    ' title="Cantidad auto (Pza / sacos teóricos)">' +
+                    ' title="Cantidad auto (Pza / unidades teóricas)">' +
                     '<select data-field="unit"' + unitDis + '>' + unitOptions(it.unit || 'Kg') + '</select>' +
                     '<button type="button" class="icon-action danger" data-remove-line="' + idx + '" title="Quitar" aria-label="Quitar"><i class="fa-solid fa-trash-can"></i></button>' +
                     '</div>';
@@ -12232,10 +12262,16 @@
                 '<div class="formula-pack-label">Empaque</div>' +
                 (lotMode
                     ? (editable
-                        ? ('<div class="formula-pack-fill"><label>Llenado (kg/saco)<input data-field="packSizeKg" type="number" min="0" step="any" value="' +
-                            esc(String(f.packSizeKg || 25)) + '" title="Kg a los que se llena cada saco/cubeta"></label></div>')
+                        ? ('<div class="formula-pack-fill"><label>' +
+                            (isLiquidFormula(f) ? 'Llenado (L / envase)' : 'Llenado (kg/saco)') +
+                            '<input data-field="packSizeKg" type="number" min="0" step="any" value="' +
+                            esc(String(f.packSizeKg || (isLiquidFormula(f) ? 1 : 25))) +
+                            '" title="' + (isLiquidFormula(f)
+                                ? 'Litros de producto terminado por envase'
+                                : 'Kg a los que se llena cada saco/cubeta') + '"></label></div>')
                         : ('<div class="muted" style="margin-bottom:8px">Llenado: ' +
-                            esc(String(f.packSizeKg || 25)) + ' kg/saco</div>'))
+                            esc(String(f.packSizeKg || (isLiquidFormula(f) ? 1 : 25))) +
+                            (isLiquidFormula(f) ? ' L/envase' : ' kg/saco') + '</div>'))
                     : '') +
                 packEntries.map(function (e) {
                     return formulaLineHtml(e.it, e.idx, true);
@@ -12278,8 +12314,9 @@
                     '</div>'))
             : ('<div class="muted" style="margin-bottom:10px">' +
                 (lotMode
-                    ? ('Lote de planta · ' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' kg · teórico ' +
-                        esc(String(theo)) + ' sacos')
+                    ? ('Lote de planta · ' + esc(String(Math.round(totalKg * 1000) / 1000)) +
+                        (isLiquidFormula(f) ? ' L' : ' kg') + ' · teórico ' +
+                        esc(String(theo)) + ' ' + theoreticalUnitWord(f, theo))
                     : ('Lote: ' + esc(String(f.batchSize)) + ' ' + esc(f.batchUnit) +
                         ' · ' + esc(f.batchLabel) + (f.water ? ' · agua ' + esc(String(f.water)) + ' L' : ''))) +
                 '</div>');
@@ -12308,14 +12345,18 @@
             (lotMode ? ' · <span class="badge b-success">Lote planta</span>' : '') + '</div></div>' +
             recipeStatus(f) + '</div>' +
             (lotMode
-                ? ('<div class="note-box" id="formulaDoseNote">' + plantLotDoseNoteHtml(totalKg, theo) + '</div>')
+                ? ('<div class="note-box" id="formulaDoseNote">' + plantLotDoseNoteHtml(totalKg, theo, f) + '</div>')
                 : (r.note ? '<div class="note-box">' + formatRecipeNote(r.note) + '</div>' : '')) +
             doseEmptyNote +
             versionBar +
             lotSummary +
             meta +
             '<div class="muted" style="margin-bottom:8px">' +
-            (lotMode ? 'Dosis por lote de producción (kg)' : ('Dosis por un ' + esc(f.batchLabel))) +
+            (lotMode
+                ? (isLiquidFormula(f)
+                    ? 'Dosis por lote de producción (kg o L). Los litros también entran al teórico.'
+                    : 'Dosis por lote de producción (kg)')
+                : ('Dosis por un ' + esc(f.batchLabel))) +
             '</div>' +
             '<div id="formulaLines">' + lines + '</div>' +
             '<div class="muted" id="formulaTotals" style="margin-top:10px;text-align:right"></div>' +
