@@ -570,8 +570,24 @@
                     if (!remote || !('value' in remote)) return;
                     if (!MERGE_ITEMS_KEYS[key] && !MERGE_MAP_KEYS[key] && key !== MERGE_FORMULAS_KEY) return;
                     var prevAcc = readLocal(key);
-                    writeLocal(key, remote.value, remote.updatedAt);
-                    if (!prevAcc || !valuesEqual(prevAcc.value, remote.value)) {
+                    var toWrite = remote.value;
+                    var ts = remote.updatedAt;
+                    if (prevAcc && prevAcc.value != null) {
+                        if (MERGE_ITEMS_KEYS[key]) {
+                            toWrite = mergeItemsValue(key, prevAcc.value, remote.value, ts);
+                            if (itemsRecencyFingerprint(extractItems(toWrite)) !==
+                                itemsRecencyFingerprint(extractItems(remote.value))) {
+                                pendingKeys[key] = true;
+                            }
+                        } else if (MERGE_MAP_KEYS[key]) {
+                            toWrite = mergeByIdMaps(prevAcc.value, remote.value, ts);
+                            if (mapRecencyFingerprint(toWrite) !== mapRecencyFingerprint(remote.value)) {
+                                pendingKeys[key] = true;
+                            }
+                        }
+                    }
+                    writeLocal(key, toWrite, ts);
+                    if (!prevAcc || !valuesEqual(prevAcc.value, toWrite)) {
                         appliedKeys.push(key);
                     }
                 });
@@ -625,8 +641,8 @@
     }
 
     /**
-     * Pull + merge. Si hay cambios remotos aplicados, recarga una vez
-     * para que inventario/fórmulas/POS lean el caché unificado.
+     * Pull + merge. Aplica remoto a localStorage y notifica a la UI
+     * (s35-sync-status + appliedKeys) sin location.reload.
      */
     function bootstrap(opts) {
         opts = opts || {};
@@ -683,26 +699,12 @@
                 });
 
                 status.appliedRemote = applied.length > 0;
-
-                if (applied.length && !opts.skipReload) {
-                    try {
-                        if (!sessionStorage.getItem(RELOAD_FLAG)) {
-                            sessionStorage.setItem(RELOAD_FLAG, '1');
-                            // Subir locales más nuevos antes de recargar (best-effort).
-                            toPush.forEach(function (k) { pendingKeys[k] = true; });
-                            bootDone = true;
-                            return flushPush().then(function () {
-                                location.reload();
-                                return { ok: true, reloading: true, applied: applied };
-                            });
-                        }
-                    } catch (_) {}
-                }
                 try { sessionStorage.removeItem(RELOAD_FLAG); } catch (_) {}
 
                 toPush.forEach(function (k) { pendingKeys[k] = true; });
                 // También cualquier escritura que ocurrió durante el boot.
                 bootDone = true;
+                // Hidratar en caliente (sin location.reload): evita flash del historial.
                 if (applied.length) {
                     notifyApplied(applied);
                 } else {

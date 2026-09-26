@@ -8599,7 +8599,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="/colaboradores-data.js"></script>
     <script src="/colaboradores/roles.js?v=20260926-dinero"></script>
-    <script src="/colaboradores/panel-sync.js?v=20260926-saleedit"></script>
+    <script src="/colaboradores/panel-sync.js?v=20260926-saleedit2"></script>
     <script>
     const LOGIN_URL = '/colaboradores';
     function getToken() { return localStorage.getItem('s35_admin_token'); }
@@ -15628,21 +15628,36 @@
         // Solo re-pintar cuando el sync aplicó contenido remoto distinto.
         // Los soft-pull periódicos emiten status sin appliedRemote → sin parpadeo.
         if (!d.appliedRemote) return;
-        hydrateInventoryFromLocal();
-        hydrateFinishedFromLocal();
-        hydrateFormulasFromLocal();
-        applyProductCatalog();
-        if (typeof refreshStockViews === 'function') refreshStockViews();
-        if (window.S35PosModule && window.S35PosModule.reloadSyncedFromStorage) {
-            window.S35PosModule.reloadSyncedFromStorage();
-        } else {
+        const keys = d.appliedKeys || [];
+        const keySet = Object.create(null);
+        keys.forEach(function (k) { keySet[k] = true; });
+        const all = !keys.length;
+        const touchPlant = all || keySet['s35_plant_inventory'] || keySet['s35_plant_families'];
+        const touchFinished = all || keySet['s35_finished_stock'] || keySet['s35_product_catalog_v1'];
+        const touchFormulas = all || keySet['s35_plant_formulas_v3'];
+        const touchCatalog = all || keySet['s35_product_catalog_v1'] || keySet['s35_product_families'] || keySet['s35_product_family_overrides'];
+        const touchPos = all || keys.some(function (k) {
+            return k === 's35_pos_sales' || k === 's35_sale_edits_v1' || k === 's35_caja_gastos_v1' ||
+                k === 's35_tesoreria_movs_v1' || k === 's35_promo_codes_v1' || k === 's35_pos_prices_v4';
+        });
+
+        if (touchPlant && typeof hydrateInventoryFromLocal === 'function') hydrateInventoryFromLocal();
+        if (touchFinished) hydrateFinishedFromLocal();
+        if (touchFormulas && typeof hydrateFormulasFromLocal === 'function') hydrateFormulasFromLocal();
+        if (touchCatalog) applyProductCatalog();
+        if ((touchPlant || touchFinished || touchCatalog) && typeof refreshStockViews === 'function') {
+            refreshStockViews();
+        }
+        if (touchPos && window.S35PosModule && window.S35PosModule.reloadSyncedFromStorage) {
+            window.S35PosModule.reloadSyncedFromStorage(keys);
+        } else if (touchPos) {
             if (window.S35PosModule && window.S35PosModule.reloadPricesFromStorage) {
                 window.S35PosModule.reloadPricesFromStorage();
             }
             if (window.S35PosModule && window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
         }
         if (!pricesEditing && hubProductSlug && hubProductTab === 'precios' && typeof renderProductPricesTab === 'function') {
-            renderProductPricesTab();
+            if (all || keySet['s35_pos_prices_v4']) renderProductPricesTab();
         }
     });
 
@@ -15796,7 +15811,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260926-saleedit"></script>
+    <script src="/colaboradores/pos-module.js?v=20260926-saleedit2"></script>
     <script src="/colaboradores/command-palette.js?v=20260926-dinero"></script>
     <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>

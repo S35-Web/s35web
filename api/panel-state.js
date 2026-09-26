@@ -108,7 +108,12 @@ function mergeItemLists(a, b, opts) {
     }
     if (tr < tp) return;
     // Empate: el tombstone de borrado gana (no resucitar por empate).
-    if (row.deleted && !prev.deleted) byId[id] = row;
+    if (row.deleted && !prev.deleted) {
+      byId[id] = row;
+      return;
+    }
+    // Empate de fechas: gana lo que acaba de subir el cliente (si no, la edición se pierde).
+    if (opts.preferIncoming && !prev.deleted) byId[id] = row;
   }
   (a || []).forEach(consider);
   (b || []).forEach(consider);
@@ -120,7 +125,7 @@ function mergeItemsValue(key, prevValue, nextValue, updatedAt) {
   const merged = mergeItemLists(
     extractItems(prevValue),
     extractItems(nextValue),
-    { dropHistoricalSales: dropHistorical }
+    { dropHistoricalSales: dropHistorical, preferIncoming: true }
   );
   const base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
     ? nextValue

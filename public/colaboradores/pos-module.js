@@ -1519,6 +1519,13 @@
         renderDashboardRadar();
         toast('Ticket actualizado · ' + saleReceiptLabel(sale));
         renderCobranza();
+        if (window.S35PanelSync && typeof window.S35PanelSync.flushPush === 'function') {
+            window.S35PanelSync.flushPush().then(function (res) {
+                if (res && res.ok && !res.empty) {
+                    toast('Ticket en la nube · ' + saleReceiptLabel(sale));
+                }
+            }).catch(function () {});
+        }
     }
 
     function syncSaleNoteDeleteVisibility() {
@@ -3093,17 +3100,137 @@
         return prices;
     }
 
-    /** Relee ventas/gastos/precios/promos tras soft-pull sin location.reload. */
-    function reloadSyncedFromStorage() {
-        prices = loadPrices();
-        sales = loadSales();
-        ensureCajaGastosPersisted();
-        cajaGastos = loadCajaGastos();
-        tesoreriaMovs = loadTesoreriaMovs();
-        promoCodes = loadPromoCodes();
-        ensureTesoreriaSeeds();
-        refreshPosAfterDataLoad();
-        return { prices: prices, sales: sales, cajaGastos: cajaGastos };
+    function salesSyncFingerprint(list) {
+        return (list || []).map(function (s) {
+            if (!s) return '';
+            return [
+                s.id,
+                s.total,
+                s.editedAt || s.updatedAt || s.createdAt || '',
+                s.paymentMethod || '',
+                s.billing || '',
+                s.deleted ? '1' : '0',
+                (s.items && s.items.length) || 0
+            ].join(':');
+        }).join('|');
+    }
+
+    function preserveMainScroll(fn) {
+        const main = document.querySelector('main.content');
+        const y = main ? main.scrollTop : (window.scrollY || 0);
+        fn();
+        if (main) main.scrollTop = y;
+        else {
+            try { window.scrollTo(0, y); } catch (_) {}
+        }
+    }
+
+    function sectionIsActive(id) {
+        const el = document.getElementById(id);
+        return !!(el && el.classList.contains('active'));
+    }
+
+    /**
+     * Relee caché tras soft-pull. Solo re-pinta vistas cuyos datos cambiaron
+     * (evita que un sync de inventario/fórmulas parpadee el historial).
+     */
+    function reloadSyncedFromStorage(keys) {
+        const keySet = Object.create(null);
+        (keys || []).forEach(function (k) { keySet[k] = true; });
+        const all = !keys || !keys.length;
+        const touchSales = all || keySet[SALES_KEY] || keySet[SALE_EDITS_KEY];
+        const touchGastos = all || keySet[CAJA_GASTOS_KEY];
+        const touchTesoreria = all || keySet[TESORERIA_MOVS_KEY];
+        const touchPromos = all || keySet[PROMO_CODES_KEY];
+        const touchPrices = all || keySet[PRICE_KEY];
+
+        let salesChanged = false;
+        let gastosChanged = false;
+        let tesoreriaChanged = false;
+        let promosChanged = false;
+        let pricesChanged = false;
+
+        if (touchSales) {
+            const next = loadSales();
+            if (salesSyncFingerprint(next) !== salesSyncFingerprint(sales)) {
+                sales = next;
+                invalidateAnalyticsSalesCache();
+                salesChanged = true;
+            }
+        }
+        if (touchGastos) {
+            ensureCajaGastosPersisted();
+            const nextG = loadCajaGastos();
+            if (JSON.stringify(nextG) !== JSON.stringify(cajaGastos)) {
+                cajaGastos = nextG;
+                gastosChanged = true;
+            }
+        }
+        if (touchTesoreria) {
+            const nextT = loadTesoreriaMovs();
+            if (JSON.stringify(nextT) !== JSON.stringify(tesoreriaMovs)) {
+                tesoreriaMovs = nextT;
+                tesoreriaChanged = true;
+            }
+            ensureTesoreriaSeeds();
+        }
+        if (touchPromos) {
+            const nextP = loadPromoCodes();
+            if (JSON.stringify(nextP) !== JSON.stringify(promoCodes)) {
+                promoCodes = nextP;
+                promosChanged = true;
+            }
+        }
+        if (touchPrices) {
+            const prev = JSON.stringify(prices);
+            prices = loadPrices();
+            pricesChanged = JSON.stringify(prices) !== prev;
+        }
+
+        if (!salesChanged && !gastosChanged && !tesoreriaChanged && !promosChanged && !pricesChanged) {
+            return { prices: prices, sales: sales, cajaGastos: cajaGastos, skipped: true };
+        }
+
+        preserveMainScroll(function () {
+            if (salesChanged) {
+                fillHistoryClientFilter();
+                renderHistory();
+                if (sectionIsActive('cortes')) renderCortes();
+                if (sectionIsActive('cobranza')) renderCobranza();
+                if (sectionIsActive('dashboard')) {
+                    try { renderDashboardRadar(); } catch (_) {}
+                    try { updatePosKpis(); } catch (_) {}
+                }
+                if (sectionIsActive('clients') && typeof clientDashId !== 'undefined' && clientDashId) {
+                    try { renderClientDashboard(clientDashId); } catch (_) {}
+                }
+                if (sectionIsActive('products')) {
+                    try { renderProductsMovementsChart(); } catch (_) {}
+                }
+            }
+            if (gastosChanged) {
+                try { renderGastosPanel(); } catch (_) {}
+                if (sectionIsActive('cortes')) renderCortes();
+                if (sectionIsActive('dinero') || sectionIsActive('venta')) {
+                    try { renderDinero(); } catch (_) {}
+                }
+            }
+            if (tesoreriaChanged) {
+                try { renderDinero(); } catch (_) {}
+            }
+            if (promosChanged && sectionIsActive('promos')) renderPromosAdmin();
+            if (pricesChanged) {
+                if (sectionIsActive('venta')) {
+                    renderProducts();
+                    renderCart();
+                }
+                if (sectionIsActive('products') || sectionIsActive('prices')) {
+                    renderPriceChips();
+                    renderPrices();
+                }
+            }
+        });
+        return { prices: prices, sales: sales, cajaGastos: cajaGastos, skipped: false };
     }
 
     function savePrices(opts) {
