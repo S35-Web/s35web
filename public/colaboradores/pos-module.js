@@ -2128,13 +2128,15 @@
         }
         if (period === 'week') {
             return {
-                subtitle: 'Lunes a viernes',
+                subtitle: 'Lunes a domingo',
                 buckets: [
                     { key: 0, label: 'Lun' },
                     { key: 1, label: 'Mar' },
                     { key: 2, label: 'Mié' },
                     { key: 3, label: 'Jue' },
-                    { key: 4, label: 'Vie' }
+                    { key: 4, label: 'Vie' },
+                    { key: 5, label: 'Sáb' },
+                    { key: 6, label: 'Dom' }
                 ].map(function (b) { return { key: b.key, label: b.label, amount: 0 }; })
             };
         }
@@ -2184,7 +2186,7 @@
             } else if (period === 'week') {
                 const dayStart = startOfLocalDay(d);
                 const diff = Math.round((dayStart.getTime() - bounds.start.getTime()) / 86400000);
-                if (diff >= 0 && diff <= 4) bucket = buckets[diff];
+                if (diff >= 0 && diff <= 6) bucket = buckets[diff];
             } else if (period === 'month') {
                 if (d.getFullYear() === bounds.start.getFullYear() && d.getMonth() === bounds.start.getMonth()) {
                     const day = d.getDate();
@@ -2225,7 +2227,7 @@
         if (period === 'week') {
             const dayStart = startOfLocalDay(now);
             const diff = Math.round((dayStart.getTime() - bounds.start.getTime()) / 86400000);
-            if (diff < 0 || diff > 4) return null; // fin de semana fuera del eje Lun–Vie
+            if (diff < 0 || diff > 6) return null;
             return diff;
         }
         if (period === 'month') {
