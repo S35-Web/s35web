@@ -22,8 +22,6 @@ const ALLOWED_KEYS = [
   's35_plant_formulas_v3',
   's35_production_lots',
   's35_compra_tickets',
-  's35_plant_unit_costs_v1',
-  's35_plant_count_20260922b',
   's35_pos_prices_v4',
   's35_pos_sales',
   's35_caja_gastos_v1',
@@ -31,9 +29,18 @@ const ALLOWED_KEYS = [
   's35_promo_codes_v1',
   's35_product_families',
   's35_product_family_overrides',
-  's35_product_catalog_v1',
+  's35_product_catalog_v1'
+  // Flags locales no van a la nube (evita timestamps ISO como "costos").
+];
+
+/** Docs legacy que eran flags locales y corrompieron Mongo (string ISO). */
+const LEGACY_FLAG_KEYS = [
+  's35_plant_unit_costs_v1',
+  's35_plant_count_20260922b',
   's35_hist_sales_imported_v13'
 ];
+
+const CAJA_GASTOS_KEY = 's35_caja_gastos_v1';
 
 const ALLOWED_SET = new Set(ALLOWED_KEYS);
 
@@ -90,7 +97,16 @@ function mergeItemLists(a, b, opts) {
       order.push(id);
       return;
     }
-    if (itemRecency(row) >= itemRecency(byId[id])) byId[id] = row;
+    const prev = byId[id];
+    const tr = itemRecency(row);
+    const tp = itemRecency(prev);
+    if (tr > tp) {
+      byId[id] = row;
+      return;
+    }
+    if (tr < tp) return;
+    // Empate: el tombstone de borrado gana (no resucitar por empate).
+    if (row.deleted && !prev.deleted) byId[id] = row;
   }
   (a || []).forEach(consider);
   (b || []).forEach(consider);
@@ -241,6 +257,48 @@ function formulasDoseCount(value) {
   return n;
 }
 
+/**
+ * Flags locales (timestamp ISO / string) que se sincronizaron por error.
+ * Borrarlas evita seguir sirviendo basura si algún cliente viejo las pide.
+ */
+async function repairLegacyFlagDocs(col) {
+  try {
+    for (let i = 0; i < LEGACY_FLAG_KEYS.length; i++) {
+      const key = LEGACY_FLAG_KEYS[i];
+      const doc = await col.findOne({ _id: key });
+      if (!doc) continue;
+      const v = doc.value;
+      const isFlagString = typeof v === 'string';
+      const isBareIsoWrapper = v && typeof v === 'object' && !Array.isArray(v) &&
+        typeof v.value === 'string' && !v.items && !v.byId;
+      if (isFlagString || isBareIsoWrapper) {
+        await col.deleteOne({ _id: key });
+      }
+    }
+  } catch (err) {
+    console.warn('[panel-state] repair legacy flags', err && err.message);
+  }
+}
+
+/** Asegura que gastos de caja existan en la nube (aunque vacíos). */
+async function ensureCajaGastosDoc(col) {
+  try {
+    const existing = await col.findOne({ _id: CAJA_GASTOS_KEY });
+    if (existing) return existing;
+    const now = new Date().toISOString();
+    const value = { items: [], updatedAt: now };
+    await col.updateOne(
+      { _id: CAJA_GASTOS_KEY },
+      { $set: { value: value, updatedAt: now, updatedBy: 'seed:empty' } },
+      { upsert: true }
+    );
+    return { _id: CAJA_GASTOS_KEY, value: value, updatedAt: now };
+  } catch (err) {
+    console.warn('[panel-state] seed caja gastos', err && err.message);
+    return null;
+  }
+}
+
 /** Migra un documento legado `plant_state` (sync anterior) a claves panel_state. */
 async function migrateFromPlantState(db, col) {
   try {
@@ -336,6 +394,8 @@ module.exports = async function handler(req, res) {
 
     if (req.method === 'GET') {
       await migrateFromPlantState(db, col);
+      await repairLegacyFlagDocs(col);
+      await ensureCajaGastosDoc(col);
       const q = (req.query && req.query.keys) || '';
       let keys = ALLOWED_KEYS;
       if (q) {

@@ -8305,8 +8305,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="/colaboradores-data.js"></script>
-    <script src="/colaboradores/roles.js?v=20260923-roles"></script>
-    <script src="/colaboradores/panel-sync.js?v=20260925-cloud-sync3"></script>
+    <script src="/colaboradores/roles.js?v=20260926-p0-sync"></script>
+    <script src="/colaboradores/panel-sync.js?v=20260926-p0-sync"></script>
     <script>
     const LOGIN_URL = '/colaboradores';
     function getToken() { return localStorage.getItem('s35_admin_token'); }
@@ -8554,8 +8554,28 @@
     function seedInventory() {
         return (data.plantMaterials || []).map(normalizeItem);
     }
-    /** Bump al actualizar catálogo de costos desde planta (sobrescribe unitCost del seed). */
-    const PLANT_COSTS_FLAG = 's35_plant_unit_costs_v1';
+    /** Bump al aplicar costos unitarios del seed (flag local; NO sincronizar a la nube). */
+    const PLANT_COSTS_FLAG = 's35_plant_unit_costs_flag_v1';
+    const PLANT_COSTS_FLAG_LEGACY = 's35_plant_unit_costs_v1';
+    (function migratePlantCostsFlag() {
+        try {
+            if (localStorage.getItem(PLANT_COSTS_FLAG)) {
+                // Quitar legacy string para que sync viejo no lo vuelva a empujar.
+                const legacy = localStorage.getItem(PLANT_COSTS_FLAG_LEGACY);
+                if (legacy != null && /^\d{4}-\d{2}-\d{2}T/.test(String(legacy))) {
+                    localStorage.removeItem(PLANT_COSTS_FLAG_LEGACY);
+                }
+                return;
+            }
+            const legacy = localStorage.getItem(PLANT_COSTS_FLAG_LEGACY);
+            if (legacy != null) {
+                localStorage.setItem(PLANT_COSTS_FLAG, legacy);
+                if (/^\d{4}-\d{2}-\d{2}T/.test(String(legacy))) {
+                    localStorage.removeItem(PLANT_COSTS_FLAG_LEGACY);
+                }
+            }
+        } catch (_) {}
+    })();
     function applySeedUnitCosts(saved, seed, force) {
         const seedById = {};
         seed.forEach(function (m) { seedById[m.id] = m; });
@@ -9282,14 +9302,48 @@
         disconnectBtn.hidden = true;
     }
 
+    async function logoutIfSessionReallyInvalid() {
+        try {
+            const resp = await fetch('/api/panel-state?keys=s35_pos_sales', {
+                headers: { Authorization: 'Bearer ' + getToken(), Accept: 'application/json' },
+                cache: 'no-store'
+            });
+            if (resp.status === 401) {
+                localStorage.removeItem('s35_admin_token');
+                window.location.replace(LOGIN_URL);
+                return true;
+            }
+        } catch (_) {}
+        return false;
+    }
+
+    /**
+     * Gmail/mensajes son admin-only. Un 401 ahí NO implica sesión inválida
+     * para ventas (panel-state sí autoriza). Solo cerrar sesión si el rol
+     * debería tener acceso y panel-state también falla.
+     */
+    async function handleAdminOnlyUnauthorized() {
+        if (!canAccess('messages')) return false;
+        if (window.S35Roles && typeof window.S35Roles.isFullAccess === 'function') {
+            if (!window.S35Roles.isFullAccess(currentRole)) return false;
+        } else if (currentRole !== 'admin') {
+            return false;
+        }
+        return logoutIfSessionReallyInvalid();
+    }
+
     async function loadGmailStatus() {
+        if (!canAccess('messages')) {
+            updateGmailConnectUi();
+            return;
+        }
         try {
             const resp = await fetch('/api/gmail-oauth?action=status', {
                 headers: { Authorization: 'Bearer ' + getToken(), Accept: 'application/json' }
             });
             if (resp.status === 401) {
-                localStorage.removeItem('s35_admin_token');
-                window.location.replace(LOGIN_URL);
+                const loggedOut = await handleAdminOnlyUnauthorized();
+                if (!loggedOut) updateGmailConnectUi();
                 return;
             }
             if (!resp.ok) {
@@ -9311,6 +9365,10 @@
     }
 
     async function loadMessages() {
+        if (!canAccess('messages')) {
+            setMessagesBadge(0);
+            return;
+        }
         msgIndex.clear();
         if (messagesSource === 'gmail') {
             if (!gmailStatus.connected) {
@@ -9332,8 +9390,11 @@
             }
             const resp = await fetch('/api/gmail', { headers: { Authorization: 'Bearer ' + getToken() } });
             if (resp.status === 401) {
-                localStorage.removeItem('s35_admin_token');
-                window.location.replace(LOGIN_URL);
+                const loggedOut = await handleAdminOnlyUnauthorized();
+                if (!loggedOut) {
+                    setMessagesBadge(0);
+                    showMailEmpty('Sin acceso a Gmail para este rol');
+                }
                 return;
             }
             if (resp.status === 409) {
@@ -9362,8 +9423,11 @@
         }
         const resp = await fetch('/api/messages', { headers: { Authorization: 'Bearer ' + getToken() } });
         if (resp.status === 401) {
-            localStorage.removeItem('s35_admin_token');
-            window.location.replace(LOGIN_URL);
+            const loggedOut = await handleAdminOnlyUnauthorized();
+            if (!loggedOut) {
+                setMessagesBadge(0);
+                showMailEmpty('Sin acceso a mensajes para este rol');
+            }
             return;
         }
         if (!resp.ok) {
@@ -15353,7 +15417,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260925-cloud-sync3"></script>
+    <script src="/colaboradores/pos-module.js?v=20260926-p0-sync"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
     <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>

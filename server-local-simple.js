@@ -255,8 +255,6 @@ const server = http.createServer((req, res) => {
             's35_plant_formulas_v3',
             's35_production_lots',
             's35_compra_tickets',
-            's35_plant_unit_costs_v1',
-            's35_plant_count_20260922b',
             's35_pos_prices_v4',
             's35_pos_sales',
             's35_caja_gastos_v1',
@@ -264,9 +262,14 @@ const server = http.createServer((req, res) => {
             's35_promo_codes_v1',
             's35_product_families',
             's35_product_family_overrides',
-            's35_product_catalog_v1',
-            's35_hist_sales_imported_v13'
+            's35_product_catalog_v1'
         ]);
+        const legacyFlagKeys = [
+            's35_plant_unit_costs_v1',
+            's35_plant_count_20260922b',
+            's35_hist_sales_imported_v13'
+        ];
+        const cajaGastosKey = 's35_caja_gastos_v1';
         const mergeItemsKeys = new Set([
             's35_pos_sales',
             's35_caja_gastos_v1',
@@ -305,7 +308,15 @@ const server = http.createServer((req, res) => {
                     order.push(id);
                     return;
                 }
-                if (itemRecency(row) >= itemRecency(byId[id])) byId[id] = row;
+                const prev = byId[id];
+                const tr = itemRecency(row);
+                const tp = itemRecency(prev);
+                if (tr > tp) {
+                    byId[id] = row;
+                    return;
+                }
+                if (tr < tp) return;
+                if (row.deleted && !prev.deleted) byId[id] = row;
             };
             (a || []).forEach(consider);
             (b || []).forEach(consider);
@@ -447,6 +458,25 @@ const server = http.createServer((req, res) => {
             return null;
         };
         if (req.method === 'GET') {
+            fs.mkdirSync(dir, { recursive: true });
+            // Reparar flags locales que se subieron como string ISO.
+            legacyFlagKeys.forEach((key) => {
+                try {
+                    const p = path.join(dir, key + '.json');
+                    if (!fs.existsSync(p)) return;
+                    const doc = JSON.parse(fs.readFileSync(p, 'utf8'));
+                    const v = doc && doc.value;
+                    if (typeof v === 'string') fs.unlinkSync(p);
+                } catch (_) {}
+            });
+            // Sembrar gastos de caja vacíos si faltan.
+            if (!readKey(cajaGastosKey)) {
+                const now = new Date().toISOString();
+                const empty = { value: { items: [], updatedAt: now }, updatedAt: now };
+                try {
+                    fs.writeFileSync(path.join(dir, cajaGastosKey + '.json'), JSON.stringify(empty));
+                } catch (_) {}
+            }
             const stores = {};
             allowed.forEach((key) => {
                 const doc = readKey(key);
