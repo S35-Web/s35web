@@ -3394,7 +3394,7 @@
     }
     function computeDineroAccounts(cityFilter) {
         const city = cityFilter == null ? dineroCityFilter : cityFilter;
-        const list = filterSalesByCity(salesForAnalytics(), city);
+        const list = filterSalesByCity(sales, city);
         const buckets = {
             efectivo: { tickets: 0, gastos: 0, ajustes: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 },
             banco: { tickets: 0, gastos: 0, ajustes: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 },
