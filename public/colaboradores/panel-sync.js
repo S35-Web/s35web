@@ -143,6 +143,19 @@
         return Date.parse(row.editedAt || row.updatedAt || row.createdAt || '') || 0;
     }
 
+    function itemsRecencyFingerprint(list) {
+        return (list || []).map(function (r) {
+            return String(r && r.id != null ? r.id : '') + ':' + itemRecency(r) + ':' + (r && r.deleted ? '1' : '0');
+        }).join('|');
+    }
+
+    function mapRecencyFingerprint(val) {
+        var map = (val && val.byId && typeof val.byId === 'object') ? val.byId : {};
+        return Object.keys(map).sort().map(function (id) {
+            return id + ':' + itemRecency(map[id]) + ':' + (map[id] && map[id].deleted ? '1' : '0');
+        }).join('|');
+    }
+
     function extractItems(value) {
         if (!value) return [];
         if (Array.isArray(value)) return value;
@@ -365,8 +378,8 @@
             var mergedN = extractItems(merged).length;
             // Si la unión aportó ítems que faltaban en el "ganador" LWW, forzar push.
             var needPush = mergedN > remoteN || (mergedN > localN && cmpIso(localTs, remoteTs) <= 0);
-            var needApply = mergedN !== localN || JSON.stringify(extractItems(localVal).map(function (r) { return r && r.id; })) !==
-                JSON.stringify(extractItems(merged).map(function (r) { return r && r.id; }));
+            var needApply = itemsRecencyFingerprint(extractItems(localVal)) !==
+                itemsRecencyFingerprint(extractItems(merged));
             if (needPush && mergedN > Math.max(localN, remoteN)) {
                 ts = new Date().toISOString();
                 merged = Object.assign({}, merged, { updatedAt: ts });
@@ -379,8 +392,9 @@
             var localKeys = Object.keys((localVal && localVal.byId) || {});
             var remoteKeys = Object.keys((remoteVal && remoteVal.byId) || {});
             var mergedKeys = Object.keys((mergedM && mergedM.byId) || {});
-            var needPushM = mergedKeys.length > remoteKeys.length;
-            var needApplyM = mergedKeys.length !== localKeys.length;
+            var needPushM = mergedKeys.length > remoteKeys.length ||
+                mapRecencyFingerprint(localVal) !== mapRecencyFingerprint(mergedM);
+            var needApplyM = mapRecencyFingerprint(localVal) !== mapRecencyFingerprint(mergedM);
             if (needPushM && mergedKeys.length > Math.max(localKeys.length, remoteKeys.length)) {
                 tsM = new Date().toISOString();
                 mergedM = Object.assign({}, mergedM, { updatedAt: tsM });

@@ -665,6 +665,37 @@
             byId: byId || {},
             updatedAt: new Date().toISOString()
         }));
+        flushCloudSoon();
+    }
+    function saleRecordRecency(row) {
+        if (!row || typeof row !== 'object') return 0;
+        return Date.parse(row.editedAt || row.updatedAt || row.createdAt || '') || 0;
+    }
+    function touchSaleRecord(sale) {
+        if (!sale) return sale;
+        const now = new Date().toISOString();
+        sale.editedAt = now;
+        sale.updatedAt = now;
+        return sale;
+    }
+    function saleEditPayload(sale) {
+        if (!sale) return null;
+        return {
+            createdAt: sale.createdAt,
+            clientId: sale.clientId,
+            client: sale.client,
+            customer: sale.customer,
+            paymentMethod: sale.paymentMethod,
+            payments: sale.payments || null,
+            billing: sale.billing,
+            city: sale.city || resolveSaleCity(sale),
+            items: sale.items,
+            total: sale.total,
+            note: sale.note || null,
+            meta: sale.meta || null,
+            editedAt: sale.editedAt,
+            updatedAt: sale.updatedAt
+        };
     }
     function putSaleEdit(id, patch) {
         if (!id || !patch) return;
@@ -676,6 +707,7 @@
         if (!sale || !sale.id) return sale;
         const patch = loadSaleEditsMap()[sale.id];
         if (!patch || patch.deleted) return sale;
+        if (saleRecordRecency(patch) < saleRecordRecency(sale)) return sale;
         const next = Object.assign({}, sale, patch);
         if (patch.items) next.items = patch.items;
         if (patch.meta || sale.meta) {
@@ -1425,31 +1457,20 @@
 
     function persistSaleRecord(sale) {
         if (!sale || !sale.id) return false;
+        touchSaleRecord(sale);
         let i;
         for (i = 0; i < sales.length; i++) {
             if (sales[i].id === sale.id) {
                 sales[i] = sale;
                 saveSales();
+                putSaleEdit(sale.id, saleEditPayload(sale));
                 return true;
             }
         }
         for (i = 0; i < historicalSales.length; i++) {
             if (historicalSales[i].id === sale.id) {
                 historicalSales[i] = sale;
-                putSaleEdit(sale.id, {
-                    createdAt: sale.createdAt,
-                    clientId: sale.clientId,
-                    client: sale.client,
-                    customer: sale.customer,
-                    paymentMethod: sale.paymentMethod,
-                    payments: sale.payments || null,
-                    billing: sale.billing,
-                    city: sale.city || resolveSaleCity(sale),
-                    items: sale.items,
-                    total: sale.total,
-                    note: sale.note || null,
-                    meta: sale.meta || null
-                });
+                putSaleEdit(sale.id, saleEditPayload(sale));
                 invalidateAnalyticsSalesCache();
                 return true;
             }
@@ -3257,7 +3278,7 @@
         return !!(row && row.id && !row.deleted && !isSaleEditDeleted(row.id));
     }
     function loadSales() {
-        return loadSalesRaw().filter(isActiveSaleRow);
+        return loadSalesRaw().filter(isActiveSaleRow).map(applySaleEditPatch);
     }
     function flushCloudSoon() {
         if (!window.S35PanelSync || typeof window.S35PanelSync.flushPush !== 'function') return;
