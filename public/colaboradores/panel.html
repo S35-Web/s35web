@@ -3636,9 +3636,12 @@
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: var(--text); color: var(--bg); padding: 10px 16px;
             border-radius: var(--radius-sm); font-size: 13px; z-index: 100;
-            opacity: 0; pointer-events: none; transition: opacity .2s;
+            opacity: 0; pointer-events: none; transition: opacity .2s, background .2s;
+            display: inline-flex; align-items: center; gap: 8px;
         }
         .toast.show { opacity: 1; }
+        .toast.ok { background: #1a7f37; color: #fff; }
+        .toast.err { background: #b42318; color: #fff; }
 
         /* —— Nota de venta —— */
         #saleNoteModal .modal-card {
@@ -5673,7 +5676,8 @@
         .products-table tbody tr { cursor: pointer; }
         .products-table tbody tr:hover { background: var(--hover); }
         .pd-price-blocks { display: grid; gap: 14px; }
-        .pd-prices-head {
+        .pd-prices-head,
+        .pd-formula-head {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
@@ -5681,13 +5685,32 @@
             margin-bottom: 14px;
             flex-wrap: wrap;
         }
-        .pd-prices-actions {
+        .pd-prices-actions,
+        .pd-formula-actions {
             display: flex;
             align-items: center;
             gap: 8px;
             flex-shrink: 0;
         }
-        .pd-prices-actions .btn { height: 34px; }
+        .pd-prices-actions .btn,
+        .pd-formula-actions .btn { height: 34px; }
+        .pd-formula-saved-flash {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1a7f37;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity .25s ease, transform .25s ease;
+            pointer-events: none;
+        }
+        .pd-formula-saved-flash.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        [data-theme="dark"] .pd-formula-saved-flash { color: #3dd68c; }
         .pd-price-card {
             border: 1px solid var(--border);
             border-radius: var(--radius);
@@ -7549,10 +7572,27 @@
                             </div>
                         </div>
                         <div class="pd-tab-panel" id="pdPanelFormula" data-pd-panel="formula" hidden>
-                            <div class="card" id="pdFormulaMount">
-                                <div class="empty">
-                                    <p class="empty-title">Sin formulación</p>
-                                    Este producto no tiene receta de planta.
+                            <div class="card">
+                                <div class="pd-formula-head" id="pdFormulaHead">
+                                    <p class="page-sub" style="margin:0">Ingredientes y dosis por lote. Por defecto solo lectura; usa Editar para cambiar kg o versiones.</p>
+                                    <div class="pd-formula-actions">
+                                        <span class="pd-formula-saved-flash" id="pdFormulaSavedFlash" aria-live="polite">
+                                            <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Guardado
+                                        </span>
+                                        <button type="button" class="btn" id="pdFormulaEditBtn">
+                                            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Editar
+                                        </button>
+                                        <button type="button" class="btn" id="pdFormulaCancelBtn" hidden>Cancelar</button>
+                                        <button type="button" class="btn primary" id="pdFormulaSaveBtn" hidden>
+                                            <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Guardar
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="pdFormulaMount">
+                                    <div class="empty">
+                                        <p class="empty-title">Sin formulación</p>
+                                        Este producto no tiene receta de planta.
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -8552,6 +8592,8 @@
     let hubProductSlug = null;
     let hubProductTab = 'resumen';
     let pricesEditing = false;
+    let formulaEditing = false;
+    let formulaEditSnapshot = null;
 
     function parseHash() {
         const raw = (location.hash || '').replace(/^#/, '').trim();
@@ -8625,7 +8667,11 @@
         sidebar.classList.remove('open');
         if (id === 'products' && typeof openProductHub === 'function') {
             if (legacyRecipe || opts.slug) {
-                openProductHub(legacyRecipe || opts.slug, { tab: legacyTab || opts.tab || 'resumen', skipHash: true });
+                openProductHub(legacyRecipe || opts.slug, {
+                    tab: legacyTab || opts.tab || 'resumen',
+                    skipHash: true,
+                    editFormula: !!opts.editFormula
+                });
             } else if (!hubProductSlug) {
                 showProductList({ skipHash: true });
             }
@@ -10647,7 +10693,7 @@
         if (!mount || !f) return;
         const chips = mount.querySelector('.formula-version-chips');
         if (!chips) return;
-        const editable = canEditFormulas();
+        const editable = isFormulaUiEditable();
         const addBtn = chips.querySelector('#formulaAddVersionBtn');
         const addHtml = addBtn ? addBtn.outerHTML : '';
         chips.innerHTML = (f.versions || []).map(function (v) {
@@ -10655,7 +10701,7 @@
         }).join('') + addHtml;
     }
     function deleteFormulaVersion(versionId) {
-        if (!canEditFormulas()) return;
+        if (!isFormulaUiEditable()) return;
         const f = formulas[currentRecipe];
         if (!f) return;
         ensureVersions(f);
@@ -10682,8 +10728,6 @@
         renumberFormulaVersions(f, nextIdx);
         syncActiveVersionToRoot(f);
         formulaDirty = true;
-        saveFormulas();
-        formulaDirty = false;
         openRecipe(currentRecipe, true);
         if (typeof renderProdVersionChips === 'function') renderProdVersionChips();
         if (typeof updateProdPreview === 'function') {
@@ -11030,14 +11074,149 @@
     else if (plantIdsRemapped) saveFormulas({ preserveUpdatedAt: true, skipPush: true });
     let formulaDirty = false;
     let formulaAutosaveTimer = null;
-    function scheduleFormulaAutosave() {
-        if (formulaAutosaveTimer) clearTimeout(formulaAutosaveTimer);
-        formulaAutosaveTimer = setTimeout(function () {
+    function isFormulaUiEditable() {
+        return canEditFormulas() && formulaEditing;
+    }
+    function clearFormulaAutosaveTimer() {
+        if (formulaAutosaveTimer) {
+            clearTimeout(formulaAutosaveTimer);
             formulaAutosaveTimer = null;
-            if (!canEditFormulas()) return;
-            saveFormulas();
+        }
+    }
+    /** En modo edición solo marca dirty; el persistido es con Guardar explícito. */
+    function scheduleFormulaAutosave() {
+        if (!isFormulaUiEditable()) return;
+        formulaDirty = true;
+        clearFormulaAutosaveTimer();
+    }
+    function cloneFormulaSnapshot(slug) {
+        if (!slug || !formulas[slug]) return null;
+        try {
+            return JSON.parse(JSON.stringify(formulas[slug]));
+        } catch (_) {
+            return null;
+        }
+    }
+    function syncFormulaEditChrome() {
+        const head = document.getElementById('pdFormulaHead');
+        const editBtn = document.getElementById('pdFormulaEditBtn');
+        const saveBtn = document.getElementById('pdFormulaSaveBtn');
+        const cancelBtn = document.getElementById('pdFormulaCancelBtn');
+        const can = canEditFormulas();
+        if (head) head.hidden = !can;
+        if (editBtn) {
+            editBtn.hidden = !can || formulaEditing;
+            editBtn.disabled = !can;
+        }
+        if (saveBtn) {
+            saveBtn.hidden = !can || !formulaEditing;
+            saveBtn.disabled = false;
+        }
+        if (cancelBtn) {
+            cancelBtn.hidden = !can || !formulaEditing;
+            cancelBtn.disabled = false;
+        }
+    }
+    function flashFormulaSaved() {
+        const el = document.getElementById('pdFormulaSavedFlash');
+        if (!el) return;
+        el.classList.add('show');
+        clearTimeout(flashFormulaSaved._t);
+        flashFormulaSaved._t = setTimeout(function () {
+            el.classList.remove('show');
+        }, 2200);
+    }
+    function cancelFormulaEdit(opts) {
+        opts = opts || {};
+        clearFormulaAutosaveTimer();
+        if (formulaEditSnapshot && currentRecipe && formulaEditing) {
+            formulas[currentRecipe] = formulaEditSnapshot;
+        }
+        formulaEditSnapshot = null;
+        formulaEditing = false;
+        formulaDirty = false;
+        try { window.__s35BlockSyncReload = false; } catch (_) {}
+        syncFormulaEditChrome();
+        if (!opts.skipRender && currentRecipe) openRecipe(currentRecipe, true);
+    }
+    function beginFormulaEdit() {
+        if (!canEditFormulas() || formulaEditing) return;
+        const slug = currentRecipe || hubProductSlug;
+        if (!slug) return;
+        if (!formulas[slug]) {
+            const r = recipes.filter(function (x) { return x.product === slug; })[0];
+            if (r) formulas[slug] = seedFormula(r);
+        }
+        formulaEditSnapshot = cloneFormulaSnapshot(slug);
+        formulaEditing = true;
+        formulaDirty = false;
+        try { window.__s35BlockSyncReload = true; } catch (_) {}
+        syncFormulaEditChrome();
+        openRecipe(slug, true);
+        const first = document.querySelector('#pdFormulaMount [data-field="amount"]:not([readonly])');
+        if (first) {
+            try { first.focus(); } catch (_) {}
+        }
+    }
+    function saveFormulaEdit() {
+        if (!isFormulaUiEditable()) return;
+        const saveBtn = document.getElementById('pdFormulaSaveBtn');
+        const cancelBtn = document.getElementById('pdFormulaCancelBtn');
+        if (saveBtn) saveBtn.disabled = true;
+        if (cancelBtn) cancelBtn.disabled = true;
+        clearFormulaAutosaveTimer();
+        try {
+            readFormulaFromDom();
+            saveFormulas({ onlySlug: currentRecipe, skipPush: true });
             formulaDirty = false;
-        }, 700);
+            formulaEditSnapshot = null;
+            formulaEditing = false;
+            try { window.__s35BlockSyncReload = false; } catch (_) {}
+            syncFormulaEditChrome();
+            updateRecipeKpi();
+            openRecipe(currentRecipe, true);
+            fillProdProducts();
+            if (typeof renderProductHubList === 'function') renderProductHubList();
+            if (typeof renderProdVersionChips === 'function') renderProdVersionChips();
+            flashFormulaSaved();
+
+            const afterLocal = function (syncOk, syncMsg) {
+                if (syncOk) {
+                    panelToast(syncMsg || 'Fórmula guardada ✓', 'ok');
+                } else {
+                    panelToast(syncMsg || 'Fórmula guardada en este dispositivo (nube pendiente)', 'err');
+                }
+                if (saveBtn) saveBtn.disabled = false;
+                if (cancelBtn) cancelBtn.disabled = false;
+            };
+
+            if (window.S35PanelSync && typeof window.S35PanelSync.flushPush === 'function') {
+                try {
+                    if (typeof window.S35PanelSync.schedulePush === 'function') {
+                        window.S35PanelSync.schedulePush(FORMULA_KEY);
+                    }
+                } catch (_) {}
+                window.S35PanelSync.flushPush()
+                    .then(function (res) {
+                        const ok = !res || res.ok !== false;
+                        afterLocal(
+                            ok,
+                            ok
+                                ? 'Fórmula guardada y sincronizada ✓'
+                                : ('Guardado local OK · nube: ' + ((res && (res.error || res.reason)) || 'pendiente'))
+                        );
+                    })
+                    .catch(function (err) {
+                        afterLocal(false, 'Guardado local OK · nube: ' + ((err && err.message) || 'error'));
+                    });
+            } else {
+                afterLocal(true, 'Fórmula guardada en este dispositivo ✓');
+            }
+        } catch (err) {
+            panelToast((err && err.message) || 'No se pudo guardar la fórmula', 'err');
+            if (saveBtn) saveBtn.disabled = false;
+            if (cancelBtn) cancelBtn.disabled = false;
+        }
     }
     let currentRecipe = recipes[0] ? recipes[0].product : '';
     let formulaAnimToken = 0;
@@ -11186,6 +11365,7 @@
         }
     }
     function readFormulaFromDom() {
+        if (!isFormulaUiEditable()) return;
         const f = formulas[currentRecipe];
         if (!f) return;
         const detail = formulaMountEl();
@@ -11297,6 +11477,12 @@
         ensureVersions(f);
         const next = f.versions.filter(function (v) { return v.id === versionId; })[0];
         if (!next) return;
+        if (!isFormulaUiEditable()) {
+            f.activeVersionId = versionId;
+            syncActiveVersionToRoot(f);
+            openRecipe(currentRecipe, true);
+            return;
+        }
         readFormulaFromDom();
         const fromItems = cloneItems(f.items);
         f.activeVersionId = versionId;
@@ -11309,7 +11495,7 @@
             const mount = formulaMountEl();
             if (mount) {
                 syncFormulaVersionChipDeletes(mount, f);
-                syncFormulaVersionMeta(mount, next, canEditFormulas());
+                syncFormulaVersionMeta(mount, next, true);
                 const packSize = mount.querySelector('[data-field="packSizeKg"]');
                 if (packSize) packSize.value = String(f.packSizeKg || 25);
                 const delBtn = mount.querySelector('#formulaDeleteVersionBtn');
@@ -11330,14 +11516,22 @@
     function openRecipe(slug, force) {
         if (!force && formulaDirty && slug !== currentRecipe) {
             if (!confirm('Hay cambios sin guardar. ¿Descartarlos?')) return;
-            formulas = loadFormulas();
+            if (formulaEditSnapshot && formulaEditing) {
+                formulas[currentRecipe] = formulaEditSnapshot;
+            } else {
+                formulas = loadFormulas();
+            }
             formulaDirty = false;
+            formulaEditing = false;
+            formulaEditSnapshot = null;
+            try { window.__s35BlockSyncReload = false; } catch (_) {}
         }
         const r = recipes.filter(function (x) { return x.product === slug; })[0];
         const mount = formulaMountEl();
         if (!mount) return;
         if (!r) {
             mount.innerHTML = '<div class="empty"><p class="empty-title">Sin formulación</p>Este producto no tiene receta de planta.</div>';
+            syncFormulaEditChrome();
             return;
         }
         currentRecipe = slug;
@@ -11358,7 +11552,7 @@
         if (isPlantLot(f)) f.batchSize = recipeTotalKg(f);
         const ver = activeVersion(f);
         renderRecipeNav();
-        const editable = canEditFormulas();
+        const editable = isFormulaUiEditable();
         const lotMode = isPlantLot(f);
         const totalKg = recipeTotalKg(f);
         const theo = theoreticalBags(f);
@@ -11374,10 +11568,14 @@
             const mat = plantById(it.plantId);
             const max = sliderMaxFor(it.amount, it.unit);
             if (!editable) {
+                const amt = Number(it.amount);
+                const amtLabel = (isFinite(amt) && amt > 0)
+                    ? String(it.amount)
+                    : 'Sin dosis';
                 return '<div class="formula-line' + (isPack ? ' formula-line-pack' : '') +
                     '" style="grid-template-columns:1fr auto auto">' +
                     '<div>' + esc(mat ? displayName(mat) : it.plantId) + '</div>' +
-                    '<div class="num">' + esc(String(it.amount)) + '</div>' +
+                    '<div class="num">' + esc(amtLabel) + '</div>' +
                     '<div class="muted">' + esc(it.unit || 'Kg') + '</div></div>';
             }
             const packAttr = isPack ? ' data-packaging="1"' : '';
@@ -11410,12 +11608,15 @@
         let lines = materialEntries.map(function (e) {
             return formulaLineHtml(e.it, e.idx, false);
         }).join('');
-        if (packEntries.length || (lotMode && editable)) {
+        if (packEntries.length || lotMode) {
             lines += '<div class="formula-packaging-block formula-pack-section">' +
                 '<div class="formula-pack-label">Empaque</div>' +
-                (lotMode && editable
-                    ? ('<div class="formula-pack-fill"><label>Llenado (kg/saco)<input data-field="packSizeKg" type="number" min="0" step="any" value="' +
-                        esc(String(f.packSizeKg || 25)) + '" title="Kg a los que se llena cada saco/cubeta"></label></div>')
+                (lotMode
+                    ? (editable
+                        ? ('<div class="formula-pack-fill"><label>Llenado (kg/saco)<input data-field="packSizeKg" type="number" min="0" step="any" value="' +
+                            esc(String(f.packSizeKg || 25)) + '" title="Kg a los que se llena cada saco/cubeta"></label></div>')
+                        : ('<div class="muted" style="margin-bottom:8px">Llenado: ' +
+                            esc(String(f.packSizeKg || 25)) + ' kg/saco</div>'))
                     : '') +
                 packEntries.map(function (e) {
                     return formulaLineHtml(e.it, e.idx, true);
@@ -11424,20 +11625,27 @@
         }
         if (!lines) {
             lines = '<div class="empty"><p class="empty-title">Sin dosis</p>' +
-                'Este producto no tiene kg de materias primas. El seed del catálogo está vacío a propósito; ' +
-                'captura la fórmula aquí (Agregar materia → kg por lote) y guarda. El sync ya no la borrará.</div>';
+                (editable
+                    ? 'Este producto no tiene kg de materias primas. Agrega materias, captura kg por lote y pulsa Guardar.'
+                    : 'Este producto no tiene kg de materias primas. Pulsa Editar para capturar la fórmula.') +
+                '</div>';
         }
         let doseEmptyNote = '';
         if (!formulaHasMaterialDose(f)) {
             if (materialEntries.length) {
                 doseEmptyNote = '<div class="note-box" style="margin-bottom:12px;border-color:#c9a227">' +
                     '<strong>Sin dosis cargadas</strong> · Hay materias listadas pero todos los kg están en 0. ' +
-                    'No hay copia en el repo ni en la nube con los kg que editaste ayer; hay que capturarlos otra vez. ' +
-                    'Cuando guardes, el sync por producto protegerá la fórmula.</div>';
+                    (editable
+                        ? 'Captura los kg y pulsa Guardar; el sync por producto protegerá la fórmula.'
+                        : 'Pulsa Editar para capturar los kg.') +
+                    '</div>';
             } else if (lotMode) {
                 doseEmptyNote = '<div class="note-box" style="margin-bottom:12px;border-color:#c9a227">' +
                     '<strong>Seed vacío</strong> · En el catálogo este producto no trae dosificación de planta. ' +
-                    'Cárgala aquí una vez; el fix de sync evita que un seed vacío vuelva a pisarla.</div>';
+                    (editable
+                        ? 'Cárgala aquí y pulsa Guardar.'
+                        : 'Pulsa Editar para cargarla.') +
+                    '</div>';
             }
         }
         const meta = editable
@@ -11456,11 +11664,11 @@
                     : ('Lote: ' + esc(String(f.batchSize)) + ' ' + esc(f.batchUnit) +
                         ' · ' + esc(f.batchLabel) + (f.water ? ' · agua ' + esc(String(f.water)) + ' L' : ''))) +
                 '</div>');
-        const lotSummary = lotMode
+        const lotSummary = (lotMode && editable)
             ? ('<div class="note-box" style="margin-bottom:12px">' +
-                '<strong>Lote de planta</strong> · Usa sliders para ajustar dosis. Guarda versiones (V1, V2…) cuando cambies ingredientes. ' +
-                'Puedes eliminar una versión con × en el chip activo (debe quedar al menos una). ' +
-                'Cada ticket de producción registra qué versión se usó.' +
+                '<strong>Editando lote de planta</strong> · Usa sliders para ajustar dosis. ' +
+                'Guarda versiones (V1, V2…) cuando cambies ingredientes. ' +
+                'Pulsa Guardar arriba para persistir; Cancelar descarta los cambios.' +
                 '</div>')
             : '';
         const actions = editable
@@ -11470,9 +11678,10 @@
                 '<button type="button" class="btn" id="formulaDeleteVersionBtn"' +
                 ((f.versions || []).length <= 1 ? ' hidden' : '') +
                 ' title="Eliminar la versión activa"><i class="fa-solid fa-trash-can"></i> Eliminar versión</button>' +
-                '<button type="button" class="btn primary" id="formulaSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>' +
                 '</div>')
-            : '<div class="muted" style="margin-top:10px">Solo lectura (rol ventas).</div>';
+            : (canEditFormulas()
+                ? ''
+                : '<div class="muted" style="margin-top:10px">Solo lectura (rol ventas).</div>');
         mount.innerHTML =
             '<div class="recipe-head"><div class="recipe-meta">' +
             '<h3 style="margin:0">' + esc(r.name) + '</h3>' +
@@ -11493,6 +11702,7 @@
             '<div class="muted" id="formulaTotals" style="margin-top:10px;text-align:right"></div>' +
             actions;
         updateFormulaTotalsDom();
+        syncFormulaEditChrome();
         if (document.getElementById('products') && document.getElementById('products').classList.contains('active')) syncPanelHash();
     }
     const recipeNavEl = document.getElementById('recipeNav');
@@ -11512,6 +11722,7 @@
     }
     document.addEventListener('input', function (e) {
         if (!onFormulaMountEvent(e) || !e.target.closest('[data-field]')) return;
+        if (!isFormulaUiEditable()) return;
         const field = e.target.getAttribute('data-field');
         const packRow = e.target.closest('[data-line][data-packaging="1"]');
         if (packRow && (field === 'slider' || field === 'amount')) return;
@@ -11531,15 +11742,15 @@
             }
         }
         readFormulaFromDom();
+        formulaDirty = true;
     });
     document.addEventListener('change', function (e) {
         if (!onFormulaMountEvent(e)) return;
+        if (!isFormulaUiEditable()) return;
         const field = e.target.getAttribute('data-field');
         if (field === 'versionLabel') {
-            if (!canEditFormulas()) return;
             readFormulaFromDom();
-            saveFormulas();
-            formulaDirty = false;
+            formulaDirty = true;
             renderRecipeNav();
             if (typeof renderProdVersionChips === 'function') renderProdVersionChips();
             return;
@@ -11551,6 +11762,7 @@
         const isPack = isPackagingMaterial(mat);
         if (row && mat && mat.unit) row.querySelector('[data-field="unit"]').value = mat.unit;
         readFormulaFromDom();
+        formulaDirty = true;
         if (wasPack !== isPack) openRecipe(currentRecipe, true);
     });
     document.addEventListener('click', function (e) {
@@ -11559,12 +11771,12 @@
         if (delVer) {
             e.preventDefault();
             e.stopPropagation();
-            if (!canEditFormulas()) return;
+            if (!isFormulaUiEditable()) return;
             deleteFormulaVersion(delVer.getAttribute('data-delete-formula-version'));
             return;
         }
         if (e.target.closest('#formulaDeleteVersionBtn')) {
-            if (!canEditFormulas()) return;
+            if (!isFormulaUiEditable()) return;
             const f = formulas[currentRecipe];
             if (!f) return;
             ensureVersions(f);
@@ -11577,7 +11789,7 @@
             return;
         }
         if (e.target.closest('#formulaAddVersionBtn') || e.target.closest('#formulaSaveVersionAsBtn')) {
-            if (!canEditFormulas()) return;
+            if (!isFormulaUiEditable()) return;
             readFormulaFromDom();
             const f = formulas[currentRecipe];
             ensureVersions(f);
@@ -11601,13 +11813,11 @@
             f.activeVersionId = id;
             syncActiveVersionToRoot(f);
             formulaDirty = true;
-            saveFormulas();
-            formulaDirty = false;
             openRecipe(currentRecipe, true);
             return;
         }
         if (e.target.closest('#formulaAddBtn')) {
-            if (!canEditFormulas()) return;
+            if (!isFormulaUiEditable()) return;
             readFormulaFromDom();
             const f = formulas[currentRecipe];
             const used = {};
@@ -11623,23 +11833,15 @@
             persistRootToActiveVersion(f);
             formulaDirty = true;
             openRecipe(currentRecipe, true);
-            scheduleFormulaAutosave();
             return;
         }
         if (e.target.closest('#formulaSaveBtn')) {
-            if (!canEditFormulas()) return;
-            readFormulaFromDom();
-            saveFormulas();
-            formulaDirty = false;
-            updateRecipeKpi();
-            openRecipe(currentRecipe, true);
-            fillProdProducts();
-            if (typeof renderProductHubList === 'function') renderProductHubList();
+            saveFormulaEdit();
             return;
         }
         const rm = e.target.closest('[data-remove-line]');
         if (rm) {
-            if (!canEditFormulas()) return;
+            if (!isFormulaUiEditable()) return;
             const detail = formulaMountEl();
             const row = rm.closest('[data-line]');
             const rows = detail ? Array.prototype.slice.call(detail.querySelectorAll('[data-line]')) : [];
@@ -11650,7 +11852,6 @@
             persistRootToActiveVersion(formulas[currentRecipe]);
             formulaDirty = true;
             openRecipe(currentRecipe, true);
-            scheduleFormulaAutosave();
         }
     });
 
@@ -12040,6 +12241,7 @@
 
     function setProductTab(tab) {
         if (pricesEditing && tab !== 'precios') cancelPricesEdit({ skipRender: true });
+        if (formulaEditing && tab !== 'formula') cancelFormulaEdit({ skipRender: true });
         hubProductTab = tab || 'resumen';
         if (hubProductTab === 'formula' && !canEditFormulas() && currentRole === 'ventas') {
             /* ventas puede ver fórmula en solo lectura si el tab está visible; ocultamos el tab abajo */
@@ -12053,7 +12255,10 @@
             panel.hidden = panel.getAttribute('data-pd-panel') !== hubProductTab;
         });
         if (hubProductTab === 'precios') renderProductPricesTab();
-        if (hubProductTab === 'formula') openRecipe(hubProductSlug, true);
+        if (hubProductTab === 'formula') {
+            if (!formulaEditing) syncFormulaEditChrome();
+            openRecipe(hubProductSlug, true);
+        }
         syncPanelHash();
     }
 
@@ -12164,6 +12369,7 @@
     function showProductList(opts) {
         opts = opts || {};
         if (pricesEditing) cancelPricesEdit({ skipRender: true });
+        if (formulaEditing) cancelFormulaEdit({ skipRender: true });
         hubProductSlug = null;
         hubProductTab = 'resumen';
         const listView = document.getElementById('productsListView');
@@ -12182,6 +12388,7 @@
     function openProductHub(slug, opts) {
         opts = opts || {};
         if (pricesEditing && slug !== hubProductSlug) cancelPricesEdit({ skipRender: true });
+        if (formulaEditing && slug !== hubProductSlug) cancelFormulaEdit({ skipRender: true });
         const item = hubCatalog().filter(function (p) { return p.slug === slug; })[0];
         if (!item) {
             showProductList(opts);
@@ -12290,7 +12497,18 @@
         let tab = opts.tab || 'resumen';
         if (tab === 'formula' && !canEditFormulas()) tab = 'resumen';
         if (tab === 'formula' && !item.hasRecipe) tab = 'resumen';
-        setProductTab(tab);
+        if (opts.editFormula && tab === 'formula' && canEditFormulas()) {
+            formulaEditing = false;
+            formulaEditSnapshot = null;
+            setProductTab(tab);
+            beginFormulaEdit();
+        } else {
+            if (tab === 'formula') {
+                formulaEditing = false;
+                formulaEditSnapshot = null;
+            }
+            setProductTab(tab);
+        }
         if (!opts.skipHash) syncPanelHash();
     }
 
@@ -12306,6 +12524,7 @@
             return;
         }
         if (pricesEditing) cancelPricesEdit({ skipRender: true });
+        if (formulaEditing) cancelFormulaEdit({ skipRender: true });
         showSection('production', { skipHash: false });
         if (typeof fillProdProducts === 'function') fillProdProducts();
         const inRecipes = recipes.some(function (r) { return r.product === target; });
@@ -12507,6 +12726,19 @@
         if (pdPricesSaveBtn) pdPricesSaveBtn.addEventListener('click', savePricesEdit);
         const pdPricesCancelBtn = document.getElementById('pdPricesCancelBtn');
         if (pdPricesCancelBtn) pdPricesCancelBtn.addEventListener('click', function () { cancelPricesEdit(); });
+        const pdFormulaEditBtn = document.getElementById('pdFormulaEditBtn');
+        if (pdFormulaEditBtn) pdFormulaEditBtn.addEventListener('click', beginFormulaEdit);
+        const pdFormulaSaveBtn = document.getElementById('pdFormulaSaveBtn');
+        if (pdFormulaSaveBtn) pdFormulaSaveBtn.addEventListener('click', saveFormulaEdit);
+        const pdFormulaCancelBtn = document.getElementById('pdFormulaCancelBtn');
+        if (pdFormulaCancelBtn) pdFormulaCancelBtn.addEventListener('click', function () { cancelFormulaEdit(); });
+        const formulaMount = document.getElementById('pdFormulaMount');
+        if (formulaMount) {
+            formulaMount.addEventListener('keydown', function (e) {
+                if (!formulaEditing) return;
+                if (e.key === 'Escape') cancelFormulaEdit();
+            });
+        }
         const productsFamiliesBtn = document.getElementById('productsFamiliesBtn');
         if (productsFamiliesBtn) productsFamiliesBtn.addEventListener('click', openProductFamiliesModal);
         const nameInput = document.getElementById('pdName');
@@ -12740,13 +12972,18 @@
     let currentPurchaseTicket = null;
     let currentPurchaseTicketSaved = false;
 
-    function panelToast(msg) {
+    function panelToast(msg, kind) {
         const el = document.getElementById('toast');
         if (!el) return;
         el.textContent = msg;
+        el.classList.remove('ok', 'err');
+        if (kind === 'ok' || kind === 'err') el.classList.add(kind);
         el.classList.add('show');
         clearTimeout(panelToast._t);
-        panelToast._t = setTimeout(function () { el.classList.remove('show'); }, 2800);
+        panelToast._t = setTimeout(function () {
+            el.classList.remove('show');
+            el.classList.remove('ok', 'err');
+        }, kind === 'ok' || kind === 'err' ? 3200 : 2800);
     }
     function phoneDigitsPurchase(raw) {
         let d = String(raw || '').replace(/\D/g, '');
@@ -14434,7 +14671,7 @@
         prodEditFormulaBtn.addEventListener('click', function () {
             const slug = document.getElementById('prodProduct').value;
             if (!slug) return;
-            showSection('products', { slug: slug, tab: 'formula' });
+            showSection('products', { slug: slug, tab: 'formula', editFormula: true });
         });
     }
 
