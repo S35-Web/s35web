@@ -441,6 +441,20 @@
             return payLabel(p.method) + ' ' + money(p.amount);
         }).join(' + ');
     }
+    /** Chips de método de pago para historial (uno por línea; wrap en responsive). */
+    function formatSalePayBadgesHtml(sale) {
+        const lines = salePaymentLines(sale);
+        let chips;
+        if (lines.length <= 1) {
+            const label = payLabel(lines[0] ? lines[0].method : (sale && sale.paymentMethod));
+            chips = ['<span class="badge">' + esc(label) + '</span>'];
+        } else {
+            chips = lines.map(function (p) {
+                return '<span class="badge">' + esc(payLabel(p.method) + ' ' + money(p.amount)) + '</span>';
+            });
+        }
+        return '<div class="hist-pay-badges">' + chips.join('') + '</div>';
+    }
     function amountPaidByMethod(sale, method) {
         return salePaymentLines(sale).reduce(function (n, p) {
             return n + (p.method === method ? p.amount : 0);
@@ -3884,7 +3898,7 @@
                     '<td class="muted">' + esc(dateStr) + '</td>' +
                     '<td>' + saleReceiptCellHtml(s) + '</td>' +
                     '<td>' + esc(clientLabel) + '</td>' +
-                    '<td><span class="badge">' + esc(formatSalePayLabel(s)) + '</span></td>' +
+                    '<td>' + formatSalePayBadgesHtml(s) + '</td>' +
                     '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing)) + '</span></td>' +
                     '<td class="num">' + itemsN + '</td>' +
                     '<td class="num">' + money(s.total) + '</td>' +
