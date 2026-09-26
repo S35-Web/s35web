@@ -954,6 +954,48 @@
         return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
             'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
     }
+    /** Parte un valor datetime-local (YYYY-MM-DDTHH:mm) en date / time del design system. */
+    function splitDatetimeLocalParts(raw) {
+        const s = String(raw || '').trim();
+        const m = s.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})/);
+        if (m) return { date: m[1], time: m[2] };
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return { date: s, time: '12:00' };
+        return { date: '', time: '' };
+    }
+    function joinDatetimeLocalParts(dateStr, timeStr) {
+        const d = String(dateStr || '').trim();
+        const t = String(timeStr || '').trim();
+        if (!d || !t) return '';
+        return d + 'T' + t.slice(0, 5);
+    }
+    function setGenDatetimePair(dateId, timeId, datetimeLocal) {
+        const parts = splitDatetimeLocalParts(datetimeLocal || defaultGenerateTicketDatetimeLocal());
+        const dateEl = document.getElementById(dateId);
+        const timeEl = document.getElementById(timeId);
+        if (dateEl) dateEl.value = parts.date;
+        if (timeEl) timeEl.value = parts.time;
+    }
+    function readGenDatetimePair(dateId, timeId) {
+        const dateEl = document.getElementById(dateId);
+        const timeEl = document.getElementById(timeId);
+        return joinDatetimeLocalParts(
+            dateEl ? dateEl.value : '',
+            timeEl ? timeEl.value : ''
+        );
+    }
+    function focusGenDatetimePair(dateId, timeId) {
+        const dateEl = document.getElementById(dateId);
+        const timeEl = document.getElementById(timeId);
+        if (dateEl && !String(dateEl.value || '').trim()) {
+            dateEl.focus();
+            return;
+        }
+        if (timeEl && !String(timeEl.value || '').trim()) {
+            timeEl.focus();
+            return;
+        }
+        if (dateEl) dateEl.focus();
+    }
 
     function catalogProductOptionsHtml(selected) {
         const list = pricedCatalog().slice().sort(function (a, b) {
@@ -5753,8 +5795,7 @@
             const atRaw = opts.backdatedDate != null ? opts.backdatedDate : '';
             if (!atRaw) {
                 toast('Indica la fecha y hora del ticket');
-                const atEl = document.getElementById('genTicketAt');
-                if (atEl) atEl.focus();
+                focusGenDatetimePair('genTicketDate', 'genTicketTime');
                 return;
             }
             createdAt = isoFromDatetimeLocal(atRaw);
@@ -6116,8 +6157,7 @@
     }
 
     function resetGenTicketForm() {
-        const atEl = document.getElementById('genTicketAt');
-        if (atEl) atEl.value = defaultGenerateTicketDatetimeLocal();
+        setGenDatetimePair('genTicketDate', 'genTicketTime', defaultGenerateTicketDatetimeLocal());
         const stockEl = document.getElementById('genTicketStock');
         if (stockEl) stockEl.checked = true;
         const noteEl = document.getElementById('genTicketNote');
@@ -6137,8 +6177,7 @@
     }
 
     function resetGenGastoForm() {
-        const atEl = document.getElementById('genGastoAt');
-        if (atEl) atEl.value = defaultGenerateTicketDatetimeLocal();
+        setGenDatetimePair('genGastoDate', 'genGastoTime', defaultGenerateTicketDatetimeLocal());
         const conceptEl = document.getElementById('genGastoConcept');
         if (conceptEl) conceptEl.value = '';
         const amountEl = document.getElementById('genGastoAmount');
@@ -6180,8 +6219,7 @@
                 const concept = document.getElementById('genGastoConcept');
                 if (concept) concept.focus();
             } else {
-                const atEl = document.getElementById('genTicketAt');
-                if (atEl) atEl.focus();
+                focusGenDatetimePair('genTicketDate', 'genTicketTime');
             }
         });
     }
@@ -6194,11 +6232,10 @@
     }
 
     function submitGenerateTicket() {
-        const atRaw = ((document.getElementById('genTicketAt') || {}).value || '').trim();
+        const atRaw = readGenDatetimePair('genTicketDate', 'genTicketTime');
         if (!atRaw) {
             toast('Indica la fecha y hora del ticket');
-            const atEl = document.getElementById('genTicketAt');
-            if (atEl) atEl.focus();
+            focusGenDatetimePair('genTicketDate', 'genTicketTime');
             return;
         }
         const items = collectGenTicketLines();
@@ -6237,11 +6274,10 @@
 
     function submitGenerateGasto(ev) {
         if (ev) ev.preventDefault();
-        const atRaw = ((document.getElementById('genGastoAt') || {}).value || '').trim();
+        const atRaw = readGenDatetimePair('genGastoDate', 'genGastoTime');
         if (!atRaw) {
             toast('Indica la fecha y hora del gasto');
-            const atEl = document.getElementById('genGastoAt');
-            if (atEl) atEl.focus();
+            focusGenDatetimePair('genGastoDate', 'genGastoTime');
             return;
         }
         const conceptEl = document.getElementById('genGastoConcept');

@@ -2853,6 +2853,37 @@
         }
         #posGenerateModal .gen-panel label.span-2,
         #posGenerateModal .gen-panel .span-2 { grid-column: 1 / -1; }
+        /* Fecha + hora: mismo lenguaje visual que hist-filters (type=date), no datetime-local nativo */
+        #posGenerateModal .gen-datetime {
+            display: grid;
+            gap: 6px;
+        }
+        #posGenerateModal .gen-datetime > .field-label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        #posGenerateModal .gen-datetime-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+            gap: 8px;
+        }
+        #posGenerateModal .gen-datetime-row input[type="date"],
+        #posGenerateModal .gen-datetime-row input[type="time"] {
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 10px;
+            font-size: 13px;
+            font-variant-numeric: tabular-nums;
+            min-width: 0;
+            outline: none;
+        }
+        #posGenerateModal .gen-datetime-row input[type="date"]:focus,
+        #posGenerateModal .gen-datetime-row input[type="time"]:focus {
+            border-color: var(--border-strong);
+        }
         #posGenerateModal .gen-check {
             display: inline-flex;
             align-items: center;
@@ -7735,9 +7766,13 @@
                 <div class="gen-panel" id="posGenerateTicketPanel" data-gen-panel="ticket" role="tabpanel">
                     <p class="muted" style="margin:0 0 8px;font-size:12px">Regularización in-situ · no cambia de sección · elige fecha e inventario</p>
                     <div class="form-grid">
-                        <label>Fecha y hora
-                            <input type="datetime-local" id="genTicketAt" autocomplete="off">
-                        </label>
+                        <div class="field-block gen-datetime">
+                            <span class="field-label">Fecha y hora</span>
+                            <div class="gen-datetime-row">
+                                <input type="date" id="genTicketDate" autocomplete="off" aria-label="Fecha del ticket">
+                                <input type="time" id="genTicketTime" autocomplete="off" aria-label="Hora del ticket">
+                            </div>
+                        </div>
                         <label class="gen-check" title="Si está activo, se descuenta el mismo stock que en una venta normal" style="align-self:end">
                             <input type="checkbox" id="genTicketStock" checked>
                             Descontar inventario
@@ -7800,9 +7835,13 @@
                 <div class="gen-panel" id="posGenerateGastoPanel" data-gen-panel="gasto" role="tabpanel" hidden>
                     <p class="muted" style="margin:0 0 8px;font-size:12px">Gasto de caja con fecha elegida · se resta del efectivo en Cortes</p>
                     <form class="form-grid" id="genGastoForm" autocomplete="off">
-                        <label>Fecha y hora
-                            <input type="datetime-local" id="genGastoAt" autocomplete="off">
-                        </label>
+                        <div class="field-block gen-datetime">
+                            <span class="field-label">Fecha y hora</span>
+                            <div class="gen-datetime-row">
+                                <input type="date" id="genGastoDate" autocomplete="off" aria-label="Fecha del gasto">
+                                <input type="time" id="genGastoTime" autocomplete="off" aria-label="Hora del gasto">
+                            </div>
+                        </div>
                         <label>Ciudad
                             <select id="genGastoCity" aria-label="Ciudad del gasto">
                                 <option value="culiacan">Culiacán</option>
