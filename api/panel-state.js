@@ -54,6 +54,8 @@ const MERGE_MAP_KEYS = new Set([
   's35_sale_edits_v1'
 ]);
 
+const MERGE_FORMULAS_KEY = 's35_plant_formulas_v3';
+
 function isHistoricalImportSale(row) {
   if (!row) return false;
   if (row.user === 'import-historico') return true;
@@ -128,6 +130,92 @@ function mergeByIdMaps(prevValue, nextValue, updatedAt) {
   const out = Object.assign({}, base, { byId: outMap });
   if (updatedAt) out.updatedAt = updatedAt;
   return out;
+}
+
+function isPackagingFormulaLine(it) {
+  if (!it) return false;
+  if (String(it.role || '') === 'Empaque') return true;
+  const id = String(it.plantId || '');
+  return id.indexOf('saco-') === 0 || id.indexOf('cubeta-') === 0 || id.indexOf('bote-') === 0;
+}
+
+function formulaHasMaterialDose(f) {
+  if (!f) return false;
+  const lists = [];
+  if (Array.isArray(f.items)) lists.push(f.items);
+  (f.versions || []).forEach(function (ver) {
+    if (ver && Array.isArray(ver.items)) lists.push(ver.items);
+  });
+  for (let i = 0; i < lists.length; i++) {
+    for (let j = 0; j < lists[i].length; j++) {
+      const it = lists[i][j];
+      if (!it || isPackagingFormulaLine(it)) continue;
+      if (Number(it.amount) > 0) return true;
+    }
+  }
+  return false;
+}
+
+function formulaRecency(f) {
+  if (!f || typeof f !== 'object') return 0;
+  return Date.parse(f.editedAt || f.updatedAt || '') || 0;
+}
+
+function extractFormulaMap(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  if (value.items && typeof value.items === 'object' && !Array.isArray(value.items)) return value.items;
+  const keys = Object.keys(value).filter(function (k) {
+    return k !== 'updatedAt' && k !== 'items' && value[k] && typeof value[k] === 'object';
+  });
+  if (!keys.length) return {};
+  const looksLikeFormula = keys.some(function (k) {
+    const f = value[k];
+    return f && (Array.isArray(f.items) || Array.isArray(f.versions) || f.mode);
+  });
+  if (!looksLikeFormula) return {};
+  const out = {};
+  keys.forEach(function (k) { out[k] = value[k]; });
+  return out;
+}
+
+function preferFormula(a, b) {
+  if (!a) return b;
+  if (!b) return a;
+  const aHas = formulaHasMaterialDose(a);
+  const bHas = formulaHasMaterialDose(b);
+  if (aHas && !bHas) return a;
+  if (bHas && !aHas) return b;
+  return formulaRecency(b) >= formulaRecency(a) ? b : a;
+}
+
+function mergeFormulasValue(prevValue, nextValue, updatedAt) {
+  const prevMap = extractFormulaMap(prevValue);
+  const nextMap = extractFormulaMap(nextValue);
+  const outMap = {};
+  const seen = {};
+  Object.keys(prevMap).forEach(function (slug) {
+    outMap[slug] = preferFormula(prevMap[slug], nextMap[slug]);
+    seen[slug] = true;
+  });
+  Object.keys(nextMap).forEach(function (slug) {
+    if (seen[slug]) return;
+    outMap[slug] = nextMap[slug];
+  });
+  const base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
+    ? nextValue
+    : ((prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue)) ? prevValue : {});
+  const out = Object.assign({}, base, { items: outMap });
+  if (updatedAt) out.updatedAt = updatedAt;
+  return out;
+}
+
+function formulasDoseCount(value) {
+  const map = extractFormulaMap(value);
+  let n = 0;
+  Object.keys(map).forEach(function (slug) {
+    if (formulaHasMaterialDose(map[slug])) n += 1;
+  });
+  return n;
 }
 
 /** Migra un documento legado `plant_state` (sync anterior) a claves panel_state. */
@@ -279,10 +367,10 @@ module.exports = async function handler(req, res) {
         }
         const updatedAt = normalizeIso(entry.updatedAt) || new Date().toISOString();
         const prev = byId[key];
-        const isMergeKey = MERGE_ITEMS_KEYS.has(key) || MERGE_MAP_KEYS.has(key);
+        const isMergeKey = MERGE_ITEMS_KEYS.has(key) || MERGE_MAP_KEYS.has(key) || key === MERGE_FORMULAS_KEY;
 
-        // Colecciones: fusionar siempre (aunque el cliente venga "stale") para no
-        // perder tickets/gastos únicos del otro lado. El resto sigue LWW estricto.
+        // Colecciones / fórmulas: fusionar siempre (aunque el cliente venga "stale")
+        // para no perder tickets, gastos o dosis por producto. El resto sigue LWW.
         if (!isMergeKey && prev && prev.updatedAt && cmpIso(updatedAt, prev.updatedAt) < 0) {
           rejected.push({
             key: key,
@@ -300,17 +388,24 @@ module.exports = async function handler(req, res) {
             valueToStore = mergeItemsValue(key, prev.value, entry.value, updatedAt);
           } else if (MERGE_MAP_KEYS.has(key)) {
             valueToStore = mergeByIdMaps(prev.value, entry.value, updatedAt);
+          } else if (key === MERGE_FORMULAS_KEY) {
+            valueToStore = mergeFormulasValue(prev.value, entry.value, updatedAt);
           }
           // Si el remoto era más nuevo, conservar su marca salvo que el merge
-          // aportó ítems nuevos (entonces "ahora" para propagar la unión).
+          // aportó ítems/dosis nuevos (entonces "ahora" para propagar la unión).
           if (prev.updatedAt && cmpIso(updatedAt, prev.updatedAt) < 0) {
-            const prevCount = MERGE_ITEMS_KEYS.has(key)
-              ? extractItems(prev.value).length
-              : Object.keys((prev.value && prev.value.byId) || {}).length;
-            const nextCount = MERGE_ITEMS_KEYS.has(key)
-              ? extractItems(valueToStore).length
-              : Object.keys((valueToStore && valueToStore.byId) || {}).length;
-            tsToStore = nextCount > prevCount
+            let grew = false;
+            if (MERGE_ITEMS_KEYS.has(key)) {
+              grew = extractItems(valueToStore).length > extractItems(prev.value).length;
+            } else if (MERGE_MAP_KEYS.has(key)) {
+              grew = Object.keys((valueToStore && valueToStore.byId) || {}).length >
+                Object.keys((prev.value && prev.value.byId) || {}).length;
+            } else if (key === MERGE_FORMULAS_KEY) {
+              grew = formulasDoseCount(valueToStore) > formulasDoseCount(prev.value) ||
+                Object.keys(extractFormulaMap(valueToStore)).length >
+                  Object.keys(extractFormulaMap(prev.value)).length;
+            }
+            tsToStore = grew
               ? new Date().toISOString()
               : (normalizeIso(prev.updatedAt) || prev.updatedAt);
             if (valueToStore && typeof valueToStore === 'object') {
@@ -320,6 +415,8 @@ module.exports = async function handler(req, res) {
         } else if (MERGE_ITEMS_KEYS.has(key)) {
           // Primera escritura: igual limpiar imports históricos de ventas.
           valueToStore = mergeItemsValue(key, null, entry.value, updatedAt);
+        } else if (key === MERGE_FORMULAS_KEY) {
+          valueToStore = mergeFormulasValue(null, entry.value, updatedAt);
         }
 
         await col.updateOne(

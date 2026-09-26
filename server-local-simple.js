@@ -275,6 +275,7 @@ const server = http.createServer((req, res) => {
             's35_promo_codes_v1'
         ]);
         const mergeMapKeys = new Set(['s35_sale_edits_v1']);
+        const mergeFormulasKey = 's35_plant_formulas_v3';
         const isHistImport = (row) => {
             if (!row) return false;
             if (row.user === 'import-historico') return true;
@@ -339,6 +340,84 @@ const server = http.createServer((req, res) => {
             if (updatedAt) out.updatedAt = updatedAt;
             return out;
         };
+        const isPackagingFormulaLine = (it) => {
+            if (!it) return false;
+            if (String(it.role || '') === 'Empaque') return true;
+            const id = String(it.plantId || '');
+            return id.indexOf('saco-') === 0 || id.indexOf('cubeta-') === 0 || id.indexOf('bote-') === 0;
+        };
+        const formulaHasMaterialDose = (f) => {
+            if (!f) return false;
+            const lists = [];
+            if (Array.isArray(f.items)) lists.push(f.items);
+            (f.versions || []).forEach((ver) => {
+                if (ver && Array.isArray(ver.items)) lists.push(ver.items);
+            });
+            for (let i = 0; i < lists.length; i++) {
+                for (let j = 0; j < lists[i].length; j++) {
+                    const it = lists[i][j];
+                    if (!it || isPackagingFormulaLine(it)) continue;
+                    if (Number(it.amount) > 0) return true;
+                }
+            }
+            return false;
+        };
+        const formulaRecency = (f) => {
+            if (!f || typeof f !== 'object') return 0;
+            return Date.parse(f.editedAt || f.updatedAt || '') || 0;
+        };
+        const extractFormulaMap = (value) => {
+            if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+            if (value.items && typeof value.items === 'object' && !Array.isArray(value.items)) return value.items;
+            const keys = Object.keys(value).filter((k) =>
+                k !== 'updatedAt' && k !== 'items' && value[k] && typeof value[k] === 'object');
+            if (!keys.length) return {};
+            const looksLikeFormula = keys.some((k) => {
+                const f = value[k];
+                return f && (Array.isArray(f.items) || Array.isArray(f.versions) || f.mode);
+            });
+            if (!looksLikeFormula) return {};
+            const out = {};
+            keys.forEach((k) => { out[k] = value[k]; });
+            return out;
+        };
+        const preferFormula = (a, b) => {
+            if (!a) return b;
+            if (!b) return a;
+            const aHas = formulaHasMaterialDose(a);
+            const bHas = formulaHasMaterialDose(b);
+            if (aHas && !bHas) return a;
+            if (bHas && !aHas) return b;
+            return formulaRecency(b) >= formulaRecency(a) ? b : a;
+        };
+        const mergeFormulasValue = (prevValue, nextValue, updatedAt) => {
+            const prevMap = extractFormulaMap(prevValue);
+            const nextMap = extractFormulaMap(nextValue);
+            const outMap = {};
+            const seen = {};
+            Object.keys(prevMap).forEach((slug) => {
+                outMap[slug] = preferFormula(prevMap[slug], nextMap[slug]);
+                seen[slug] = true;
+            });
+            Object.keys(nextMap).forEach((slug) => {
+                if (seen[slug]) return;
+                outMap[slug] = nextMap[slug];
+            });
+            const base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
+                ? nextValue
+                : ((prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue)) ? prevValue : {});
+            const out = Object.assign({}, base, { items: outMap });
+            if (updatedAt) out.updatedAt = updatedAt;
+            return out;
+        };
+        const formulasDoseCount = (value) => {
+            const map = extractFormulaMap(value);
+            let n = 0;
+            Object.keys(map).forEach((slug) => {
+                if (formulaHasMaterialDose(map[slug])) n += 1;
+            });
+            return n;
+        };
         const readKey = (key) => {
             try {
                 const p = path.join(dir, key + '.json');
@@ -381,7 +460,7 @@ const server = http.createServer((req, res) => {
                         }
                         const updatedAt = entry.updatedAt || new Date().toISOString();
                         const prev = readKey(key);
-                        const isMergeKey = mergeItemsKeys.has(key) || mergeMapKeys.has(key);
+                        const isMergeKey = mergeItemsKeys.has(key) || mergeMapKeys.has(key) || key === mergeFormulasKey;
                         if (!isMergeKey && prev && prev.updatedAt && Date.parse(updatedAt) < Date.parse(prev.updatedAt)) {
                             rejected.push({ key: key, reason: 'stale', remoteUpdatedAt: prev.updatedAt });
                             out[key] = { value: prev.value, updatedAt: prev.updatedAt };
@@ -394,23 +473,30 @@ const server = http.createServer((req, res) => {
                                 valueToStore = mergeItemsValue(key, prev.value, entry.value, updatedAt);
                             } else if (mergeMapKeys.has(key)) {
                                 valueToStore = mergeByIdMaps(prev.value, entry.value, updatedAt);
+                            } else if (key === mergeFormulasKey) {
+                                valueToStore = mergeFormulasValue(prev.value, entry.value, updatedAt);
                             }
                             if (prev.updatedAt && Date.parse(updatedAt) < Date.parse(prev.updatedAt)) {
-                                const prevCount = mergeItemsKeys.has(key)
-                                    ? extractItems(prev.value).length
-                                    : Object.keys((prev.value && prev.value.byId) || {}).length;
-                                const nextCount = mergeItemsKeys.has(key)
-                                    ? extractItems(valueToStore).length
-                                    : Object.keys((valueToStore && valueToStore.byId) || {}).length;
-                                tsToStore = nextCount > prevCount
-                                    ? new Date().toISOString()
-                                    : prev.updatedAt;
+                                let grew = false;
+                                if (mergeItemsKeys.has(key)) {
+                                    grew = extractItems(valueToStore).length > extractItems(prev.value).length;
+                                } else if (mergeMapKeys.has(key)) {
+                                    grew = Object.keys((valueToStore && valueToStore.byId) || {}).length >
+                                        Object.keys((prev.value && prev.value.byId) || {}).length;
+                                } else if (key === mergeFormulasKey) {
+                                    grew = formulasDoseCount(valueToStore) > formulasDoseCount(prev.value) ||
+                                        Object.keys(extractFormulaMap(valueToStore)).length >
+                                            Object.keys(extractFormulaMap(prev.value)).length;
+                                }
+                                tsToStore = grew ? new Date().toISOString() : prev.updatedAt;
                                 if (valueToStore && typeof valueToStore === 'object') {
                                     valueToStore = Object.assign({}, valueToStore, { updatedAt: tsToStore });
                                 }
                             }
                         } else if (mergeItemsKeys.has(key)) {
                             valueToStore = mergeItemsValue(key, null, entry.value, updatedAt);
+                        } else if (key === mergeFormulasKey) {
+                            valueToStore = mergeFormulasValue(null, entry.value, updatedAt);
                         }
                         const doc = { value: valueToStore, updatedAt: tsToStore };
                         fs.writeFileSync(path.join(dir, key + '.json'), JSON.stringify(doc));

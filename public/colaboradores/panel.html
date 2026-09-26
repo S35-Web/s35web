@@ -8275,8 +8275,16 @@
         });
         return changed;
     }
-    /** Marcas distintas del mismo HPMC. El id canónico es celulosa-hpmc. */
-    const PLANT_ID_ALIASES = { kimacell: 'celulosa-hpmc', walocell: 'celulosa-hpmc' };
+    /**
+     * Ids retirados / alias → canónico en catálogo de planta.
+     * marmolina-estandar: id viejo; sin remap, mapDoseItems la descartaba y
+     * loadFormulas llegaba a tirar la versión entera (fórmulas intermitentes).
+     */
+    const PLANT_ID_ALIASES = {
+        kimacell: 'celulosa-hpmc',
+        walocell: 'celulosa-hpmc',
+        'marmolina-estandar': 'marmolina-fina'
+    };
     function canonicalPlantId(id) {
         const key = String(id || '').trim();
         return PLANT_ID_ALIASES[key] || key;
@@ -10882,25 +10890,52 @@
                         map[slug].packSizeKg = Number(saved.packSizeKg) || seeded.packSizeKg;
                         map[slug].batchLabel = saved.batchLabel || seeded.batchLabel;
                         map[slug].batchUnit = normalizeUnit(saved.batchUnit || seeded.batchUnit) || seeded.batchUnit;
-                        const keptVersions = saved.versions.filter(function (ver) {
-                            return !(ver.items || []).some(function (it) {
-                                return it && String(it.plantId || '') === 'marmolina-estandar';
+                        if (saved.editedAt) map[slug].editedAt = saved.editedAt;
+                        // Remapear plantIds retirados dentro de cada versión; nunca descartar la versión.
+                        const cleanedVersions = saved.versions.map(function (ver) {
+                            if (!ver || !Array.isArray(ver.items)) return ver;
+                            let touched = false;
+                            const items = ver.items.map(function (it) {
+                                if (!it) return it;
+                                const next = canonicalPlantId(it.plantId);
+                                if (next !== String(it.plantId || '').trim()) {
+                                    touched = true;
+                                    return Object.assign({}, it, { plantId: next });
+                                }
+                                return it;
                             });
+                            if (touched) plantIdsRemapped = true;
+                            return Object.assign({}, ver, { items: items });
                         });
-                        if (keptVersions.length !== saved.versions.length) plantIdsRemapped = true;
                         const savedIdSet = {};
-                        (keptVersions || []).forEach(function (v) {
+                        cleanedVersions.forEach(function (v) {
                             if (v && v.id) savedIdSet[String(v.id)] = true;
                         });
-                        (seeded.versions || []).forEach(function (v) {
+                        // Si el usuario ya tiene dosis, no inyectar versiones vacías del seed
+                        // (p. ej. microconcreto-blanco-pulido: seed sin dosis a propósito).
+                        const savedHasDose = formulaHasMaterialDose(saved) ||
+                            cleanedVersions.some(function (v) { return formulaHasMaterialDose({ items: v && v.items }); });
+                        const seedVersionsForMerge = savedHasDose
+                            ? (seeded.versions || []).filter(function (v) {
+                                return formulaHasMaterialDose({ items: v && v.items });
+                            })
+                            : seeded.versions;
+                        (seedVersionsForMerge || []).forEach(function (v) {
                             if (v && v.id && !savedIdSet[String(v.id)]) formulasMergedFromSeed = true;
                         });
                         map[slug].versions = mergeFormulaVersions(
-                            seeded.versions,
-                            keptVersions.length ? keptVersions : null,
+                            seedVersionsForMerge,
+                            cleanedVersions,
                             map[slug].packSizeKg
                         );
                         if (!map[slug].versions.length) return;
+                        // Protección final: seed vacío no debe dejar el producto sin dosis.
+                        if (savedHasDose && !formulaHasMaterialDose(map[slug])) {
+                            map[slug].versions = cleanedVersions.map(function (ver) {
+                                return normalizeFormulaVersion(ver, map[slug].packSizeKg);
+                            });
+                            plantIdsRemapped = true;
+                        }
                         const stillActive = map[slug].versions.some(function (ver) {
                             return ver.id === saved.activeVersionId;
                         });
@@ -10950,10 +10985,16 @@
     }
     function saveFormulas(opts) {
         opts = opts || {};
+        const stamp = new Date().toISOString();
         Object.keys(formulas).forEach(function (slug) {
             persistRootToActiveVersion(formulas[slug]);
         });
-        let updatedAt = new Date().toISOString();
+        // editedAt solo en la fórmula que el usuario acaba de tocar (merge nube por slug).
+        if (!opts.preserveUpdatedAt && !opts.skipEditedAt) {
+            const target = opts.onlySlug || (typeof currentRecipe !== 'undefined' ? currentRecipe : '');
+            if (target && formulas[target]) formulas[target].editedAt = stamp;
+        }
+        let updatedAt = stamp;
         if (opts.preserveUpdatedAt) {
             try {
                 const prev = JSON.parse(localStorage.getItem(FORMULA_KEY) || 'null');
@@ -10969,7 +11010,7 @@
     // Migración unit→plant-lot debe subir a la nube (nuevo updatedAt).
     // Remapes de plantId / merge de seed sin cambio de formato: conservar timestamp.
     // skipPush: el setItem encola pendingKeys; bootstrap hace el primer push (evita carrera).
-    if (loadFormulas._formatMigrated) saveFormulas({ skipPush: true });
+    if (loadFormulas._formatMigrated) saveFormulas({ skipPush: true, skipEditedAt: true });
     else if (plantIdsRemapped) saveFormulas({ preserveUpdatedAt: true, skipPush: true });
     let formulaDirty = false;
     let formulaAutosaveTimer = null;

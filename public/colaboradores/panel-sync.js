@@ -44,6 +44,13 @@
         s35_sale_edits_v1: true
     };
 
+    /**
+     * Fórmulas { items: { [slug]: formula } }: unión por producto.
+     * Gana la que tiene dosis de MP; si ambas (o ninguna), la más reciente por editedAt.
+     * Evita que un blob LWW vacío/seed pise ediciones (p. ej. Microconcreto Blanco Pulido).
+     */
+    var MERGE_FORMULAS_KEY = 's35_plant_formulas_v3';
+
     var META_KEY = 's35_panel_sync_meta_v1';
     var RELOAD_FLAG = 's35_panel_sync_reloaded';
     var DEBOUNCE_MS = 700;
@@ -193,6 +200,97 @@
         return Object.assign({}, base, { byId: outMap, updatedAt: updatedAt });
     }
 
+    function isPackagingFormulaLine(it) {
+        if (!it) return false;
+        if (String(it.role || '') === 'Empaque') return true;
+        var id = String(it.plantId || '');
+        return id.indexOf('saco-') === 0 || id.indexOf('cubeta-') === 0 || id.indexOf('bote-') === 0;
+    }
+
+    function formulaHasMaterialDose(f) {
+        if (!f) return false;
+        var lists = [];
+        if (Array.isArray(f.items)) lists.push(f.items);
+        (f.versions || []).forEach(function (ver) {
+            if (ver && Array.isArray(ver.items)) lists.push(ver.items);
+        });
+        for (var i = 0; i < lists.length; i++) {
+            for (var j = 0; j < lists[i].length; j++) {
+                var it = lists[i][j];
+                if (!it || isPackagingFormulaLine(it)) continue;
+                if (Number(it.amount) > 0) return true;
+            }
+        }
+        return false;
+    }
+
+    function formulaRecency(f) {
+        if (!f || typeof f !== 'object') return 0;
+        return Date.parse(f.editedAt || f.updatedAt || '') || 0;
+    }
+
+    function extractFormulaMap(value) {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+        if (value.items && typeof value.items === 'object' && !Array.isArray(value.items)) return value.items;
+        // Legado: el valor era el mapa de slugs directo.
+        var keys = Object.keys(value).filter(function (k) {
+            return k !== 'updatedAt' && k !== 'items' && value[k] && typeof value[k] === 'object';
+        });
+        if (!keys.length) return {};
+        var looksLikeFormula = keys.some(function (k) {
+            var f = value[k];
+            return f && (Array.isArray(f.items) || Array.isArray(f.versions) || f.mode);
+        });
+        if (!looksLikeFormula) return {};
+        var out = {};
+        keys.forEach(function (k) { out[k] = value[k]; });
+        return out;
+    }
+
+    /** Por slug: dosis gana a vacío; si empatan, gana editedAt más reciente. */
+    function preferFormula(a, b) {
+        if (!a) return b;
+        if (!b) return a;
+        var aHas = formulaHasMaterialDose(a);
+        var bHas = formulaHasMaterialDose(b);
+        if (aHas && !bHas) return a;
+        if (bHas && !aHas) return b;
+        return formulaRecency(b) >= formulaRecency(a) ? b : a;
+    }
+
+    function mergeFormulasValue(localVal, remoteVal, updatedAt) {
+        var localMap = extractFormulaMap(localVal);
+        var remoteMap = extractFormulaMap(remoteVal);
+        var outMap = {};
+        var seen = {};
+        Object.keys(localMap).forEach(function (slug) {
+            outMap[slug] = preferFormula(localMap[slug], remoteMap[slug]);
+            seen[slug] = true;
+        });
+        Object.keys(remoteMap).forEach(function (slug) {
+            if (seen[slug]) return;
+            outMap[slug] = remoteMap[slug];
+        });
+        var base = (localVal && typeof localVal === 'object' && !Array.isArray(localVal))
+            ? localVal
+            : ((remoteVal && typeof remoteVal === 'object' && !Array.isArray(remoteVal)) ? remoteVal : {});
+        return Object.assign({}, base, { items: outMap, updatedAt: updatedAt });
+    }
+
+    function formulasMapChanged(a, b) {
+        var am = extractFormulaMap(a);
+        var bm = extractFormulaMap(b);
+        var aks = Object.keys(am).sort();
+        var bks = Object.keys(bm).sort();
+        if (aks.length !== bks.length) return true;
+        for (var i = 0; i < aks.length; i++) {
+            if (aks[i] !== bks[i]) return true;
+            if (preferFormula(am[aks[i]], bm[aks[i]]) !== am[aks[i]]) return true;
+            if (formulaHasMaterialDose(am[aks[i]]) !== formulaHasMaterialDose(bm[aks[i]])) return true;
+        }
+        return false;
+    }
+
     function maxIso(a, b) {
         return cmpIso(a, b) >= 0 ? (a || b) : (b || a);
     }
@@ -232,6 +330,22 @@
                 updatedAt: tsM,
                 applyLocal: needApplyM,
                 push: needPushM || cmpIso(localTs, remoteTs) > 0
+            };
+        }
+        if (key === MERGE_FORMULAS_KEY) {
+            var tsF = maxIso(localTs, remoteTs) || new Date().toISOString();
+            var mergedF = mergeFormulasValue(localVal, remoteVal, tsF);
+            var needApplyF = formulasMapChanged(localVal, mergedF);
+            var needPushF = formulasMapChanged(remoteVal, mergedF) || cmpIso(localTs, remoteTs) > 0;
+            if (needPushF && formulasMapChanged(remoteVal, mergedF) && cmpIso(localTs, remoteTs) <= 0) {
+                tsF = new Date().toISOString();
+                mergedF = Object.assign({}, mergedF, { updatedAt: tsF });
+            }
+            return {
+                value: mergedF,
+                updatedAt: tsF,
+                applyLocal: needApplyF,
+                push: needPushF
             };
         }
         return null;
@@ -378,7 +492,7 @@
                 accepted.forEach(function (key) {
                     var remote = res.data.stores && res.data.stores[key];
                     if (!remote || !('value' in remote)) return;
-                    if (!MERGE_ITEMS_KEYS[key] && !MERGE_MAP_KEYS[key]) return;
+                    if (!MERGE_ITEMS_KEYS[key] && !MERGE_MAP_KEYS[key] && key !== MERGE_FORMULAS_KEY) return;
                     writeLocal(key, remote.value, remote.updatedAt);
                     applied = true;
                 });
