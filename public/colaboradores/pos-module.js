@@ -15,6 +15,23 @@
     const SALES_KEY = 's35_pos_sales';
     const CAJA_GASTOS_KEY = 's35_caja_gastos_v1';
     const TESORERIA_MOVS_KEY = 's35_tesoreria_movs_v1';
+    /** Corte oficial dado el 26 sep 2026 · 13:40 (Culiacán). Lo anterior no mueve el saldo. */
+    const TESORERIA_OPENED_AT = Date.parse('2026-09-26T20:40:00.000Z');
+    const TESORERIA_OPENING = {
+        efectivo: 20400,
+        banco: 281934.94,
+        tarjeta_sf: 407.08
+    };
+    const TESORERIA_BANK_SEED_URL = '/colaboradores/data/banorte-2026-06-09.json';
+    const TESORERIA_BANK_META = {
+        name: 'Banorte',
+        account: '112017860014',
+        clabe: '058730000001816719',
+        holder: 'PRODUCTOS S35 S.A. DE C.V.',
+        city: 'culiacan',
+        opening: 1838.47,
+        closing: 281934.94
+    };
     const SALE_EDITS_KEY = 's35_sale_edits_v1';
     const CLIENTS_KEY = 's35_pos_clients';
     const FINISHED_KEY = 's35_finished_stock';
@@ -3063,6 +3080,7 @@
         cajaGastos = loadCajaGastos();
         tesoreriaMovs = loadTesoreriaMovs();
         promoCodes = loadPromoCodes();
+        ensureTesoreriaSeeds();
         refreshPosAfterDataLoad();
         return { prices: prices, sales: sales, cajaGastos: cajaGastos };
     }
@@ -3147,7 +3165,10 @@
     let cajaGastos = [];
     /** Ajustes de tesorería (depósitos / retiros / correcciones), sync nube. */
     let tesoreriaMovs = [];
-    let dineroCityFilter = 'all';
+    let tesoreriaSeedsPromise = null;
+    let dineroCityFilter = 'culiacan';
+    let dineroLedgerFilter = 'all';
+    let dineroLedgerQuery = '';
     let posMode = 'venta';
     let posGenerateTab = 'ticket';
 
@@ -3383,22 +3404,162 @@
     }
     function tesoreriaSignedAmount(mov) {
         const amt = roundMoney(mov && mov.amount);
-        if (mov && mov.type === 'retiro') return -amt;
+        if (mov && (mov.type === 'retiro' || mov.type === 'gasto')) return -amt;
         return amt;
+    }
+    function tesoreriaMovLocked(m) {
+        return !!(m && (m.locked || m.source === 'banorte-csv' || m.source === 'apertura' || m.type === 'apertura'));
+    }
+    function tesoreriaAffectsBalance(m) {
+        if (!m || m.deleted) return false;
+        if (m.ledgerOnly || m.source === 'banorte-csv' || m.type === 'banco_csv' || m.type === 'apertura') {
+            return false;
+        }
+        return true;
+    }
+    function afterTesoreriaOpening(iso) {
+        const t = Date.parse(iso || '');
+        return isFinite(t) && t > TESORERIA_OPENED_AT;
+    }
+    function tesoreriaOpeningAmount(movs, account, cityFilter) {
+        const city = cityFilter == null ? dineroCityFilter : cityFilter;
+        let found = null;
+        (movs || []).forEach(function (m) {
+            if (m && m.type === 'apertura' && !m.ledgerOnly && m.account === account) found = m;
+        });
+        if (found) return roundMoney(found.amount);
+        if (!city || city === 'all' || city === 'culiacan') {
+            return TESORERIA_OPENING[account] || 0;
+        }
+        return 0;
+    }
+    function tesoreriaHasId(id) {
+        if (!id) return false;
+        if (tesoreriaMovs.some(function (m) { return m && m.id === id; })) return true;
+        return loadTesoreriaMovsRaw().some(function (m) { return m && m.id === id; });
+    }
+    function upsertTesoreriaSeed(mov) {
+        if (!mov || !mov.id || tesoreriaHasId(mov.id)) return false;
+        tesoreriaMovs.push(mov);
+        return true;
+    }
+    function tesoreriaOpeningSeeds() {
+        const at = '2026-09-26T20:40:00.000Z';
+        return [
+            {
+                id: 'teso-apertura-efectivo-20260926',
+                createdAt: at,
+                account: 'efectivo',
+                type: 'apertura',
+                amount: TESORERIA_OPENING.efectivo,
+                note: 'Saldo real de caja al 26 sep 2026',
+                city: 'culiacan',
+                source: 'apertura',
+                locked: true
+            },
+            {
+                id: 'teso-apertura-banco-20260926',
+                createdAt: at,
+                account: 'banco',
+                type: 'apertura',
+                amount: TESORERIA_OPENING.banco,
+                note: 'Saldo Banorte al 24 sep 2026',
+                city: 'culiacan',
+                source: 'apertura',
+                locked: true
+            },
+            {
+                id: 'teso-apertura-tarjeta-sf-20260926',
+                createdAt: at,
+                account: 'tarjeta_sf',
+                type: 'apertura',
+                amount: TESORERIA_OPENING.tarjeta_sf,
+                note: 'Saldo real tarjeta sin factura al 26 sep 2026',
+                city: 'culiacan',
+                source: 'apertura',
+                locked: true
+            }
+        ];
+    }
+    function mapBanorteSeedItem(item, bank) {
+        if (!item || !item.id) return null;
+        const type = item.type === 'retiro' ? 'retiro' : 'deposito';
+        return {
+            id: item.id,
+            createdAt: item.iso || '2026-06-01T18:00:00.000Z',
+            account: 'banco',
+            type: type,
+            amount: roundMoney(item.amount),
+            note: item.descripcion || '',
+            reference: item.referencia || '',
+            bankSaldo: roundMoney(item.saldo),
+            fecha: item.fecha || '',
+            ledgerOnly: true,
+            source: 'banorte-csv',
+            city: (bank && bank.city) || 'culiacan',
+            locked: true
+        };
+    }
+    function applyTesoreriaSeeds(data) {
+        let added = false;
+        tesoreriaOpeningSeeds().forEach(function (mov) {
+            if (upsertTesoreriaSeed(mov)) added = true;
+        });
+        if (data && Array.isArray(data.items)) {
+            const bank = data.bank || TESORERIA_BANK_META;
+            if (upsertTesoreriaSeed({
+                id: 'banorte-saldo-inicial',
+                createdAt: '2026-06-01T06:00:00.000Z',
+                account: 'banco',
+                type: 'apertura',
+                amount: roundMoney(bank.opening != null ? bank.opening : TESORERIA_BANK_META.opening),
+                note: 'Saldo inicial Banorte',
+                reference: bank.account || TESORERIA_BANK_META.account,
+                bankSaldo: roundMoney(bank.opening != null ? bank.opening : TESORERIA_BANK_META.opening),
+                fecha: '01/06/2026',
+                ledgerOnly: true,
+                source: 'banorte-csv',
+                city: bank.city || 'culiacan',
+                locked: true
+            })) added = true;
+            data.items.forEach(function (item) {
+                const mov = mapBanorteSeedItem(item, bank);
+                if (mov && upsertTesoreriaSeed(mov)) added = true;
+            });
+        }
+        if (added) {
+            saveTesoreriaMovs();
+            tesoreriaMovs = loadTesoreriaMovs();
+            renderDinero();
+        }
+        return added;
+    }
+    function ensureTesoreriaSeeds() {
+        if (!tesoreriaSeedsPromise) {
+            tesoreriaSeedsPromise = fetch(TESORERIA_BANK_SEED_URL, { cache: 'no-store' })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .catch(function () { return null; });
+        }
+        return tesoreriaSeedsPromise.then(function (data) {
+            return applyTesoreriaSeeds(data);
+        });
     }
     function sumTesoreriaAdjustments(list, account) {
         return (list || []).reduce(function (n, m) {
+            if (!tesoreriaAffectsBalance(m)) return n;
             if (account && m.account !== account) return n;
             return n + tesoreriaSignedAmount(m);
         }, 0);
     }
     function computeDineroAccounts(cityFilter) {
         const city = cityFilter == null ? dineroCityFilter : cityFilter;
-        const list = filterSalesByCity(sales, city);
+        const list = filterSalesByCity(sales, city).filter(function (sale) {
+            return afterTesoreriaOpening(sale && sale.createdAt);
+        });
         const buckets = {
-            efectivo: { tickets: 0, gastos: 0, ajustes: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 },
-            banco: { tickets: 0, gastos: 0, ajustes: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 },
-            tarjeta_sf: { tickets: 0, gastos: 0, ajustes: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 }
+            efectivo: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 },
+            banco: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 },
+            tarjeta_sf: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 }
         };
         list.forEach(function (sale) {
             const billing = sale.billing || 'sin_facturar';
@@ -3415,12 +3576,17 @@
                 }
             });
         });
-        buckets.efectivo.gastos = roundMoney(sumGastos(filterGastosByCity(cajaGastos, city)));
+        buckets.efectivo.gastos = roundMoney(sumGastos(
+            filterGastosByCity(cajaGastos, city).filter(function (g) {
+                return afterTesoreriaOpening(g && g.createdAt);
+            })
+        ));
         const movs = filterTesoreriaMovsByCity(tesoreriaMovs, city);
         TESORERIA_ACCOUNTS.forEach(function (acc) {
+            buckets[acc.id].apertura = tesoreriaOpeningAmount(movs, acc.id, city);
             buckets[acc.id].ajustes = roundMoney(sumTesoreriaAdjustments(movs, acc.id));
             buckets[acc.id].total = roundMoney(
-                buckets[acc.id].tickets - buckets[acc.id].gastos + buckets[acc.id].ajustes
+                buckets[acc.id].apertura + buckets[acc.id].tickets - buckets[acc.id].gastos + buckets[acc.id].ajustes
             );
         });
         return buckets;
@@ -6994,23 +7160,26 @@
         const efLines = document.getElementById('dineroEfectivoLines');
         if (efLines) {
             efLines.innerHTML = dineroLinesHtml([
-                { label: 'Tickets en efectivo', amount: acc.efectivo.tickets },
-                { label: 'Gastos de caja', amount: acc.efectivo.gastos, out: true },
+                { label: 'Saldo de apertura', amount: acc.efectivo.apertura },
+                { label: 'Tickets posteriores', amount: acc.efectivo.tickets },
+                { label: 'Gastos posteriores', amount: acc.efectivo.gastos, out: true },
                 { label: 'Ajustes', amount: acc.efectivo.ajustes, out: acc.efectivo.ajustes < 0 }
             ]);
         }
         const bankLines = document.getElementById('dineroBancoLines');
         if (bankLines) {
             bankLines.innerHTML = dineroLinesHtml([
-                { label: 'Transferencias', amount: acc.banco.transfer },
-                { label: 'Tarjeta facturada', amount: acc.banco.tarjetaFact },
+                { label: 'Saldo Banorte', amount: acc.banco.apertura },
+                { label: 'Transferencias posteriores', amount: acc.banco.transfer },
+                { label: 'Tarjeta facturada posterior', amount: acc.banco.tarjetaFact },
                 { label: 'Ajustes', amount: acc.banco.ajustes, out: acc.banco.ajustes < 0 }
             ]);
         }
         const cardLines = document.getElementById('dineroTarjetaSfLines');
         if (cardLines) {
             cardLines.innerHTML = dineroLinesHtml([
-                { label: 'Tickets tarjeta s/factura', amount: acc.tarjeta_sf.tarjetaSf },
+                { label: 'Saldo de apertura', amount: acc.tarjeta_sf.apertura },
+                { label: 'Tickets posteriores', amount: acc.tarjeta_sf.tarjetaSf },
                 { label: 'Ajustes', amount: acc.tarjeta_sf.ajustes, out: acc.tarjeta_sf.ajustes < 0 }
             ]);
         }
@@ -7051,36 +7220,177 @@
         }
         renderDineroMovs();
     }
+    function formatLedgerDate(iso, fecha) {
+        if (fecha) return fecha;
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return '—';
+        return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+    function tesoreriaTypeLabel(type, source) {
+        if (type === 'apertura') return source === 'banorte-csv' ? 'Saldo inicial' : 'Apertura';
+        if (type === 'retiro') return source === 'banorte-csv' ? 'Cargo' : 'Retiro';
+        if (type === 'deposito') return source === 'banorte-csv' ? 'Abono' : 'Depósito';
+        if (type === 'ajuste') return 'Ajuste';
+        if (type === 'venta') return 'Venta';
+        if (type === 'gasto') return 'Gasto';
+        return type || 'Movimiento';
+    }
+    function buildDineroLedger() {
+        const rows = [];
+        filterTesoreriaMovsByCity(tesoreriaMovs, dineroCityFilter).forEach(function (m) {
+            if (!m) return;
+            const locked = tesoreriaMovLocked(m);
+            const isApertura = m.type === 'apertura';
+            const signed = isApertura ? 0 : tesoreriaSignedAmount(m);
+            rows.push({
+                id: m.id,
+                createdAt: m.createdAt,
+                sortAt: Date.parse(m.createdAt) || 0,
+                account: m.account,
+                type: m.type,
+                source: m.source || '',
+                note: m.note || '',
+                reference: m.reference || '',
+                amount: roundMoney(m.amount),
+                signed: signed,
+                ingreso: !isApertura && signed > 0 ? signed : 0,
+                gasto: !isApertura && signed < 0 ? -signed : 0,
+                bankSaldo: m.bankSaldo,
+                fecha: m.fecha || '',
+                city: tesoreriaMovCity(m),
+                locked: locked,
+                setBalance: isApertura ? roundMoney(m.amount) : null
+            });
+        });
+        filterSalesByCity(sales, dineroCityFilter).filter(function (sale) {
+            return afterTesoreriaOpening(sale && sale.createdAt);
+        }).forEach(function (sale) {
+            const billing = sale.billing || 'sin_facturar';
+            const client = (sale.client && sale.client.name) || 'Mostrador';
+            const folio = saleReceiptLabel(sale);
+            salePaymentLines(sale).forEach(function (p, idx) {
+                const account = tesoreriaAccountOfPayment(p.method, billing);
+                if (!account) return;
+                rows.push({
+                    id: (sale.id || 'sale') + '-' + p.method + '-' + idx,
+                    createdAt: sale.createdAt,
+                    sortAt: Date.parse(sale.createdAt) || 0,
+                    account: account,
+                    type: 'venta',
+                    source: 'pos',
+                    note: folio + ' · ' + client + ' · ' + payLabel(p.method) +
+                        (billing === 'facturado' ? ' facturado' : ' s/factura'),
+                    reference: sale.folio || '',
+                    amount: roundMoney(p.amount),
+                    signed: roundMoney(p.amount),
+                    ingreso: roundMoney(p.amount),
+                    gasto: 0,
+                    city: saleCity(sale),
+                    locked: true,
+                    setBalance: null
+                });
+            });
+        });
+        filterGastosByCity(cajaGastos, dineroCityFilter).filter(function (g) {
+            return afterTesoreriaOpening(g && g.createdAt);
+        }).forEach(function (g) {
+            rows.push({
+                id: g.id,
+                createdAt: g.createdAt,
+                sortAt: Date.parse(g.createdAt) || 0,
+                account: 'efectivo',
+                type: 'gasto',
+                source: 'caja',
+                note: (g.concept || 'Gasto') + (g.note ? ' · ' + g.note : ''),
+                reference: '',
+                amount: roundMoney(g.amount),
+                signed: -roundMoney(g.amount),
+                ingreso: 0,
+                gasto: roundMoney(g.amount),
+                city: gastoCity(g),
+                locked: true,
+                setBalance: null
+            });
+        });
+        rows.sort(function (a, b) {
+            return a.sortAt - b.sortAt;
+        });
+        let runByAccount = { efectivo: 0, banco: 0, tarjeta_sf: 0 };
+        rows.forEach(function (row) {
+            if (row.setBalance != null) {
+                runByAccount[row.account] = row.setBalance;
+            } else if (row.bankSaldo != null && row.source === 'banorte-csv') {
+                runByAccount[row.account] = roundMoney(row.bankSaldo);
+            } else {
+                runByAccount[row.account] = roundMoney((runByAccount[row.account] || 0) + row.signed);
+            }
+            row.running = runByAccount[row.account];
+        });
+        rows.reverse();
+        return rows;
+    }
     function renderDineroMovs() {
         const host = document.getElementById('dineroMovsList');
         if (!host) return;
-        const list = filterTesoreriaMovsByCity(tesoreriaMovs, dineroCityFilter).slice().sort(function (a, b) {
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        const bar = document.getElementById('dineroLedgerAccount');
+        if (bar) {
+            bar.querySelectorAll('[data-dinero-ledger]').forEach(function (btn) {
+                const on = btn.getAttribute('data-dinero-ledger') === dineroLedgerFilter;
+                btn.classList.toggle('active', on);
+                btn.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+        }
+        const searchEl = document.getElementById('dineroLedgerSearch');
+        if (searchEl && searchEl.value !== dineroLedgerQuery) searchEl.value = dineroLedgerQuery;
+        const needle = String(dineroLedgerQuery || '').trim().toLowerCase();
+        const all = buildDineroLedger();
+        const list = all.filter(function (row) {
+            if (dineroLedgerFilter !== 'all' && row.account !== dineroLedgerFilter) return false;
+            if (!needle) return true;
+            const hay = [
+                row.note, row.reference, tesoreriaAccountLabel(row.account),
+                tesoreriaTypeLabel(row.type, row.source), row.fecha
+            ].join(' ').toLowerCase();
+            return hay.indexOf(needle) >= 0;
         });
+        const meta = document.getElementById('dineroLedgerMeta');
+        if (meta) {
+            const ingresos = list.reduce(function (n, r) { return n + (r.ingreso || 0); }, 0);
+            const gastos = list.reduce(function (n, r) { return n + (r.gasto || 0); }, 0);
+            meta.textContent = list.length + (list.length === 1 ? ' movimiento' : ' movimientos') +
+                ' · ingresos ' + money(ingresos) + ' · gastos ' + money(gastos);
+        }
         if (!list.length) {
-            host.innerHTML = '<div class="dinero-mov-row"><div class="empty">Sin movimientos de cuenta. Los tickets y gastos ya se cuentan solos.</div></div>';
+            host.innerHTML = '<div class="dinero-mov-row"><div class="empty">Sin movimientos en este filtro.</div></div>';
             return;
         }
-        const shown = list.slice(0, 40);
-        host.innerHTML = shown.map(function (m) {
-            const signed = tesoreriaSignedAmount(m);
-            const who = m.userName || (m.user && (m.user.name || m.user.username)) || '';
-            const typeLab = m.type === 'retiro' ? 'Retiro' : (m.type === 'ajuste' ? 'Ajuste' : 'Depósito');
-            return '<div class="dinero-mov-row" data-dinero-mov="' + esc(m.id) + '">' +
-                '<div><div class="concept">' + esc(tesoreriaAccountLabel(m.account)) + ' · ' + esc(typeLab) + '</div>' +
-                '<div class="meta">' + esc(formatInvoiceDate(new Date(m.createdAt))) +
-                    ' · ' + esc(cityLabel(tesoreriaMovCity(m))) +
-                    (who ? ' · ' + esc(who) : '') +
-                    (m.note ? ' · ' + esc(m.note) : '') +
-                '</div></div>' +
-                '<span class="amt' + (signed < 0 ? ' out' : '') + '">' +
-                    (signed < 0 ? '−' : '+') + money(Math.abs(signed)) + '</span>' +
-                '<button type="button" class="iconbtn" data-rm-dinero-mov="' + esc(m.id) + '" title="Eliminar" aria-label="Eliminar movimiento">' +
-                    '<i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>' +
-                '</div>';
-        }).join('') + (list.length > shown.length
-            ? '<div class="dinero-mov-row"><div class="empty muted">Mostrando 40 de ' + list.length + '</div></div>'
-            : '');
+        const showSaldo = dineroLedgerFilter !== 'all';
+        host.innerHTML = '<div class="dinero-ledger-wrap"><table class="dinero-ledger-table">' +
+            '<thead><tr>' +
+            '<th>Fecha</th><th>Cuenta</th><th>Concepto</th>' +
+            '<th class="num">Ingreso</th><th class="num">Gasto</th>' +
+            (showSaldo ? '<th class="num">Saldo</th>' : '') +
+            '<th></th></tr></thead><tbody>' +
+            list.map(function (row) {
+                const typeLab = tesoreriaTypeLabel(row.type, row.source);
+                const canDelete = !row.locked && row.source !== 'pos' && row.source !== 'caja';
+                return '<tr data-dinero-mov="' + esc(row.id) + '">' +
+                    '<td>' + esc(formatLedgerDate(row.createdAt, row.fecha)) + '</td>' +
+                    '<td>' + esc(tesoreriaAccountLabel(row.account)) + '</td>' +
+                    '<td><div class="concept">' + esc(typeLab + (row.note ? ' · ' + row.note : '')) + '</div>' +
+                    (row.reference ? '<div class="meta">Ref. ' + esc(row.reference) + '</div>' : '') +
+                    '</td>' +
+                    '<td class="num dinero-in">' + (row.ingreso ? money(row.ingreso) : '') + '</td>' +
+                    '<td class="num dinero-out">' + (row.gasto ? money(row.gasto) : '') + '</td>' +
+                    (showSaldo ? '<td class="num">' + money(row.running) + '</td>' : '') +
+                    '<td>' + (canDelete
+                        ? '<button type="button" class="iconbtn" data-rm-dinero-mov="' + esc(row.id) +
+                            '" title="Eliminar" aria-label="Eliminar movimiento">' +
+                            '<i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>'
+                        : '') +
+                    '</td></tr>';
+            }).join('') +
+            '</tbody></table></div>';
     }
     function createTesoreriaMov(payload) {
         payload = payload || {};
@@ -7107,6 +7417,7 @@
             amount: amount,
             note: String(payload.note || '').trim(),
             city: city,
+            source: 'manual',
             user: user,
             userId: user.id,
             userName: user.name || user.username
@@ -7119,6 +7430,10 @@
     function removeTesoreriaMov(id) {
         const idx = tesoreriaMovs.findIndex(function (m) { return m.id === id; });
         if (idx < 0) return;
+        if (tesoreriaMovLocked(tesoreriaMovs[idx])) {
+            toast('Este movimiento es del estado de cuenta o de la apertura y no se puede borrar');
+            return;
+        }
         const now = new Date().toISOString();
         tesoreriaMovs.splice(idx, 1);
         const raw = loadTesoreriaMovsRaw().filter(function (m) { return !m || m.id !== id; });
@@ -8069,6 +8384,22 @@
         }
         const dineroForm = document.getElementById('dineroMovForm');
         if (dineroForm) dineroForm.addEventListener('submit', submitDineroMov);
+        const dineroLedgerBar = document.getElementById('dineroLedgerAccount');
+        if (dineroLedgerBar) {
+            dineroLedgerBar.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-dinero-ledger]');
+                if (!btn) return;
+                dineroLedgerFilter = btn.getAttribute('data-dinero-ledger') || 'all';
+                renderDineroMovs();
+            });
+        }
+        const dineroSearch = document.getElementById('dineroLedgerSearch');
+        if (dineroSearch) {
+            dineroSearch.addEventListener('input', function () {
+                dineroLedgerQuery = dineroSearch.value || '';
+                renderDineroMovs();
+            });
+        }
         const dineroMovs = document.getElementById('dineroMovsList');
         if (dineroMovs) {
             dineroMovs.addEventListener('click', function (e) {
@@ -10334,6 +10665,7 @@
         clients = loadClients();
         promoCodes = loadPromoCodes();
         ensurePromoSeeds();
+        ensureTesoreriaSeeds();
 
         function afterCloudReady(syncRes) {
             if (syncRes && syncRes.reloading) return;
@@ -10346,6 +10678,7 @@
             clients = loadClients();
             promoCodes = loadPromoCodes();
             ensurePromoSeeds();
+            ensureTesoreriaSeeds();
             ensureHistoricalSalesImport();
             syncClientsFromServer().then(function (res) {
                 if (res && res.ok) return;

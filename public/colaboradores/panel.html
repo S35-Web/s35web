@@ -6682,6 +6682,62 @@
         .dinero-mov-row .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
         .dinero-mov-row .amt { font-variant-numeric: tabular-nums; font-weight: 500; }
         .dinero-mov-row .amt.out { color: #b45309; }
+        .dinero-ledger-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 16px 0 8px;
+        }
+        .dinero-ledger-toolbar input {
+            min-width: min(280px, 100%);
+            height: 40px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 12px;
+        }
+        .dinero-ledger-meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+        .dinero-ledger-wrap {
+            max-height: 64vh;
+            overflow: auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+        .dinero-ledger-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .dinero-ledger-table th,
+        .dinero-ledger-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+            text-align: left;
+        }
+        .dinero-ledger-table th {
+            position: sticky;
+            top: 0;
+            background: var(--panel);
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            z-index: 1;
+        }
+        .dinero-ledger-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .dinero-ledger-table .concept { font-size: 13px; }
+        .dinero-ledger-table .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        .dinero-in { color: var(--text); }
+        .dinero-out { color: #b45309; }
         @media (max-width: 900px) {
             .dinero-head { flex-direction: column; align-items: stretch; }
             .dinero-accounts,
@@ -7674,12 +7730,12 @@
                     <div class="dinero-head">
                         <div>
                             <h1 class="page-title">Dinero</h1>
-                            <p class="page-sub">Inventario de caja e inventario físico · en sincronía con la nube.</p>
+                            <p class="page-sub">Saldos reales de caja y Banorte · historial de ingresos y gastos · inventario de planta.</p>
                         </div>
                         <div class="seg-control cortes-city-menu">
                             <select id="dineroCitySelect" aria-label="Ciudad de las cuentas">
-                                <option value="all" selected>Todas</option>
-                                <option value="culiacan">Culiacán</option>
+                                <option value="all">Todas</option>
+                                <option value="culiacan" selected>Culiacán</option>
                                 <option value="mochis">Los Mochis</option>
                                 <option value="mazatlan">Mazatlán</option>
                             </select>
@@ -7695,19 +7751,19 @@
                     <div class="dinero-accounts">
                         <article class="dinero-card" id="dineroCardEfectivo">
                             <h3>Efectivo</h3>
-                            <p class="panel-sub">Tickets en efectivo menos gastos de caja</p>
+                            <p class="panel-sub">Saldo real de caja · Culiacán</p>
                             <div class="val" id="dineroEfectivoTotal">$0.00</div>
                             <div class="dinero-lines" id="dineroEfectivoLines"></div>
                         </article>
                         <article class="dinero-card" id="dineroCardBanco">
                             <h3>Transferencias y tarjetas facturadas</h3>
-                            <p class="panel-sub">Dinero documentado / en banco</p>
+                            <p class="panel-sub">Banorte · 112017860014 · Culiacán</p>
                             <div class="val" id="dineroBancoTotal">$0.00</div>
                             <div class="dinero-lines" id="dineroBancoLines"></div>
                         </article>
                         <article class="dinero-card" id="dineroCardTarjetaSf">
                             <h3>Tarjeta sin factura</h3>
-                            <p class="panel-sub">Cobros con terminal no facturados</p>
+                            <p class="panel-sub">Saldo real de terminal · Culiacán</p>
                             <div class="val" id="dineroTarjetaSfTotal">$0.00</div>
                             <div class="dinero-lines" id="dineroTarjetaSfLines"></div>
                         </article>
@@ -7729,8 +7785,8 @@
                     </div>
 
                     <div class="card">
-                        <h3>Movimiento de cuenta</h3>
-                        <p class="page-sub">Ajuste, depósito o retiro. Se guarda en la nube como el resto del panel.</p>
+                        <h3>Historial de transacciones</h3>
+                        <p class="page-sub">Estado de cuenta Banorte (1 jun–24 sep 2026), ventas y gastos posteriores al corte, y ajustes manuales.</p>
                         <form id="dineroMovForm" class="dinero-form">
                             <label>Cuenta
                                 <select id="dineroMovAccount" required>
@@ -7750,10 +7806,20 @@
                                 <input id="dineroMovAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="0.00">
                             </label>
                             <label>Nota
-                                <input id="dineroMovNote" type="text" maxlength="160" placeholder="Ej. apertura de caja, retiro al banco">
+                                <input id="dineroMovNote" type="text" maxlength="160" placeholder="Ej. retiro al banco, corrección">
                             </label>
                             <button type="submit" class="btn primary">Registrar</button>
                         </form>
+                        <div class="dinero-ledger-toolbar">
+                            <div class="seg-control" id="dineroLedgerAccount" role="tablist" aria-label="Filtrar historial">
+                                <button type="button" data-dinero-ledger="all" class="active" aria-selected="true">Todas</button>
+                                <button type="button" data-dinero-ledger="efectivo" aria-selected="false">Efectivo</button>
+                                <button type="button" data-dinero-ledger="banco" aria-selected="false">Banco</button>
+                                <button type="button" data-dinero-ledger="tarjeta_sf" aria-selected="false">Tarjeta s/factura</button>
+                            </div>
+                            <input id="dineroLedgerSearch" type="search" placeholder="Buscar concepto o referencia" aria-label="Buscar en el historial">
+                        </div>
+                        <div class="dinero-ledger-meta" id="dineroLedgerMeta"></div>
                         <div class="dinero-movs" id="dineroMovsList"></div>
                     </div>
                 </section>
@@ -15689,7 +15755,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260926-dinero2"></script>
+    <script src="/colaboradores/pos-module.js?v=20260926-dinero3"></script>
     <script src="/colaboradores/command-palette.js?v=20260926-dinero"></script>
     <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>
