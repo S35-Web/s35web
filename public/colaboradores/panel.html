@@ -1120,67 +1120,6 @@
             width: fit-content;
             max-width: 100%;
         }
-        .pos-generate-bar {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            gap: 12px 16px;
-            flex: 0 0 auto;
-            margin-bottom: 10px;
-            padding: 12px 14px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            background: color-mix(in srgb, var(--accent, #2563eb) 8%, var(--panel));
-        }
-        .pos-generate-bar[hidden] { display: none !important; }
-        .pos-generate-bar-text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            min-width: 160px;
-            flex: 1 1 180px;
-        }
-        .pos-generate-bar-text strong { font-size: 0.95rem; }
-        .pos-generate-bar-text .muted { font-size: 0.8rem; }
-        .pos-generate-bar-fields {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            gap: 10px 12px;
-            flex: 2 1 420px;
-        }
-        .pos-generate-field {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--muted);
-        }
-        .pos-generate-field input {
-            min-height: 36px;
-            padding: 6px 10px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--panel);
-            color: var(--text);
-            font: inherit;
-            font-weight: 500;
-        }
-        .pos-generate-note { flex: 1 1 160px; min-width: 140px; }
-        .pos-generate-check {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            min-height: 36px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            user-select: none;
-        }
-        .pos-generate-check input { width: 16px; height: 16px; accent-color: var(--accent, #2563eb); }
-        #venta.is-generate-ticket .pos-mode-bar { opacity: 0.55; pointer-events: none; }
         .pos-mode-panel {
             flex: 1;
             min-height: 0;
@@ -2874,6 +2813,113 @@
         .formula-meta select option,
         .formula-line select option { color: #111; }
         .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+        #posGenerateModal .modal-card {
+            max-width: 720px;
+            width: min(720px, calc(100vw - 24px));
+            max-height: min(92vh, 900px);
+            display: flex;
+            flex-direction: column;
+        }
+        #posGenerateModal .modal-body {
+            overflow: auto;
+            flex: 1;
+            min-height: 0;
+        }
+        #posGenerateModal .gen-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+        #posGenerateModal .gen-tabs button {
+            flex: 1;
+            min-height: 36px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--panel);
+            color: var(--muted);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #posGenerateModal .gen-tabs button.active {
+            color: var(--text);
+            border-color: color-mix(in srgb, var(--accent, #2563eb) 45%, var(--border));
+            background: color-mix(in srgb, var(--accent, #2563eb) 10%, var(--panel));
+        }
+        #posGenerateModal .gen-panel[hidden] { display: none !important; }
+        #posGenerateModal .gen-panel .form-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        #posGenerateModal .gen-panel label.span-2,
+        #posGenerateModal .gen-panel .span-2 { grid-column: 1 / -1; }
+        #posGenerateModal .gen-check {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 36px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            user-select: none;
+        }
+        #posGenerateModal .gen-check input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent, #2563eb);
+        }
+        #posGenerateModal .gen-lines-wrap { overflow: auto; }
+        #posGenerateModal .gen-lines {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        #posGenerateModal .gen-lines th {
+            text-align: left;
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 600;
+            padding: 6px 4px;
+            border-bottom: 1px solid var(--border);
+        }
+        #posGenerateModal .gen-lines th.num,
+        #posGenerateModal .gen-lines td.num { text-align: right; }
+        #posGenerateModal .gen-lines td {
+            padding: 4px;
+            vertical-align: middle;
+            border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+        }
+        #posGenerateModal .gen-lines input,
+        #posGenerateModal .gen-lines select {
+            width: 100%;
+            min-height: 32px;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--panel);
+            color: var(--text);
+            font: inherit;
+        }
+        #posGenerateModal .gen-lines .gen-qty { max-width: 72px; }
+        #posGenerateModal .gen-lines .gen-price { max-width: 96px; }
+        #posGenerateModal .gen-total-row {
+            display: flex;
+            justify-content: flex-end;
+            align-items: baseline;
+            gap: 12px;
+            margin-top: 4px;
+        }
+        #posGenerateModal .gen-total-row .val {
+            font-size: 1.15rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        @media (max-width: 640px) {
+            #posGenerateModal .gen-panel .form-grid { grid-template-columns: 1fr; }
+            #posGenerateModal .gen-panel label.span-2,
+            #posGenerateModal .gen-panel .span-2 { grid-column: auto; }
+        }
         .stock-low { color: var(--danger); }
         .mat-inventory-total {
             display: flex;
@@ -6864,25 +6910,6 @@
                     </div>
 
                     <div class="pos-mode-panel" id="posModeVenta" data-pos-panel="venta">
-                    <div class="pos-generate-bar" id="posGenerateTicketBar" hidden>
-                        <div class="pos-generate-bar-text">
-                            <strong>Generar ticket</strong>
-                            <span class="muted">Venta de regularización · elige fecha y si se descuenta inventario</span>
-                        </div>
-                        <div class="pos-generate-bar-fields">
-                            <label class="pos-generate-field">Fecha y hora
-                                <input type="datetime-local" id="posGenerateTicketAt" autocomplete="off">
-                            </label>
-                            <label class="pos-generate-check" title="Si está activo, se descuenta el mismo stock que en una venta normal">
-                                <input type="checkbox" id="posGenerateTicketStock" checked>
-                                Descontar inventario
-                            </label>
-                            <label class="pos-generate-field pos-generate-note">Nota (opcional)
-                                <input type="text" id="posGenerateTicketNote" maxlength="240" placeholder="Motivo / regularización" autocomplete="off">
-                            </label>
-                            <button type="button" class="btn" id="posGenerateTicketCancel">Cancelar</button>
-                        </div>
-                    </div>
                     <div class="pos-station">
                         <header class="pos-station-top">
                             <h1 class="pos-station-title" id="posStationTitle">Venta</h1>
@@ -7354,7 +7381,7 @@
                             <select id="posHistoryClientFilter" class="customer-input" style="max-width:220px;flex:0 0 auto">
                                 <option value="all">Todos los clientes</option>
                             </select>
-                            <button type="button" class="btn primary" id="posGenerateTicketBtn" title="Crear un ticket con fecha pasada o del día elegido">Generar ticket</button>
+                            <button type="button" class="btn primary" id="posGenerateBtn" title="Registrar ticket o gasto con fecha elegida, sin salir del historial">Generar</button>
                         </div>
                         <div class="hist-filters">
                             <label>Desde <input type="date" id="posHistoryFrom"></label>
@@ -7692,6 +7719,117 @@
         </div>
     </div>
 
+
+    <div id="posGenerateModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="posGenerateModalTitle">
+            <div class="modal-head">
+                <strong id="posGenerateModalTitle">Generar</strong>
+                <button id="posGenerateModalClose" class="btn" type="button">Cerrar</button>
+            </div>
+            <div class="modal-body">
+                <div class="gen-tabs" id="posGenerateTabs" role="tablist" aria-label="Tipo a generar">
+                    <button type="button" role="tab" data-gen-tab="ticket" class="active" aria-selected="true">Ticket</button>
+                    <button type="button" role="tab" data-gen-tab="gasto" aria-selected="false">Gasto</button>
+                </div>
+
+                <div class="gen-panel" id="posGenerateTicketPanel" data-gen-panel="ticket" role="tabpanel">
+                    <p class="muted" style="margin:0 0 8px;font-size:12px">Regularización in-situ · no cambia de sección · elige fecha e inventario</p>
+                    <div class="form-grid">
+                        <label>Fecha y hora
+                            <input type="datetime-local" id="genTicketAt" autocomplete="off">
+                        </label>
+                        <label class="gen-check" title="Si está activo, se descuenta el mismo stock que en una venta normal" style="align-self:end">
+                            <input type="checkbox" id="genTicketStock" checked>
+                            Descontar inventario
+                        </label>
+                        <label class="span-2">Nota (opcional)
+                            <input type="text" id="genTicketNote" maxlength="240" placeholder="Motivo / regularización" autocomplete="off">
+                        </label>
+                        <label class="span-2">Cliente
+                            <select id="genTicketClient" aria-label="Cliente del ticket"></select>
+                        </label>
+                        <label>Pago
+                            <select id="genTicketPay">
+                                <option value="efectivo">Efectivo</option>
+                                <option value="tarjeta">Tarjeta</option>
+                                <option value="transferencia">Transferencia</option>
+                                <option value="por_cobrar">Por cobrar</option>
+                            </select>
+                        </label>
+                        <label>Facturación
+                            <select id="genTicketBill">
+                                <option value="sin_facturar">Sin factura</option>
+                                <option value="facturado">Facturado</option>
+                            </select>
+                        </label>
+                        <label class="span-2">Ciudad / sucursal
+                            <select id="genTicketCity">
+                                <option value="culiacan">Culiacán</option>
+                                <option value="mochis">Los Mochis</option>
+                                <option value="mazatlan">Mazatlán</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="gen-lines-wrap" style="margin-top:12px">
+                        <table class="gen-lines">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Descripción</th>
+                                    <th class="num">Cant.</th>
+                                    <th class="num">P/U</th>
+                                    <th class="num">Importe</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="genTicketLinesBody"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+                        <button type="button" class="btn" id="genTicketAddLine"><i class="fa-solid fa-plus"></i> Línea</button>
+                        <div class="gen-total-row"><span class="muted">Total</span><span class="val" id="genTicketTotal">$0.00</span></div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn" id="genTicketCancel">Cancelar</button>
+                        <button type="button" class="btn primary" id="genTicketSubmit">
+                            <i class="fa-solid fa-receipt" aria-hidden="true"></i> Generar ticket
+                        </button>
+                    </div>
+                </div>
+
+                <div class="gen-panel" id="posGenerateGastoPanel" data-gen-panel="gasto" role="tabpanel" hidden>
+                    <p class="muted" style="margin:0 0 8px;font-size:12px">Gasto de caja con fecha elegida · se resta del efectivo en Cortes</p>
+                    <form class="form-grid" id="genGastoForm" autocomplete="off">
+                        <label>Fecha y hora
+                            <input type="datetime-local" id="genGastoAt" autocomplete="off">
+                        </label>
+                        <label>Ciudad
+                            <select id="genGastoCity" aria-label="Ciudad del gasto">
+                                <option value="culiacan">Culiacán</option>
+                                <option value="mochis">Los Mochis</option>
+                                <option value="mazatlan">Mazatlán</option>
+                            </select>
+                        </label>
+                        <label class="span-2">Concepto
+                            <input id="genGastoConcept" type="text" required maxlength="120" placeholder="Ej. gasolina, agua, mandado…">
+                        </label>
+                        <label>Monto
+                            <input id="genGastoAmount" type="number" required min="0.01" step="0.01" inputmode="decimal" placeholder="0.00">
+                        </label>
+                        <label class="span-2">Nota (opcional)
+                            <textarea id="genGastoNote" rows="2" maxlength="240" placeholder="Detalle breve"></textarea>
+                        </label>
+                        <div class="modal-actions span-2">
+                            <button type="button" class="btn" id="genGastoCancel">Cancelar</button>
+                            <button type="submit" class="btn primary" id="genGastoSubmit">
+                                <i class="fa-solid fa-plus" aria-hidden="true"></i> Generar gasto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="posPromoModal" class="modal-backdrop" aria-hidden="true">
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="posPromoModalTitle" style="max-width:400px">

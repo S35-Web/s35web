@@ -3083,7 +3083,7 @@
     /** Gastos de caja (efectivo saliente). */
     let cajaGastos = [];
     let posMode = 'venta';
-    let posGenerateTicketMode = false;
+    let posGenerateTab = 'ticket';
 
     let monthAvgPriceCache = null;
     function invalidateAnalyticsSalesCache() {
@@ -5682,77 +5682,86 @@
     }
 
     /**
-     * Cobra el carrito actual.
+     * Cobra el carrito actual (o ítems pasados en opts.cartItems).
      * @param {object} [opts]
      * @param {string} [opts.backdatedDate] ISO o datetime-local → createdAt del ticket
      * @param {boolean} [opts.skipInventory] si true, no descuenta stock
      * @param {string} [opts.adminNote] nota interna de regularización
-     * @param {boolean} [opts.fromGenerate] flujo «Generar ticket» desde Historial
+     * @param {boolean} [opts.fromGenerate] flujo «Generar» desde Historial
+     * @param {Array} [opts.cartItems] líneas a cobrar sin tocar el carrito del POS
+     * @param {string} [opts.clientId] cliente o «mostrador»
+     * @param {string} [opts.billing]
+     * @param {string} [opts.paymentMethod]
+     * @param {Array} [opts.payments]
+     * @param {string} [opts.city]
      */
     function checkout(opts) {
         opts = (opts && typeof opts === 'object' && !opts.type) ? opts : {};
-        if (!cart.length) return;
-        const clientKey = selectedClientId();
+        const fromGenerate = !!opts.fromGenerate;
+        const useExternalItems = !!(opts.cartItems && opts.cartItems.length);
+        const lineItems = useExternalItems ? opts.cartItems : cart;
+        if (!lineItems.length) {
+            if (fromGenerate) toast('Agrega al menos un producto');
+            return;
+        }
+        const clientKey = opts.clientId != null ? String(opts.clientId || '') : selectedClientId();
         if (!clientKey) {
             toast('Selecciona un cliente (o Mostrador) antes de cobrar');
-            openClientPicker();
+            if (!fromGenerate) openClientPicker();
             return;
         }
         const walkin = clientKey === POS_CLIENT_WALKIN;
         const client = walkin ? null : clientById(clientKey);
         if (!walkin && !client) {
             toast('Selecciona un cliente válido');
-            openClientPicker();
+            if (!fromGenerate) openClientPicker();
             return;
         }
-        const billing = selectedBilling();
+        const billing = opts.billing != null ? opts.billing : selectedBilling();
         if (['facturado', 'sin_facturar'].indexOf(billing) < 0) {
             toast('Elige opción de facturación');
             return;
         }
-        const total = cartTotal();
-        let paymentMethod = selectedPay();
-        let payments = null;
-        if (posPaySplitEnabled()) {
-            const norm = normalizePaymentLines(readPosPaySplitLines(), total);
-            if (!norm.ok) {
-                toast(norm.error || 'Pago mixto inválido');
+        const total = useExternalItems
+            ? roundMoney(lineItems.reduce(function (n, it) {
+                return n + (Number(it.qty) || 0) * (Number(it.price) || 0);
+            }, 0))
+            : cartTotal();
+        let paymentMethod = opts.paymentMethod != null ? opts.paymentMethod : selectedPay();
+        let payments = opts.payments || null;
+        if (!payments) {
+            if (!useExternalItems && posPaySplitEnabled()) {
+                const norm = normalizePaymentLines(readPosPaySplitLines(), total);
+                if (!norm.ok) {
+                    toast(norm.error || 'Pago mixto inválido');
+                    return;
+                }
+                paymentMethod = norm.paymentMethod;
+                payments = norm.payments;
+            } else if (!isValidPayMethod(paymentMethod)) {
+                toast('Elige método de pago');
                 return;
+            } else {
+                payments = [{ method: paymentMethod, amount: roundMoney(total) }];
             }
-            paymentMethod = norm.paymentMethod;
-            payments = norm.payments;
-        } else if (!isValidPayMethod(paymentMethod)) {
-            toast('Elige método de pago');
-            return;
-        } else {
-            payments = [{ method: paymentMethod, amount: roundMoney(total) }];
         }
 
-        const fromGenerate = !!(opts.fromGenerate || posGenerateTicketMode);
         let createdAt = new Date().toISOString();
         let skipInventory = !!opts.skipInventory;
         let adminNote = String(opts.adminNote || '').trim();
         if (fromGenerate) {
-            const atRaw = opts.backdatedDate != null
-                ? opts.backdatedDate
-                : ((document.getElementById('posGenerateTicketAt') || {}).value || '');
+            const atRaw = opts.backdatedDate != null ? opts.backdatedDate : '';
             if (!atRaw) {
                 toast('Indica la fecha y hora del ticket');
-                const atEl = document.getElementById('posGenerateTicketAt');
+                const atEl = document.getElementById('genTicketAt');
                 if (atEl) atEl.focus();
                 return;
             }
             createdAt = isoFromDatetimeLocal(atRaw);
-            if (opts.skipInventory == null) {
-                const stockEl = document.getElementById('posGenerateTicketStock');
-                skipInventory = !(stockEl && stockEl.checked);
-            }
-            if (!adminNote) {
-                adminNote = String((document.getElementById('posGenerateTicketNote') || {}).value || '').trim();
-            }
+            skipInventory = !!opts.skipInventory;
         }
 
-        const saleCityId = selectedSaleCity();
+        const saleCityId = opts.city != null ? normalizeCityId(opts.city) : selectedSaleCity();
         savePreferredSaleCity(saleCityId);
         const clientSnapshot = client ? {
             id: client.id,
@@ -5777,7 +5786,7 @@
             payments: payments,
             billing: billing,
             city: saleCityId,
-            items: cart.map(function (it) {
+            items: lineItems.map(function (it) {
                 const row = {
                     product: it.product,
                     name: it.name,
@@ -5804,7 +5813,7 @@
             userId: soldBy.id,
             userName: soldBy.name || soldBy.username
         };
-        if (appliedPromoCode) ticket.promoCode = appliedPromoCode;
+        if (!useExternalItems && appliedPromoCode) ticket.promoCode = appliedPromoCode;
         ticket.note = {
             id: 'note-' + ticket.id,
             folio: ticket.folio,
@@ -5828,31 +5837,30 @@
 
         sales.unshift(ticket);
         saveSales();
-        cart = [];
-        appliedPromoCode = null;
-        editingPriceIdx = null;
-        resetPosPaySplitUi();
-        const payE = document.querySelector('#venta input[name="payMethod"][value="efectivo"]');
-        const billS = document.querySelector('#venta input[name="billing"][value="sin_facturar"]');
-        if (payE) payE.checked = true;
-        if (billS) billS.checked = true;
-        setSelectedClientId('', { refresh: false });
-        closeClientPicker();
-        renderCart();
-        renderProducts();
+
+        if (!useExternalItems) {
+            cart = [];
+            appliedPromoCode = null;
+            editingPriceIdx = null;
+            resetPosPaySplitUi();
+            const payE = document.querySelector('#venta input[name="payMethod"][value="efectivo"]');
+            const billS = document.querySelector('#venta input[name="billing"][value="sin_facturar"]');
+            if (payE) payE.checked = true;
+            if (billS) billS.checked = true;
+            setSelectedClientId('', { refresh: false });
+            closeClientPicker();
+            renderCart();
+            renderProducts();
+        }
         refreshSalesDependentViews();
 
         const invHint = skipInventory ? ' · sin descontar inventario' : '';
         toast((fromGenerate ? 'Ticket generado ' : 'Venta ') + ticket.folio + ' · ' + formatSalePayLabel(ticket) + ' · ' + billLabel(billing) + invHint);
 
         if (fromGenerate) {
-            exitPosGenerateTicketMode();
+            closePosGenerateModal();
             focusHistoryOnSaleDate(ticket.createdAt);
-            if (window.S35PanelAPI && typeof window.S35PanelAPI.showSection === 'function') {
-                window.S35PanelAPI.showSection('salesHistory');
-            } else {
-                renderHistory();
-            }
+            renderHistory();
             openSaleNoteModal(ticket);
         } else {
             renderHistory();
@@ -6006,10 +6014,6 @@
     }
 
     function setPosMode(mode) {
-        if (posGenerateTicketMode && mode === 'gastos') {
-            toast('Sal de «Generar ticket» para registrar gastos');
-            mode = 'venta';
-        }
         posMode = mode === 'gastos' ? 'gastos' : 'venta';
         document.querySelectorAll('#posModeTabs [data-pos-mode]').forEach(function (btn) {
             const active = btn.getAttribute('data-pos-mode') === posMode;
@@ -6026,53 +6030,235 @@
         }
     }
 
-    function syncPosGenerateTicketUi() {
-        const section = document.getElementById('venta');
-        const bar = document.getElementById('posGenerateTicketBar');
-        const title = document.getElementById('posStationTitle');
-        const checkoutBtn = document.getElementById('posCheckoutBtn');
-        if (section) section.classList.toggle('is-generate-ticket', posGenerateTicketMode);
-        if (bar) bar.hidden = !posGenerateTicketMode;
-        if (title) title.textContent = posGenerateTicketMode ? 'Generar ticket' : 'Venta';
-        if (checkoutBtn) {
-            checkoutBtn.textContent = posGenerateTicketMode ? 'Generar ticket' : 'Cobrar';
+    function genTicketLineRowHtml(it, idx) {
+        it = it || {};
+        const qty = Number(it.qty) || 1;
+        const price = Number(it.price) || 0;
+        const line = it.lineTotal != null ? Number(it.lineTotal) : qty * price;
+        return '<tr data-gen-idx="' + idx + '">' +
+            '<td><select class="gen-product" data-gen-field="product">' + catalogProductOptionsHtml(it.product || '') + '</select></td>' +
+            '<td><input type="text" data-gen-field="name" value="' + esc(it.name || '') + '" placeholder="Descripción"></td>' +
+            '<td class="num"><input class="gen-qty" type="number" min="0" step="any" data-gen-field="qty" value="' + esc(String(qty)) + '"></td>' +
+            '<td class="num"><input class="gen-price" type="number" min="0" step="0.01" data-gen-field="price" value="' + esc(String(price)) + '"></td>' +
+            '<td class="num gen-line">' + money(line) + '</td>' +
+            '<td><button type="button" class="icon-action danger" data-gen-remove title="Quitar línea"><i class="fa-solid fa-trash-can"></i></button></td>' +
+            '</tr>';
+    }
+
+    function fillGenTicketClientSelect() {
+        const sel = document.getElementById('genTicketClient');
+        if (!sel) return;
+        const cur = sel.value || POS_CLIENT_WALKIN;
+        const sorted = clients.slice().sort(function (a, b) {
+            return String(a.name || '').localeCompare(String(b.name || ''), 'es');
+        });
+        sel.innerHTML = '<option value="' + esc(POS_CLIENT_WALKIN) + '">Mostrador</option>' +
+            sorted.map(function (c) {
+                return '<option value="' + esc(c.id) + '">' + esc(clientDisplay(c)) + '</option>';
+            }).join('');
+        sel.value = cur;
+        if (!sel.value) sel.value = POS_CLIENT_WALKIN;
+    }
+
+    function refreshGenTicketTotals() {
+        const body = document.getElementById('genTicketLinesBody');
+        const totalEl = document.getElementById('genTicketTotal');
+        if (!body || !totalEl) return;
+        let total = 0;
+        body.querySelectorAll('tr').forEach(function (tr) {
+            const qty = Number((tr.querySelector('[data-gen-field="qty"]') || {}).value) || 0;
+            const price = Number((tr.querySelector('[data-gen-field="price"]') || {}).value) || 0;
+            const line = qty * price;
+            total += line;
+            const cell = tr.querySelector('.gen-line');
+            if (cell) cell.textContent = money(line);
+        });
+        totalEl.textContent = money(total);
+    }
+
+    function collectGenTicketLines() {
+        const body = document.getElementById('genTicketLinesBody');
+        const items = [];
+        if (body) {
+            body.querySelectorAll('tr').forEach(function (tr) {
+                const product = ((tr.querySelector('[data-gen-field="product"]') || {}).value || '').trim();
+                let name = ((tr.querySelector('[data-gen-field="name"]') || {}).value || '').trim();
+                const qty = Math.max(0, Number((tr.querySelector('[data-gen-field="qty"]') || {}).value) || 0);
+                const price = Math.max(0, Number((tr.querySelector('[data-gen-field="price"]') || {}).value) || 0);
+                if (!qty && !price && !name && !product) return;
+                if (!name && product) {
+                    const cat = pricedCatalog().filter(function (p) { return p.id === product; })[0];
+                    name = cat ? cat.name : product;
+                }
+                if (!name) name = product || 'Ítem';
+                if (!(qty > 0)) return;
+                const cat = product ? pricedCatalog().filter(function (p) { return p.id === product; })[0] : null;
+                const r = product ? recipeBySlug(product) : null;
+                items.push({
+                    product: product || name,
+                    name: name,
+                    code: cat ? (cat.code || '') : (r ? (r.code || '') : ''),
+                    unit: r ? unitFor(r) : (cat ? (cat.kind === 'liquido' ? (cat.unitLabel || 'L') : 'Pza') : 'Pza'),
+                    price: roundMoney(price),
+                    basePrice: roundMoney(price),
+                    priceOverride: null,
+                    priceOverridePct: null,
+                    isPromo: false,
+                    qty: Math.round(qty * 1000) / 1000
+                });
+            });
+        }
+        if (!items.length) {
+            toast('Agrega al menos una línea con cantidad');
+            return null;
+        }
+        return items;
+    }
+
+    function resetGenTicketForm() {
+        const atEl = document.getElementById('genTicketAt');
+        if (atEl) atEl.value = defaultGenerateTicketDatetimeLocal();
+        const stockEl = document.getElementById('genTicketStock');
+        if (stockEl) stockEl.checked = true;
+        const noteEl = document.getElementById('genTicketNote');
+        if (noteEl) noteEl.value = '';
+        const payEl = document.getElementById('genTicketPay');
+        if (payEl) payEl.value = 'efectivo';
+        const billEl = document.getElementById('genTicketBill');
+        if (billEl) billEl.value = 'sin_facturar';
+        const cityEl = document.getElementById('genTicketCity');
+        if (cityEl) cityEl.value = loadPreferredSaleCity() || 'culiacan';
+        fillGenTicketClientSelect();
+        const clientEl = document.getElementById('genTicketClient');
+        if (clientEl) clientEl.value = POS_CLIENT_WALKIN;
+        const body = document.getElementById('genTicketLinesBody');
+        if (body) body.innerHTML = genTicketLineRowHtml({ qty: 1, price: 0 }, 0);
+        refreshGenTicketTotals();
+    }
+
+    function resetGenGastoForm() {
+        const atEl = document.getElementById('genGastoAt');
+        if (atEl) atEl.value = defaultGenerateTicketDatetimeLocal();
+        const conceptEl = document.getElementById('genGastoConcept');
+        if (conceptEl) conceptEl.value = '';
+        const amountEl = document.getElementById('genGastoAmount');
+        if (amountEl) amountEl.value = '';
+        const noteEl = document.getElementById('genGastoNote');
+        if (noteEl) noteEl.value = '';
+        const cityEl = document.getElementById('genGastoCity');
+        if (cityEl) {
+            const preferred = loadPreferredSaleCity();
+            if (cityById(preferred)) cityEl.value = preferred;
         }
     }
 
-    function exitPosGenerateTicketMode() {
-        if (!posGenerateTicketMode) {
-            syncPosGenerateTicketUi();
+    function setPosGenerateTab(tab) {
+        posGenerateTab = tab === 'gasto' ? 'gasto' : 'ticket';
+        document.querySelectorAll('#posGenerateTabs [data-gen-tab]').forEach(function (btn) {
+            const active = btn.getAttribute('data-gen-tab') === posGenerateTab;
+            btn.classList.toggle('active', active);
+            btn.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        const ticketPanel = document.getElementById('posGenerateTicketPanel');
+        const gastoPanel = document.getElementById('posGenerateGastoPanel');
+        if (ticketPanel) ticketPanel.hidden = posGenerateTab !== 'ticket';
+        if (gastoPanel) gastoPanel.hidden = posGenerateTab !== 'gasto';
+        const title = document.getElementById('posGenerateModalTitle');
+        if (title) title.textContent = posGenerateTab === 'gasto' ? 'Generar gasto' : 'Generar ticket';
+    }
+
+    function openPosGenerateModal(tab) {
+        resetGenTicketForm();
+        resetGenGastoForm();
+        setPosGenerateTab(tab || 'ticket');
+        const modal = document.getElementById('posGenerateModal');
+        if (!modal) return;
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        requestAnimationFrame(function () {
+            if (posGenerateTab === 'gasto') {
+                const concept = document.getElementById('genGastoConcept');
+                if (concept) concept.focus();
+            } else {
+                const atEl = document.getElementById('genTicketAt');
+                if (atEl) atEl.focus();
+            }
+        });
+    }
+
+    function closePosGenerateModal() {
+        const modal = document.getElementById('posGenerateModal');
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+
+    function submitGenerateTicket() {
+        const atRaw = ((document.getElementById('genTicketAt') || {}).value || '').trim();
+        if (!atRaw) {
+            toast('Indica la fecha y hora del ticket');
+            const atEl = document.getElementById('genTicketAt');
+            if (atEl) atEl.focus();
             return;
         }
-        posGenerateTicketMode = false;
-        const noteEl = document.getElementById('posGenerateTicketNote');
-        if (noteEl) noteEl.value = '';
-        const stockEl = document.getElementById('posGenerateTicketStock');
-        if (stockEl) stockEl.checked = true;
-        syncPosGenerateTicketUi();
+        const items = collectGenTicketLines();
+        if (!items) return;
+        const stockEl = document.getElementById('genTicketStock');
+        const skipInventory = !(stockEl && stockEl.checked);
+        const adminNote = String((document.getElementById('genTicketNote') || {}).value || '').trim();
+        const clientId = ((document.getElementById('genTicketClient') || {}).value || POS_CLIENT_WALKIN);
+        const pay = ((document.getElementById('genTicketPay') || {}).value || 'efectivo');
+        const bill = ((document.getElementById('genTicketBill') || {}).value || 'sin_facturar');
+        const city = ((document.getElementById('genTicketCity') || {}).value || loadPreferredSaleCity());
+        if (!isValidPayMethod(pay)) {
+            toast('Elige método de pago');
+            return;
+        }
+        if (['facturado', 'sin_facturar'].indexOf(bill) < 0) {
+            toast('Elige opción de facturación');
+            return;
+        }
+        const total = roundMoney(items.reduce(function (n, it) {
+            return n + (Number(it.qty) || 0) * (Number(it.price) || 0);
+        }, 0));
+        checkout({
+            fromGenerate: true,
+            backdatedDate: atRaw,
+            skipInventory: skipInventory,
+            adminNote: adminNote,
+            clientId: clientId,
+            billing: bill,
+            paymentMethod: pay,
+            payments: [{ method: pay, amount: total }],
+            city: city,
+            cartItems: items
+        });
     }
 
-    function enterPosGenerateTicketMode() {
-        posGenerateTicketMode = true;
-        setPosMode('venta');
-        const atEl = document.getElementById('posGenerateTicketAt');
-        if (atEl) atEl.value = defaultGenerateTicketDatetimeLocal();
-        const stockEl = document.getElementById('posGenerateTicketStock');
-        if (stockEl) stockEl.checked = true;
-        const noteEl = document.getElementById('posGenerateTicketNote');
-        if (noteEl) noteEl.value = '';
-        syncPosGenerateTicketUi();
-        if (window.S35PanelAPI && typeof window.S35PanelAPI.showSection === 'function') {
-            window.S35PanelAPI.showSection('venta');
+    function submitGenerateGasto(ev) {
+        if (ev) ev.preventDefault();
+        const atRaw = ((document.getElementById('genGastoAt') || {}).value || '').trim();
+        if (!atRaw) {
+            toast('Indica la fecha y hora del gasto');
+            const atEl = document.getElementById('genGastoAt');
+            if (atEl) atEl.focus();
+            return;
         }
-        renderChips();
-        renderProducts();
-        fillClientSelect();
-        renderCart();
-        const search = document.getElementById('posProductSearch');
-        if (search) {
-            try { search.focus(); } catch (_) { /* ignore */ }
-        }
+        const conceptEl = document.getElementById('genGastoConcept');
+        const amountEl = document.getElementById('genGastoAmount');
+        const cityEl = document.getElementById('genGastoCity');
+        const noteEl = document.getElementById('genGastoNote');
+        const gasto = createCajaGasto({
+            concept: conceptEl && conceptEl.value,
+            amount: amountEl && amountEl.value,
+            city: cityEl && cityEl.value,
+            note: noteEl && noteEl.value,
+            createdAt: isoFromDatetimeLocal(atRaw),
+            source: 'pos-generate'
+        });
+        if (!gasto) return;
+        closePosGenerateModal();
+        toast('Gasto generado · ' + money(gasto.amount) + ' · ' + formatInvoiceDate(new Date(gasto.createdAt)));
     }
 
     function focusHistoryOnSaleDate(iso) {
@@ -6140,30 +6326,30 @@
                 : '');
     }
 
-    function registerCajaGasto(ev) {
-        if (ev) ev.preventDefault();
-        const conceptEl = document.getElementById('posGastoConcept');
-        const amountEl = document.getElementById('posGastoAmount');
-        const cityEl = document.getElementById('posGastoCity');
-        const noteEl = document.getElementById('posGastoNote');
-        const concept = String((conceptEl && conceptEl.value) || '').trim().replace(/\s+/g, ' ');
-        const amount = roundMoney(amountEl && amountEl.value);
-        const city = normalizeCityId((cityEl && cityEl.value) || loadPreferredSaleCity());
-        const note = String((noteEl && noteEl.value) || '').trim();
+    function createCajaGasto(payload) {
+        payload = payload || {};
+        const concept = String(payload.concept || '').trim().replace(/\s+/g, ' ');
+        const amount = roundMoney(payload.amount);
+        const city = normalizeCityId(payload.city || loadPreferredSaleCity());
+        const note = String(payload.note || '').trim();
         if (!concept) {
             toast('Escribe el concepto del gasto');
-            if (conceptEl) conceptEl.focus();
-            return;
+            return null;
         }
         if (!(amount > 0)) {
             toast('El monto debe ser mayor a 0');
-            if (amountEl) amountEl.focus();
-            return;
+            return null;
         }
         const user = currentUserSnapshot();
+        let createdAt = new Date().toISOString();
+        if (payload.createdAt) {
+            const raw = String(payload.createdAt);
+            const parsed = new Date(raw);
+            createdAt = !isNaN(parsed.getTime()) ? parsed.toISOString() : isoFromDatetimeLocal(raw);
+        }
         const gasto = {
             id: 'gasto-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7),
-            createdAt: new Date().toISOString(),
+            createdAt: createdAt,
             concept: concept,
             amount: amount,
             city: city,
@@ -6172,16 +6358,45 @@
             userId: user.id,
             userName: user.name || user.username
         };
+        if (payload.source) {
+            gasto.meta = {
+                source: payload.source,
+                generatedAt: new Date().toISOString()
+            };
+        }
         cajaGastos.unshift(gasto);
         saveCajaGastos();
         savePreferredSaleCity(city);
+        renderGastosPanel();
+        renderCortes();
+        return gasto;
+    }
+
+    function registerCajaGasto(ev) {
+        if (ev) ev.preventDefault();
+        const conceptEl = document.getElementById('posGastoConcept');
+        const amountEl = document.getElementById('posGastoAmount');
+        const cityEl = document.getElementById('posGastoCity');
+        const noteEl = document.getElementById('posGastoNote');
+        const gasto = createCajaGasto({
+            concept: conceptEl && conceptEl.value,
+            amount: amountEl && amountEl.value,
+            city: cityEl && cityEl.value,
+            note: noteEl && noteEl.value
+        });
+        if (!gasto) {
+            if (!(String((conceptEl && conceptEl.value) || '').trim())) {
+                if (conceptEl) conceptEl.focus();
+            } else if (amountEl) {
+                amountEl.focus();
+            }
+            return;
+        }
         if (conceptEl) conceptEl.value = '';
         if (amountEl) amountEl.value = '';
         if (noteEl) noteEl.value = '';
         if (conceptEl) conceptEl.focus();
-        renderGastosPanel();
-        renderCortes();
-        toast('Gasto registrado · ' + money(amount));
+        toast('Gasto registrado · ' + money(gasto.amount));
     }
 
     function removeCajaGasto(id) {
@@ -7431,22 +7646,83 @@
                 openSaleNoteById(row.getAttribute('data-open-note'));
             });
         }
-        const genTicketBtn = document.getElementById('posGenerateTicketBtn');
-        if (genTicketBtn) {
-            genTicketBtn.addEventListener('click', function () {
-                enterPosGenerateTicketMode();
+        const genBtn = document.getElementById('posGenerateBtn');
+        if (genBtn) {
+            genBtn.addEventListener('click', function () {
+                openPosGenerateModal('ticket');
             });
         }
-        const genTicketCancel = document.getElementById('posGenerateTicketCancel');
-        if (genTicketCancel) {
-            genTicketCancel.addEventListener('click', function () {
-                exitPosGenerateTicketMode();
-                if (window.S35PanelAPI && typeof window.S35PanelAPI.showSection === 'function') {
-                    window.S35PanelAPI.showSection('salesHistory');
+        const genModal = document.getElementById('posGenerateModal');
+        if (genModal) {
+            genModal.addEventListener('click', function (e) {
+                if (e.target === genModal) closePosGenerateModal();
+            });
+        }
+        const genClose = document.getElementById('posGenerateModalClose');
+        if (genClose) genClose.addEventListener('click', closePosGenerateModal);
+        const genTabs = document.getElementById('posGenerateTabs');
+        if (genTabs) {
+            genTabs.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-gen-tab]');
+                if (!btn) return;
+                setPosGenerateTab(btn.getAttribute('data-gen-tab'));
+            });
+        }
+        const genTicketCancel = document.getElementById('genTicketCancel');
+        if (genTicketCancel) genTicketCancel.addEventListener('click', closePosGenerateModal);
+        const genTicketSubmit = document.getElementById('genTicketSubmit');
+        if (genTicketSubmit) genTicketSubmit.addEventListener('click', submitGenerateTicket);
+        const genTicketAddLine = document.getElementById('genTicketAddLine');
+        if (genTicketAddLine) {
+            genTicketAddLine.addEventListener('click', function () {
+                const body = document.getElementById('genTicketLinesBody');
+                if (!body) return;
+                body.insertAdjacentHTML('beforeend', genTicketLineRowHtml({ qty: 1, price: 0 }, body.children.length));
+                refreshGenTicketTotals();
+            });
+        }
+        const genTicketLines = document.getElementById('genTicketLinesBody');
+        if (genTicketLines) {
+            genTicketLines.addEventListener('click', function (e) {
+                const rm = e.target.closest('[data-gen-remove]');
+                if (!rm) return;
+                const tr = rm.closest('tr');
+                if (tr && genTicketLines.children.length > 1) tr.remove();
+                else if (tr) {
+                    tr.querySelectorAll('input, select').forEach(function (el) {
+                        if (el.tagName === 'SELECT') el.selectedIndex = 0;
+                        else el.value = el.type === 'number' ? (el.classList.contains('gen-qty') ? '1' : '0') : '';
+                    });
+                }
+                refreshGenTicketTotals();
+            });
+            genTicketLines.addEventListener('input', function (e) {
+                if (e.target.closest('[data-gen-field="qty"], [data-gen-field="price"], [data-gen-field="name"]')) {
+                    refreshGenTicketTotals();
                 }
             });
+            genTicketLines.addEventListener('change', function (e) {
+                const sel = e.target.closest('[data-gen-field="product"]');
+                if (!sel) return;
+                const tr = sel.closest('tr');
+                if (!tr) return;
+                const product = sel.value;
+                const cat = product ? pricedCatalog().filter(function (p) { return p.id === product; })[0] : null;
+                const r = product ? recipeBySlug(product) : null;
+                const nameInput = tr.querySelector('[data-gen-field="name"]');
+                const priceInput = tr.querySelector('[data-gen-field="price"]');
+                if (nameInput && cat) nameInput.value = cat.name || '';
+                else if (nameInput && r) nameInput.value = r.name || '';
+                if (priceInput && product) {
+                    priceInput.value = String(unitPrice(product, 1));
+                }
+                refreshGenTicketTotals();
+            });
         }
-        syncPosGenerateTicketUi();
+        const genGastoCancel = document.getElementById('genGastoCancel');
+        if (genGastoCancel) genGastoCancel.addEventListener('click', closePosGenerateModal);
+        const genGastoForm = document.getElementById('genGastoForm');
+        if (genGastoForm) genGastoForm.addEventListener('submit', submitGenerateGasto);
 
         const noteClose = document.getElementById('saleNoteModalClose');
         if (noteClose) noteClose.addEventListener('click', closeSaleNoteModal);
@@ -9133,7 +9409,6 @@
             fillClientSelect();
             renderCart();
             updatePosKpis();
-            syncPosGenerateTicketUi();
             if (posMode === 'gastos') renderGastosPanel();
         } else if (id === 'clients') {
             renderClients();
