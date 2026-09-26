@@ -3052,6 +3052,17 @@
         return prices;
     }
 
+    /** Relee ventas/gastos/precios/promos tras soft-pull sin location.reload. */
+    function reloadSyncedFromStorage() {
+        prices = loadPrices();
+        sales = loadSales();
+        ensureCajaGastosPersisted();
+        cajaGastos = loadCajaGastos();
+        promoCodes = loadPromoCodes();
+        refreshPosAfterDataLoad();
+        return { prices: prices, sales: sales, cajaGastos: cajaGastos };
+    }
+
     function savePrices(opts) {
         opts = opts || {};
         try {
@@ -10079,6 +10090,7 @@
             priceEditorHtml: priceEditorHtml,
             commitPriceEditor: commitPriceEditor,
             reloadPricesFromStorage: reloadPricesFromStorage,
+            reloadSyncedFromStorage: reloadSyncedFromStorage,
             savePrices: function (opts) { return savePrices(opts || {}); },
             renderProductSalesAnalytics: renderProductSalesAnalytics,
             renderProductsMovementsChart: renderProductsMovementsChart,
