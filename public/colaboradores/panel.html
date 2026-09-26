@@ -8348,8 +8348,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="/colaboradores-data.js"></script>
-    <script src="/colaboradores/roles.js?v=20260926-p0-sync"></script>
-    <script src="/colaboradores/panel-sync.js?v=20260926-p0-sync"></script>
+    <script src="/colaboradores/roles.js?v=20260926-soft-pull"></script>
+    <script src="/colaboradores/panel-sync.js?v=20260926-soft-pull"></script>
     <script>
     const LOGIN_URL = '/colaboradores';
     function getToken() { return localStorage.getItem('s35_admin_token'); }
@@ -8832,6 +8832,11 @@
         const fresh = loadFinished();
         Object.keys(finishedStock).forEach(function (k) { delete finishedStock[k]; });
         Object.keys(fresh).forEach(function (k) { finishedStock[k] = fresh[k]; });
+    }
+    function hydrateInventoryFromLocal() {
+        const fresh = loadInventory();
+        inventory.splice(0, inventory.length);
+        fresh.forEach(function (m) { inventory.push(m); });
     }
     function adjustFinishedMap(deltas) {
         hydrateFinishedFromLocal();
@@ -11431,6 +11436,9 @@
         }
     }
     let formulas = loadFormulas();
+    function hydrateFormulasFromLocal() {
+        formulas = loadFormulas();
+    }
     // Migración unit→plant-lot debe subir a la nube (nuevo updatedAt).
     // Remapes de plantId / merge de seed sin cambio de formato: conservar timestamp.
     // skipPush: el setItem encola pendingKeys; bootstrap hace el primer push (evita carrera).
@@ -15326,13 +15334,22 @@
     window.addEventListener('s35-sync-status', function (e) {
         const d = (e && e.detail) || {};
         if (!d.bootDone) return;
+        // Solo re-pintar cuando el sync aplicó contenido remoto distinto.
+        // Los soft-pull periódicos emiten status sin appliedRemote → sin parpadeo.
+        if (!d.appliedRemote) return;
+        hydrateInventoryFromLocal();
         hydrateFinishedFromLocal();
+        hydrateFormulasFromLocal();
         applyProductCatalog();
         if (typeof refreshStockViews === 'function') refreshStockViews();
-        if (window.S35PosModule && window.S35PosModule.reloadPricesFromStorage) {
-            window.S35PosModule.reloadPricesFromStorage();
+        if (window.S35PosModule && window.S35PosModule.reloadSyncedFromStorage) {
+            window.S35PosModule.reloadSyncedFromStorage();
+        } else {
+            if (window.S35PosModule && window.S35PosModule.reloadPricesFromStorage) {
+                window.S35PosModule.reloadPricesFromStorage();
+            }
+            if (window.S35PosModule && window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
         }
-        if (window.S35PosModule && window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
         if (!pricesEditing && hubProductSlug && hubProductTab === 'precios' && typeof renderProductPricesTab === 'function') {
             renderProductPricesTab();
         }
@@ -15460,7 +15477,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260926-p0-sync"></script>
+    <script src="/colaboradores/pos-module.js?v=20260926-soft-pull"></script>
     <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
     <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>

@@ -328,6 +328,31 @@
         return cmpIso(a, b) >= 0 ? (a || b) : (b || a);
     }
 
+    /** Compara payloads ignorando updatedAt de envoltura (evita “cambios” solo de marca). */
+    function stripWrapperUpdatedAt(value) {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+        var copy = Object.assign({}, value);
+        delete copy.updatedAt;
+        return copy;
+    }
+
+    function valuesEqual(a, b) {
+        try {
+            return JSON.stringify(stripWrapperUpdatedAt(a)) === JSON.stringify(stripWrapperUpdatedAt(b));
+        } catch (_) {
+            return false;
+        }
+    }
+
+    /** Aviso de datos remotos aplicados → la UI hidrata sin location.reload. */
+    function notifyApplied(keys) {
+        status.appliedRemote = true;
+        status.appliedKeys = keys || [];
+        emitStatus();
+        status.appliedRemote = false;
+        status.appliedKeys = [];
+    }
+
     /** Fusiona local+remoto para claves de colección; null = usar LWW. */
     function mergeStoreValues(key, localVal, remoteVal, localTs, remoteTs) {
         if (MERGE_ITEMS_KEYS[key]) {
@@ -508,29 +533,38 @@
                 status.ok = true;
                 status.lastPushAt = new Date().toISOString();
                 status.lastError = null;
-                emitStatus();
                 // Si el servidor rechazó por stale, adoptar remoto.
                 // Si aceptó con merge, adoptar el valor fusionado del servidor.
                 var rejected = res.data.rejected || [];
                 var accepted = res.data.accepted || [];
-                var applied = false;
+                var appliedKeys = [];
                 rejected.forEach(function (row) {
                     if (!row || row.reason !== 'stale') return;
                     var remote = res.data.stores && res.data.stores[row.key];
                     if (remote && 'value' in remote) {
+                        var prevStale = readLocal(row.key);
                         writeLocal(row.key, remote.value, remote.updatedAt);
-                        applied = true;
+                        if (!prevStale || !valuesEqual(prevStale.value, remote.value)) {
+                            appliedKeys.push(row.key);
+                        }
                     }
                 });
                 accepted.forEach(function (key) {
                     var remote = res.data.stores && res.data.stores[key];
                     if (!remote || !('value' in remote)) return;
                     if (!MERGE_ITEMS_KEYS[key] && !MERGE_MAP_KEYS[key] && key !== MERGE_FORMULAS_KEY) return;
+                    var prevAcc = readLocal(key);
                     writeLocal(key, remote.value, remote.updatedAt);
-                    applied = true;
+                    if (!prevAcc || !valuesEqual(prevAcc.value, remote.value)) {
+                        appliedKeys.push(key);
+                    }
                 });
-                if (applied) status.appliedRemote = true;
-                return { ok: true, accepted: accepted, rejected: rejected, appliedStale: applied };
+                if (appliedKeys.length) {
+                    notifyApplied(appliedKeys);
+                } else {
+                    emitStatus();
+                }
+                return { ok: true, accepted: accepted, rejected: rejected, appliedStale: appliedKeys.length > 0 };
             })
             .catch(function (err) {
                 status.ok = false;
@@ -653,7 +687,11 @@
                 toPush.forEach(function (k) { pendingKeys[k] = true; });
                 // También cualquier escritura que ocurrió durante el boot.
                 bootDone = true;
-                emitStatus();
+                if (applied.length) {
+                    notifyApplied(applied);
+                } else {
+                    emitStatus();
+                }
                 return flushPush().then(function (pushRes) {
                     return {
                         ok: true,
@@ -697,13 +735,14 @@
     }
 
     // Reintento al volver online / foco / cada 45s.
+    // Aplica a localStorage + hidrata UI; no hace location.reload (evita parpadeo).
     function softPullAndApply() {
         if (!bootDone || !getToken()) return;
         // Primero subir pendientes locales para no perder ventas/gastos recientes.
         flushPush().then(function () {
             return pullAll();
         }).then(function (remoteStores) {
-            var needReload = false;
+            var applied = [];
             var toPush = [];
             SYNC_KEYS.forEach(function (key) {
                 var local = readLocal(key);
@@ -714,7 +753,7 @@
                 }
                 if (!local) {
                     writeLocal(key, remote.value, remote.updatedAt);
-                    needReload = true;
+                    applied.push(key);
                     return;
                 }
                 var merged = mergeStoreValues(
@@ -726,27 +765,31 @@
                 );
                 if (merged) {
                     if (merged.applyLocal) {
-                        writeLocal(key, merged.value, merged.updatedAt);
-                        needReload = true;
+                        if (!valuesEqual(local.value, merged.value)) {
+                            writeLocal(key, merged.value, merged.updatedAt);
+                            applied.push(key);
+                        } else if (cmpIso(merged.updatedAt, local.updatedAt) !== 0) {
+                            // Solo alinear marca de tiempo; sin re-render.
+                            writeLocal(key, merged.value, merged.updatedAt);
+                        }
                     }
                     if (merged.push) toPush.push(key);
                     return;
                 }
                 if (cmpIso(remote.updatedAt, local.updatedAt) > 0) {
-                    writeLocal(key, remote.value, remote.updatedAt);
-                    needReload = true;
+                    if (!valuesEqual(local.value, remote.value)) {
+                        writeLocal(key, remote.value, remote.updatedAt);
+                        applied.push(key);
+                    } else {
+                        // Remoto “más nuevo” pero mismo contenido → solo meta, sin parpadeo.
+                        writeLocal(key, remote.value, remote.updatedAt);
+                    }
                 }
             });
             toPush.forEach(function (k) { pendingKeys[k] = true; });
-            emitStatus();
             var pushPromise = toPush.length ? flushPush() : Promise.resolve();
             return pushPromise.then(function () {
-                if (needReload) {
-                    try {
-                        sessionStorage.setItem(RELOAD_FLAG, '1');
-                    } catch (_) {}
-                    location.reload();
-                }
+                if (applied.length) notifyApplied(applied);
             });
         }).catch(function () {});
     }
