@@ -54,6 +54,11 @@ const MERGE_MAP_KEYS = new Set([
   's35_sale_edits_v1'
 ]);
 
+/** Fórmulas: merge por slug según dosis (no LWW de documento entero). */
+const MERGE_FORMULAS_KEYS = new Set([
+  's35_plant_formulas_v3'
+]);
+
 function isHistoricalImportSale(row) {
   if (!row) return false;
   if (row.user === 'import-historico') return true;
@@ -128,6 +133,79 @@ function mergeByIdMaps(prevValue, nextValue, updatedAt) {
   const out = Object.assign({}, base, { byId: outMap });
   if (updatedAt) out.updatedAt = updatedAt;
   return out;
+}
+
+function isPackagingFormulaLine(it) {
+  if (!it) return false;
+  const role = String(it.role || '');
+  if (role === 'Empaque' || /empaque/i.test(role)) return true;
+  const pid = String(it.plantId || '');
+  return /^saco-|^cubeta-/i.test(pid);
+}
+
+function formulaDoseScore(f) {
+  if (!f || typeof f !== 'object') return 0;
+  let score = 0;
+  function consider(items) {
+    (items || []).forEach(function (it) {
+      if (!it || isPackagingFormulaLine(it)) return;
+      const amt = Number(it.amount) || 0;
+      if (amt > 0) score += 100 + Math.min(amt, 1e6) / 1e6;
+      else score += 1;
+    });
+  }
+  consider(f.items);
+  (f.versions || []).forEach(function (ver) {
+    if (ver) consider(ver.items);
+  });
+  return score;
+}
+
+function extractFormulaMap(value) {
+  if (!value || typeof value !== 'object') return {};
+  if (value.items && typeof value.items === 'object' && !Array.isArray(value.items)) {
+    return value.items;
+  }
+  const skip = { updatedAt: 1, items: 1, byId: 1, map: 1 };
+  const out = {};
+  Object.keys(value).forEach(function (k) {
+    if (skip[k]) return;
+    if (value[k] && typeof value[k] === 'object') out[k] = value[k];
+  });
+  return out;
+}
+
+function mergeFormulasValue(prevValue, nextValue, updatedAt, preferNextOnTie) {
+  const prevMap = extractFormulaMap(prevValue);
+  const nextMap = extractFormulaMap(nextValue);
+  const outMap = {};
+  const slugs = {};
+  Object.keys(prevMap).forEach(function (s) { slugs[s] = true; });
+  Object.keys(nextMap).forEach(function (s) { slugs[s] = true; });
+  Object.keys(slugs).forEach(function (slug) {
+    const a = prevMap[slug];
+    const b = nextMap[slug];
+    if (!a) { outMap[slug] = b; return; }
+    if (!b) { outMap[slug] = a; return; }
+    const sa = formulaDoseScore(a);
+    const sb = formulaDoseScore(b);
+    if (sb > sa) outMap[slug] = b;
+    else if (sa > sb) outMap[slug] = a;
+    else outMap[slug] = preferNextOnTie ? b : a;
+  });
+  const base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
+    ? nextValue
+    : ((prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue)) ? prevValue : {});
+  const out = Object.assign({}, base, { items: outMap });
+  if (updatedAt) out.updatedAt = updatedAt;
+  return out;
+}
+
+function formulasDoseTotal(value) {
+  const map = extractFormulaMap(value);
+  let total = 0;
+  Object.keys(map).forEach(function (s) { total += formulaDoseScore(map[s]); });
+  return total;
 }
 
 /** Migra un documento legado `plant_state` (sync anterior) a claves panel_state. */
@@ -279,10 +357,10 @@ module.exports = async function handler(req, res) {
         }
         const updatedAt = normalizeIso(entry.updatedAt) || new Date().toISOString();
         const prev = byId[key];
-        const isMergeKey = MERGE_ITEMS_KEYS.has(key) || MERGE_MAP_KEYS.has(key);
+        const isMergeKey = MERGE_ITEMS_KEYS.has(key) || MERGE_MAP_KEYS.has(key) || MERGE_FORMULAS_KEYS.has(key);
 
-        // Colecciones: fusionar siempre (aunque el cliente venga "stale") para no
-        // perder tickets/gastos únicos del otro lado. El resto sigue LWW estricto.
+        // Colecciones / fórmulas: fusionar siempre (aunque el cliente venga "stale") para no
+        // perder tickets/gastos/dosis únicos del otro lado. El resto sigue LWW estricto.
         if (!isMergeKey && prev && prev.updatedAt && cmpIso(updatedAt, prev.updatedAt) < 0) {
           rejected.push({
             key: key,
@@ -300,17 +378,26 @@ module.exports = async function handler(req, res) {
             valueToStore = mergeItemsValue(key, prev.value, entry.value, updatedAt);
           } else if (MERGE_MAP_KEYS.has(key)) {
             valueToStore = mergeByIdMaps(prev.value, entry.value, updatedAt);
+          } else if (MERGE_FORMULAS_KEYS.has(key)) {
+            // preferNextOnTie: el cliente que escribe gana empates de riqueza.
+            valueToStore = mergeFormulasValue(prev.value, entry.value, updatedAt, true);
           }
           // Si el remoto era más nuevo, conservar su marca salvo que el merge
-          // aportó ítems nuevos (entonces "ahora" para propagar la unión).
+          // aportó ítems/dosis nuevos (entonces "ahora" para propagar la unión).
           if (prev.updatedAt && cmpIso(updatedAt, prev.updatedAt) < 0) {
-            const prevCount = MERGE_ITEMS_KEYS.has(key)
-              ? extractItems(prev.value).length
-              : Object.keys((prev.value && prev.value.byId) || {}).length;
-            const nextCount = MERGE_ITEMS_KEYS.has(key)
-              ? extractItems(valueToStore).length
-              : Object.keys((valueToStore && valueToStore.byId) || {}).length;
-            tsToStore = nextCount > prevCount
+            let enriched = false;
+            if (MERGE_ITEMS_KEYS.has(key)) {
+              const prevCount = extractItems(prev.value).length;
+              const nextCount = extractItems(valueToStore).length;
+              enriched = nextCount > prevCount;
+            } else if (MERGE_MAP_KEYS.has(key)) {
+              const prevCount = Object.keys((prev.value && prev.value.byId) || {}).length;
+              const nextCount = Object.keys((valueToStore && valueToStore.byId) || {}).length;
+              enriched = nextCount > prevCount;
+            } else if (MERGE_FORMULAS_KEYS.has(key)) {
+              enriched = formulasDoseTotal(valueToStore) > formulasDoseTotal(prev.value) + 0.001;
+            }
+            tsToStore = enriched
               ? new Date().toISOString()
               : (normalizeIso(prev.updatedAt) || prev.updatedAt);
             if (valueToStore && typeof valueToStore === 'object') {
@@ -320,6 +407,8 @@ module.exports = async function handler(req, res) {
         } else if (MERGE_ITEMS_KEYS.has(key)) {
           // Primera escritura: igual limpiar imports históricos de ventas.
           valueToStore = mergeItemsValue(key, null, entry.value, updatedAt);
+        } else if (MERGE_FORMULAS_KEYS.has(key)) {
+          valueToStore = mergeFormulasValue(null, entry.value, updatedAt, true);
         }
 
         await col.updateOne(
