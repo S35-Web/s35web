@@ -2900,7 +2900,7 @@
             height: 16px;
             accent-color: var(--accent, #2563eb);
         }
-        #posGenerateModal .gen-lines-wrap { overflow: auto; }
+        #posGenerateModal .gen-lines-wrap { overflow: visible; }
         #posGenerateModal .gen-lines {
             width: 100%;
             border-collapse: collapse;
@@ -2931,6 +2931,29 @@
             background: var(--panel);
             color: var(--text);
             font: inherit;
+        }
+        #posGenerateModal .pos-client-picker { width: 100%; }
+        #posGenerateModal .form-grid label.span-2 > .pos-client-picker { margin-top: 0; }
+        #posGenerateModal .pos-client-popover {
+            bottom: auto;
+            top: calc(100% + 6px);
+            width: 100%;
+            max-height: min(320px, 40vh);
+            z-index: 80;
+        }
+        #posGenerateModal .form-grid .pos-client-trigger { height: 36px; }
+        #posGenerateModal .gen-lines .gen-product-picker { min-width: 148px; max-width: 220px; }
+        #posGenerateModal .gen-lines .pos-client-trigger {
+            height: 32px;
+            min-height: 32px;
+            padding: 0 8px;
+            font-size: 13px;
+            background: var(--panel);
+            border-radius: 6px;
+        }
+        #posGenerateModal .gen-lines .pos-client-popover {
+            width: min(300px, 80vw);
+            max-height: min(280px, 36vh);
         }
         #posGenerateModal .gen-lines .gen-qty { max-width: 72px; }
         #posGenerateModal .gen-lines .gen-price { max-width: 96px; }
@@ -7781,7 +7804,27 @@
                             <input type="text" id="genTicketNote" maxlength="240" placeholder="Motivo / regularización" autocomplete="off">
                         </label>
                         <label class="span-2">Cliente
-                            <select id="genTicketClient" aria-label="Cliente del ticket"></select>
+                            <div class="pos-client-picker" id="genTicketClientPicker">
+                                <input type="hidden" id="genTicketClient" value="mostrador" autocomplete="off">
+                                <button type="button" class="pos-client-trigger" id="genTicketClientTrigger"
+                                    aria-haspopup="listbox" aria-expanded="false" aria-controls="genTicketClientList"
+                                    aria-label="Cliente del ticket">
+                                    <span class="pos-client-trigger-text">
+                                        <span class="pos-client-trigger-label" id="genTicketClientTriggerLabel">Mostrador</span>
+                                        <span class="pos-client-trigger-badge" id="genTicketClientTriggerBadge">Mostrador</span>
+                                    </span>
+                                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                </button>
+                                <div class="pos-client-popover" id="genTicketClientPopover" hidden role="dialog" aria-label="Buscar cliente">
+                                    <div class="pos-client-search-wrap">
+                                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                        <input type="search" id="genTicketClientSearch" class="pos-client-search"
+                                            placeholder="Nombre, empresa, teléfono, email o RFC" autocomplete="off"
+                                            aria-autocomplete="list" aria-controls="genTicketClientList">
+                                    </div>
+                                    <div class="pos-client-list" id="genTicketClientList" role="listbox"></div>
+                                </div>
+                            </div>
                         </label>
                         <label>Pago
                             <select id="genTicketPay">

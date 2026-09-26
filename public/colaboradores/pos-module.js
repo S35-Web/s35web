@@ -6071,13 +6071,44 @@
         }
     }
 
+    let genClientPickerOpen = false;
+    let genClientPickerActiveIdx = -1;
+    let genProductPickerRow = null;
+    let genProductPickerActiveIdx = -1;
+
+    function genProductPickerHtml(selectedId) {
+        const id = selectedId || '';
+        const cat = id ? catalogById(id) : null;
+        const r = id && !cat ? recipeBySlug(id) : null;
+        const label = cat ? cat.name : (r ? r.name : (id || 'Producto…'));
+        const isEmpty = !id;
+        return '<div class="pos-client-picker gen-product-picker">' +
+            '<input type="hidden" class="gen-product" data-gen-field="product" value="' + esc(id) + '" autocomplete="off">' +
+            '<button type="button" class="pos-client-trigger gen-product-trigger' +
+            (isEmpty ? ' is-placeholder' : '') + '"' +
+            ' aria-haspopup="listbox" aria-expanded="false" aria-label="Buscar producto">' +
+            '<span class="pos-client-trigger-text">' +
+            '<span class="pos-client-trigger-label">' + esc(label) + '</span>' +
+            '</span>' +
+            '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>' +
+            '</button>' +
+            '<div class="pos-client-popover gen-product-popover" hidden role="dialog" aria-label="Buscar producto">' +
+            '<div class="pos-client-search-wrap">' +
+            '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>' +
+            '<input type="search" class="pos-client-search gen-product-search"' +
+            ' placeholder="Nombre o código…" autocomplete="off" aria-autocomplete="list">' +
+            '</div>' +
+            '<div class="pos-client-list gen-product-list" role="listbox"></div>' +
+            '</div></div>';
+    }
+
     function genTicketLineRowHtml(it, idx) {
         it = it || {};
         const qty = Number(it.qty) || 1;
         const price = Number(it.price) || 0;
         const line = it.lineTotal != null ? Number(it.lineTotal) : qty * price;
         return '<tr data-gen-idx="' + idx + '">' +
-            '<td><select class="gen-product" data-gen-field="product">' + catalogProductOptionsHtml(it.product || '') + '</select></td>' +
+            '<td>' + genProductPickerHtml(it.product || '') + '</td>' +
             '<td><input type="text" data-gen-field="name" value="' + esc(it.name || '') + '" placeholder="Descripción"></td>' +
             '<td class="num"><input class="gen-qty" type="number" min="0" step="any" data-gen-field="qty" value="' + esc(String(qty)) + '"></td>' +
             '<td class="num"><input class="gen-price" type="number" min="0" step="0.01" data-gen-field="price" value="' + esc(String(price)) + '"></td>' +
@@ -6086,19 +6117,288 @@
             '</tr>';
     }
 
-    function fillGenTicketClientSelect() {
-        const sel = document.getElementById('genTicketClient');
-        if (!sel) return;
-        const cur = sel.value || POS_CLIENT_WALKIN;
-        const sorted = clients.slice().sort(function (a, b) {
-            return String(a.name || '').localeCompare(String(b.name || ''), 'es');
+    function syncGenTicketClientTrigger() {
+        const labelEl = document.getElementById('genTicketClientTriggerLabel');
+        const badgeEl = document.getElementById('genTicketClientTriggerBadge');
+        const trigger = document.getElementById('genTicketClientTrigger');
+        const hid = document.getElementById('genTicketClient');
+        if (!labelEl || !hid) return;
+        const id = hid.value || POS_CLIENT_WALKIN;
+        if (trigger) trigger.classList.remove('is-placeholder');
+        if (id === POS_CLIENT_WALKIN || !id) {
+            labelEl.textContent = 'Mostrador';
+            if (badgeEl) {
+                badgeEl.hidden = false;
+                badgeEl.textContent = 'Mostrador';
+                badgeEl.classList.remove('is-dist');
+            }
+            return;
+        }
+        const client = clientById(id);
+        if (!client) {
+            hid.value = POS_CLIENT_WALKIN;
+            labelEl.textContent = 'Mostrador';
+            if (badgeEl) {
+                badgeEl.hidden = false;
+                badgeEl.textContent = 'Mostrador';
+                badgeEl.classList.remove('is-dist');
+            }
+            return;
+        }
+        labelEl.textContent = clientDisplay(client);
+        if (badgeEl) {
+            badgeEl.hidden = false;
+            badgeEl.textContent = clientTypeLabel(client);
+            badgeEl.classList.toggle('is-dist', isDistributorClient(client));
+        }
+    }
+
+    function filteredGenTicketClients() {
+        const q = (document.getElementById('genTicketClientSearch') &&
+            document.getElementById('genTicketClientSearch').value || '').toLowerCase().trim();
+        return clients.slice().sort(function (a, b) {
+            return String(a.name).localeCompare(String(b.name), 'es');
+        }).filter(function (c) {
+            return !q || clientPickerHaystack(c).includes(q);
         });
-        sel.innerHTML = '<option value="' + esc(POS_CLIENT_WALKIN) + '">Mostrador</option>' +
-            sorted.map(function (c) {
-                return '<option value="' + esc(c.id) + '">' + esc(clientDisplay(c)) + '</option>';
-            }).join('');
-        sel.value = cur;
-        if (!sel.value) sel.value = POS_CLIENT_WALKIN;
+    }
+
+    function renderGenTicketClientPickerList() {
+        const listEl = document.getElementById('genTicketClientList');
+        const hid = document.getElementById('genTicketClient');
+        if (!listEl) return;
+        const current = (hid && hid.value) || POS_CLIENT_WALKIN;
+        const list = filteredGenTicketClients();
+        const q = (document.getElementById('genTicketClientSearch') &&
+            document.getElementById('genTicketClientSearch').value || '').trim();
+        const rows = [];
+        rows.push(
+            '<button type="button" class="pos-client-option' +
+            (current === POS_CLIENT_WALKIN ? ' is-selected' : '') +
+            '" role="option" data-gen-client-id="' + POS_CLIENT_WALKIN + '" aria-selected="' +
+            (current === POS_CLIENT_WALKIN ? 'true' : 'false') + '">' +
+            '<span class="pos-client-option-name">Mostrador</span>' +
+            '<span class="badge">Opción</span>' +
+            '<span class="pos-client-option-meta">Venta sin cliente registrado</span>' +
+            '</button>'
+        );
+        list.forEach(function (c) {
+            const dist = isDistributorClient(c);
+            const metaParts = [c.company, c.phone, c.email, c.rfc].filter(Boolean);
+            const metaHtml = metaParts.map(function (part) {
+                return highlightClientMatch(part, q);
+            }).join(' · ');
+            rows.push(
+                '<button type="button" class="pos-client-option' +
+                (current === c.id ? ' is-selected' : '') +
+                '" role="option" data-gen-client-id="' + esc(c.id) + '" aria-selected="' +
+                (current === c.id ? 'true' : 'false') + '">' +
+                '<span class="pos-client-option-name">' + highlightClientMatch(c.name, q) + '</span>' +
+                '<span class="badge' + (dist ? ' b-primary' : '') + '">' + esc(clientTypeLabel(c)) + '</span>' +
+                (metaHtml ? '<span class="pos-client-option-meta">' + metaHtml + '</span>' : '') +
+                '</button>'
+            );
+        });
+        if (!list.length && q) {
+            listEl.innerHTML = rows[0] + '<div class="pos-client-option-empty">Sin coincidencias</div>';
+        } else {
+            listEl.innerHTML = rows.join('');
+        }
+        const options = listEl.querySelectorAll('.pos-client-option');
+        if (genClientPickerActiveIdx < 0 || genClientPickerActiveIdx >= options.length) {
+            genClientPickerActiveIdx = 0;
+        }
+        options.forEach(function (opt, i) {
+            opt.classList.toggle('is-active', i === genClientPickerActiveIdx);
+        });
+        const active = options[genClientPickerActiveIdx];
+        if (active && typeof active.scrollIntoView === 'function') {
+            active.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    function openGenTicketClientPicker() {
+        const pop = document.getElementById('genTicketClientPopover');
+        const trigger = document.getElementById('genTicketClientTrigger');
+        const search = document.getElementById('genTicketClientSearch');
+        if (!pop || genClientPickerOpen) return;
+        closeGenProductPicker();
+        genClientPickerOpen = true;
+        pop.hidden = false;
+        if (trigger) trigger.setAttribute('aria-expanded', 'true');
+        if (search) search.value = '';
+        genClientPickerActiveIdx = 0;
+        renderGenTicketClientPickerList();
+        requestAnimationFrame(function () {
+            if (search) search.focus();
+        });
+    }
+
+    function closeGenTicketClientPicker() {
+        const pop = document.getElementById('genTicketClientPopover');
+        const trigger = document.getElementById('genTicketClientTrigger');
+        if (!genClientPickerOpen) return;
+        genClientPickerOpen = false;
+        if (pop) pop.hidden = true;
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        genClientPickerActiveIdx = -1;
+    }
+
+    function setGenTicketClientId(id) {
+        const hid = document.getElementById('genTicketClient');
+        if (hid) hid.value = id || POS_CLIENT_WALKIN;
+        syncGenTicketClientTrigger();
+        closeGenTicketClientPicker();
+    }
+
+    function fillGenTicketClientSelect() {
+        const hid = document.getElementById('genTicketClient');
+        if (!hid) return;
+        const cur = hid.value || POS_CLIENT_WALKIN;
+        if (cur !== POS_CLIENT_WALKIN && !clientById(cur)) {
+            hid.value = POS_CLIENT_WALKIN;
+        } else {
+            hid.value = cur || POS_CLIENT_WALKIN;
+        }
+        syncGenTicketClientTrigger();
+        if (genClientPickerOpen) renderGenTicketClientPickerList();
+    }
+
+    function syncGenProductTrigger(tr) {
+        if (!tr) return;
+        const hid = tr.querySelector('[data-gen-field="product"]');
+        const label = tr.querySelector('.gen-product-trigger .pos-client-trigger-label');
+        const trigger = tr.querySelector('.gen-product-trigger');
+        if (!hid || !label) return;
+        const id = (hid.value || '').trim();
+        if (!id) {
+            label.textContent = 'Producto…';
+            if (trigger) trigger.classList.add('is-placeholder');
+            return;
+        }
+        const cat = catalogById(id);
+        const r = !cat ? recipeBySlug(id) : null;
+        label.textContent = cat ? cat.name : (r ? r.name : id);
+        if (trigger) trigger.classList.remove('is-placeholder');
+    }
+
+    function productPickerHaystack(p) {
+        return [p.name, p.code, p.family, p.id, p.listName]
+            .map(function (v) { return String(v || '').toLowerCase(); })
+            .join(' ');
+    }
+
+    function filteredGenProducts(tr) {
+        const search = tr && tr.querySelector('.gen-product-search');
+        const q = (search && search.value || '').toLowerCase().trim();
+        return pricedCatalog().slice().sort(function (a, b) {
+            return String(a.name || '').localeCompare(String(b.name || ''), 'es');
+        }).filter(function (p) {
+            return !q || productPickerHaystack(p).includes(q);
+        });
+    }
+
+    function renderGenProductPickerList() {
+        const tr = genProductPickerRow;
+        if (!tr) return;
+        const listEl = tr.querySelector('.gen-product-list');
+        const hid = tr.querySelector('[data-gen-field="product"]');
+        if (!listEl) return;
+        const current = hid ? (hid.value || '') : '';
+        const list = filteredGenProducts(tr);
+        const search = tr.querySelector('.gen-product-search');
+        const q = (search && search.value || '').trim();
+        const rows = [];
+        rows.push(
+            '<button type="button" class="pos-client-option' + (!current ? ' is-selected' : '') +
+            '" role="option" data-gen-product-id="" aria-selected="' + (!current ? 'true' : 'false') + '">' +
+            '<span class="pos-client-option-name">Producto…</span>' +
+            '<span class="badge">Vacío</span>' +
+            '</button>'
+        );
+        list.forEach(function (p) {
+            const metaParts = [p.code, p.family].filter(Boolean);
+            const metaHtml = metaParts.map(function (part) {
+                return highlightClientMatch(part, q);
+            }).join(' · ');
+            rows.push(
+                '<button type="button" class="pos-client-option' +
+                (current === p.id ? ' is-selected' : '') +
+                '" role="option" data-gen-product-id="' + esc(p.id) + '" aria-selected="' +
+                (current === p.id ? 'true' : 'false') + '">' +
+                '<span class="pos-client-option-name">' + highlightClientMatch(p.name, q) + '</span>' +
+                (metaHtml ? '<span class="pos-client-option-meta">' + metaHtml + '</span>' : '') +
+                '</button>'
+            );
+        });
+        if (!list.length && q) {
+            listEl.innerHTML = rows[0] + '<div class="pos-client-option-empty">Sin coincidencias</div>';
+        } else {
+            listEl.innerHTML = rows.join('');
+        }
+        const options = listEl.querySelectorAll('.pos-client-option');
+        if (genProductPickerActiveIdx < 0 || genProductPickerActiveIdx >= options.length) {
+            genProductPickerActiveIdx = 0;
+        }
+        options.forEach(function (opt, i) {
+            opt.classList.toggle('is-active', i === genProductPickerActiveIdx);
+        });
+        const active = options[genProductPickerActiveIdx];
+        if (active && typeof active.scrollIntoView === 'function') {
+            active.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    function openGenProductPicker(tr) {
+        if (!tr) return;
+        closeGenTicketClientPicker();
+        if (genProductPickerRow && genProductPickerRow !== tr) closeGenProductPicker();
+        const pop = tr.querySelector('.gen-product-popover');
+        const trigger = tr.querySelector('.gen-product-trigger');
+        const search = tr.querySelector('.gen-product-search');
+        if (!pop) return;
+        genProductPickerRow = tr;
+        genProductPickerActiveIdx = 0;
+        pop.hidden = false;
+        if (trigger) trigger.setAttribute('aria-expanded', 'true');
+        if (search) search.value = '';
+        renderGenProductPickerList();
+        requestAnimationFrame(function () {
+            if (search) search.focus();
+        });
+    }
+
+    function closeGenProductPicker() {
+        if (!genProductPickerRow) return;
+        const tr = genProductPickerRow;
+        const pop = tr.querySelector('.gen-product-popover');
+        const trigger = tr.querySelector('.gen-product-trigger');
+        if (pop) pop.hidden = true;
+        if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        genProductPickerRow = null;
+        genProductPickerActiveIdx = -1;
+    }
+
+    function applyGenProductToRow(tr, productId) {
+        if (!tr) return;
+        const hid = tr.querySelector('[data-gen-field="product"]');
+        const product = (productId || '').trim();
+        if (hid) hid.value = product;
+        syncGenProductTrigger(tr);
+        const cat = product ? catalogById(product) : null;
+        const r = product && !cat ? recipeBySlug(product) : null;
+        const nameInput = tr.querySelector('[data-gen-field="name"]');
+        const priceInput = tr.querySelector('[data-gen-field="price"]');
+        if (nameInput && cat) nameInput.value = cat.name || '';
+        else if (nameInput && r) nameInput.value = r.name || '';
+        else if (nameInput && !product) nameInput.value = '';
+        if (priceInput && product) {
+            priceInput.value = String(unitPrice(product, 1));
+        } else if (priceInput && !product) {
+            priceInput.value = '0';
+        }
+        closeGenProductPicker();
+        refreshGenTicketTotals();
     }
 
     function refreshGenTicketTotals() {
@@ -6225,6 +6525,8 @@
     }
 
     function closePosGenerateModal() {
+        closeGenTicketClientPicker();
+        closeGenProductPicker();
         const modal = document.getElementById('posGenerateModal');
         if (!modal) return;
         modal.classList.remove('show');
@@ -7713,48 +8015,191 @@
             genTicketAddLine.addEventListener('click', function () {
                 const body = document.getElementById('genTicketLinesBody');
                 if (!body) return;
+                closeGenProductPicker();
                 body.insertAdjacentHTML('beforeend', genTicketLineRowHtml({ qty: 1, price: 0 }, body.children.length));
                 refreshGenTicketTotals();
+            });
+        }
+        const genTicketClientTrigger = document.getElementById('genTicketClientTrigger');
+        const genTicketClientSearch = document.getElementById('genTicketClientSearch');
+        const genTicketClientList = document.getElementById('genTicketClientList');
+        if (genTicketClientTrigger) {
+            genTicketClientTrigger.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (genClientPickerOpen) closeGenTicketClientPicker();
+                else openGenTicketClientPicker();
+            });
+        }
+        if (genTicketClientSearch) {
+            genTicketClientSearch.addEventListener('input', function () {
+                genClientPickerActiveIdx = 0;
+                renderGenTicketClientPickerList();
+            });
+            genTicketClientSearch.addEventListener('keydown', function (e) {
+                if (!genClientPickerOpen) return;
+                const options = genTicketClientList
+                    ? genTicketClientList.querySelectorAll('.pos-client-option')
+                    : [];
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeGenTicketClientPicker();
+                    if (genTicketClientTrigger) genTicketClientTrigger.focus();
+                    return;
+                }
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (!options.length) return;
+                    genClientPickerActiveIdx = Math.min(options.length - 1, genClientPickerActiveIdx + 1);
+                    renderGenTicketClientPickerList();
+                    return;
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!options.length) return;
+                    genClientPickerActiveIdx = Math.max(0, genClientPickerActiveIdx - 1);
+                    renderGenTicketClientPickerList();
+                    return;
+                }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const opt = options[genClientPickerActiveIdx];
+                    if (opt) setGenTicketClientId(opt.getAttribute('data-gen-client-id') || POS_CLIENT_WALKIN);
+                }
+            });
+        }
+        if (genTicketClientList) {
+            genTicketClientList.addEventListener('click', function (e) {
+                const opt = e.target.closest('.pos-client-option');
+                if (!opt) return;
+                setGenTicketClientId(opt.getAttribute('data-gen-client-id') || POS_CLIENT_WALKIN);
+            });
+            genTicketClientList.addEventListener('mousemove', function (e) {
+                const opt = e.target.closest('.pos-client-option');
+                if (!opt || !genTicketClientList.contains(opt)) return;
+                const options = genTicketClientList.querySelectorAll('.pos-client-option');
+                const idx = Array.prototype.indexOf.call(options, opt);
+                if (idx < 0 || idx === genClientPickerActiveIdx) return;
+                genClientPickerActiveIdx = idx;
+                options.forEach(function (el, i) {
+                    el.classList.toggle('is-active', i === idx);
+                });
             });
         }
         const genTicketLines = document.getElementById('genTicketLinesBody');
         if (genTicketLines) {
             genTicketLines.addEventListener('click', function (e) {
+                const prodTrigger = e.target.closest('.gen-product-trigger');
+                if (prodTrigger) {
+                    e.preventDefault();
+                    const tr = prodTrigger.closest('tr');
+                    if (!tr) return;
+                    if (genProductPickerRow === tr) closeGenProductPicker();
+                    else openGenProductPicker(tr);
+                    return;
+                }
+                const prodOpt = e.target.closest('[data-gen-product-id]');
+                if (prodOpt && genTicketLines.contains(prodOpt)) {
+                    e.preventDefault();
+                    applyGenProductToRow(prodOpt.closest('tr'), prodOpt.getAttribute('data-gen-product-id') || '');
+                    return;
+                }
                 const rm = e.target.closest('[data-gen-remove]');
                 if (!rm) return;
                 const tr = rm.closest('tr');
+                if (tr && genProductPickerRow === tr) closeGenProductPicker();
                 if (tr && genTicketLines.children.length > 1) tr.remove();
                 else if (tr) {
-                    tr.querySelectorAll('input, select').forEach(function (el) {
-                        if (el.tagName === 'SELECT') el.selectedIndex = 0;
-                        else el.value = el.type === 'number' ? (el.classList.contains('gen-qty') ? '1' : '0') : '';
+                    tr.querySelectorAll('input:not([data-gen-field="product"])').forEach(function (el) {
+                        el.value = el.type === 'number' ? (el.classList.contains('gen-qty') ? '1' : '0') : '';
                     });
+                    const productHid = tr.querySelector('[data-gen-field="product"]');
+                    if (productHid) productHid.value = '';
+                    syncGenProductTrigger(tr);
                 }
                 refreshGenTicketTotals();
             });
             genTicketLines.addEventListener('input', function (e) {
+                if (e.target.classList.contains('gen-product-search')) {
+                    genProductPickerActiveIdx = 0;
+                    renderGenProductPickerList();
+                    return;
+                }
                 if (e.target.closest('[data-gen-field="qty"], [data-gen-field="price"], [data-gen-field="name"]')) {
                     refreshGenTicketTotals();
                 }
             });
-            genTicketLines.addEventListener('change', function (e) {
-                const sel = e.target.closest('[data-gen-field="product"]');
-                if (!sel) return;
-                const tr = sel.closest('tr');
-                if (!tr) return;
-                const product = sel.value;
-                const cat = product ? pricedCatalog().filter(function (p) { return p.id === product; })[0] : null;
-                const r = product ? recipeBySlug(product) : null;
-                const nameInput = tr.querySelector('[data-gen-field="name"]');
-                const priceInput = tr.querySelector('[data-gen-field="price"]');
-                if (nameInput && cat) nameInput.value = cat.name || '';
-                else if (nameInput && r) nameInput.value = r.name || '';
-                if (priceInput && product) {
-                    priceInput.value = String(unitPrice(product, 1));
+            genTicketLines.addEventListener('keydown', function (e) {
+                if (!e.target.classList.contains('gen-product-search') || !genProductPickerRow) return;
+                const listEl = genProductPickerRow.querySelector('.gen-product-list');
+                const options = listEl ? listEl.querySelectorAll('.pos-client-option') : [];
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    const trigger = genProductPickerRow.querySelector('.gen-product-trigger');
+                    closeGenProductPicker();
+                    if (trigger) trigger.focus();
+                    return;
                 }
-                refreshGenTicketTotals();
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (!options.length) return;
+                    genProductPickerActiveIdx = Math.min(options.length - 1, genProductPickerActiveIdx + 1);
+                    renderGenProductPickerList();
+                    return;
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!options.length) return;
+                    genProductPickerActiveIdx = Math.max(0, genProductPickerActiveIdx - 1);
+                    renderGenProductPickerList();
+                    return;
+                }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const opt = options[genProductPickerActiveIdx];
+                    if (opt) {
+                        applyGenProductToRow(
+                            genProductPickerRow,
+                            opt.getAttribute('data-gen-product-id') || ''
+                        );
+                    }
+                }
+            });
+            genTicketLines.addEventListener('mousemove', function (e) {
+                if (!genProductPickerRow) return;
+                const listEl = genProductPickerRow.querySelector('.gen-product-list');
+                if (!listEl) return;
+                const opt = e.target.closest('.pos-client-option');
+                if (!opt || !listEl.contains(opt)) return;
+                const options = listEl.querySelectorAll('.pos-client-option');
+                const idx = Array.prototype.indexOf.call(options, opt);
+                if (idx < 0 || idx === genProductPickerActiveIdx) return;
+                genProductPickerActiveIdx = idx;
+                options.forEach(function (el, i) {
+                    el.classList.toggle('is-active', i === idx);
+                });
             });
         }
+        document.addEventListener('mousedown', function (e) {
+            if (genClientPickerOpen) {
+                const picker = document.getElementById('genTicketClientPicker');
+                if (!picker || !picker.contains(e.target)) closeGenTicketClientPicker();
+            }
+            if (genProductPickerRow) {
+                const picker = genProductPickerRow.querySelector('.gen-product-picker');
+                if (!picker || !picker.contains(e.target)) closeGenProductPicker();
+            }
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            if (genClientPickerOpen &&
+                !(genTicketClientSearch && document.activeElement === genTicketClientSearch)) {
+                closeGenTicketClientPicker();
+            }
+            if (genProductPickerRow) {
+                const search = genProductPickerRow.querySelector('.gen-product-search');
+                if (!(search && document.activeElement === search)) closeGenProductPicker();
+            }
+        });
         const genGastoCancel = document.getElementById('genGastoCancel');
         if (genGastoCancel) genGastoCancel.addEventListener('click', closePosGenerateModal);
         const genGastoForm = document.getElementById('genGastoForm');
