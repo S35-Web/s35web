@@ -939,6 +939,21 @@
         return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
             'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
     }
+    /** datetime-local → ISO UTC (mismo criterio que checkout normal). */
+    function isoFromDatetimeLocal(raw) {
+        if (!raw) return new Date().toISOString();
+        const d = new Date(raw);
+        if (isNaN(d.getTime())) return new Date().toISOString();
+        return d.toISOString();
+    }
+    function defaultGenerateTicketDatetimeLocal() {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        d.setHours(12, 0, 0, 0);
+        const pad = function (n) { return String(n).padStart(2, '0'); };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+            'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+    }
 
     function catalogProductOptionsHtml(selected) {
         const list = pricedCatalog().slice().sort(function (a, b) {
@@ -3068,6 +3083,7 @@
     /** Gastos de caja (efectivo saliente). */
     let cajaGastos = [];
     let posMode = 'venta';
+    let posGenerateTicketMode = false;
 
     let monthAvgPriceCache = null;
     function invalidateAnalyticsSalesCache() {
@@ -5665,7 +5681,16 @@
         return 'POS-' + String(sales.length + 1).padStart(4, '0');
     }
 
-    function checkout() {
+    /**
+     * Cobra el carrito actual.
+     * @param {object} [opts]
+     * @param {string} [opts.backdatedDate] ISO o datetime-local → createdAt del ticket
+     * @param {boolean} [opts.skipInventory] si true, no descuenta stock
+     * @param {string} [opts.adminNote] nota interna de regularización
+     * @param {boolean} [opts.fromGenerate] flujo «Generar ticket» desde Historial
+     */
+    function checkout(opts) {
+        opts = (opts && typeof opts === 'object' && !opts.type) ? opts : {};
         if (!cart.length) return;
         const clientKey = selectedClientId();
         if (!clientKey) {
@@ -5702,6 +5727,31 @@
         } else {
             payments = [{ method: paymentMethod, amount: roundMoney(total) }];
         }
+
+        const fromGenerate = !!(opts.fromGenerate || posGenerateTicketMode);
+        let createdAt = new Date().toISOString();
+        let skipInventory = !!opts.skipInventory;
+        let adminNote = String(opts.adminNote || '').trim();
+        if (fromGenerate) {
+            const atRaw = opts.backdatedDate != null
+                ? opts.backdatedDate
+                : ((document.getElementById('posGenerateTicketAt') || {}).value || '');
+            if (!atRaw) {
+                toast('Indica la fecha y hora del ticket');
+                const atEl = document.getElementById('posGenerateTicketAt');
+                if (atEl) atEl.focus();
+                return;
+            }
+            createdAt = isoFromDatetimeLocal(atRaw);
+            if (opts.skipInventory == null) {
+                const stockEl = document.getElementById('posGenerateTicketStock');
+                skipInventory = !(stockEl && stockEl.checked);
+            }
+            if (!adminNote) {
+                adminNote = String((document.getElementById('posGenerateTicketNote') || {}).value || '').trim();
+            }
+        }
+
         const saleCityId = selectedSaleCity();
         savePreferredSaleCity(saleCityId);
         const clientSnapshot = client ? {
@@ -5719,7 +5769,7 @@
         const ticket = {
             id: 'sale-' + Date.now().toString(36),
             folio: nextFolio(),
-            createdAt: new Date().toISOString(),
+            createdAt: createdAt,
             clientId: client ? client.id : null,
             client: clientSnapshot,
             customer: client ? clientDisplay(client) : 'Mostrador',
@@ -5763,8 +5813,18 @@
             sharePhone: clientSnapshot ? (clientSnapshot.phone || '') : '',
             shareEmail: clientSnapshot ? (clientSnapshot.email || '') : ''
         };
+        if (fromGenerate || skipInventory || adminNote) {
+            ticket.meta = {
+                source: fromGenerate ? 'pos-generate' : 'pos',
+                generatedAt: new Date().toISOString(),
+                skipInventory: !!skipInventory
+            };
+            if (adminNote) ticket.meta.note = adminNote;
+        }
 
-        applySaleInventoryChange([], ticket.items);
+        if (!skipInventory) {
+            applySaleInventoryChange([], ticket.items);
+        }
 
         sales.unshift(ticket);
         saveSales();
@@ -5780,10 +5840,24 @@
         closeClientPicker();
         renderCart();
         renderProducts();
-        renderHistory();
         refreshSalesDependentViews();
-        toast('Venta ' + ticket.folio + ' · ' + formatSalePayLabel(ticket) + ' · ' + billLabel(billing));
-        openSaleNoteModal(ticket);
+
+        const invHint = skipInventory ? ' · sin descontar inventario' : '';
+        toast((fromGenerate ? 'Ticket generado ' : 'Venta ') + ticket.folio + ' · ' + formatSalePayLabel(ticket) + ' · ' + billLabel(billing) + invHint);
+
+        if (fromGenerate) {
+            exitPosGenerateTicketMode();
+            focusHistoryOnSaleDate(ticket.createdAt);
+            if (window.S35PanelAPI && typeof window.S35PanelAPI.showSection === 'function') {
+                window.S35PanelAPI.showSection('salesHistory');
+            } else {
+                renderHistory();
+            }
+            openSaleNoteModal(ticket);
+        } else {
+            renderHistory();
+            openSaleNoteModal(ticket);
+        }
         renderCobranza();
     }
 
@@ -5932,6 +6006,10 @@
     }
 
     function setPosMode(mode) {
+        if (posGenerateTicketMode && mode === 'gastos') {
+            toast('Sal de «Generar ticket» para registrar gastos');
+            mode = 'venta';
+        }
         posMode = mode === 'gastos' ? 'gastos' : 'venta';
         document.querySelectorAll('#posModeTabs [data-pos-mode]').forEach(function (btn) {
             const active = btn.getAttribute('data-pos-mode') === posMode;
@@ -5946,6 +6024,67 @@
             syncGastoCityControl();
             renderGastosPanel();
         }
+    }
+
+    function syncPosGenerateTicketUi() {
+        const section = document.getElementById('venta');
+        const bar = document.getElementById('posGenerateTicketBar');
+        const title = document.getElementById('posStationTitle');
+        const checkoutBtn = document.getElementById('posCheckoutBtn');
+        if (section) section.classList.toggle('is-generate-ticket', posGenerateTicketMode);
+        if (bar) bar.hidden = !posGenerateTicketMode;
+        if (title) title.textContent = posGenerateTicketMode ? 'Generar ticket' : 'Venta';
+        if (checkoutBtn) {
+            checkoutBtn.textContent = posGenerateTicketMode ? 'Generar ticket' : 'Cobrar';
+        }
+    }
+
+    function exitPosGenerateTicketMode() {
+        if (!posGenerateTicketMode) {
+            syncPosGenerateTicketUi();
+            return;
+        }
+        posGenerateTicketMode = false;
+        const noteEl = document.getElementById('posGenerateTicketNote');
+        if (noteEl) noteEl.value = '';
+        const stockEl = document.getElementById('posGenerateTicketStock');
+        if (stockEl) stockEl.checked = true;
+        syncPosGenerateTicketUi();
+    }
+
+    function enterPosGenerateTicketMode() {
+        posGenerateTicketMode = true;
+        setPosMode('venta');
+        const atEl = document.getElementById('posGenerateTicketAt');
+        if (atEl) atEl.value = defaultGenerateTicketDatetimeLocal();
+        const stockEl = document.getElementById('posGenerateTicketStock');
+        if (stockEl) stockEl.checked = true;
+        const noteEl = document.getElementById('posGenerateTicketNote');
+        if (noteEl) noteEl.value = '';
+        syncPosGenerateTicketUi();
+        if (window.S35PanelAPI && typeof window.S35PanelAPI.showSection === 'function') {
+            window.S35PanelAPI.showSection('venta');
+        }
+        renderChips();
+        renderProducts();
+        fillClientSelect();
+        renderCart();
+        const search = document.getElementById('posProductSearch');
+        if (search) {
+            try { search.focus(); } catch (_) { /* ignore */ }
+        }
+    }
+
+    function focusHistoryOnSaleDate(iso) {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return;
+        const pad = function (n) { return String(n).padStart(2, '0'); };
+        const day = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+        const fromEl = document.getElementById('posHistoryFrom');
+        const toEl = document.getElementById('posHistoryTo');
+        if (fromEl) fromEl.value = day;
+        if (toEl) toEl.value = day;
+        historyPage = 1;
     }
 
     function syncGastoCityControl() {
@@ -7141,7 +7280,7 @@
             });
         }
         const checkoutBtn = document.getElementById('posCheckoutBtn');
-        if (checkoutBtn) checkoutBtn.addEventListener('click', checkout);
+        if (checkoutBtn) checkoutBtn.addEventListener('click', function () { checkout(); });
 
         const paySplitCb = document.getElementById('posPaySplit');
         if (paySplitCb) {
@@ -7292,19 +7431,22 @@
                 openSaleNoteById(row.getAttribute('data-open-note'));
             });
         }
-        const clearHist = document.getElementById('posClearHistoryBtn');
-        if (clearHist) {
-            clearHist.addEventListener('click', function () {
-                if (!sales.length) return;
-                if (!confirm('¿Eliminar los tickets creados en el POS? El histórico importado no se borra.')) return;
-                sales = [];
-                saveSales();
-                historyPage = 1;
-                renderHistory();
-                refreshSalesDependentViews();
-                updatePosKpis();
+        const genTicketBtn = document.getElementById('posGenerateTicketBtn');
+        if (genTicketBtn) {
+            genTicketBtn.addEventListener('click', function () {
+                enterPosGenerateTicketMode();
             });
         }
+        const genTicketCancel = document.getElementById('posGenerateTicketCancel');
+        if (genTicketCancel) {
+            genTicketCancel.addEventListener('click', function () {
+                exitPosGenerateTicketMode();
+                if (window.S35PanelAPI && typeof window.S35PanelAPI.showSection === 'function') {
+                    window.S35PanelAPI.showSection('salesHistory');
+                }
+            });
+        }
+        syncPosGenerateTicketUi();
 
         const noteClose = document.getElementById('saleNoteModalClose');
         if (noteClose) noteClose.addEventListener('click', closeSaleNoteModal);
@@ -8991,6 +9133,7 @@
             fillClientSelect();
             renderCart();
             updatePosKpis();
+            syncPosGenerateTicketUi();
             if (posMode === 'gastos') renderGastosPanel();
         } else if (id === 'clients') {
             renderClients();
