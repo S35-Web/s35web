@@ -14,6 +14,7 @@
     };
     const SALES_KEY = 's35_pos_sales';
     const CAJA_GASTOS_KEY = 's35_caja_gastos_v1';
+    const TESORERIA_MOVS_KEY = 's35_tesoreria_movs_v1';
     const SALE_EDITS_KEY = 's35_sale_edits_v1';
     const CLIENTS_KEY = 's35_pos_clients';
     const FINISHED_KEY = 's35_finished_stock';
@@ -3060,6 +3061,7 @@
         sales = loadSales();
         ensureCajaGastosPersisted();
         cajaGastos = loadCajaGastos();
+        tesoreriaMovs = loadTesoreriaMovs();
         promoCodes = loadPromoCodes();
         refreshPosAfterDataLoad();
         return { prices: prices, sales: sales, cajaGastos: cajaGastos };
@@ -3143,6 +3145,9 @@
     let analyticsSalesCache = null;
     /** Gastos de caja (efectivo saliente). */
     let cajaGastos = [];
+    /** Ajustes de tesorería (depósitos / retiros / correcciones), sync nube. */
+    let tesoreriaMovs = [];
+    let dineroCityFilter = 'all';
     let posMode = 'venta';
     let posGenerateTab = 'ticket';
 
@@ -3319,6 +3324,106 @@
     }
     function sumGastos(list) {
         return (list || []).reduce(function (n, g) { return n + (Number(g.amount) || 0); }, 0);
+    }
+
+    const TESORERIA_ACCOUNTS = [
+        { id: 'efectivo', label: 'Efectivo' },
+        { id: 'banco', label: 'Transferencias y tarjetas facturadas' },
+        { id: 'tarjeta_sf', label: 'Tarjeta sin factura' }
+    ];
+    function tesoreriaAccountLabel(id) {
+        const row = TESORERIA_ACCOUNTS.filter(function (a) { return a.id === id; })[0];
+        return row ? row.label : id;
+    }
+    function tesoreriaAccountOfPayment(method, billing) {
+        if (method === 'efectivo') return 'efectivo';
+        if (method === 'transferencia') return 'banco';
+        if (method === 'tarjeta') return billing === 'facturado' ? 'banco' : 'tarjeta_sf';
+        return null;
+    }
+    function loadTesoreriaMovsRaw() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(TESORERIA_MOVS_KEY) || 'null');
+            if (raw && Array.isArray(raw.items)) return raw.items;
+        } catch (_) {}
+        return [];
+    }
+    function isActiveTesoreriaMov(row) {
+        return !!(row && row.id && !row.deleted);
+    }
+    function loadTesoreriaMovs() {
+        return loadTesoreriaMovsRaw().filter(isActiveTesoreriaMov);
+    }
+    function saveTesoreriaMovs() {
+        const tombs = loadTesoreriaMovsRaw().filter(function (m) {
+            return m && m.id && m.deleted;
+        });
+        const liveIds = {};
+        tesoreriaMovs.forEach(function (m) {
+            if (m && m.id) liveIds[m.id] = true;
+        });
+        const items = tesoreriaMovs.slice();
+        tombs.forEach(function (t) {
+            if (!liveIds[t.id]) items.push(t);
+        });
+        localStorage.setItem(TESORERIA_MOVS_KEY, JSON.stringify({
+            items: items,
+            updatedAt: new Date().toISOString()
+        }));
+        flushCloudSoon();
+    }
+    function tesoreriaMovCity(m) {
+        return normalizeCityId((m && m.city) || 'culiacan');
+    }
+    function filterTesoreriaMovsByCity(list, cityFilter) {
+        const f = cityFilter == null ? 'all' : cityFilter;
+        if (!f || f === 'all') return list || [];
+        const id = normalizeCityId(f);
+        return (list || []).filter(function (m) { return tesoreriaMovCity(m) === id; });
+    }
+    function tesoreriaSignedAmount(mov) {
+        const amt = roundMoney(mov && mov.amount);
+        if (mov && mov.type === 'retiro') return -amt;
+        return amt;
+    }
+    function sumTesoreriaAdjustments(list, account) {
+        return (list || []).reduce(function (n, m) {
+            if (account && m.account !== account) return n;
+            return n + tesoreriaSignedAmount(m);
+        }, 0);
+    }
+    function computeDineroAccounts(cityFilter) {
+        const city = cityFilter == null ? dineroCityFilter : cityFilter;
+        const list = filterSalesByCity(salesForAnalytics(), city);
+        const buckets = {
+            efectivo: { tickets: 0, gastos: 0, ajustes: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 },
+            banco: { tickets: 0, gastos: 0, ajustes: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 },
+            tarjeta_sf: { tickets: 0, gastos: 0, ajustes: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 }
+        };
+        list.forEach(function (sale) {
+            const billing = sale.billing || 'sin_facturar';
+            salePaymentLines(sale).forEach(function (p) {
+                const account = tesoreriaAccountOfPayment(p.method, billing);
+                if (!account) return;
+                buckets[account].tickets = roundMoney(buckets[account].tickets + p.amount);
+                if (p.method === 'transferencia') {
+                    buckets[account].transfer = roundMoney(buckets[account].transfer + p.amount);
+                } else if (p.method === 'tarjeta' && billing === 'facturado') {
+                    buckets[account].tarjetaFact = roundMoney(buckets[account].tarjetaFact + p.amount);
+                } else if (p.method === 'tarjeta') {
+                    buckets[account].tarjetaSf = roundMoney(buckets[account].tarjetaSf + p.amount);
+                }
+            });
+        });
+        buckets.efectivo.gastos = roundMoney(sumGastos(filterGastosByCity(cajaGastos, city)));
+        const movs = filterTesoreriaMovsByCity(tesoreriaMovs, city);
+        TESORERIA_ACCOUNTS.forEach(function (acc) {
+            buckets[acc.id].ajustes = roundMoney(sumTesoreriaAdjustments(movs, acc.id));
+            buckets[acc.id].total = roundMoney(
+                buckets[acc.id].tickets - buckets[acc.id].gastos + buckets[acc.id].ajustes
+            );
+        });
+        return buckets;
     }
     function currentUserSnapshot() {
         let soldBy = { id: 'admin', username: 'admin', name: 'Admin', role: 'admin' };
@@ -6775,6 +6880,7 @@
         savePreferredSaleCity(city);
         renderGastosPanel();
         renderCortes();
+        renderDinero();
         return gasto;
     }
 
@@ -6817,6 +6923,7 @@
         saveCajaGastos();
         renderGastosPanel();
         renderCortes();
+        renderDinero();
         toast('Gasto eliminado');
     }
 
@@ -6861,8 +6968,185 @@
         }).join('');
     }
 
+    function dineroLinesHtml(rows) {
+        return (rows || []).map(function (r) {
+            return '<div class="dinero-line' + (r.out ? ' is-out' : '') + '">' +
+                '<span>' + esc(r.label) + '</span>' +
+                '<span class="amt">' + (r.out ? '−' : '') + money(Math.abs(r.amount)) + '</span>' +
+                '</div>';
+        }).join('');
+    }
+    function setDineroCardTotal(id, amount) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = money(amount);
+        el.classList.toggle('is-neg', amount < 0);
+    }
+    function renderDinero() {
+        const section = document.getElementById('dinero');
+        if (!section) return;
+        const citySel = document.getElementById('dineroCitySelect');
+        if (citySel && citySel.value !== dineroCityFilter) citySel.value = dineroCityFilter;
+        const acc = computeDineroAccounts(dineroCityFilter);
+        setDineroCardTotal('dineroEfectivoTotal', acc.efectivo.total);
+        setDineroCardTotal('dineroBancoTotal', acc.banco.total);
+        setDineroCardTotal('dineroTarjetaSfTotal', acc.tarjeta_sf.total);
+        const efLines = document.getElementById('dineroEfectivoLines');
+        if (efLines) {
+            efLines.innerHTML = dineroLinesHtml([
+                { label: 'Tickets en efectivo', amount: acc.efectivo.tickets },
+                { label: 'Gastos de caja', amount: acc.efectivo.gastos, out: true },
+                { label: 'Ajustes', amount: acc.efectivo.ajustes, out: acc.efectivo.ajustes < 0 }
+            ]);
+        }
+        const bankLines = document.getElementById('dineroBancoLines');
+        if (bankLines) {
+            bankLines.innerHTML = dineroLinesHtml([
+                { label: 'Transferencias', amount: acc.banco.transfer },
+                { label: 'Tarjeta facturada', amount: acc.banco.tarjetaFact },
+                { label: 'Ajustes', amount: acc.banco.ajustes, out: acc.banco.ajustes < 0 }
+            ]);
+        }
+        const cardLines = document.getElementById('dineroTarjetaSfLines');
+        if (cardLines) {
+            cardLines.innerHTML = dineroLinesHtml([
+                { label: 'Tickets tarjeta s/factura', amount: acc.tarjeta_sf.tarjetaSf },
+                { label: 'Ajustes', amount: acc.tarjeta_sf.ajustes, out: acc.tarjeta_sf.ajustes < 0 }
+            ]);
+        }
+        let inv = { materials: { value: 0, items: 0, withStock: 0 }, finished: { value: 0, units: 0, skus: 0, fallbackSkus: 0 } };
+        if (window.S35PanelAPI && typeof window.S35PanelAPI.getMoneyInventory === 'function') {
+            inv = window.S35PanelAPI.getMoneyInventory() || inv;
+        }
+        const mp = inv.materials || {};
+        const pt = inv.finished || {};
+        setDineroCardTotal('dineroMpTotal', mp.value || 0);
+        setDineroCardTotal('dineroPtTotal', pt.value || 0);
+        const mpLines = document.getElementById('dineroMpLines');
+        if (mpLines) {
+            mpLines.innerHTML = '<div class="dinero-line"><span>Materiales</span><span class="amt">' +
+                esc(String(mp.items || 0)) + '</span></div>' +
+                '<div class="dinero-line"><span>Con existencia</span><span class="amt">' +
+                esc(String(mp.withStock || 0)) + '</span></div>';
+        }
+        const ptLines = document.getElementById('dineroPtLines');
+        if (ptLines) {
+            ptLines.innerHTML = '<div class="dinero-line"><span>Sacos / unidades</span><span class="amt">' +
+                esc((pt.units || 0).toLocaleString('es-MX')) + '</span></div>' +
+                '<div class="dinero-line"><span>Con existencia</span><span class="amt">' +
+                esc(String(pt.skus || 0)) + '</span></div>' +
+                (pt.fallbackSkus
+                    ? '<div class="dinero-line"><span>Sin costo de fórmula</span><span class="amt">' +
+                        esc(String(pt.fallbackSkus)) + ' a lista</span></div>'
+                    : '');
+        }
+        const cashTotal = roundMoney(acc.efectivo.total + acc.banco.total + acc.tarjeta_sf.total);
+        const invTotal = roundMoney((mp.value || 0) + (pt.value || 0));
+        const grand = roundMoney(cashTotal + invTotal);
+        setDineroCardTotal('dineroGrandTotal', grand);
+        const hint = document.getElementById('dineroGrandHint');
+        if (hint) {
+            hint.textContent = 'Cuentas ' + money(cashTotal) + ' · Inventario ' + money(invTotal) +
+                (dineroCityFilter === 'all' ? ' · todas las ciudades' : ' · ' + cityLabel(dineroCityFilter));
+        }
+        renderDineroMovs();
+    }
+    function renderDineroMovs() {
+        const host = document.getElementById('dineroMovsList');
+        if (!host) return;
+        const list = filterTesoreriaMovsByCity(tesoreriaMovs, dineroCityFilter).slice().sort(function (a, b) {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+        if (!list.length) {
+            host.innerHTML = '<div class="dinero-mov-row"><div class="empty">Sin movimientos de cuenta. Los tickets y gastos ya se cuentan solos.</div></div>';
+            return;
+        }
+        const shown = list.slice(0, 40);
+        host.innerHTML = shown.map(function (m) {
+            const signed = tesoreriaSignedAmount(m);
+            const who = m.userName || (m.user && (m.user.name || m.user.username)) || '';
+            const typeLab = m.type === 'retiro' ? 'Retiro' : (m.type === 'ajuste' ? 'Ajuste' : 'Depósito');
+            return '<div class="dinero-mov-row" data-dinero-mov="' + esc(m.id) + '">' +
+                '<div><div class="concept">' + esc(tesoreriaAccountLabel(m.account)) + ' · ' + esc(typeLab) + '</div>' +
+                '<div class="meta">' + esc(formatInvoiceDate(new Date(m.createdAt))) +
+                    ' · ' + esc(cityLabel(tesoreriaMovCity(m))) +
+                    (who ? ' · ' + esc(who) : '') +
+                    (m.note ? ' · ' + esc(m.note) : '') +
+                '</div></div>' +
+                '<span class="amt' + (signed < 0 ? ' out' : '') + '">' +
+                    (signed < 0 ? '−' : '+') + money(Math.abs(signed)) + '</span>' +
+                '<button type="button" class="iconbtn" data-rm-dinero-mov="' + esc(m.id) + '" title="Eliminar" aria-label="Eliminar movimiento">' +
+                    '<i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>' +
+                '</div>';
+        }).join('') + (list.length > shown.length
+            ? '<div class="dinero-mov-row"><div class="empty muted">Mostrando 40 de ' + list.length + '</div></div>'
+            : '');
+    }
+    function createTesoreriaMov(payload) {
+        payload = payload || {};
+        const account = payload.account;
+        const type = payload.type === 'retiro' ? 'retiro' : (payload.type === 'ajuste' ? 'ajuste' : 'deposito');
+        const amount = roundMoney(payload.amount);
+        if (TESORERIA_ACCOUNTS.every(function (a) { return a.id !== account; })) {
+            toast('Elige una cuenta');
+            return null;
+        }
+        if (!(amount > 0)) {
+            toast('El monto debe ser mayor a 0');
+            return null;
+        }
+        const user = currentUserSnapshot();
+        const city = dineroCityFilter === 'all'
+            ? normalizeCityId(payload.city || loadPreferredSaleCity())
+            : normalizeCityId(dineroCityFilter);
+        const mov = {
+            id: 'teso-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7),
+            createdAt: new Date().toISOString(),
+            account: account,
+            type: type,
+            amount: amount,
+            note: String(payload.note || '').trim(),
+            city: city,
+            user: user,
+            userId: user.id,
+            userName: user.name || user.username
+        };
+        tesoreriaMovs.unshift(mov);
+        saveTesoreriaMovs();
+        renderDinero();
+        return mov;
+    }
+    function removeTesoreriaMov(id) {
+        const idx = tesoreriaMovs.findIndex(function (m) { return m.id === id; });
+        if (idx < 0) return;
+        const now = new Date().toISOString();
+        tesoreriaMovs.splice(idx, 1);
+        const raw = loadTesoreriaMovsRaw().filter(function (m) { return !m || m.id !== id; });
+        raw.push({ id: id, deleted: true, editedAt: now, updatedAt: now });
+        localStorage.setItem(TESORERIA_MOVS_KEY, JSON.stringify({ items: raw, updatedAt: now }));
+        saveTesoreriaMovs();
+        renderDinero();
+        toast('Movimiento eliminado');
+    }
+    function submitDineroMov(ev) {
+        if (ev) ev.preventDefault();
+        const mov = createTesoreriaMov({
+            account: (document.getElementById('dineroMovAccount') || {}).value,
+            type: (document.getElementById('dineroMovType') || {}).value,
+            amount: (document.getElementById('dineroMovAmount') || {}).value,
+            note: (document.getElementById('dineroMovNote') || {}).value
+        });
+        if (!mov) return;
+        const amountEl = document.getElementById('dineroMovAmount');
+        const noteEl = document.getElementById('dineroMovNote');
+        if (amountEl) amountEl.value = '';
+        if (noteEl) noteEl.value = '';
+        toast('Movimiento registrado · ' + tesoreriaAccountLabel(mov.account));
+    }
+
     function refreshSalesDependentViews() {
         renderCortes();
+        renderDinero();
         if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
         renderProductsMovementsChart();
         if (clientDashId) renderClientDashboard(clientDashId);
@@ -7776,6 +8060,26 @@
         }
         const gastoForm = document.getElementById('posGastoForm');
         if (gastoForm) gastoForm.addEventListener('submit', registerCajaGasto);
+        const dineroCity = document.getElementById('dineroCitySelect');
+        if (dineroCity) {
+            dineroCity.addEventListener('change', function () {
+                dineroCityFilter = dineroCity.value || 'all';
+                renderDinero();
+            });
+        }
+        const dineroForm = document.getElementById('dineroMovForm');
+        if (dineroForm) dineroForm.addEventListener('submit', submitDineroMov);
+        const dineroMovs = document.getElementById('dineroMovsList');
+        if (dineroMovs) {
+            dineroMovs.addEventListener('click', function (e) {
+                const rm = e.target.closest('[data-rm-dinero-mov]');
+                if (!rm) return;
+                const id = rm.getAttribute('data-rm-dinero-mov');
+                if (!id) return;
+                if (!window.confirm('¿Eliminar este movimiento de cuenta?')) return;
+                removeTesoreriaMov(id);
+            });
+        }
         const gastosList = document.getElementById('posGastosList');
         if (gastosList) {
             gastosList.addEventListener('click', function (e) {
@@ -9978,6 +10282,8 @@
             renderHistory();
         } else if (id === 'cortes') {
             renderCortes();
+        } else if (id === 'dinero') {
+            renderDinero();
         } else if (id === 'dashboard') {
             renderDashboardRadar();
         } else if (id === 'prices' || id === 'products') {
@@ -9999,6 +10305,7 @@
         fillHistoryClientFilter();
         renderHistory();
         renderCortes();
+        renderDinero();
         renderGastosPanel();
         renderProductsMovementsChart();
         renderClients();
@@ -10023,6 +10330,7 @@
         sales = loadSales();
         ensureCajaGastosPersisted();
         cajaGastos = loadCajaGastos();
+        tesoreriaMovs = loadTesoreriaMovs();
         clients = loadClients();
         promoCodes = loadPromoCodes();
         ensurePromoSeeds();
@@ -10034,6 +10342,7 @@
             sales = loadSales();
             ensureCajaGastosPersisted();
             cajaGastos = loadCajaGastos();
+            tesoreriaMovs = loadTesoreriaMovs();
             clients = loadClients();
             promoCodes = loadPromoCodes();
             ensurePromoSeeds();
@@ -10097,6 +10406,7 @@
             renderProductSalesAnalytics: renderProductSalesAnalytics,
             renderProductsMovementsChart: renderProductsMovementsChart,
             renderCortes: renderCortes,
+            renderDinero: renderDinero,
             renderClientDashboard: renderClientDashboard,
             openClientDashboard: openClientDashboard,
             openClientModal: openClientModal,

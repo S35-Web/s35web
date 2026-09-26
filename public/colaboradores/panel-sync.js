@@ -20,6 +20,7 @@
         's35_pos_prices_v4',
         's35_pos_sales',
         's35_caja_gastos_v1',
+        's35_tesoreria_movs_v1',
         's35_sale_edits_v1',
         's35_promo_codes_v1',
         's35_product_families',
@@ -32,6 +33,7 @@
     var MERGE_ITEMS_KEYS = {
         s35_pos_sales: true,
         s35_caja_gastos_v1: true,
+        s35_tesoreria_movs_v1: true,
         s35_production_lots: true,
         s35_compra_tickets: true,
         s35_promo_codes_v1: true

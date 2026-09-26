@@ -6596,6 +6596,98 @@
             .cortes-invoice-pills { grid-column: 1 / -1; }
             .cortes-invoice-client { grid-column: 1 / -1; }
         }
+        .dinero-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .dinero-accounts,
+        .dinero-inventory {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .dinero-inventory { grid-template-columns: 1fr 1fr; }
+        .dinero-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            background: var(--panel);
+            min-height: 168px;
+        }
+        .dinero-card h3 {
+            margin: 0 0 4px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .dinero-card .panel-sub {
+            margin: 0 0 14px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .dinero-card .val {
+            font-size: clamp(28px, 3.2vw, 36px);
+            font-weight: 500;
+            letter-spacing: -0.03em;
+            line-height: 1.05;
+            margin-bottom: 12px;
+        }
+        .dinero-card .val.is-neg { color: #b45309; }
+        .dinero-lines { display: grid; gap: 6px; }
+        .dinero-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .dinero-line .amt { color: var(--text); font-variant-numeric: tabular-nums; }
+        .dinero-line.is-out .amt { color: #b45309; }
+        .dinero-form {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 0.8fr minmax(160px, 1.4fr) auto;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 8px;
+        }
+        .dinero-form label {
+            display: grid;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .dinero-form input,
+        .dinero-form select {
+            width: 100%;
+            height: 40px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 10px;
+        }
+        .dinero-movs { margin-top: 8px; }
+        .dinero-mov-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 0;
+            border-top: 1px solid var(--border);
+        }
+        .dinero-mov-row .concept { font-size: 14px; }
+        .dinero-mov-row .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        .dinero-mov-row .amt { font-variant-numeric: tabular-nums; font-weight: 500; }
+        .dinero-mov-row .amt.out { color: #b45309; }
+        @media (max-width: 900px) {
+            .dinero-head { flex-direction: column; align-items: stretch; }
+            .dinero-accounts,
+            .dinero-inventory,
+            .dinero-form { grid-template-columns: 1fr; }
+        }
         @media (max-width: 1100px) {
             .pos-station-fields {
                 grid-template-columns: minmax(0, 1fr) minmax(160px, 180px);
@@ -6643,6 +6735,7 @@
                 </a>
                 <a href="#venta" data-section="venta" title="Venta"><i class="fa-solid fa-cash-register"></i></a>
                 <a href="#cortes" data-section="cortes" title="Cortes"><i class="fa-solid fa-chart-simple"></i></a>
+                <a href="#dinero" data-section="dinero" title="Dinero"><i class="fa-solid fa-wallet"></i></a>
                 <a href="#clients" data-section="clients" title="Clientes"><i class="fa-solid fa-user-group"></i></a>
                 <a href="#salesHistory" data-section="salesHistory" title="Historial de ventas"><i class="fa-solid fa-receipt"></i></a>
                 <a href="#products" data-section="products" title="Productos"><i class="fa-solid fa-box"></i></a>
@@ -7577,6 +7670,94 @@
                     </div>
                 </section>
 
+                <section id="dinero" class="section">
+                    <div class="dinero-head">
+                        <div>
+                            <h1 class="page-title">Dinero</h1>
+                            <p class="page-sub">Inventario de caja e inventario físico · en sincronía con la nube.</p>
+                        </div>
+                        <div class="seg-control cortes-city-menu">
+                            <select id="dineroCitySelect" aria-label="Ciudad de las cuentas">
+                                <option value="all" selected>Todas</option>
+                                <option value="culiacan">Culiacán</option>
+                                <option value="mochis">Los Mochis</option>
+                                <option value="mazatlan">Mazatlán</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="cortes-total-block">
+                        <div class="label">Total en cuentas + inventario</div>
+                        <div class="val" id="dineroGrandTotal">$0.00</div>
+                        <div class="hint" id="dineroGrandHint">Efectivo, banco, tarjeta sin factura, materias primas y producto terminado</div>
+                    </div>
+
+                    <div class="dinero-accounts">
+                        <article class="dinero-card" id="dineroCardEfectivo">
+                            <h3>Efectivo</h3>
+                            <p class="panel-sub">Tickets en efectivo menos gastos de caja</p>
+                            <div class="val" id="dineroEfectivoTotal">$0.00</div>
+                            <div class="dinero-lines" id="dineroEfectivoLines"></div>
+                        </article>
+                        <article class="dinero-card" id="dineroCardBanco">
+                            <h3>Transferencias y tarjetas facturadas</h3>
+                            <p class="panel-sub">Dinero documentado / en banco</p>
+                            <div class="val" id="dineroBancoTotal">$0.00</div>
+                            <div class="dinero-lines" id="dineroBancoLines"></div>
+                        </article>
+                        <article class="dinero-card" id="dineroCardTarjetaSf">
+                            <h3>Tarjeta sin factura</h3>
+                            <p class="panel-sub">Cobros con terminal no facturados</p>
+                            <div class="val" id="dineroTarjetaSfTotal">$0.00</div>
+                            <div class="dinero-lines" id="dineroTarjetaSfLines"></div>
+                        </article>
+                    </div>
+
+                    <div class="dinero-inventory">
+                        <article class="dinero-card">
+                            <h3>Materias primas</h3>
+                            <p class="panel-sub">Stock × costo unitario · planta</p>
+                            <div class="val" id="dineroMpTotal">$0.00</div>
+                            <div class="dinero-lines" id="dineroMpLines"></div>
+                        </article>
+                        <article class="dinero-card">
+                            <h3>Producto terminado</h3>
+                            <p class="panel-sub">Stock × costo de fórmula · planta</p>
+                            <div class="val" id="dineroPtTotal">$0.00</div>
+                            <div class="dinero-lines" id="dineroPtLines"></div>
+                        </article>
+                    </div>
+
+                    <div class="card">
+                        <h3>Movimiento de cuenta</h3>
+                        <p class="page-sub">Ajuste, depósito o retiro. Se guarda en la nube como el resto del panel.</p>
+                        <form id="dineroMovForm" class="dinero-form">
+                            <label>Cuenta
+                                <select id="dineroMovAccount" required>
+                                    <option value="efectivo">Efectivo</option>
+                                    <option value="banco">Transferencias y tarjetas facturadas</option>
+                                    <option value="tarjeta_sf">Tarjeta sin factura</option>
+                                </select>
+                            </label>
+                            <label>Tipo
+                                <select id="dineroMovType" required>
+                                    <option value="deposito">Depósito / entrada</option>
+                                    <option value="retiro">Retiro / salida</option>
+                                    <option value="ajuste">Ajuste</option>
+                                </select>
+                            </label>
+                            <label>Monto
+                                <input id="dineroMovAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="0.00">
+                            </label>
+                            <label>Nota
+                                <input id="dineroMovNote" type="text" maxlength="160" placeholder="Ej. apertura de caja, retiro al banco">
+                            </label>
+                            <button type="submit" class="btn primary">Registrar</button>
+                        </form>
+                        <div class="dinero-movs" id="dineroMovsList"></div>
+                    </div>
+                </section>
+
                 <section id="products" class="section">
                     <div id="productsListView">
                         <h1 class="page-title">Productos</h1>
@@ -8348,8 +8529,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="/colaboradores-data.js"></script>
-    <script src="/colaboradores/roles.js?v=20260926-soft-pull"></script>
-    <script src="/colaboradores/panel-sync.js?v=20260926-soft-pull"></script>
+    <script src="/colaboradores/roles.js?v=20260926-dinero"></script>
+    <script src="/colaboradores/panel-sync.js?v=20260926-dinero"></script>
     <script>
     const LOGIN_URL = '/colaboradores';
     function getToken() { return localStorage.getItem('s35_admin_token'); }
@@ -8887,7 +9068,7 @@
         sidebar.classList.toggle('open');
     });
 
-    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'clients', 'cobranza', 'promos', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
+    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'dinero', 'clients', 'cobranza', 'promos', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
     const LEGACY_TO_PRODUCTS = { prices: true, catalog: true, formulas: true };
 
     /* Roles / permisos — catálogo en roles.js; admin = acceso total (*). */
@@ -14989,6 +15170,9 @@
         updateProdPreview();
         renderProdFormulaChart();
         refreshLotTicketLists();
+        if (window.S35PosModule && typeof window.S35PosModule.renderDinero === 'function') {
+            window.S35PosModule.renderDinero();
+        }
     }
 
     document.getElementById('prodProduct').addEventListener('change', updateProdPreview);
@@ -15425,6 +15609,34 @@
         },
         getProducts: function () { return (data.products || []).slice(); },
         getMaterials: function () { return (inventory || []).slice(); },
+        getMoneyInventory: function () {
+            const materials = (inventory || []).reduce(function (acc, m) {
+                acc.value += materialInventoryValue(m);
+                acc.items += 1;
+                if ((Number(m.stock) || 0) > 0) acc.withStock += 1;
+                return acc;
+            }, { value: 0, items: 0, withStock: 0 });
+            materials.value = Math.round(materials.value * 100) / 100;
+            const catalog = typeof hubCatalog === 'function' ? hubCatalog() : [];
+            const finished = catalog.reduce(function (acc, p) {
+                const fin = finishedStock[p.slug] || {};
+                const stock = Math.max(0, Number(fin.stock) || 0);
+                acc.units += stock;
+                if (stock <= 0) return acc;
+                acc.skus += 1;
+                let unit = typeof productSackCost === 'function' ? productSackCost(p.slug) : null;
+                if (!(unit > 0)) {
+                    unit = window.S35PosModule && window.S35PosModule.baseUnitPrice
+                        ? Number(window.S35PosModule.baseUnitPrice(p.slug)) || 0
+                        : 0;
+                    if (unit > 0) acc.fallbackSkus += 1;
+                }
+                acc.value += stock * (Number(unit) || 0);
+                return acc;
+            }, { value: 0, units: 0, skus: 0, fallbackSkus: 0 });
+            finished.value = Math.round(finished.value * 100) / 100;
+            return { materials: materials, finished: finished };
+        },
         openProduct: function (slug) {
             if (typeof openProductHub === 'function') openProductHub(slug, { tab: 'resumen' });
         },
@@ -15477,8 +15689,8 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260926-week-sun"></script>
-    <script src="/colaboradores/command-palette.js?v=20260923-copilot-orb"></script>
+    <script src="/colaboradores/pos-module.js?v=20260926-dinero"></script>
+    <script src="/colaboradores/command-palette.js?v=20260926-dinero"></script>
     <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>
 </body>

@@ -25,6 +25,7 @@ const ALLOWED_KEYS = [
   's35_pos_prices_v4',
   's35_pos_sales',
   's35_caja_gastos_v1',
+  's35_tesoreria_movs_v1',
   's35_sale_edits_v1',
   's35_promo_codes_v1',
   's35_product_families',
@@ -52,6 +53,7 @@ const ALLOWED_SET = new Set(ALLOWED_KEYS);
 const MERGE_ITEMS_KEYS = new Set([
   's35_pos_sales',
   's35_caja_gastos_v1',
+  's35_tesoreria_movs_v1',
   's35_production_lots',
   's35_compra_tickets',
   's35_promo_codes_v1'

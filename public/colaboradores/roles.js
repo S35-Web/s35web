@@ -19,7 +19,7 @@
         ventas: {
             id: 'ventas',
             label: 'Ventas',
-            access: ['dashboard', 'venta', 'clients', 'cobranza', 'salesHistory', 'cortes', 'products', 'prices', 'materials']
+            access: ['dashboard', 'venta', 'clients', 'cobranza', 'salesHistory', 'cortes', 'dinero', 'products', 'prices', 'materials']
         }
     };
 
