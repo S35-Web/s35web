@@ -33,7 +33,8 @@
     function normalizeRole(role) {
         const r = String(role || '').toLowerCase().trim();
         if (ROLE_DEFS[r]) return r;
-        return 'admin';
+        // Rol desconocido → mínimo privilegio (no escalar a admin).
+        return 'ventas';
     }
 
     function roleDef(role) {

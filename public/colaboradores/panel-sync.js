@@ -17,8 +17,6 @@
         's35_plant_formulas_v3',
         's35_production_lots',
         's35_compra_tickets',
-        's35_plant_unit_costs_v1',
-        's35_plant_count_20260922b',
         's35_pos_prices_v4',
         's35_pos_sales',
         's35_caja_gastos_v1',
@@ -26,8 +24,8 @@
         's35_promo_codes_v1',
         's35_product_families',
         's35_product_family_overrides',
-        's35_product_catalog_v1',
-        's35_hist_sales_imported_v13'
+        's35_product_catalog_v1'
+        // Flags locales (no cloud): s35_plant_unit_costs_flag_v1, s35_plant_count_*, s35_hist_sales_imported_*
     ];
 
     /** Colecciones { items: [] } que se fusionan por id (cliente + servidor). */
@@ -163,7 +161,16 @@
                 order.push(id);
                 return;
             }
-            if (itemRecency(row) >= itemRecency(byId[id])) byId[id] = row;
+            var prev = byId[id];
+            var tr = itemRecency(row);
+            var tp = itemRecency(prev);
+            if (tr > tp) {
+                byId[id] = row;
+                return;
+            }
+            if (tr < tp) return;
+            // Empate: tombstone de borrado gana (no resucitar).
+            if (row.deleted && !prev.deleted) byId[id] = row;
         }
         (a || []).forEach(consider);
         (b || []).forEach(consider);

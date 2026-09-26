@@ -1555,7 +1555,13 @@
             putSaleEdit(id, { deleted: true });
             invalidateAnalyticsSalesCache();
         } else {
+            const now = new Date().toISOString();
             sales = sales.filter(function (s) { return s.id !== id; });
+            putSaleEdit(id, { deleted: true });
+            // Tombstone en la colección sync para que merge-by-id no resucite el ticket.
+            const raw = loadSalesRaw().filter(function (s) { return !s || s.id !== id; });
+            raw.push({ id: id, deleted: true, editedAt: now, updatedAt: now });
+            localStorage.setItem(SALES_KEY, JSON.stringify({ items: raw, updatedAt: now }));
             saveSales();
         }
         closeSaleNoteModal();
@@ -3201,34 +3207,83 @@
         return analyticsSalesCache;
     }
 
-    function loadSales() {
+    function loadSalesRaw() {
         try {
             const raw = JSON.parse(localStorage.getItem(SALES_KEY) || 'null');
             if (raw && Array.isArray(raw.items)) return raw.items;
         } catch (_) {}
         return [];
     }
+    function isActiveSaleRow(row) {
+        return !!(row && row.id && !row.deleted && !isSaleEditDeleted(row.id));
+    }
+    function loadSales() {
+        return loadSalesRaw().filter(isActiveSaleRow);
+    }
     function flushCloudSoon() {
         if (!window.S35PanelSync || typeof window.S35PanelSync.flushPush !== 'function') return;
         try { window.S35PanelSync.flushPush(); } catch (_) {}
     }
+    /** Persiste ventas vivas + tombstones de borrado (para que el merge-by-id no resucite). */
     function saveSales() {
         invalidateAnalyticsSalesCache();
-        localStorage.setItem(SALES_KEY, JSON.stringify({ items: sales, updatedAt: new Date().toISOString() }));
+        const tombs = loadSalesRaw().filter(function (s) {
+            return s && s.id && s.deleted;
+        });
+        const liveIds = {};
+        sales.forEach(function (s) {
+            if (s && s.id) liveIds[s.id] = true;
+        });
+        const items = sales.slice();
+        tombs.forEach(function (t) {
+            if (!liveIds[t.id]) items.push(t);
+        });
+        localStorage.setItem(SALES_KEY, JSON.stringify({
+            items: items,
+            updatedAt: new Date().toISOString()
+        }));
         // Subir de inmediato: el debounce solo no basta si cierran la pestaña tras una venta.
         flushCloudSoon();
     }
 
-    function loadCajaGastos() {
+    function loadCajaGastosRaw() {
         try {
             const raw = JSON.parse(localStorage.getItem(CAJA_GASTOS_KEY) || 'null');
             if (raw && Array.isArray(raw.items)) return raw.items;
         } catch (_) {}
         return [];
     }
+    function isActiveGastoRow(row) {
+        return !!(row && row.id && !row.deleted);
+    }
+    function loadCajaGastos() {
+        return loadCajaGastosRaw().filter(isActiveGastoRow);
+    }
+    function ensureCajaGastosPersisted() {
+        try {
+            if (localStorage.getItem(CAJA_GASTOS_KEY) == null) {
+                localStorage.setItem(CAJA_GASTOS_KEY, JSON.stringify({
+                    items: [],
+                    updatedAt: new Date().toISOString()
+                }));
+                flushCloudSoon();
+            }
+        } catch (_) {}
+    }
     function saveCajaGastos() {
+        const tombs = loadCajaGastosRaw().filter(function (g) {
+            return g && g.id && g.deleted;
+        });
+        const liveIds = {};
+        cajaGastos.forEach(function (g) {
+            if (g && g.id) liveIds[g.id] = true;
+        });
+        const items = cajaGastos.slice();
+        tombs.forEach(function (t) {
+            if (!liveIds[t.id]) items.push(t);
+        });
         localStorage.setItem(CAJA_GASTOS_KEY, JSON.stringify({
-            items: cajaGastos,
+            items: items,
             updatedAt: new Date().toISOString()
         }));
         flushCloudSoon();
@@ -6740,7 +6795,12 @@
     function removeCajaGasto(id) {
         const idx = cajaGastos.findIndex(function (g) { return g.id === id; });
         if (idx < 0) return;
+        const now = new Date().toISOString();
         cajaGastos.splice(idx, 1);
+        // Tombstone para que el merge-by-id no reinyecte el gasto borrado.
+        const raw = loadCajaGastosRaw().filter(function (g) { return !g || g.id !== id; });
+        raw.push({ id: id, deleted: true, editedAt: now, updatedAt: now });
+        localStorage.setItem(CAJA_GASTOS_KEY, JSON.stringify({ items: raw, updatedAt: now }));
         saveCajaGastos();
         renderGastosPanel();
         renderCortes();
@@ -9948,6 +10008,7 @@
             savePrices();
         }
         sales = loadSales();
+        ensureCajaGastosPersisted();
         cajaGastos = loadCajaGastos();
         clients = loadClients();
         promoCodes = loadPromoCodes();
@@ -9958,6 +10019,7 @@
             // Releer caché por si el sync aplicó remoto sin recarga.
             prices = loadPrices();
             sales = loadSales();
+            ensureCajaGastosPersisted();
             cajaGastos = loadCajaGastos();
             clients = loadClients();
             promoCodes = loadPromoCodes();
