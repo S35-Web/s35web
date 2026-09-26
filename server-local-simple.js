@@ -275,6 +275,7 @@ const server = http.createServer((req, res) => {
             's35_promo_codes_v1'
         ]);
         const mergeMapKeys = new Set(['s35_sale_edits_v1']);
+        const mergeFormulasKeys = new Set(['s35_plant_formulas_v3']);
         const isHistImport = (row) => {
             if (!row) return false;
             if (row.user === 'import-historico') return true;
@@ -339,6 +340,70 @@ const server = http.createServer((req, res) => {
             if (updatedAt) out.updatedAt = updatedAt;
             return out;
         };
+        const isPackagingFormulaLine = (it) => {
+            if (!it) return false;
+            const role = String(it.role || '');
+            if (role === 'Empaque' || /empaque/i.test(role)) return true;
+            const pid = String(it.plantId || '');
+            return /^saco-|^cubeta-/i.test(pid);
+        };
+        const formulaDoseScore = (f) => {
+            if (!f || typeof f !== 'object') return 0;
+            let score = 0;
+            const consider = (items) => {
+                (items || []).forEach((it) => {
+                    if (!it || isPackagingFormulaLine(it)) return;
+                    const amt = Number(it.amount) || 0;
+                    if (amt > 0) score += 100 + Math.min(amt, 1e6) / 1e6;
+                    else score += 1;
+                });
+            };
+            consider(f.items);
+            (f.versions || []).forEach((ver) => { if (ver) consider(ver.items); });
+            return score;
+        };
+        const extractFormulaMap = (value) => {
+            if (!value || typeof value !== 'object') return {};
+            if (value.items && typeof value.items === 'object' && !Array.isArray(value.items)) return value.items;
+            const skip = { updatedAt: 1, items: 1, byId: 1, map: 1 };
+            const out = {};
+            Object.keys(value).forEach((k) => {
+                if (skip[k]) return;
+                if (value[k] && typeof value[k] === 'object') out[k] = value[k];
+            });
+            return out;
+        };
+        const mergeFormulasValue = (prevValue, nextValue, updatedAt, preferNextOnTie) => {
+            const prevMap = extractFormulaMap(prevValue);
+            const nextMap = extractFormulaMap(nextValue);
+            const outMap = {};
+            const slugs = {};
+            Object.keys(prevMap).forEach((s) => { slugs[s] = true; });
+            Object.keys(nextMap).forEach((s) => { slugs[s] = true; });
+            Object.keys(slugs).forEach((slug) => {
+                const a = prevMap[slug];
+                const b = nextMap[slug];
+                if (!a) { outMap[slug] = b; return; }
+                if (!b) { outMap[slug] = a; return; }
+                const sa = formulaDoseScore(a);
+                const sb = formulaDoseScore(b);
+                if (sb > sa) outMap[slug] = b;
+                else if (sa > sb) outMap[slug] = a;
+                else outMap[slug] = preferNextOnTie ? b : a;
+            });
+            const base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
+                ? nextValue
+                : ((prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue)) ? prevValue : {});
+            const out = Object.assign({}, base, { items: outMap });
+            if (updatedAt) out.updatedAt = updatedAt;
+            return out;
+        };
+        const formulasDoseTotal = (value) => {
+            const map = extractFormulaMap(value);
+            let total = 0;
+            Object.keys(map).forEach((s) => { total += formulaDoseScore(map[s]); });
+            return total;
+        };
         const readKey = (key) => {
             try {
                 const p = path.join(dir, key + '.json');
@@ -381,7 +446,7 @@ const server = http.createServer((req, res) => {
                         }
                         const updatedAt = entry.updatedAt || new Date().toISOString();
                         const prev = readKey(key);
-                        const isMergeKey = mergeItemsKeys.has(key) || mergeMapKeys.has(key);
+                        const isMergeKey = mergeItemsKeys.has(key) || mergeMapKeys.has(key) || mergeFormulasKeys.has(key);
                         if (!isMergeKey && prev && prev.updatedAt && Date.parse(updatedAt) < Date.parse(prev.updatedAt)) {
                             rejected.push({ key: key, reason: 'stale', remoteUpdatedAt: prev.updatedAt });
                             out[key] = { value: prev.value, updatedAt: prev.updatedAt };
@@ -394,23 +459,28 @@ const server = http.createServer((req, res) => {
                                 valueToStore = mergeItemsValue(key, prev.value, entry.value, updatedAt);
                             } else if (mergeMapKeys.has(key)) {
                                 valueToStore = mergeByIdMaps(prev.value, entry.value, updatedAt);
+                            } else if (mergeFormulasKeys.has(key)) {
+                                valueToStore = mergeFormulasValue(prev.value, entry.value, updatedAt, true);
                             }
                             if (prev.updatedAt && Date.parse(updatedAt) < Date.parse(prev.updatedAt)) {
-                                const prevCount = mergeItemsKeys.has(key)
-                                    ? extractItems(prev.value).length
-                                    : Object.keys((prev.value && prev.value.byId) || {}).length;
-                                const nextCount = mergeItemsKeys.has(key)
-                                    ? extractItems(valueToStore).length
-                                    : Object.keys((valueToStore && valueToStore.byId) || {}).length;
-                                tsToStore = nextCount > prevCount
-                                    ? new Date().toISOString()
-                                    : prev.updatedAt;
+                                let enriched = false;
+                                if (mergeItemsKeys.has(key)) {
+                                    enriched = extractItems(valueToStore).length > extractItems(prev.value).length;
+                                } else if (mergeMapKeys.has(key)) {
+                                    enriched = Object.keys((valueToStore && valueToStore.byId) || {}).length >
+                                        Object.keys((prev.value && prev.value.byId) || {}).length;
+                                } else if (mergeFormulasKeys.has(key)) {
+                                    enriched = formulasDoseTotal(valueToStore) > formulasDoseTotal(prev.value) + 0.001;
+                                }
+                                tsToStore = enriched ? new Date().toISOString() : prev.updatedAt;
                                 if (valueToStore && typeof valueToStore === 'object') {
                                     valueToStore = Object.assign({}, valueToStore, { updatedAt: tsToStore });
                                 }
                             }
                         } else if (mergeItemsKeys.has(key)) {
                             valueToStore = mergeItemsValue(key, null, entry.value, updatedAt);
+                        } else if (mergeFormulasKeys.has(key)) {
+                            valueToStore = mergeFormulasValue(null, entry.value, updatedAt, true);
                         }
                         const doc = { value: valueToStore, updatedAt: tsToStore };
                         fs.writeFileSync(path.join(dir, key + '.json'), JSON.stringify(doc));
