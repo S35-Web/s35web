@@ -5446,7 +5446,7 @@ window.S35_PANEL_DATA = {
         "mode": "plant-lot",
         "packSizeKg": 25,
         "packagingPlantId": "saco-rafia-general",
-        "note": "Lote de planta FT-MC-002. Dosificación en panel / sync (no pisar dosis locales con dosis > 0).",
+        "note": "Lote de planta FT-MC-002. Seed sin kg a propósito: la dosificación se captura en Productos → Formulación (panel/sync). No inventar dosis aquí.",
         "defaultVersionId": "v1",
         "versions": [
           {

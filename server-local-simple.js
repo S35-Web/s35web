@@ -362,6 +362,21 @@ const server = http.createServer((req, res) => {
             }
             return false;
         };
+        const formulaMaterialLineCount = (f) => {
+            if (!f) return 0;
+            const count = (list) => {
+                let n = 0;
+                (list || []).forEach((it) => {
+                    if (it && it.plantId && !isPackagingFormulaLine(it)) n += 1;
+                });
+                return n;
+            };
+            let max = count(f.items);
+            (f.versions || []).forEach((ver) => {
+                max = Math.max(max, count(ver && ver.items));
+            });
+            return max;
+        };
         const formulaRecency = (f) => {
             if (!f || typeof f !== 'object') return 0;
             return Date.parse(f.editedAt || f.updatedAt || '') || 0;
@@ -388,6 +403,12 @@ const server = http.createServer((req, res) => {
             const bHas = formulaHasMaterialDose(b);
             if (aHas && !bHas) return a;
             if (bHas && !aHas) return b;
+            if (!aHas && !bHas) {
+                const aLines = formulaMaterialLineCount(a);
+                const bLines = formulaMaterialLineCount(b);
+                if (aLines && !bLines) return a;
+                if (bLines && !aLines) return b;
+            }
             return formulaRecency(b) >= formulaRecency(a) ? b : a;
         };
         const mergeFormulasValue = (prevValue, nextValue, updatedAt) => {

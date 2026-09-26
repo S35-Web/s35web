@@ -224,6 +224,23 @@
         return false;
     }
 
+    /** Nº máximo de líneas MP (sin empaque) en items o versiones; sirve aunque amount sea 0. */
+    function formulaMaterialLineCount(f) {
+        if (!f) return 0;
+        function count(list) {
+            var n = 0;
+            (list || []).forEach(function (it) {
+                if (it && it.plantId && !isPackagingFormulaLine(it)) n += 1;
+            });
+            return n;
+        }
+        var max = count(f.items);
+        (f.versions || []).forEach(function (ver) {
+            max = Math.max(max, count(ver && ver.items));
+        });
+        return max;
+    }
+
     function formulaRecency(f) {
         if (!f || typeof f !== 'object') return 0;
         return Date.parse(f.editedAt || f.updatedAt || '') || 0;
@@ -247,7 +264,10 @@
         return out;
     }
 
-    /** Por slug: dosis gana a vacío; si empatan, gana editedAt más reciente. */
+    /**
+     * Por slug: dosis (>0) gana a vacío; si ninguna tiene dosis, gana el esqueleto
+     * con más líneas MP (aunque en 0 kg); si empatan, editedAt más reciente.
+     */
     function preferFormula(a, b) {
         if (!a) return b;
         if (!b) return a;
@@ -255,6 +275,12 @@
         var bHas = formulaHasMaterialDose(b);
         if (aHas && !bHas) return a;
         if (bHas && !aHas) return b;
+        if (!aHas && !bHas) {
+            var aLines = formulaMaterialLineCount(a);
+            var bLines = formulaMaterialLineCount(b);
+            if (aLines && !bLines) return a;
+            if (bLines && !aLines) return b;
+        }
         return formulaRecency(b) >= formulaRecency(a) ? b : a;
     }
 

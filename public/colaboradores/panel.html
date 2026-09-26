@@ -10493,6 +10493,22 @@
         }
         return false;
     }
+    /** Líneas de materia prima (sin empaque), aunque amount sea 0. */
+    function formulaMaterialLineCount(f) {
+        if (!f) return 0;
+        function count(list) {
+            let n = 0;
+            (list || []).forEach(function (it) {
+                if (it && it.plantId && !isPackagingLine(it)) n += 1;
+            });
+            return n;
+        }
+        let max = count(f.items);
+        (f.versions || []).forEach(function (ver) {
+            max = Math.max(max, count(ver && ver.items));
+        });
+        return max;
+    }
     /**
      * Formato nuevo = mode plant-lot (sin campos Tamaño/Unidad/Lote/Agua).
      * Conserva items; solo cambia el schema de UI / producción.
@@ -11406,7 +11422,24 @@
                 }).join('') +
                 '</div>';
         }
-        if (!lines) lines = '<div class="empty">Agrega materias primas a esta receta.</div>';
+        if (!lines) {
+            lines = '<div class="empty"><p class="empty-title">Sin dosis</p>' +
+                'Este producto no tiene kg de materias primas. El seed del catálogo está vacío a propósito; ' +
+                'captura la fórmula aquí (Agregar materia → kg por lote) y guarda. El sync ya no la borrará.</div>';
+        }
+        let doseEmptyNote = '';
+        if (!formulaHasMaterialDose(f)) {
+            if (materialEntries.length) {
+                doseEmptyNote = '<div class="note-box" style="margin-bottom:12px;border-color:#c9a227">' +
+                    '<strong>Sin dosis cargadas</strong> · Hay materias listadas pero todos los kg están en 0. ' +
+                    'No hay copia en el repo ni en la nube con los kg que editaste ayer; hay que capturarlos otra vez. ' +
+                    'Cuando guardes, el sync por producto protegerá la fórmula.</div>';
+            } else if (lotMode) {
+                doseEmptyNote = '<div class="note-box" style="margin-bottom:12px;border-color:#c9a227">' +
+                    '<strong>Seed vacío</strong> · En el catálogo este producto no trae dosificación de planta. ' +
+                    'Cárgala aquí una vez; el fix de sync evita que un seed vacío vuelva a pisarla.</div>';
+            }
+        }
         const meta = editable
             ? (lotMode
                 ? ''
@@ -11449,6 +11482,7 @@
             (lotMode
                 ? ('<div class="note-box" id="formulaDoseNote">' + plantLotDoseNoteHtml(totalKg, theo) + '</div>')
                 : (r.note ? '<div class="note-box">' + formatRecipeNote(r.note) + '</div>' : '')) +
+            doseEmptyNote +
             versionBar +
             lotSummary +
             meta +
