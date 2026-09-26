@@ -140,7 +140,10 @@
 
     function itemRecency(row) {
         if (!row || typeof row !== 'object') return 0;
-        return Date.parse(row.editedAt || row.updatedAt || row.createdAt || '') || 0;
+        // createdAt no es sello de edición: ver api/panel-state.js.
+        var stamp = row.editedAt || row.updatedAt;
+        if (!stamp || stamp === row.createdAt) return 0;
+        return Date.parse(stamp) || 0;
     }
 
     function itemsRecencyFingerprint(list) {
@@ -168,7 +171,7 @@
         var order = [];
         function consider(row) {
             if (!row || typeof row !== 'object') return;
-            if (dropHistorical && isHistoricalImportSale(row)) return;
+            if (dropHistorical && isHistoricalImportSale(row) && !row.editedAt && !row.deleted) return;
             var id = row.id != null ? String(row.id) : (row.code != null ? String(row.code) : '');
             if (!id) return;
             if (!byId[id]) {
@@ -596,7 +599,13 @@
                 } else {
                     emitStatus();
                 }
-                return { ok: true, accepted: accepted, rejected: rejected, appliedStale: appliedKeys.length > 0 };
+                return {
+                    ok: true,
+                    accepted: accepted,
+                    rejected: rejected,
+                    appliedStale: appliedKeys.length > 0,
+                    stores: res.data.stores || {}
+                };
             })
             .catch(function (err) {
                 status.ok = false;
@@ -611,7 +620,16 @@
                 pushing = false;
                 if (pushAgain || Object.keys(pendingKeys).length) {
                     pushAgain = false;
-                    return flushPush().then(function () { return result; });
+                    return flushPush().then(function (next) {
+                        if (!next || next.empty) return result;
+                        return {
+                            ok: !!(result && result.ok && next.ok),
+                            accepted: ((result && result.accepted) || []).concat(next.accepted || []),
+                            rejected: ((result && result.rejected) || []).concat(next.rejected || []),
+                            stores: Object.assign({}, (result && result.stores) || {}, next.stores || {}),
+                            empty: false
+                        };
+                    });
                 }
                 return result;
             });

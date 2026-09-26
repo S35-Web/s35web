@@ -74,7 +74,12 @@ function isHistoricalImportSale(row) {
 
 function itemRecency(row) {
   if (!row || typeof row !== 'object') return 0;
-  return Date.parse(row.editedAt || row.updatedAt || row.createdAt || '') || 0;
+  // createdAt es la fecha del ticket, no de la edición. Si se usa como
+  // recency, un createdAt naive (datetime-local sin Z) se parsea en UTC
+  // en Vercel y pierde contra el ISO original → la nota vuelve atrás.
+  const stamp = row.editedAt || row.updatedAt;
+  if (!stamp || stamp === row.createdAt) return 0;
+  return Date.parse(stamp) || 0;
 }
 
 function extractItems(value) {
@@ -91,7 +96,7 @@ function mergeItemLists(a, b, opts) {
   const order = [];
   function consider(row) {
     if (!row || typeof row !== 'object') return;
-    if (dropHistorical && isHistoricalImportSale(row)) return;
+    if (dropHistorical && isHistoricalImportSale(row) && !row.editedAt && !row.deleted) return;
     const id = row.id != null ? String(row.id) : (row.code != null ? String(row.code) : '');
     if (!id) return;
     if (!byId[id]) {

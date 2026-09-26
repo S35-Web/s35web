@@ -287,7 +287,9 @@ const server = http.createServer((req, res) => {
         };
         const itemRecency = (row) => {
             if (!row || typeof row !== 'object') return 0;
-            return Date.parse(row.editedAt || row.updatedAt || row.createdAt || '') || 0;
+            const stamp = row.editedAt || row.updatedAt;
+            if (!stamp || stamp === row.createdAt) return 0;
+            return Date.parse(stamp) || 0;
         };
         const extractItems = (value) => {
             if (!value) return [];
@@ -300,7 +302,7 @@ const server = http.createServer((req, res) => {
             const order = [];
             const consider = (row) => {
                 if (!row || typeof row !== 'object') return;
-                if (dropHistorical && isHistImport(row)) return;
+                if (dropHistorical && isHistImport(row) && !row.editedAt && !row.deleted) return;
                 const id = row.id != null ? String(row.id) : (row.code != null ? String(row.code) : '');
                 if (!id) return;
                 if (!byId[id]) {
@@ -316,7 +318,11 @@ const server = http.createServer((req, res) => {
                     return;
                 }
                 if (tr < tp) return;
-                if (row.deleted && !prev.deleted) byId[id] = row;
+                if (row.deleted && !prev.deleted) {
+                    byId[id] = row;
+                    return;
+                }
+                if (!prev.deleted) byId[id] = row;
             };
             (a || []).forEach(consider);
             (b || []).forEach(consider);

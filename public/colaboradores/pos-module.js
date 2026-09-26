@@ -669,7 +669,11 @@
     }
     function saleRecordRecency(row) {
         if (!row || typeof row !== 'object') return 0;
-        return Date.parse(row.editedAt || row.updatedAt || row.createdAt || '') || 0;
+        // createdAt es la fecha del ticket. Usarlo como recency hace que
+        // datetime-local sin zona pierda el merge en el servidor UTC.
+        const stamp = row.editedAt || row.updatedAt;
+        if (!stamp || stamp === row.createdAt) return 0;
+        return Date.parse(stamp) || 0;
     }
     function touchSaleRecord(sale) {
         if (!sale) return sale;
@@ -707,7 +711,11 @@
         if (!sale || !sale.id) return sale;
         const patch = loadSaleEditsMap()[sale.id];
         if (!patch || patch.deleted) return sale;
-        if (saleRecordRecency(patch) < saleRecordRecency(sale)) return sale;
+        const patchTs = saleRecordRecency(patch);
+        const saleTs = saleRecordRecency(sale);
+        // Overlay de edición: aplicar salvo que el ticket vivo tenga un
+        // editedAt estrictamente más nuevo (otro dispositivo ganó).
+        if (saleTs && patchTs && saleTs > patchTs) return sale;
         const next = Object.assign({}, sale, patch);
         if (patch.items) next.items = patch.items;
         if (patch.meta || sale.meta) {
@@ -982,12 +990,7 @@
             'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
     }
     function fromDatetimeLocalValue(raw) {
-        if (!raw) return new Date().toISOString().slice(0, 19);
-        const d = new Date(raw);
-        if (isNaN(d.getTime())) return new Date().toISOString().slice(0, 19);
-        const pad = function (n) { return String(n).padStart(2, '0'); };
-        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
-            'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+        return isoFromDatetimeLocal(raw);
     }
     /** datetime-local → ISO UTC (mismo criterio que checkout normal). */
     function isoFromDatetimeLocal(raw) {
@@ -1519,13 +1522,71 @@
         renderDashboardRadar();
         toast('Ticket actualizado · ' + saleReceiptLabel(sale));
         renderCobranza();
-        if (window.S35PanelSync && typeof window.S35PanelSync.flushPush === 'function') {
-            window.S35PanelSync.flushPush().then(function (res) {
-                if (res && res.ok && !res.empty) {
-                    toast('Ticket en la nube · ' + saleReceiptLabel(sale));
+        confirmSaleEditInCloud(sale);
+    }
+
+    function saleEditFingerprint(row) {
+        if (!row) return '';
+        return JSON.stringify({
+            customer: row.customer || '',
+            clientId: row.clientId || '',
+            paymentMethod: row.paymentMethod || '',
+            payments: row.payments || null,
+            billing: row.billing || '',
+            city: row.city || '',
+            total: row.total,
+            items: (row.items || []).map(function (it) {
+                return [it.product, it.name, Number(it.qty) || 0, Number(it.price) || 0];
+            })
+        });
+    }
+
+    function saleMatchesCloudValue(value, sale) {
+        if (!value || !sale) return false;
+        if (Array.isArray(value.items)) {
+            let i;
+            for (i = 0; i < value.items.length; i++) {
+                if (value.items[i] && value.items[i].id === sale.id) {
+                    return saleEditFingerprint(value.items[i]) === saleEditFingerprint(sale);
                 }
-            }).catch(function () {});
+            }
         }
+        if (value.byId && value.byId[sale.id] && !value.byId[sale.id].deleted) {
+            return saleEditFingerprint(value.byId[sale.id]) === saleEditFingerprint(sale);
+        }
+        return false;
+    }
+
+    function cloudStoresHaveSaleEdit(stores, sale) {
+        if (!stores || !sale) return false;
+        const salesStore = stores.s35_pos_sales;
+        const editsStore = stores.s35_sale_edits_v1;
+        return saleMatchesCloudValue(salesStore && salesStore.value, sale) ||
+            saleMatchesCloudValue(editsStore && editsStore.value, sale);
+    }
+
+    function confirmSaleEditInCloud(sale) {
+        if (!window.S35PanelSync || typeof window.S35PanelSync.flushPush !== 'function') return;
+        let tries = 0;
+        function once() {
+            return window.S35PanelSync.flushPush().then(function (res) {
+                if (res && res.reason === 'busy' && tries < 8) {
+                    tries += 1;
+                    return new Promise(function (resolve) {
+                        setTimeout(function () { resolve(once()); }, 350);
+                    });
+                }
+                return res;
+            });
+        }
+        once().then(function (res) {
+            if (!res || !res.ok || res.empty) return;
+            if (cloudStoresHaveSaleEdit(res.stores, sale)) {
+                toast('Ticket en la nube · ' + saleReceiptLabel(sale));
+                return;
+            }
+            toast('Ticket guardado aquí · la nube no confirmó el cambio');
+        }).catch(function () {});
     }
 
     function syncSaleNoteDeleteVisibility() {
@@ -3156,6 +3217,14 @@
                 sales = next;
                 invalidateAnalyticsSalesCache();
                 salesChanged = true;
+            }
+            if (historicalSales.length) {
+                const histNext = historicalSales.map(function (s) { return applySaleEditPatch(s); });
+                if (salesSyncFingerprint(histNext) !== salesSyncFingerprint(historicalSales)) {
+                    historicalSales = histNext;
+                    invalidateAnalyticsSalesCache();
+                    salesChanged = true;
+                }
             }
         }
         if (touchGastos) {
@@ -10818,6 +10887,7 @@
         function afterCloudReady(syncRes) {
             if (syncRes && syncRes.reloading) return;
             // Releer caché por si el sync aplicó remoto sin recarga.
+            invalidateAnalyticsSalesCache();
             prices = loadPrices();
             sales = loadSales();
             ensureCajaGastosPersisted();
