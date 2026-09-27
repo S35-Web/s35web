@@ -365,7 +365,29 @@
             if (!item || item.deleted) return;
             if (item.name) names[item.slug] = item.name;
         });
-        return { names: names, added: added, updatedAt: updatedAt };
+        var images = Object.create(null);
+        function considerImage(slug, entry) {
+            if (!slug || entry == null) return;
+            var key = String(slug);
+            var nextEntry = entry;
+            if (typeof entry === 'string') nextEntry = { url: entry, updatedAt: '' };
+            if (!nextEntry || !nextEntry.url) return;
+            var prevEntry = images[key];
+            if (!prevEntry) {
+                images[key] = nextEntry;
+                return;
+            }
+            var ta = Date.parse(prevEntry.updatedAt || '') || 0;
+            var tb = Date.parse(nextEntry.updatedAt || '') || 0;
+            images[key] = tb >= ta ? nextEntry : prevEntry;
+        }
+        Object.keys(local.images || {}).forEach(function (slug) { considerImage(slug, local.images[slug]); });
+        Object.keys(remote.images || {}).forEach(function (slug) { considerImage(slug, remote.images[slug]); });
+        added.forEach(function (item) {
+            if (!item || item.deleted || !item.image) return;
+            considerImage(item.slug, { url: item.image, updatedAt: item.updatedAt || item.createdAt || '' });
+        });
+        return { names: names, added: added, images: images, updatedAt: updatedAt };
     }
 
     function catalogFingerprint(val) {
@@ -375,11 +397,18 @@
         });
         var names = (val && val.names && typeof val.names === 'object') ? val.names : {};
         var nameKeys = Object.keys(names).sort();
+        var images = (val && val.images && typeof val.images === 'object') ? val.images : {};
+        var imageKeys = Object.keys(images).sort();
         return added.map(function (item) {
             return String(item && item.slug || '') + ':' + catalogItemRecency(item) + ':' +
                 (item && item.deleted ? '1' : '0') + ':' + String(item && item.name || '');
         }).join('|') + '#' + nameKeys.map(function (k) {
             return k + '=' + String(names[k] || '');
+        }).join('|') + '#' + imageKeys.map(function (k) {
+            var entry = images[k];
+            var url = typeof entry === 'string' ? entry : (entry && entry.url) || '';
+            var ts = typeof entry === 'object' && entry ? (entry.updatedAt || '') : '';
+            return k + '=' + String(url).slice(0, 80) + '@' + ts;
         }).join('|');
     }
 

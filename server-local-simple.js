@@ -180,6 +180,64 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Foto de producto (panel): guarda en public/Assets/productos_thumbs/panel/
+    if (pathname === '/api/panel-product-image') {
+        if (req.method === 'OPTIONS') {
+            res.writeHead(204);
+            res.end();
+            return;
+        }
+        if (req.method !== 'POST') {
+            res.writeHead(405, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed' }));
+            return;
+        }
+        const auth = String(req.headers.authorization || '');
+        if (!auth.startsWith('Bearer ') || auth.length < 20) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ ok: false, error: 'Unauthorized' }));
+            return;
+        }
+        let body = '';
+        req.on('data', chunk => { body += chunk.toString(); });
+        req.on('end', () => {
+            try {
+                const parsed = JSON.parse(body || '{}');
+                const slug = String(parsed.slug || '').trim().toLowerCase();
+                const dataUrl = String(parsed.dataUrl || '');
+                if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug) || slug.length > 80) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: 'slug inválido' }));
+                    return;
+                }
+                const m = dataUrl.match(/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/i);
+                if (!m) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: 'imagen inválida' }));
+                    return;
+                }
+                const ext = /png/i.test(m[1]) ? 'png' : (/webp/i.test(m[1]) ? 'webp' : 'jpg');
+                const buf = Buffer.from(m[2], 'base64');
+                if (!buf.length || buf.length > 900 * 1024) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ ok: false, error: 'imagen demasiado grande' }));
+                    return;
+                }
+                const dir = path.join(__dirname, 'public', 'Assets', 'productos_thumbs', 'panel');
+                fs.mkdirSync(dir, { recursive: true });
+                const fileName = slug + '-' + Date.now() + '.' + ext;
+                fs.writeFileSync(path.join(dir, fileName), buf);
+                const url = '/Assets/productos_thumbs/panel/' + fileName;
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: true, url: url, storage: 'local' }));
+            } catch (e) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ ok: false, error: 'Solicitud inválida' }));
+            }
+        });
+        return;
+    }
+
     // Clientes compartidos (archivo local, todos los navegadores del mismo host)
     if (pathname === '/api/clients') {
         const livePath = path.join(__dirname, '.data', 'clients-live.json');

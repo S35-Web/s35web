@@ -307,7 +307,29 @@ function mergeProductCatalogValue(prevValue, nextValue, updatedAt) {
     if (!item || item.deleted) return;
     if (item.name) names[item.slug] = item.name;
   });
-  return { names: names, added: added, updatedAt: updatedAt };
+  const images = Object.create(null);
+  function considerImage(slug, entry) {
+    if (!slug || entry == null) return;
+    const key = String(slug);
+    let nextEntry = entry;
+    if (typeof entry === 'string') nextEntry = { url: entry, updatedAt: '' };
+    if (!nextEntry || !nextEntry.url) return;
+    const prevEntry = images[key];
+    if (!prevEntry) {
+      images[key] = nextEntry;
+      return;
+    }
+    const ta = Date.parse(prevEntry.updatedAt || '') || 0;
+    const tb = Date.parse(nextEntry.updatedAt || '') || 0;
+    images[key] = tb >= ta ? nextEntry : prevEntry;
+  }
+  Object.keys(prev.images || {}).forEach(function (slug) { considerImage(slug, prev.images[slug]); });
+  Object.keys(next.images || {}).forEach(function (slug) { considerImage(slug, next.images[slug]); });
+  added.forEach(function (item) {
+    if (!item || item.deleted || !item.image) return;
+    considerImage(item.slug, { url: item.image, updatedAt: item.updatedAt || item.createdAt || '' });
+  });
+  return { names: names, added: added, images: images, updatedAt: updatedAt };
 }
 
 function catalogAddedCount(value) {

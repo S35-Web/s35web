@@ -5376,6 +5376,36 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+        }
+        .pd-id-media.is-editable {
+            cursor: pointer;
+        }
+        .pd-id-media.is-editable:hover,
+        .pd-id-media.is-editable:focus-visible {
+            border-color: var(--text);
+            outline: none;
+        }
+        .pd-id-media.is-editable::after {
+            content: 'Foto';
+            position: absolute;
+            inset: auto 0 0 0;
+            background: rgba(0,0,0,.55);
+            color: #fff;
+            font-size: 9px;
+            letter-spacing: .02em;
+            text-align: center;
+            padding: 2px 0;
+            opacity: 0;
+            transition: opacity .15s ease;
+        }
+        .pd-id-media.is-editable:hover::after,
+        .pd-id-media.is-editable:focus-visible::after {
+            opacity: 1;
+        }
+        .pd-id-media.is-busy {
+            pointer-events: none;
+            opacity: .6;
         }
         .pd-id-media img {
             width: 100%;
@@ -10831,22 +10861,29 @@
     function loadProductCatalog() {
         try {
             const raw = JSON.parse(localStorage.getItem(PRODUCT_CATALOG_KEY) || 'null');
-            if (!raw || typeof raw !== 'object') return { names: {}, added: [] };
+            if (!raw || typeof raw !== 'object') return { names: {}, added: [], images: {} };
             return {
                 names: raw.names && typeof raw.names === 'object' ? raw.names : {},
-                added: Array.isArray(raw.added) ? raw.added : []
+                added: Array.isArray(raw.added) ? raw.added : [],
+                images: raw.images && typeof raw.images === 'object' ? raw.images : {}
             };
         } catch (_) {
-            return { names: {}, added: [] };
+            return { names: {}, added: [], images: {} };
         }
     }
     function saveProductCatalog(store) {
         localStorage.setItem(PRODUCT_CATALOG_KEY, JSON.stringify({
             names: store.names || {},
             added: store.added || [],
+            images: store.images || {},
             updatedAt: new Date().toISOString()
         }));
         if (window.S35PanelSync && window.S35PanelSync.flushPush) window.S35PanelSync.flushPush();
+    }
+    function catalogImageUrl(entry) {
+        if (!entry) return '';
+        if (typeof entry === 'string') return entry;
+        return String(entry.url || '').trim();
     }
     function slugifyProductName(name, taken) {
         let base = String(name || 'producto').toLowerCase()
@@ -11000,6 +11037,23 @@
                 if (p && p.productSlug === slug && p.custom) p.listName = name;
             });
         });
+        Object.keys(store.images || {}).forEach(function (slug) {
+            const url = catalogImageUrl(store.images[slug]);
+            if (!url) return;
+            (data.products || []).forEach(function (p) {
+                if (p && p.slug === slug) p.image = url;
+            });
+            recipes.forEach(function (r) {
+                if (r && r.product === slug) r.image = url;
+            });
+        });
+        (store.added || []).forEach(function (item) {
+            if (!item || !item.slug || item.deleted || !item.image) return;
+            if (store.images && store.images[item.slug]) return;
+            recipes.forEach(function (r) {
+                if (r && r.product === item.slug) r.image = item.image;
+            });
+        });
         return store;
     }
     applyProductCatalog();
@@ -11012,6 +11066,40 @@
         (store.added || []).forEach(function (item) {
             if (item && item.slug === slug) {
                 item.name = name;
+                item.updatedAt = now;
+            }
+        });
+        saveProductCatalog(store);
+        applyProductCatalog();
+        if (window.S35PosModule && window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
+        return true;
+    }
+    function setProductImage(slug, url) {
+        const clean = String(url || '').trim();
+        if (!slug || !clean) return false;
+        const store = loadProductCatalog();
+        const now = new Date().toISOString();
+        if (!store.images || typeof store.images !== 'object') store.images = {};
+        store.images[slug] = { url: clean, updatedAt: now };
+        (store.added || []).forEach(function (item) {
+            if (item && item.slug === slug) {
+                item.image = clean;
+                item.updatedAt = now;
+            }
+        });
+        saveProductCatalog(store);
+        applyProductCatalog();
+        if (window.S35PosModule && window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
+        return true;
+    }
+    function clearProductImage(slug) {
+        if (!slug) return false;
+        const store = loadProductCatalog();
+        const now = new Date().toISOString();
+        if (store.images) delete store.images[slug];
+        (store.added || []).forEach(function (item) {
+            if (item && item.slug === slug) {
+                delete item.image;
                 item.updatedAt = now;
             }
         });
@@ -13209,6 +13297,123 @@
         return list[(idx + 1) % list.length];
     }
 
+    function compressProductImageFile(file) {
+        return new Promise(function (resolve, reject) {
+            if (!file || !/^image\//i.test(file.type || '')) {
+                reject(new Error('Archivo no es imagen'));
+                return;
+            }
+            const reader = new FileReader();
+            reader.onerror = function () { reject(new Error('No se pudo leer la imagen')); };
+            reader.onload = function () {
+                const img = new Image();
+                img.onerror = function () { reject(new Error('Imagen inválida')); };
+                img.onload = function () {
+                    const maxSide = 720;
+                    let w = img.naturalWidth || img.width;
+                    let h = img.naturalHeight || img.height;
+                    if (!w || !h) {
+                        reject(new Error('Imagen sin tamaño'));
+                        return;
+                    }
+                    const scale = Math.min(1, maxSide / Math.max(w, h));
+                    w = Math.max(1, Math.round(w * scale));
+                    h = Math.max(1, Math.round(h * scale));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) {
+                        reject(new Error('Canvas no disponible'));
+                        return;
+                    }
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.drawImage(img, 0, 0, w, h);
+                    let quality = 0.84;
+                    let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    while (dataUrl.length > 700000 && quality > 0.5) {
+                        quality -= 0.08;
+                        dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    if (dataUrl.length > 900000) {
+                        reject(new Error('La imagen sigue demasiado grande'));
+                        return;
+                    }
+                    resolve(dataUrl);
+                };
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function uploadProductImageDataUrl(slug, dataUrl) {
+        const token = localStorage.getItem('s35_admin_token') || '';
+        return fetch('/api/panel-product-image', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({ slug: slug, dataUrl: dataUrl })
+        }).then(function (res) {
+            return res.json().then(function (body) {
+                return { ok: res.ok && body && body.ok, status: res.status, body: body };
+            });
+        }).then(function (res) {
+            if (res.ok && res.body && res.body.url) return res.body.url;
+            // Sin API / offline: guardar data URL comprimida en catálogo.
+            if (dataUrl && dataUrl.indexOf('data:image/') === 0) return dataUrl;
+            throw new Error((res.body && res.body.error) || 'No se pudo subir la foto');
+        });
+    }
+
+    function bindProductPhotoUi(slug) {
+        const media = document.getElementById('pdProductPhoto');
+        const input = document.getElementById('pdProductPhotoInput');
+        if (!media || !input || !slug) return;
+        function openPicker() {
+            if (media.classList.contains('is-busy')) return;
+            input.value = '';
+            input.click();
+        }
+        media.onclick = function (e) {
+            e.preventDefault();
+            openPicker();
+        };
+        media.onkeydown = function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openPicker();
+            }
+        };
+        input.onchange = function () {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            media.classList.add('is-busy');
+            compressProductImageFile(file)
+                .then(function (dataUrl) {
+                    return uploadProductImageDataUrl(slug, dataUrl);
+                })
+                .then(function (url) {
+                    if (!setProductImage(slug, url)) throw new Error('No se guardó la foto');
+                    openProductHub(slug, { skipHash: true, tab: hubProductTab || 'resumen' });
+                    if (window.S35PosModule && window.S35PosModule.refreshProducts) {
+                        window.S35PosModule.refreshProducts();
+                    }
+                    panelToast('Foto actualizada');
+                })
+                .catch(function (err) {
+                    panelToast((err && err.message) || 'No se pudo actualizar la foto');
+                })
+                .then(function () {
+                    media.classList.remove('is-busy');
+                    input.value = '';
+                });
+        };
+    }
+
     function syncNextProductButton(slug) {
         const btn = document.getElementById('pdNextProduct');
         if (!btn) return;
@@ -13285,9 +13490,10 @@
             ? (formulaComplete(formulas[slug]) ? 'Lista' : 'Pendiente')
             : 'N/A';
 
+        const canEditPhoto = canEditFormulas();
         const mediaHtml = item.image
             ? '<img src="' + esc(item.image) + '" alt="' + esc(item.imageAlt || item.name) + '" loading="lazy">'
-            : '<div class="pd-thumb-fallback">—</div>';
+            : '<div class="pd-thumb-fallback">' + (canEditPhoto ? 'Subir' : '—') + '</div>';
 
         const familySelectOpts = (window.S35PosModule && window.S35PosModule.productFamilySelectHtml)
             ? window.S35PosModule.productFamilySelectHtml(item.family)
@@ -13330,7 +13536,12 @@
         if (mount) {
             mount.innerHTML =
                 '<div class="pd-id">' +
-                '<div class="pd-id-media">' + mediaHtml + '</div>' +
+                '<div class="pd-id-media' + (canEditPhoto ? ' is-editable' : '') + '"' +
+                (canEditPhoto
+                    ? ' id="pdProductPhoto" role="button" tabindex="0" title="Cambiar foto" aria-label="Cambiar foto del producto"'
+                    : '') +
+                '>' + mediaHtml + '</div>' +
+                '<input type="file" id="pdProductPhotoInput" accept="image/jpeg,image/png,image/webp" hidden>' +
                 '<div class="pd-id-body">' +
                 '<p class="pd-id-meta">' + metaBits.join('') + '</p>' +
                 fichaLink +
@@ -13340,6 +13551,7 @@
                 '<summary>Datos operativos</summary>' +
                 opsHtml +
                 '</details>';
+            if (canEditPhoto) bindProductPhotoUi(slug);
             if (window.S35PosModule && window.S35PosModule.renderProductSalesAnalytics) {
                 window.S35PosModule.renderProductSalesAnalytics(slug);
             }

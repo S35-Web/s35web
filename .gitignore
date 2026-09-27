@@ -30,6 +30,9 @@ oldpage/
 # Local live data (dev server)
 .data/
 
+# Fotos de productos subidas en local (no versionar)
+public/Assets/productos_thumbs/panel/
+
 
 # IDE
 .vscode/

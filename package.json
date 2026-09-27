@@ -26,6 +26,7 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
+    "@vercel/blob": "^2.8.0",
     "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^6.21.0",
