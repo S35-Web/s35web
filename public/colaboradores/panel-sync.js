@@ -51,6 +51,9 @@
      */
     var MERGE_FORMULAS_KEY = 's35_plant_formulas_v3';
 
+    /** Catálogo panel { names, added[] }: unión por slug (altas desde varios dispositivos). */
+    var MERGE_CATALOG_KEY = 's35_product_catalog_v1';
+
     var META_KEY = 's35_panel_sync_meta_v1';
     var RELOAD_FLAG = 's35_panel_sync_reloaded';
     var DEBOUNCE_MS = 700;
@@ -328,6 +331,63 @@
         return Object.assign({}, base, { items: outMap, updatedAt: updatedAt });
     }
 
+    function catalogItemRecency(item) {
+        if (!item || typeof item !== 'object') return 0;
+        return Date.parse(item.updatedAt || item.createdAt || '') || 0;
+    }
+
+    function preferCatalogItem(a, b) {
+        if (!a) return b;
+        if (!b) return a;
+        var ta = catalogItemRecency(a);
+        var tb = catalogItemRecency(b);
+        if (tb > ta) return b;
+        if (ta > tb) return a;
+        if (b.deleted && !a.deleted) return b;
+        if (a.deleted && !b.deleted) return a;
+        return b;
+    }
+
+    function mergeProductCatalogValue(localVal, remoteVal, updatedAt) {
+        var local = localVal && typeof localVal === 'object' && !Array.isArray(localVal) ? localVal : {};
+        var remote = remoteVal && typeof remoteVal === 'object' && !Array.isArray(remoteVal) ? remoteVal : {};
+        var bySlug = Object.create(null);
+        function consider(item) {
+            if (!item || !item.slug) return;
+            var slug = String(item.slug);
+            bySlug[slug] = preferCatalogItem(bySlug[slug], item);
+        }
+        (Array.isArray(local.added) ? local.added : []).forEach(consider);
+        (Array.isArray(remote.added) ? remote.added : []).forEach(consider);
+        var added = Object.keys(bySlug).map(function (k) { return bySlug[k]; });
+        var names = Object.assign({}, local.names || {}, remote.names || {});
+        added.forEach(function (item) {
+            if (!item || item.deleted) return;
+            if (item.name) names[item.slug] = item.name;
+        });
+        return { names: names, added: added, updatedAt: updatedAt };
+    }
+
+    function catalogFingerprint(val) {
+        var added = (val && Array.isArray(val.added)) ? val.added.slice() : [];
+        added.sort(function (a, b) {
+            return String(a && a.slug || '').localeCompare(String(b && b.slug || ''));
+        });
+        var names = (val && val.names && typeof val.names === 'object') ? val.names : {};
+        var nameKeys = Object.keys(names).sort();
+        return added.map(function (item) {
+            return String(item && item.slug || '') + ':' + catalogItemRecency(item) + ':' +
+                (item && item.deleted ? '1' : '0') + ':' + String(item && item.name || '');
+        }).join('|') + '#' + nameKeys.map(function (k) {
+            return k + '=' + String(names[k] || '');
+        }).join('|');
+    }
+
+    function catalogActiveCount(val) {
+        if (!val || !Array.isArray(val.added)) return 0;
+        return val.added.filter(function (item) { return item && item.slug && !item.deleted; }).length;
+    }
+
     function formulasMapChanged(a, b) {
         var am = extractFormulaMap(a);
         var bm = extractFormulaMap(b);
@@ -423,6 +483,24 @@
                 updatedAt: tsF,
                 applyLocal: needApplyF,
                 push: needPushF
+            };
+        }
+        if (key === MERGE_CATALOG_KEY) {
+            var tsC = maxIso(localTs, remoteTs) || new Date().toISOString();
+            var mergedC = mergeProductCatalogValue(localVal, remoteVal, tsC);
+            var needApplyC = catalogFingerprint(localVal) !== catalogFingerprint(mergedC);
+            var needPushC = catalogFingerprint(remoteVal) !== catalogFingerprint(mergedC) ||
+                cmpIso(localTs, remoteTs) > 0;
+            if (needPushC && catalogActiveCount(mergedC) > catalogActiveCount(remoteVal) &&
+                cmpIso(localTs, remoteTs) <= 0) {
+                tsC = new Date().toISOString();
+                mergedC = Object.assign({}, mergedC, { updatedAt: tsC });
+            }
+            return {
+                value: mergedC,
+                updatedAt: tsC,
+                applyLocal: needApplyC,
+                push: needPushC
             };
         }
         return null;
@@ -571,7 +649,8 @@
                 accepted.forEach(function (key) {
                     var remote = res.data.stores && res.data.stores[key];
                     if (!remote || !('value' in remote)) return;
-                    if (!MERGE_ITEMS_KEYS[key] && !MERGE_MAP_KEYS[key] && key !== MERGE_FORMULAS_KEY) return;
+                    if (!MERGE_ITEMS_KEYS[key] && !MERGE_MAP_KEYS[key] &&
+                        key !== MERGE_FORMULAS_KEY && key !== MERGE_CATALOG_KEY) return;
                     var prevAcc = readLocal(key);
                     var toWrite = remote.value;
                     var ts = remote.updatedAt;

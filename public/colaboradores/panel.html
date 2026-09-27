@@ -3029,7 +3029,7 @@
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 10px;
             margin-bottom: 10px;
-            max-width: 520px;
+            max-width: 720px;
         }
         .formula-line.formula-line-pack input[data-field="amount"] {
             opacity: 0.78;
@@ -8446,7 +8446,14 @@
                             <option value="liquido">Líquido (cubeta)</option>
                         </select>
                     </label>
-                    <p class="muted" style="margin:0">El código se asigna solo y no cambia si después le cambias el nombre.</p>
+                    <label>Tamaño
+                        <span style="display:flex;gap:8px;align-items:center">
+                            <input id="addProductSize" type="number" min="1" step="1" value="25" required style="flex:1">
+                            <span id="addProductSizeUnit" class="muted">kg</span>
+                        </span>
+                    </label>
+                    <p class="muted" style="margin:0">Código: <strong id="addProductCodePreview">FT-NP-…</strong>. Se asigna al crear y no cambia si después le cambias el nombre.</p>
+                    <p id="addProductDupHint" class="muted" style="margin:0;color:var(--warn,#b45309)" hidden></p>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn" id="addProductCancel">Cancelar</button>
@@ -9367,8 +9374,16 @@
         const liquid = isLiquidFormula(f);
         const unit = liquid ? 'L' : 'kg';
         const out = theoreticalUnitWord(f, bags);
+        const yMin = Number(f && f.yieldMin) || 0;
+        const yMax = Number(f && f.yieldMax) || 0;
+        let extra = '';
+        if (liquid && (yMin > 0 || yMax > 0)) {
+            extra = ' · 1 L concentrado → ' + esc(String(yMin || yMax)) +
+                (yMax && yMin && yMax !== yMin ? '–' + esc(String(yMax)) : '') +
+                ' envases de 1 L';
+        }
         const dose = esc(String(qty)) + ' ' + unit + ' → ~' + esc(String(bags)) + ' ' + out;
-        return 'Dosificación de planta por lote (<span class="note-dose">' + dose + '</span>).';
+        return 'Dosificación de planta por lote (<span class="note-dose">' + dose + '</span>' + extra + ').';
     }
     function formatRelativeDate(isoOrDate) {
         const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
@@ -10811,6 +10826,7 @@
     renderMaterials();
 
     const recipes = data.recipes || [];
+    if (!Array.isArray(data.presentations)) data.presentations = [];
     const PRODUCT_CATALOG_KEY = 's35_product_catalog_v1';
     function loadProductCatalog() {
         try {
@@ -10849,7 +10865,13 @@
         const taken = {};
         (data.products || []).forEach(function (p) { if (p && p.slug) taken[p.slug] = true; });
         (data.recipes || []).forEach(function (r) { if (r && r.product) taken[r.product] = true; });
-        (data.presentations || []).forEach(function (p) { if (p && p.productSlug) taken[p.productSlug] = true; });
+        (data.presentations || []).forEach(function (p) {
+            if (p && p.custom) return;
+            if (p && p.productSlug) taken[p.productSlug] = true;
+        });
+        loadProductCatalog().added.forEach(function (item) {
+            if (item && item.slug && !item.deleted) taken[item.slug] = true;
+        });
         return taken;
     }
     function nextCustomProductCode(added) {
@@ -10863,8 +10885,34 @@
         (added || []).forEach(function (p) { scan(p && p.code); });
         return 'FT-NP-' + String(max + 1).padStart(3, '0');
     }
+    function defaultPackSize(kind) {
+        return kind === 'liquido' ? 19 : 25;
+    }
+    function normalizeCustomPackSize(kind, raw) {
+        const n = Number(raw);
+        if (isFinite(n) && n > 0) return Math.round(n * 1000) / 1000;
+        return defaultPackSize(kind);
+    }
+    function presentationFromCustom(item) {
+        const liquid = item.kind === 'liquido';
+        const size = normalizeCustomPackSize(item.kind, item.size);
+        return {
+            id: item.slug,
+            productSlug: item.slug,
+            code: item.code,
+            kind: liquid ? 'liquido' : 'seco',
+            unit: liquid ? 'L' : 'kg',
+            size: size,
+            label: liquid ? 'Cubeta' : 'Saco',
+            category: item.family || '',
+            listName: item.name,
+            sellable: true,
+            custom: true
+        };
+    }
     function recipeFromCustom(item) {
         const liquid = item.kind === 'liquido';
+        const size = normalizeCustomPackSize(item.kind, item.size);
         return {
             product: item.slug,
             name: item.name,
@@ -10879,7 +10927,7 @@
             items: [],
             batchDose: {
                 mode: 'plant-lot',
-                packSizeKg: liquid ? 19 : 25,
+                packSizeKg: size,
                 packagingPlantId: liquid ? 'cubeta-19l' : 'saco-rafia-general',
                 defaultVersionId: 'v1',
                 versions: [{ id: 'v1', name: 'V1', label: 'Estándar', items: [] }]
@@ -10888,14 +10936,54 @@
             custom: true
         };
     }
+    function syncCustomRecipe(recipe, item) {
+        if (!recipe || !item) return;
+        const liquid = item.kind === 'liquido';
+        const size = normalizeCustomPackSize(item.kind, item.size);
+        recipe.name = item.name;
+        recipe.code = item.code;
+        recipe.family = item.family || '';
+        recipe.kind = liquid ? 'liquido' : 'seco';
+        recipe.imageAlt = item.name;
+        recipe.custom = true;
+        if (!recipe.batchDose || typeof recipe.batchDose !== 'object') {
+            recipe.batchDose = {
+                mode: 'plant-lot',
+                packSizeKg: size,
+                packagingPlantId: liquid ? 'cubeta-19l' : 'saco-rafia-general',
+                defaultVersionId: 'v1',
+                versions: [{ id: 'v1', name: 'V1', label: 'Estándar', items: [] }]
+            };
+        } else {
+            recipe.batchDose.packSizeKg = size;
+            if (!recipe.batchDose.packagingPlantId) {
+                recipe.batchDose.packagingPlantId = liquid ? 'cubeta-19l' : 'saco-rafia-general';
+            }
+        }
+    }
     function applyProductCatalog() {
         const store = loadProductCatalog();
-        (store.added || []).forEach(function (item) {
-            if (!item || !item.slug) return;
-            if (!recipes.some(function (r) { return r.product === item.slug; })) {
-                recipes.push(recipeFromCustom(item));
-            }
+        const activeSlugs = {};
+        data.presentations = (data.presentations || []).filter(function (p) {
+            return !(p && p.custom);
         });
+        (store.added || []).forEach(function (item) {
+            if (!item || !item.slug || item.deleted) return;
+            activeSlugs[item.slug] = true;
+            const existing = recipes.filter(function (r) { return r.product === item.slug; })[0];
+            if (!existing) {
+                recipes.push(recipeFromCustom(item));
+            } else {
+                syncCustomRecipe(existing, item);
+            }
+            data.presentations.push(presentationFromCustom(item));
+        });
+        for (let i = recipes.length - 1; i >= 0; i--) {
+            const r = recipes[i];
+            if (r && r.custom && r.product && !activeSlugs[r.product]) {
+                recipes.splice(i, 1);
+            }
+        }
         Object.keys(store.names || {}).forEach(function (slug) {
             const name = String(store.names[slug] || '').trim();
             if (!name) return;
@@ -10908,6 +10996,9 @@
                     r.imageAlt = name;
                 }
             });
+            data.presentations.forEach(function (p) {
+                if (p && p.productSlug === slug && p.custom) p.listName = name;
+            });
         });
         return store;
     }
@@ -10916,34 +11007,65 @@
         const name = String(rawName || '').trim().replace(/\s+/g, ' ');
         if (!slug || !name) return false;
         const store = loadProductCatalog();
+        const now = new Date().toISOString();
         store.names[slug] = name;
         (store.added || []).forEach(function (item) {
-            if (item && item.slug === slug) item.name = name;
+            if (item && item.slug === slug) {
+                item.name = name;
+                item.updatedAt = now;
+            }
         });
         saveProductCatalog(store);
         applyProductCatalog();
         if (window.S35PosModule && window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
         return true;
     }
-    function addCustomProduct(rawName, family, kind) {
+    function findSimilarProductName(name) {
+        const needle = String(name || '').trim().toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (!needle) return null;
+        const pool = [];
+        (data.products || []).forEach(function (p) {
+            if (p && p.name) pool.push({ slug: p.slug, name: p.name });
+        });
+        recipes.forEach(function (r) {
+            if (r && r.name) pool.push({ slug: r.product, name: r.name });
+        });
+        for (let i = 0; i < pool.length; i++) {
+            const hay = String(pool[i].name || '').trim().toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            if (hay === needle) return pool[i];
+        }
+        return null;
+    }
+    function addCustomProduct(rawName, family, kind, size) {
         const name = String(rawName || '').trim().replace(/\s+/g, ' ');
         if (!name) return null;
         const store = loadProductCatalog();
+        const liquid = kind === 'liquido';
+        const packSize = normalizeCustomPackSize(liquid ? 'liquido' : 'seco', size);
         const slug = slugifyProductName(name, productSlugTakenMap());
+        const now = new Date().toISOString();
         const item = {
             slug: slug,
             name: name,
             code: nextCustomProductCode(store.added),
             family: String(family || '').trim(),
-            kind: kind === 'liquido' ? 'liquido' : 'seco'
+            kind: liquid ? 'liquido' : 'seco',
+            size: packSize,
+            createdAt: now,
+            updatedAt: now
         };
         store.added.push(item);
         store.names[slug] = name;
         saveProductCatalog(store);
         applyProductCatalog();
-        if (!finishedStock[slug]) finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
+        if (!finishedStock[slug]) {
+            finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
+            saveFinished();
+        }
         if (window.S35PosModule && window.S35PosModule.ensureProductPrice) {
-            window.S35PosModule.ensureProductPrice(slug, item.kind === 'liquido' ? null : 25);
+            window.S35PosModule.ensureProductPrice(slug, packSize);
         }
         if (window.S35PosModule && window.S35PosModule.refreshProducts) window.S35PosModule.refreshProducts();
         return item;
@@ -11160,8 +11282,44 @@
         if (isLiquidFormula(f)) return Number(n) === 1 ? 'envase' : 'envases';
         return Number(n) === 1 ? 'saco' : 'sacos';
     }
+    function outputYieldFactor(f) {
+        if (!isLiquidFormula(f)) return 1;
+        const min = Number(f && f.yieldMin) || 0;
+        const max = Number(f && f.yieldMax) || 0;
+        if (min > 0 && max > 0) return (min + max) / 2;
+        if (min > 0) return min;
+        if (max > 0) return max;
+        return 1;
+    }
     function isPlantLot(f) {
         return !!(f && f.mode === 'plant-lot');
+    }
+    function ensureNanotechYieldDefaults(f, recipe) {
+        if (!f || !recipe || recipe.product !== 'nanotech-hidrofobico') return false;
+        let changed = false;
+        if (!(Number(f.yieldMin) > 0)) {
+            f.yieldMin = 10;
+            changed = true;
+        }
+        if (!(Number(f.yieldMax) > 0)) {
+            f.yieldMax = 15;
+            changed = true;
+        }
+        if (!(Number(f.packSizeKg) > 0) || Number(f.packSizeKg) === 19) {
+            f.packSizeKg = 1;
+            changed = true;
+        }
+        if ((!f.packagingPlantId || f.packagingPlantId === 'cubeta-19l') && plantById('bote-1l')) {
+            f.packagingPlantId = 'bote-1l';
+            const packLine = (f.items || []).filter(isPackagingLine)[0];
+            if (packLine && packLine.plantId === 'cubeta-19l') packLine.plantId = 'bote-1l';
+            changed = true;
+        }
+        if (normalizeUnit(f.batchUnit) !== 'L') {
+            f.batchUnit = 'L';
+            changed = true;
+        }
+        return changed;
     }
     /** ¿Hay al menos una MP con dosis > 0? (empaque no cuenta). */
     function formulaHasMaterialDose(f) {
@@ -11220,7 +11378,8 @@
         const liquid = isLiquidFormula(f);
         const pack = Number(f && f.packSizeKg) || (liquid ? 1 : 25);
         const total = recipeBatchQty(f);
-        return pack > 0 ? Math.round((total / pack) * 100) / 100 : 0;
+        const factor = outputYieldFactor(f);
+        return pack > 0 ? Math.round((total * factor / pack) * 100) / 100 : 0;
     }
     function activeVersion(f) {
         if (!f) return null;
@@ -11682,6 +11841,10 @@
             if (slug === 'pegaxpress-block' && pointPastablockSack(map[slug])) plantIdsRemapped = true;
             syncActiveVersionToRoot(map[slug]);
             const recipe = recipes.filter(function (r) { return r.product === slug; })[0];
+            if (ensureNanotechYieldDefaults(map[slug], recipe)) {
+                persistRootToActiveVersion(map[slug]);
+                formulasFormatMigrated = true;
+            }
             ensureFormulaPackagingLine(map[slug], recipe);
         });
         if (formulasMergedFromSeed) plantIdsRemapped = true; // reutiliza el flush a localStorage
@@ -12009,8 +12172,14 @@
         if (doseNote) doseNote.innerHTML = plantLotDoseNoteHtml(totalKg, theo, f);
         if (el) {
             const qtyUnit = isLiquidFormula(f) ? 'L' : 'kg';
+            const yMin = Number(f.yieldMin) || 0;
+            const yMax = Number(f.yieldMax) || 0;
+            const range = (isLiquidFormula(f) && (yMin > 0 || yMax > 0))
+                ? ' (rango ' + esc(String(yMin || yMax)) +
+                    (yMax && yMin && yMax !== yMin ? '–' + esc(String(yMax)) : '') + ')'
+                : '';
             el.innerHTML = 'Total <strong>' + esc(String(Math.round(totalKg * 1000) / 1000)) + ' ' + qtyUnit +
-                '</strong> · ' + esc(String(theo)) + ' ' + theoreticalUnitWord(f, theo) + ' teóricos';
+                '</strong> · ' + esc(String(theo)) + ' ' + theoreticalUnitWord(f, theo) + ' teóricos' + range;
         }
     }
     function readFormulaFromDom() {
@@ -12030,6 +12199,10 @@
         if (batchLabel) f.batchLabel = String(batchLabel.value || '').trim() || (isPlantLot(f) ? 'lote' : 'saco');
         if (water) f.water = Math.max(0, Number(water.value) || 0);
         if (packSize) f.packSizeKg = Math.max(0, Number(packSize.value) || 0);
+        const yieldMinEl = detail.querySelector('[data-field="yieldMin"]');
+        const yieldMaxEl = detail.querySelector('[data-field="yieldMax"]');
+        if (yieldMinEl) f.yieldMin = Math.max(0, Number(yieldMinEl.value) || 0);
+        if (yieldMaxEl) f.yieldMax = Math.max(0, Number(yieldMaxEl.value) || 0);
         const versionLabelEl = detail.querySelector('[data-field="versionLabel"]');
         if (versionLabelEl) {
             const ver = activeVersion(f);
@@ -12147,6 +12320,10 @@
                 syncFormulaVersionMeta(mount, next, true);
                 const packSize = mount.querySelector('[data-field="packSizeKg"]');
                 if (packSize) packSize.value = String(f.packSizeKg || 25);
+                const yieldMinEl = mount.querySelector('[data-field="yieldMin"]');
+                const yieldMaxEl = mount.querySelector('[data-field="yieldMax"]');
+                if (yieldMinEl) yieldMinEl.value = String(f.yieldMin || 0);
+                if (yieldMaxEl) yieldMaxEl.value = String(f.yieldMax || 0);
                 const delBtn = mount.querySelector('#formulaDeleteVersionBtn');
                 if (delBtn) delBtn.hidden = (f.versions || []).length <= 1;
             }
@@ -12194,6 +12371,10 @@
         }
         ensureVersions(formulas[slug]);
         syncActiveVersionToRoot(formulas[slug]);
+        if (formulas[slug] && ensureNanotechYieldDefaults(formulas[slug], r)) {
+            persistRootToActiveVersion(formulas[slug]);
+            saveFormulas();
+        }
         const f = formulas[slug];
         ensureFormulaPackagingLine(f, r);
         syncFormulaPackagingAmounts(f);
@@ -12268,10 +12449,26 @@
                             esc(String(f.packSizeKg || (isLiquidFormula(f) ? 1 : 25))) +
                             '" title="' + (isLiquidFormula(f)
                                 ? 'Litros de producto terminado por envase'
-                                : 'Kg a los que se llena cada saco/cubeta') + '"></label></div>')
+                                : 'Kg a los que se llena cada saco/cubeta') + '"></label>' +
+                            (isLiquidFormula(f)
+                                ? ('<label>Rendimiento mín.<input data-field="yieldMin" type="number" min="0" step="any" value="' +
+                                    esc(String(f.yieldMin || 0)) +
+                                    '" title="Envases de 1 L por cada L de concentrado (mínimo)"></label>' +
+                                    '<label>Rendimiento máx.<input data-field="yieldMax" type="number" min="0" step="any" value="' +
+                                    esc(String(f.yieldMax || 0)) +
+                                    '" title="Envases de 1 L por cada L de concentrado (máximo)"></label>')
+                                : '') +
+                            '</div>')
                         : ('<div class="muted" style="margin-bottom:8px">Llenado: ' +
                             esc(String(f.packSizeKg || (isLiquidFormula(f) ? 1 : 25))) +
-                            (isLiquidFormula(f) ? ' L/envase' : ' kg/saco') + '</div>'))
+                            (isLiquidFormula(f) ? ' L/envase' : ' kg/saco') +
+                            (isLiquidFormula(f) && (f.yieldMin || f.yieldMax)
+                                ? ' · rendimiento ' + esc(String(f.yieldMin || f.yieldMax)) +
+                                    (f.yieldMax && f.yieldMin && f.yieldMax !== f.yieldMin
+                                        ? '–' + esc(String(f.yieldMax)) : '') +
+                                    ' envases / L'
+                                : '') +
+                            '</div>'))
                     : '') +
                 packEntries.map(function (e) {
                     return formulaLineHtml(e.it, e.idx, true);
@@ -12354,7 +12551,7 @@
             '<div class="muted" style="margin-bottom:8px">' +
             (lotMode
                 ? (isLiquidFormula(f)
-                    ? 'Dosis por lote de producción (kg o L). Los litros también entran al teórico.'
+                    ? 'Dosis por lote de producción (kg o L). El rendimiento convierte concentrado en envases de 1 L.'
                     : 'Dosis por lote de producción (kg)')
                 : ('Dosis por un ' + esc(f.batchLabel))) +
             '</div>' +
@@ -13062,10 +13259,15 @@
 
         const nameInput = document.getElementById('pdName');
         if (nameInput) nameInput.value = item.name;
+        const recipeRow = recipes.filter(function (r) { return r && r.product === item.slug; })[0];
         document.getElementById('pdMeta').innerHTML =
             '<span>' + esc(item.code || 'Sin código FT') + '</span>' +
             '<span>' + esc(item.family || PRODUCT_UNCATEGORIZED_LABEL) + '</span>' +
-            (item.hasFicha ? '<span class="badge b-success">Ficha</span>' : '<span class="badge">Sin ficha</span>');
+            (item.hasFicha
+                ? '<span class="badge b-success">Ficha</span>'
+                : (recipeRow && recipeRow.custom
+                    ? '<span class="badge">Alta panel</span>'
+                    : '<span class="badge">Sin ficha</span>'));
 
         syncNextProductButton(slug);
 
@@ -13422,6 +13624,38 @@
         const addProductForm = document.getElementById('addProductForm');
         const addProductName = document.getElementById('addProductName');
         const addProductFamily = document.getElementById('addProductFamily');
+        const addProductKind = document.getElementById('addProductKind');
+        const addProductSize = document.getElementById('addProductSize');
+        const addProductSizeUnit = document.getElementById('addProductSizeUnit');
+        const addProductCodePreview = document.getElementById('addProductCodePreview');
+        const addProductDupHint = document.getElementById('addProductDupHint');
+        function syncAddProductKindUi() {
+            const liquid = addProductKind && addProductKind.value === 'liquido';
+            if (addProductSizeUnit) addProductSizeUnit.textContent = liquid ? 'L' : 'kg';
+            if (addProductSize) {
+                const fallback = liquid ? 19 : 25;
+                const cur = Number(addProductSize.value);
+                if (!isFinite(cur) || cur <= 0 || cur === 25 || cur === 19) {
+                    addProductSize.value = String(fallback);
+                }
+            }
+        }
+        function refreshAddProductPreview() {
+            if (addProductCodePreview) {
+                const store = loadProductCatalog();
+                addProductCodePreview.textContent = nextCustomProductCode(store.added);
+            }
+            if (addProductDupHint) {
+                const dup = findSimilarProductName(addProductName ? addProductName.value : '');
+                if (dup) {
+                    addProductDupHint.hidden = false;
+                    addProductDupHint.textContent = 'Ya existe «' + dup.name + '». El alta creará otro código.';
+                } else {
+                    addProductDupHint.hidden = true;
+                    addProductDupHint.textContent = '';
+                }
+            }
+        }
         function closeAddProduct() {
             if (!addProductModal) return;
             addProductModal.classList.remove('show');
@@ -13433,8 +13667,9 @@
                 addProductFamily.innerHTML = window.S35PosModule.productFamilySelectHtml('');
             }
             if (addProductName) addProductName.value = '';
-            const kind = document.getElementById('addProductKind');
-            if (kind) kind.value = 'seco';
+            if (addProductKind) addProductKind.value = 'seco';
+            syncAddProductKindUi();
+            refreshAddProductPreview();
             addProductModal.classList.add('show');
             addProductModal.setAttribute('aria-hidden', 'false');
             if (addProductName) addProductName.focus();
@@ -13450,23 +13685,35 @@
                 if (e.target === addProductModal) closeAddProduct();
             });
         }
+        if (addProductKind) addProductKind.addEventListener('change', syncAddProductKindUi);
+        if (addProductName) addProductName.addEventListener('input', refreshAddProductPreview);
         if (addProductForm) {
             addProductForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                const kindEl = document.getElementById('addProductKind');
+                const kindVal = addProductKind ? addProductKind.value : 'seco';
+                const sizeVal = addProductSize ? addProductSize.value : '';
                 const created = addCustomProduct(
                     addProductName ? addProductName.value : '',
                     addProductFamily ? addProductFamily.value : '',
-                    kindEl ? kindEl.value : 'seco'
+                    kindVal,
+                    sizeVal
                 );
                 if (!created) return;
+                // Semilla de fórmula vacía lista para editar dosis.
+                if (typeof formulas !== 'undefined' && !formulas[created.slug]) {
+                    const recipe = recipes.filter(function (r) { return r.product === created.slug; })[0];
+                    if (recipe && typeof seedFormula === 'function') {
+                        formulas[created.slug] = seedFormula(recipe);
+                        if (typeof saveFormulas === 'function') saveFormulas({ onlySlug: created.slug });
+                    }
+                }
                 closeAddProduct();
                 productsFamilyFilter = 'all';
                 setProductsCatalogOpen(true);
                 renderProductHubChips();
                 renderProductsInventoryChart();
                 openProductHub(created.slug, { tab: 'formula' });
-                panelToast(created.name + ' · ' + created.code);
+                panelToast(created.name + ' · ' + created.code + ' · define fórmula y precios');
             });
         }
         const movBlock = document.getElementById('productsMovementsBlock');
@@ -15648,6 +15895,9 @@
         if ((touchPlant || touchFinished || touchCatalog) && typeof refreshStockViews === 'function') {
             refreshStockViews();
         }
+        if (touchCatalog && window.S35PosModule && window.S35PosModule.refreshProducts) {
+            window.S35PosModule.refreshProducts();
+        }
         if (touchPos && window.S35PosModule && window.S35PosModule.reloadSyncedFromStorage) {
             window.S35PosModule.reloadSyncedFromStorage(keys);
         } else if (touchPos) {
@@ -15811,7 +16061,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260926-saleedit3"></script>
+    <script src="/colaboradores/pos-module.js?v=20260926-gastosmes"></script>
     <script src="/colaboradores/command-palette.js?v=20260926-dinero"></script>
     <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>

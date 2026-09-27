@@ -65,6 +65,9 @@ const MERGE_MAP_KEYS = new Set([
 
 const MERGE_FORMULAS_KEY = 's35_plant_formulas_v3';
 
+/** Catálogo panel: { names, added[] } — unión por slug (no LWW del blob). */
+const MERGE_CATALOG_KEY = 's35_product_catalog_v1';
+
 function isHistoricalImportSale(row) {
   if (!row) return false;
   if (row.user === 'import-historico') return true;
@@ -269,6 +272,49 @@ function formulasDoseCount(value) {
   return n;
 }
 
+function catalogItemRecency(item) {
+  if (!item || typeof item !== 'object') return 0;
+  return Date.parse(item.updatedAt || item.createdAt || '') || 0;
+}
+
+function preferCatalogItem(a, b) {
+  if (!a) return b;
+  if (!b) return a;
+  const ta = catalogItemRecency(a);
+  const tb = catalogItemRecency(b);
+  if (tb > ta) return b;
+  if (ta > tb) return a;
+  if (b.deleted && !a.deleted) return b;
+  if (a.deleted && !b.deleted) return a;
+  return b;
+}
+
+/** Unión de altas panel por slug + nombres (renames de fichas canónicas). */
+function mergeProductCatalogValue(prevValue, nextValue, updatedAt) {
+  const prev = prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue) ? prevValue : {};
+  const next = nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue) ? nextValue : {};
+  const bySlug = Object.create(null);
+  function consider(item) {
+    if (!item || !item.slug) return;
+    const slug = String(item.slug);
+    bySlug[slug] = preferCatalogItem(bySlug[slug], item);
+  }
+  (Array.isArray(prev.added) ? prev.added : []).forEach(consider);
+  (Array.isArray(next.added) ? next.added : []).forEach(consider);
+  const added = Object.keys(bySlug).map(function (k) { return bySlug[k]; });
+  const names = Object.assign({}, prev.names || {}, next.names || {});
+  added.forEach(function (item) {
+    if (!item || item.deleted) return;
+    if (item.name) names[item.slug] = item.name;
+  });
+  return { names: names, added: added, updatedAt: updatedAt };
+}
+
+function catalogAddedCount(value) {
+  if (!value || !Array.isArray(value.added)) return 0;
+  return value.added.filter(function (item) { return item && item.slug && !item.deleted; }).length;
+}
+
 /**
  * Flags locales (timestamp ISO / string) que se sincronizaron por error.
  * Borrarlas evita seguir sirviendo basura si algún cliente viejo las pide.
@@ -462,7 +508,8 @@ module.exports = async function handler(req, res) {
         }
         const updatedAt = normalizeIso(entry.updatedAt) || new Date().toISOString();
         const prev = byId[key];
-        const isMergeKey = MERGE_ITEMS_KEYS.has(key) || MERGE_MAP_KEYS.has(key) || key === MERGE_FORMULAS_KEY;
+        const isMergeKey = MERGE_ITEMS_KEYS.has(key) || MERGE_MAP_KEYS.has(key) ||
+          key === MERGE_FORMULAS_KEY || key === MERGE_CATALOG_KEY;
 
         // Colecciones / fórmulas: fusionar siempre (aunque el cliente venga "stale")
         // para no perder tickets, gastos o dosis por producto. El resto sigue LWW.
@@ -485,6 +532,8 @@ module.exports = async function handler(req, res) {
             valueToStore = mergeByIdMaps(prev.value, entry.value, updatedAt);
           } else if (key === MERGE_FORMULAS_KEY) {
             valueToStore = mergeFormulasValue(prev.value, entry.value, updatedAt);
+          } else if (key === MERGE_CATALOG_KEY) {
+            valueToStore = mergeProductCatalogValue(prev.value, entry.value, updatedAt);
           }
           // Si el remoto era más nuevo, conservar su marca salvo que el merge
           // aportó ítems/dosis nuevos (entonces "ahora" para propagar la unión).
@@ -499,6 +548,8 @@ module.exports = async function handler(req, res) {
               grew = formulasDoseCount(valueToStore) > formulasDoseCount(prev.value) ||
                 Object.keys(extractFormulaMap(valueToStore)).length >
                   Object.keys(extractFormulaMap(prev.value)).length;
+            } else if (key === MERGE_CATALOG_KEY) {
+              grew = catalogAddedCount(valueToStore) > catalogAddedCount(prev.value);
             }
             tsToStore = grew
               ? new Date().toISOString()
@@ -512,6 +563,8 @@ module.exports = async function handler(req, res) {
           valueToStore = mergeItemsValue(key, null, entry.value, updatedAt);
         } else if (key === MERGE_FORMULAS_KEY) {
           valueToStore = mergeFormulasValue(null, entry.value, updatedAt);
+        } else if (key === MERGE_CATALOG_KEY) {
+          valueToStore = mergeProductCatalogValue(null, entry.value, updatedAt);
         }
 
         await col.updateOne(
