@@ -4266,6 +4266,97 @@
         return added;
     }
 
+    /**
+     * Notas de sucursal posteriores al corte de tesorería (26 sep 2026).
+     * El catch-up las guarda como histórico y por eso no mueven caja ni stock.
+     * Estas entran como ticket vivo: tesorería las suma y el producto terminado
+     * baja con applySaleInventoryChange (la casilla «Descontar inventario»).
+     * Materias primas no: solo las consume la producción.
+     */
+    function isPostOpeningBranchReceipt(sale) {
+        if (!sale || !afterTesoreriaOpening(sale.createdAt)) return false;
+        const meta = sale.meta || {};
+        if (meta.kind !== 'receipt') return false;
+        if (meta.branch !== 'SUCURSAL UNO') return false;
+        return normalizeCityId(sale.city || meta.city || '') === 'culiacan';
+    }
+    function catchupInventoryAlready(id) {
+        if (!id) return false;
+        try {
+            const map = JSON.parse(localStorage.getItem('s35_catchup_inventory_v1') || '{}');
+            return !!map[id];
+        } catch (_) { return false; }
+    }
+    function markCatchupInventory(id) {
+        if (!id) return;
+        try {
+            const map = JSON.parse(localStorage.getItem('s35_catchup_inventory_v1') || '{}');
+            map[id] = new Date().toISOString();
+            localStorage.setItem('s35_catchup_inventory_v1', JSON.stringify(map));
+        } catch (_) {}
+    }
+    function saleInventoryAlreadyApplied(sale) {
+        return !!(sale && ((sale.meta && sale.meta.inventoryApplied) || catchupInventoryAlready(sale.id)));
+    }
+    function deductCatchupFinishedOnce(sale) {
+        if (!sale || saleInventoryAlreadyApplied(sale)) return false;
+        markCatchupInventory(sale.id);
+        sale.meta = Object.assign({}, sale.meta || {}, { inventoryApplied: true });
+        applySaleInventoryChange([], sale.items);
+        return true;
+    }
+    function promotePostOpeningCatchupReceipts() {
+        const liveById = {};
+        const liveByReceipt = {};
+        sales.forEach(function (s) {
+            if (!s || !s.id) return;
+            liveById[s.id] = s;
+            const rid = s.meta && s.meta.receiptId;
+            if (rid != null && rid !== '') liveByReceipt[String(rid)] = s;
+        });
+        const keep = [];
+        let added = 0;
+        let deducted = 0;
+        let dirty = false;
+        historicalSales.forEach(function (s) {
+            if (!isPostOpeningBranchReceipt(s)) {
+                keep.push(s);
+                return;
+            }
+            const rid = s.meta && s.meta.receiptId != null ? String(s.meta.receiptId) : '';
+            const existing = liveById[s.id] || (rid && liveByReceipt[rid]) || null;
+            if (existing) {
+                if (existing.id === s.id && deductCatchupFinishedOnce(existing)) {
+                    deducted += 1;
+                    dirty = true;
+                }
+                return;
+            }
+            const meta = Object.assign({}, s.meta || {}, {
+                source: 'panel-note',
+                catchupSource: (s.meta && s.meta.source) || 'old-panel',
+                inventoryApplied: false
+            });
+            if (!meta.storeName) meta.storeName = meta.branch || 'SUCURSAL UNO';
+            const live = Object.assign({}, s, {
+                user: 'nota-sucursal',
+                meta: meta
+            });
+            sales.unshift(live);
+            liveById[live.id] = live;
+            if (rid) liveByReceipt[rid] = live;
+            added += 1;
+            dirty = true;
+            if (deductCatchupFinishedOnce(live)) deducted += 1;
+        });
+        if (keep.length !== historicalSales.length) {
+            historicalSales = keep;
+            invalidateAnalyticsSalesCache();
+        }
+        if (dirty) saveSales();
+        return { added: added, deducted: deducted };
+    }
+
     function importManualSalesCatchup() {
         return fetch('/colaboradores/data/manual-sales-catchup.json', { cache: 'no-store' })
             .then(function (r) {
@@ -4276,8 +4367,9 @@
                 const incoming = (data && Array.isArray(data.items)) ? data.items : [];
                 if (!incoming.length) return { added: 0, skipped: true };
                 const added = mergeHistoricalSalesById(incoming, { forceTimes: true });
+                const promoted = promotePostOpeningCatchupReceipts();
                 refreshHistoricalAnalyticsUi();
-                return { added: added, total: historicalSales.length };
+                return { added: added, promoted: promoted, total: historicalSales.length };
             });
     }
 
