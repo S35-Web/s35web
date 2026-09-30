@@ -12165,6 +12165,19 @@
         }
         return Math.round((lotCost / units + packCost) * 100) / 100;
     }
+    /** Valor de inventario: piezas × costo de fórmula. Sin fórmula el valor es 0 (no se usa precio de lista). */
+    function finishedStockLineValue(slug, stock) {
+        const qty = Math.max(0, Number(stock) || 0);
+        const raw = productSackCost(slug);
+        const unit = raw > 0 ? raw : 0;
+        const missing = qty > 0 && !(raw > 0);
+        return {
+            qty: qty,
+            unit: unit,
+            value: missing ? 0 : Math.round(qty * unit * 100) / 100,
+            missing: missing
+        };
+    }
     function productNameCostMark(slug) {
         const cost = productSackCost(slug);
         if (cost == null) return missingDoseMark(slug);
@@ -13011,16 +13024,15 @@
             };
         }));
         list.forEach(function (p) {
-            const raw = (window.S35PosModule && window.S35PosModule.baseUnitPrice)
-                ? window.S35PosModule.baseUnitPrice(p.slug)
-                : 0;
-            p.unitPrice = Math.round((Number(raw) || 0) * 100) / 100;
-            if (!(p.unitPrice > 0)) p.unitPrice = 0;
-            p.value = Math.round(p.stock * p.unitPrice * 100) / 100;
+            const line = finishedStockLineValue(p.slug, p.stock);
+            p.unitPrice = line.unit;
+            p.value = line.value;
+            p.missingCost = line.missing;
         });
         const total = list.reduce(function (sum, p) { return sum + p.stock; }, 0);
         const withStock = list.filter(function (p) { return p.stock > 0; }).length;
         const zeroStock = list.filter(function (p) { return p.stock === 0; }).length;
+        const missingCost = list.filter(function (p) { return p.missingCost; }).length;
         const valueSum = Math.round(list.reduce(function (sum, p) { return sum + p.value; }, 0) * 100) / 100;
         const max = list.reduce(function (m, p) { return Math.max(m, p.stock); }, 0);
         if (totalEl) totalEl.textContent = fmtStockQty(total);
@@ -13029,7 +13041,8 @@
         if (subEl) {
             if (!list.length) subEl.textContent = 'Sin productos';
             else if (!withStock) subEl.textContent = list.length + ' productos · sin existencia';
-            else subEl.textContent = (list.length - withStock) + ' en cero · producto terminado';
+            else subEl.textContent = (list.length - withStock) + ' en cero · producto terminado' +
+                (missingCost ? ' · ' + missingCost + ' sin costo de fórmula' : '');
         }
         if (!list.length) {
             host.innerHTML = '';
@@ -13042,9 +13055,11 @@
                 ? window.S35PosModule.familyColor(p.family)
                 : '#9a9a9a';
             const qtyPlain = String(Math.round(Number(p.stock) || 0));
-            const valueTitle = p.unitPrice > 0
-                ? (qtyPlain + ' x ' + moneyMx(p.unitPrice) + ' (PP)')
-                : 'Sin precio público';
+            const valueTitle = p.missingCost
+                ? 'Sin costo de fórmula'
+                : (p.unitPrice > 0
+                    ? (qtyPlain + ' x ' + moneyMx(p.unitPrice) + ' (fórmula)')
+                    : 'Sin costo de fórmula');
             return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name) + '">' +
                 '<span class="products-inventory-name">' + familyDotHtml(p.family) +
                 '<span class="products-inventory-label">' + esc(p.name) + '</span>' +
@@ -16208,14 +16223,9 @@
                 acc.units += stock;
                 if (stock <= 0) return acc;
                 acc.skus += 1;
-                let unit = typeof productSackCost === 'function' ? productSackCost(p.slug) : null;
-                if (!(unit > 0)) {
-                    unit = window.S35PosModule && window.S35PosModule.baseUnitPrice
-                        ? Number(window.S35PosModule.baseUnitPrice(p.slug)) || 0
-                        : 0;
-                    if (unit > 0) acc.fallbackSkus += 1;
-                }
-                acc.value += stock * (Number(unit) || 0);
+                const line = finishedStockLineValue(p.slug, stock);
+                if (line.missing) acc.fallbackSkus += 1;
+                acc.value += line.value;
                 return acc;
             }, { value: 0, units: 0, skus: 0, fallbackSkus: 0 });
             finished.value = Math.round(finished.value * 100) / 100;
@@ -16273,7 +16283,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260930-catchup-caja"></script>
+    <script src="/colaboradores/pos-module.js?v=20260930-pt-costo"></script>
     <script src="/colaboradores/command-palette.js?v=20260926-dinero"></script>
     <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>

@@ -7519,7 +7519,7 @@
                 esc(String(pt.skus || 0)) + '</span></div>' +
                 (pt.fallbackSkus
                     ? '<div class="dinero-line"><span>Sin costo de fórmula</span><span class="amt">' +
-                        esc(String(pt.fallbackSkus)) + ' a lista</span></div>'
+                        esc(String(pt.fallbackSkus)) + '</span></div>'
                     : '');
         }
         const cashTotal = roundMoney(acc.efectivo.total + acc.banco.total + acc.tarjeta_sf.total);
