@@ -7811,7 +7811,7 @@
                         </article>
                         <article class="dinero-card">
                             <h3>Producto terminado</h3>
-                            <p class="panel-sub">Stock × costo de fórmula · planta</p>
+                            <p class="panel-sub">Stock × precio público</p>
                             <div class="val" id="dineroPtTotal">$0.00</div>
                             <div class="dinero-lines" id="dineroPtLines"></div>
                         </article>
@@ -12165,12 +12165,18 @@
         }
         return Math.round((lotCost / units + packCost) * 100) / 100;
     }
-    /** Valor de inventario: piezas × costo de fórmula. Sin fórmula el valor es 0 (no se usa precio de lista). */
+    /** Valor de inventario: piezas × precio público (primer nivel). Sin precio el valor es 0. */
+    function finishedPublicPrice(slug) {
+        const raw = (window.S35PosModule && window.S35PosModule.baseUnitPrice)
+            ? window.S35PosModule.baseUnitPrice(slug)
+            : 0;
+        const unit = Math.round((Number(raw) || 0) * 100) / 100;
+        return unit > 0 ? unit : 0;
+    }
     function finishedStockLineValue(slug, stock) {
         const qty = Math.max(0, Number(stock) || 0);
-        const raw = productSackCost(slug);
-        const unit = raw > 0 ? raw : 0;
-        const missing = qty > 0 && !(raw > 0);
+        const unit = finishedPublicPrice(slug);
+        const missing = qty > 0 && !(unit > 0);
         return {
             qty: qty,
             unit: unit,
@@ -13042,7 +13048,7 @@
             if (!list.length) subEl.textContent = 'Sin productos';
             else if (!withStock) subEl.textContent = list.length + ' productos · sin existencia';
             else subEl.textContent = (list.length - withStock) + ' en cero · producto terminado' +
-                (missingCost ? ' · ' + missingCost + ' sin costo de fórmula' : '');
+                (missingCost ? ' · ' + missingCost + ' sin precio público' : '');
         }
         if (!list.length) {
             host.innerHTML = '';
@@ -13055,11 +13061,9 @@
                 ? window.S35PosModule.familyColor(p.family)
                 : '#9a9a9a';
             const qtyPlain = String(Math.round(Number(p.stock) || 0));
-            const valueTitle = p.missingCost
-                ? 'Sin costo de fórmula'
-                : (p.unitPrice > 0
-                    ? (qtyPlain + ' x ' + moneyMx(p.unitPrice) + ' (fórmula)')
-                    : 'Sin costo de fórmula');
+            const valueTitle = p.unitPrice > 0
+                ? (qtyPlain + ' x ' + moneyMx(p.unitPrice) + ' (PP)')
+                : 'Sin precio público';
             return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name) + '">' +
                 '<span class="products-inventory-name">' + familyDotHtml(p.family) +
                 '<span class="products-inventory-label">' + esc(p.name) + '</span>' +
@@ -16283,7 +16287,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20260930-pt-costo"></script>
+    <script src="/colaboradores/pos-module.js?v=20260930-pt-publico"></script>
     <script src="/colaboradores/command-palette.js?v=20260926-dinero"></script>
     <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>
