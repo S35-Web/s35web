@@ -425,8 +425,12 @@
     function isValidPayMethod(v) {
         return payMethodKeys().indexOf(v) >= 0;
     }
-    function billLabel(v) {
-        return v === 'facturado' ? 'Facturado' : 'Sin facturar';
+    function billLabel(v, sale) {
+        if (v === 'facturado') {
+            if (sale && sale.meta && sale.meta.invoicePending) return 'Facturado (pendiente)';
+            return 'Facturado';
+        }
+        return 'Sin facturar';
     }
     function roundMoney(n) {
         return Math.round((Number(n) || 0) * 100) / 100;
@@ -808,7 +812,7 @@
             lines.join('\n') || '—',
             '',
             'Pago: ' + formatSalePayLabel(sale),
-            'Facturación: ' + billLabel(sale.billing),
+            'Facturación: ' + billLabel(sale.billing, sale),
             'Total: ' + money(sale.total),
             '',
             'Gracias por su compra.'
@@ -936,7 +940,7 @@
             '</div>' +
             '<div class="snd-sum-cell">' +
             '<span class="lbl">Facturación</span>' +
-            '<span class="val">' + esc(billLabel(sale.billing)) + '</span>' +
+            '<span class="val">' + esc(billLabel(sale.billing, sale)) + '</span>' +
             '</div>' +
             '</div>' +
             '<div class="snd-parties">' +
@@ -4513,7 +4517,7 @@
                     '<td>' + saleReceiptCellHtml(s) + '</td>' +
                     '<td>' + esc(clientLabel) + '</td>' +
                     '<td>' + formatSalePayBadgesHtml(s) + '</td>' +
-                    '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing)) + '</span></td>' +
+                    '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing, s)) + '</span></td>' +
                     '<td class="num">' + itemsN + '</td>' +
                     '<td class="num">' + money(s.total) + '</td>' +
                     '<td class="muted">' + esc(origin) + '</td>' +
@@ -7917,7 +7921,7 @@
                         '</div>' +
                         '<div class="cortes-invoice-pills">' +
                             '<span class="cortes-pill">' + esc(formatSalePayLabel(s)) + '</span>' +
-                            '<span class="cortes-pill' + (billOk ? ' ok' : '') + '">' + esc(billLabel(s.billing)) + '</span>' +
+                            '<span class="cortes-pill' + (billOk ? ' ok' : '') + '">' + esc(billLabel(s.billing, s)) + '</span>' +
                         '</div>' +
                         '<div class="cortes-invoice-client">' +
                             '<div class="name">' + esc(clientLabel) + '</div>' +
@@ -10303,7 +10307,7 @@
                 '<td><input type="checkbox" data-cobranza-sale="' + esc(s.id) + '" data-amount="' + esc(String(Number(s.total) || 0)) + '"></td>' +
                 '<td class="muted">' + esc(dateStr) + '</td>' +
                 '<td>' + saleReceiptCellHtml(s) + '</td>' +
-                '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing)) + '</span></td>' +
+                '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing, s)) + '</span></td>' +
                 '<td class="num">' + money(s.total) + '</td>' +
                 '</tr>';
         }).join('');
