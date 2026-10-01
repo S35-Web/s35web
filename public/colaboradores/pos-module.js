@@ -3638,6 +3638,32 @@
         }
         return true;
     }
+    /** Renglón del estado de cuenta Banorte posterior al corte. No es un ajuste manual. */
+    function isPostOpeningBankStatement(m) {
+        if (!m || m.deleted || m.type === 'apertura') return false;
+        if (m.account !== 'banco') return false;
+        if (m.source !== 'banorte-csv' && m.type !== 'banco_csv' && !m.ledgerOnly) return false;
+        return afterTesoreriaOpening(m.createdAt);
+    }
+    function tesoreriaDayKey(iso) {
+        const d = new Date(iso || '');
+        if (isNaN(d.getTime())) return '';
+        try {
+            return new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'America/Mazatlan',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }).format(d);
+        } catch (_) {
+            return '';
+        }
+    }
+    function tesoreriaNextDayKey(iso) {
+        const d = new Date(iso || '');
+        if (isNaN(d.getTime())) return '';
+        return tesoreriaDayKey(new Date(d.getTime() + 86400000).toISOString());
+    }
     function afterTesoreriaOpening(iso) {
         const t = Date.parse(iso || '');
         return isFinite(t) && t > TESORERIA_OPENED_AT;
@@ -3778,15 +3804,41 @@
             return afterTesoreriaOpening(sale && sale.createdAt);
         });
         const buckets = {
-            efectivo: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 },
-            banco: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 },
-            tarjeta_sf: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0 }
+            efectivo: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0, extracto: 0 },
+            banco: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0, extracto: 0 },
+            tarjeta_sf: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0, extracto: 0 }
         };
-        list.forEach(function (sale) {
+        const statement = filterTesoreriaMovsByCity(tesoreriaMovs, city).filter(isPostOpeningBankStatement);
+        const depositPool = {};
+        statement.forEach(function (m) {
+            const signed = tesoreriaSignedAmount(m);
+            buckets.banco.extracto = roundMoney(buckets.banco.extracto + signed);
+            if (signed <= 0) return;
+            const key = tesoreriaDayKey(m.createdAt) + '|' + signed.toFixed(2);
+            depositPool[key] = (depositPool[key] || 0) + 1;
+        });
+        function statementAlreadyReceived(sale, amount) {
+            const amt = roundMoney(amount).toFixed(2);
+            const keys = [
+                tesoreriaDayKey(sale && sale.createdAt) + '|' + amt,
+                tesoreriaNextDayKey(sale && sale.createdAt) + '|' + amt
+            ];
+            for (let i = 0; i < keys.length; i++) {
+                if (depositPool[keys[i]] > 0) {
+                    depositPool[keys[i]] -= 1;
+                    return true;
+                }
+            }
+            return false;
+        }
+        list.slice().sort(function (a, b) {
+            return (Date.parse(a && a.createdAt) || 0) - (Date.parse(b && b.createdAt) || 0);
+        }).forEach(function (sale) {
             const billing = sale.billing || 'sin_facturar';
             salePaymentLines(sale).forEach(function (p) {
                 const account = tesoreriaAccountOfPayment(p.method, billing);
                 if (!account) return;
+                if (account === 'banco' && statementAlreadyReceived(sale, p.amount)) return;
                 buckets[account].tickets = roundMoney(buckets[account].tickets + p.amount);
                 if (p.method === 'transferencia') {
                     buckets[account].transfer = roundMoney(buckets[account].transfer + p.amount);
@@ -3807,7 +3859,8 @@
             buckets[acc.id].apertura = tesoreriaOpeningAmount(movs, acc.id, city);
             buckets[acc.id].ajustes = roundMoney(sumTesoreriaAdjustments(movs, acc.id));
             buckets[acc.id].total = roundMoney(
-                buckets[acc.id].apertura + buckets[acc.id].tickets - buckets[acc.id].gastos + buckets[acc.id].ajustes
+                buckets[acc.id].apertura + buckets[acc.id].tickets - buckets[acc.id].gastos +
+                buckets[acc.id].ajustes + (buckets[acc.id].extracto || 0)
             );
         });
         return buckets;
@@ -7481,12 +7534,16 @@
         }
         const bankLines = document.getElementById('dineroBancoLines');
         if (bankLines) {
-            bankLines.innerHTML = dineroLinesHtml([
+            const bankRows = [
                 { label: 'Saldo Banorte', amount: acc.banco.apertura },
+                { label: 'Estado de cuenta posterior', amount: acc.banco.extracto, out: acc.banco.extracto < 0 },
                 { label: 'Transferencias posteriores', amount: acc.banco.transfer },
                 { label: 'Tarjeta facturada posterior', amount: acc.banco.tarjetaFact },
                 { label: 'Ajustes', amount: acc.banco.ajustes, out: acc.banco.ajustes < 0 }
-            ]);
+            ];
+            bankLines.innerHTML = dineroLinesHtml(bankRows.filter(function (row) {
+                return row.label !== 'Estado de cuenta posterior' || row.amount;
+            }));
         }
         const cardLines = document.getElementById('dineroTarjetaSfLines');
         if (cardLines) {
