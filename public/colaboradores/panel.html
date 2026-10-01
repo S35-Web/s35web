@@ -3918,6 +3918,12 @@
         }
         .sale-note-edit .sne-lines .sne-qty { max-width: 72px; }
         .sale-note-edit .sne-lines .sne-price { max-width: 96px; }
+        .sale-note-edit .sne-line-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
         .sale-note-edit .sne-total-row {
             display: flex;
             justify-content: flex-end;
@@ -7706,7 +7712,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="kpis" style="margin-bottom:16px">
+                    <div class="kpis kpis-4" style="margin-bottom:16px">
                         <div class="kpi">
                             <div class="label">Unidades pendientes</div>
                             <div class="val" id="precomprasUnits">0</div>

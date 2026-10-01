@@ -1205,7 +1205,10 @@
             '<td class="num"><input class="sne-qty" type="number" min="0" step="any" data-sne-field="qty" value="' + esc(String(qty)) + '"></td>' +
             '<td class="num"><input class="sne-price" type="number" min="0" step="0.01" data-sne-field="price" value="' + esc(String(price)) + '"></td>' +
             '<td class="num sne-line">' + money(line) + '</td>' +
-            '<td><button type="button" class="icon-action danger" data-sne-remove title="Quitar línea"><i class="fa-solid fa-trash-can"></i></button></td>' +
+            '<td class="sne-line-actions">' +
+            '<button type="button" class="icon-action" data-sne-dup title="Duplicar línea (mismo producto, otro precio)"><i class="fa-solid fa-clone"></i></button>' +
+            '<button type="button" class="icon-action danger" data-sne-remove title="Quitar línea"><i class="fa-solid fa-trash-can"></i></button>' +
+            '</td>' +
             '</tr>';
     }
 
@@ -5629,7 +5632,8 @@
                 priceNote = '<span class="muted" style="font-size:11px">Escalón ' + esc(tierLabelForQty(cartUnits)) + '</span>';
             }
             const fam = recipeFamily(r);
-            return '<button type="button" class="product-card" data-add="' + esc(r.product) + '">' +
+            return '<button type="button" class="product-card" data-add="' + esc(r.product) + '"' +
+                ' title="Clic: sumar unidad · Mayús+clic: nueva línea (otro precio / regalo)">' +
                 img +
                 '<div class="pc-body">' +
                 '<div class="fam">' + (fam ? familyDot(fam) : '') + esc(fam || PRODUCT_UNCATEGORIZED_LABEL) + '</div>' +
@@ -5816,7 +5820,9 @@
                         'data-qty="' + idx + '" value="' + esc(String(it.qty)) + '" ' +
                         'aria-label="Cantidad" title="Escribe la cantidad">' +
                         '<button type="button" class="qty-btn" data-inc="' + idx + '" aria-label="Más">+</button>' +
-                        '<button type="button" class="btn ghost danger" data-rm="' + idx + '" style="margin-left:auto;height:28px;padding:0 8px">Quitar</button>' +
+                        '<button type="button" class="btn ghost" data-dup-line="' + idx + '" style="margin-left:auto;height:28px;padding:0 8px" title="Otra línea del mismo producto (otro precio)">' +
+                        '<i class="fa-solid fa-clone" aria-hidden="true"></i> Línea</button>' +
+                        '<button type="button" class="btn ghost danger" data-rm="' + idx + '" style="height:28px;padding:0 8px">Quitar</button>' +
                         '</div>');
                 return '<div class="' + itemClass + '" data-product="' + esc(it.product) + '">' +
                     thumbHtml +
@@ -6550,13 +6556,24 @@
         });
     }
 
-    function addToCart(slug) {
+    function addToCart(slug, opts) {
+        opts = opts || {};
+        const forceNew = !!opts.forceNewLine;
         const r = recipeBySlug(slug);
         if (!r) return;
-        /* No mezclar con líneas promo del mismo producto. */
-        const existing = cart.filter(function (it) { return it.product === slug && !it.isPromo; })[0];
-        if (existing) existing.qty += 1;
-        else {
+        /* Solo fusiona en líneas “normales” (sin override de precio ni promo).
+           Así un regalo a $0 no absorbe unidades nuevas al precio de lista. */
+        const existing = forceNew
+            ? null
+            : cart.filter(function (it) {
+                return it.product === slug &&
+                    !it.isPromo &&
+                    !it.promoAuto &&
+                    it.priceOverride == null;
+            })[0];
+        if (existing) {
+            existing.qty += 1;
+        } else {
             cart.push({
                 product: r.product,
                 name: r.name,
@@ -6575,6 +6592,33 @@
         renderCart();
         renderProducts();
         flashAddedProduct(slug);
+        if (forceNew) {
+            toast('Nueva línea · mismo producto (ajusta precio o cantidad)');
+        }
+    }
+
+    function duplicateCartLine(idx) {
+        const src = cart[idx];
+        if (!src || src.promoAuto) return;
+        const r = recipeBySlug(src.product);
+        cart.splice(idx + 1, 0, {
+            product: src.product,
+            name: src.name,
+            code: src.code || '',
+            unit: src.unit || (r ? unitFor(r) : 'Pza'),
+            price: unitPrice(src.product, cartQty() + 1),
+            basePrice: unitPrice(src.product, cartQty() + 1),
+            priceOverride: null,
+            priceOverridePct: null,
+            isPromo: false,
+            qty: 1
+        });
+        if (appliedPromoCode) syncAppliedPromoLines({ quiet: true });
+        applyCartTierPrices();
+        renderCart();
+        renderProducts();
+        flashAddedProduct(src.product);
+        toast('Línea duplicada · pon cantidad y precio (p. ej. $0 de regalo)');
     }
 
     function openPromoModal() {
@@ -9086,7 +9130,10 @@
         if (grid) {
             grid.addEventListener('click', function (e) {
                 const card = e.target.closest('[data-add]');
-                if (card) addToCart(card.getAttribute('data-add'));
+                if (!card) return;
+                addToCart(card.getAttribute('data-add'), {
+                    forceNewLine: !!(e.shiftKey || e.altKey || e.metaKey)
+                });
             });
         }
 
@@ -9106,6 +9153,11 @@
                 const inc = e.target.closest('[data-inc]');
                 const dec = e.target.closest('[data-dec]');
                 const rm = e.target.closest('[data-rm]');
+                const dup = e.target.closest('[data-dup-line]');
+                if (dup) {
+                    duplicateCartLine(Number(dup.getAttribute('data-dup-line')));
+                    return;
+                }
                 if (inc) {
                     const i = Number(inc.getAttribute('data-inc'));
                     if (cart[i] && !cart[i].promoAuto) setCartQty(i, cart[i].qty + 1);
@@ -9627,6 +9679,26 @@
                     const idx = body.querySelectorAll('tr').length;
                     body.insertAdjacentHTML('beforeend', saleNoteLineRowHtml({ product: '', name: '', qty: 1, price: 0 }, idx));
                     refreshSaleNoteEditTotals();
+                    return;
+                }
+                const sneDup = e.target.closest('[data-sne-dup]');
+                if (sneDup) {
+                    const tr = sneDup.closest('tr');
+                    const body = document.getElementById('sneLinesBody');
+                    if (!tr || !body) return;
+                    const product = ((tr.querySelector('[data-sne-field="product"]') || {}).value || '').trim();
+                    const name = ((tr.querySelector('[data-sne-field="name"]') || {}).value || '').trim();
+                    const qty = Math.max(1, Number((tr.querySelector('[data-sne-field="qty"]') || {}).value) || 1);
+                    const price = Math.max(0, Number((tr.querySelector('[data-sne-field="price"]') || {}).value) || 0);
+                    const idx = body.querySelectorAll('tr').length;
+                    tr.insertAdjacentHTML('afterend', saleNoteLineRowHtml({
+                        product: product,
+                        name: name,
+                        qty: qty,
+                        price: price
+                    }, idx));
+                    refreshSaleNoteEditTotals();
+                    toast('Línea duplicada · ajusta cantidad o precio');
                     return;
                 }
                 if (e.target && e.target.id === 'snePaySplit') {
