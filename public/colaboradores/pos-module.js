@@ -5820,8 +5820,8 @@
                         'data-qty="' + idx + '" value="' + esc(String(it.qty)) + '" ' +
                         'aria-label="Cantidad" title="Escribe la cantidad">' +
                         '<button type="button" class="qty-btn" data-inc="' + idx + '" aria-label="Más">+</button>' +
-                        '<button type="button" class="btn ghost" data-dup-line="' + idx + '" style="margin-left:auto;height:28px;padding:0 8px" title="Otra línea del mismo producto (otro precio)">' +
-                        '<i class="fa-solid fa-clone" aria-hidden="true"></i> Línea</button>' +
+                        '<button type="button" class="btn ghost" data-dup-line="' + idx + '" style="margin-left:auto;height:28px;padding:0 8px" title="Duplicar línea (mismo producto, otro precio)">' +
+                        '<i class="fa-solid fa-clone" aria-hidden="true"></i> Duplicar</button>' +
                         '<button type="button" class="btn ghost danger" data-rm="' + idx + '" style="height:28px;padding:0 8px">Quitar</button>' +
                         '</div>');
                 return '<div class="' + itemClass + '" data-product="' + esc(it.product) + '">' +
