@@ -1,7 +1,7 @@
 {
-  "version": 11,
-  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente",
-  "generatedAt": "2026-09-25",
+  "version": 12,
+  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente | Ricbor notas 63989a/64001a/64002a (culiacan) + 63944a/63990a (mochis) transferencia facturado ya en Banorte; 64032a mochis por cobrar",
+  "generatedAt": "2026-09-30",
   "items": [
     {
       "id": "sale-cfdi-11667",
@@ -3713,6 +3713,298 @@
         "branch": "SUCURSAL UNO"
       },
       "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-63989",
+      "folio": "HIST-R63989",
+      "createdAt": "2026-09-10T10:00:00",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
+        "company": "",
+        "rfc": "CRI1103157P8",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 150,
+          "lineTotal": 19761.0
+        }
+      ],
+      "total": 19761.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 63989,
+        "noteSuffix": "a",
+        "note": "63989a",
+        "observations": "Hacienda del Valle Culiacan · nota 63989a · Estuco Interior/Exterior",
+        "year": 2026,
+        "month": 9,
+        "day": 10,
+        "city": "culiacan",
+        "storeName": "Hacienda del Valle Culiacan",
+        "bankAlreadyInStatement": true,
+        "productLabelPanel": "Estuco Interior/Exterior",
+        "paidAt": "2026-09-29T01:25:50",
+        "paidInBankStatement": true
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64001",
+      "folio": "HIST-R64001",
+      "createdAt": "2026-09-11T10:00:00",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
+        "company": "",
+        "rfc": "CRI1103157P8",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 150,
+          "lineTotal": 19761.0
+        }
+      ],
+      "total": 19761.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64001,
+        "noteSuffix": "a",
+        "note": "64001a",
+        "observations": "Hacienda del Valle Culiacan · nota 64001a · Estuco Interior/Exterior",
+        "year": 2026,
+        "month": 9,
+        "day": 11,
+        "city": "culiacan",
+        "storeName": "Hacienda del Valle Culiacan",
+        "bankAlreadyInStatement": true,
+        "productLabelPanel": "Estuco Interior/Exterior",
+        "paidAt": "2026-09-29T01:25:51",
+        "paidInBankStatement": true
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64002",
+      "folio": "HIST-R64002",
+      "createdAt": "2026-09-11T10:05:00",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
+        "company": "",
+        "rfc": "CRI1103157P8",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 150,
+          "lineTotal": 19761.0
+        }
+      ],
+      "total": 19761.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64002,
+        "noteSuffix": "a",
+        "note": "64002a",
+        "observations": "Hacienda del Valle Culiacan · nota 64002a · Estuco Interior/Exterior",
+        "year": 2026,
+        "month": 9,
+        "day": 11,
+        "city": "culiacan",
+        "storeName": "Hacienda del Valle Culiacan",
+        "bankAlreadyInStatement": true,
+        "productLabelPanel": "Estuco Interior/Exterior",
+        "paidAt": "2026-09-29T01:25:52",
+        "paidInBankStatement": true
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-63944",
+      "folio": "HIST-R63944",
+      "createdAt": "2026-09-02T10:00:00",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
+        "company": "",
+        "rfc": "CRI1103157P8",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 800,
+          "lineTotal": 105392.0
+        }
+      ],
+      "total": 105392.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 63944,
+        "noteSuffix": "a",
+        "note": "63944a",
+        "observations": "Nuevo Horizonte Mochis · nota 63944a · Estuco Interior/Exterior",
+        "year": 2026,
+        "month": 9,
+        "day": 2,
+        "city": "mochis",
+        "storeName": "Nuevo Horizonte Mochis",
+        "bankAlreadyInStatement": true,
+        "productLabelPanel": "Estuco Interior/Exterior",
+        "paidAt": "2026-09-07T16:55:50",
+        "paidInBankStatement": true
+      },
+      "city": "mochis"
+    },
+    {
+      "id": "sale-hist-rcpt-63990",
+      "folio": "HIST-R63990",
+      "createdAt": "2026-09-10T11:00:00",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
+        "company": "",
+        "rfc": "CRI1103157P8",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 800,
+          "lineTotal": 105392.0
+        }
+      ],
+      "total": 105392.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 63990,
+        "noteSuffix": "a",
+        "note": "63990a",
+        "observations": "Virreyes Mochis · nota 63990a · Estuco Interior/Exterior",
+        "year": 2026,
+        "month": 9,
+        "day": 10,
+        "city": "mochis",
+        "storeName": "Virreyes Mochis",
+        "bankAlreadyInStatement": true,
+        "productLabelPanel": "Estuco Interior/Exterior",
+        "paidAt": "2026-09-29T01:25:52",
+        "paidInBankStatement": true
+      },
+      "city": "mochis"
+    },
+    {
+      "id": "sale-hist-rcpt-64032",
+      "folio": "HIST-R64032",
+      "createdAt": "2026-09-17T10:00:00",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "CONSTRUCCIONES RICBOR",
+        "phone": "",
+        "email": "Juanellodiaz@me.com,contabilidad@ricbor.com ,facturas.cln@modiebo.com.mx,comprasricbor@gmail.com",
+        "company": "",
+        "rfc": "CRI1103157P8",
+        "type": "client"
+      },
+      "customer": "CONSTRUCCIONES RICBOR",
+      "paymentMethod": "por_cobrar",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Estuco Hidrófugo S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 800,
+          "lineTotal": 105392.0
+        }
+      ],
+      "total": 105392.0,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64032,
+        "noteSuffix": "a",
+        "note": "64032a",
+        "observations": "Virreyes Mochis · nota 64032a · Estuco Interior/Exterior",
+        "year": 2026,
+        "month": 9,
+        "day": 17,
+        "city": "mochis",
+        "storeName": "Virreyes Mochis",
+        "bankAlreadyInStatement": false,
+        "productLabelPanel": "Estuco Interior/Exterior"
+      },
+      "city": "mochis"
     }
   ],
   "skippedCancelled": [

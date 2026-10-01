@@ -6652,20 +6652,21 @@
             gap: 16px;
             margin-bottom: 16px;
         }
-        .dinero-accounts {
+        .dinero-accounts,
+        .dinero-inventory {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 12px;
             margin-bottom: 16px;
-            align-items: stretch;
         }
+        .dinero-accounts { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+        .dinero-inventory { grid-template-columns: 1fr 1fr; }
         .dinero-card {
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 18px 20px;
             background: var(--panel);
-            height: 100%;
-            box-sizing: border-box;
+            min-height: 168px;
         }
         .dinero-card h3 {
             margin: 0 0 4px;
@@ -6789,6 +6790,8 @@
         .dinero-out { color: #b45309; }
         @media (max-width: 900px) {
             .dinero-head { flex-direction: column; align-items: stretch; }
+            .dinero-accounts,
+            .dinero-inventory,
             .dinero-form { grid-template-columns: 1fr; }
         }
         @media (max-width: 1100px) {
@@ -6804,12 +6807,6 @@
                 justify-content: space-between;
             }
             #posCheckoutBtn { min-width: 140px; }
-        }
-        @media (max-width: 1100px) {
-            .dinero-accounts { grid-template-columns: 1fr 1fr; }
-        }
-        @media (max-width: 900px) {
-            .dinero-accounts { grid-template-columns: 1fr; }
         }
         @media (max-width: 900px) {
             #venta.section.active { min-height: 0; margin: 0; }
@@ -7832,6 +7829,9 @@
                             <div class="val" id="dineroEmpresarialTotal">$0.00</div>
                             <div class="dinero-lines" id="dineroEmpresarialLines"></div>
                         </article>
+                    </div>
+
+                    <div class="dinero-inventory">
                         <article class="dinero-card">
                             <h3>Materias primas</h3>
                             <p class="panel-sub">Stock × costo unitario · planta</p>
