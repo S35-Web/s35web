@@ -6505,6 +6505,74 @@
             height: 34px;
             min-width: 140px;
         }
+        .pos-precompra-check {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--muted);
+            cursor: pointer;
+            user-select: none;
+        }
+        .pos-precompra-check input { accent-color: var(--text); }
+        .pos-precompra-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 0 0 10px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: color-mix(in srgb, var(--panel) 88%, #0ea5e9 12%);
+            font-size: 13px;
+        }
+        .pos-precompra-banner[hidden] { display: none !important; }
+        .pos-precompra-banner .msg { color: var(--text); }
+        .precompra-surtir-rows { display: grid; gap: 10px; margin: 12px 0; }
+        .precompra-surtir-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 110px;
+            gap: 10px;
+            align-items: end;
+        }
+        .precompra-surtir-row label {
+            display: grid;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .precompra-surtir-row input {
+            height: 40px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 10px;
+        }
+        .precompra-fulfill-list { display: grid; gap: 8px; margin-top: 12px; }
+        .precompra-fulfill-item {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .precompra-note-card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+        }
+        .precompra-note-card-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
         .cortes-row .amt { font-weight: 500; color: var(--text); white-space: nowrap; }
         .cortes-row .name {
             overflow: hidden;
@@ -7238,6 +7306,12 @@
                                     <button type="button" class="btn ghost" id="posClearCartBtn">Vaciar</button>
                                 </div>
                                 <div id="posCartPromoBanner" hidden></div>
+                                <div id="posPrecompraBanner" class="pos-precompra-banner" hidden>
+                                    <div>
+                                        <span class="msg" id="posPrecompraBannerMsg"></span>
+                                    </div>
+                                    <button type="button" class="btn" id="posPrecompraBannerBtn">Surtir</button>
+                                </div>
                                 <div class="pos-cart-body" id="posCartBody">
                                     <div class="empty">Toca un producto para agregarlo al ticket.</div>
                                 </div>
@@ -7251,7 +7325,7 @@
                                     <label><input type="radio" name="payMethod" value="efectivo" checked> Efectivo</label>
                                     <label><input type="radio" name="payMethod" value="tarjeta"> Tarjeta</label>
                                     <label><input type="radio" name="payMethod" value="transferencia"> Transfer.</label>
-                                    <label><input type="radio" name="payMethod" value="por_cobrar"> Por cobrar</label>
+                                    <label id="posPayPorCobrarLabel"><input type="radio" name="payMethod" value="por_cobrar"> Por cobrar</label>
                                 </div>
                                 <label class="pay-split-check"><input type="checkbox" id="posPaySplit"> Dividir pago</label>
                                 <div class="pay-split-panel" id="posPaySplitPanel" hidden>
@@ -7262,6 +7336,10 @@
                                         <span>Restante <strong id="posPaySplitRemain">$0.00</strong></span>
                                     </div>
                                 </div>
+                                <label class="pos-precompra-check" title="Anticipo de mercancía: el dinero entra ya; el inventario baja al surtir">
+                                    <input type="checkbox" id="posPrecompraMode">
+                                    Precompra (anticipo de unidades)
+                                </label>
                             </div>
                             <div class="pos-bill-block">
                                 <div class="field-label">Facturación</div>
@@ -7342,6 +7420,9 @@
                                 <button type="button" class="btn" id="goCobranzaBtn" title="Cobranza">
                                     <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i> Cobranza
                                 </button>
+                                <button type="button" class="btn" id="goPrecomprasBtn" title="Precompras">
+                                    <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Precompras
+                                </button>
                                 <button type="button" class="btn" id="goPromosBtn" title="Códigos de promoción">
                                     <i class="fa-solid fa-percent" aria-hidden="true"></i> Promos
                                 </button>
@@ -7371,6 +7452,9 @@
                             <div class="toolbar" style="margin:0;gap:8px">
                                 <button type="button" class="icon-action client-dash-debt" id="cdDebtBtn" hidden title="Ver cobranza" aria-label="Ver cobranza">
                                     <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>
+                                </button>
+                                <button type="button" class="icon-action client-dash-precompra" id="cdPrecompraBtn" hidden title="Ver precompras" aria-label="Ver precompras">
+                                    <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
@@ -7596,6 +7680,69 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                <section id="precompras" class="section">
+                    <div class="page-head">
+                        <div>
+                            <h1 class="page-title">Precompras</h1>
+                            <p class="page-sub">Mercancía pagada por adelantado · surte parcialidades sin volver a cobrar.</p>
+                        </div>
+                        <div class="page-head-actions">
+                            <button type="button" class="btn ghost" id="precomprasBackToClientsBtn" title="Volver a clientes">
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Clientes
+                            </button>
+                        </div>
+                    </div>
+                    <div class="kpis" style="margin-bottom:16px">
+                        <div class="kpi">
+                            <div class="label">Unidades pendientes</div>
+                            <div class="val" id="precomprasUnits">0</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Monto anticipado abierto</div>
+                            <div class="val" id="precomprasAmount">$0.00</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Notas abiertas</div>
+                            <div class="val" id="precomprasTickets">0</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Clientes</div>
+                            <div class="val" id="precomprasClients">0</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="toolbar">
+                            <input id="precomprasSearch" class="search" type="search" placeholder="Buscar cliente o recibo" autocomplete="off">
+                        </div>
+                        <div class="table-card">
+                            <table class="clients-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th class="num">Notas</th>
+                                        <th class="num">Pendiente</th>
+                                        <th class="num">Anticipo abierto</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="precomprasBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card" id="precomprasDetailCard" hidden style="margin-top:14px">
+                        <div class="page-head" style="margin-bottom:12px">
+                            <div>
+                                <h3 style="margin:0" id="precomprasDetailTitle">Precompras abiertas</h3>
+                                <p class="page-sub" id="precomprasDetailSub" style="margin:4px 0 0">Elige una nota y surte las unidades pendientes.</p>
+                            </div>
+                            <div class="page-head-actions">
+                                <button type="button" class="btn" id="precomprasDetailClose">Cerrar</button>
+                            </div>
+                        </div>
+                        <div id="precomprasDetailBody"></div>
                     </div>
                 </section>
 
@@ -8110,6 +8257,10 @@
                         <label class="gen-check" title="Si está activo, se descuenta el mismo stock que en una venta normal" style="align-self:end">
                             <input type="checkbox" id="genTicketStock" checked>
                             Descontar inventario
+                        </label>
+                        <label class="gen-check" title="Anticipo de mercancía: dinero ya, inventario al surtir" style="align-self:end">
+                            <input type="checkbox" id="genTicketPrecompra">
+                            Precompra
                         </label>
                         <label class="span-2">Nota (opcional)
                             <input type="text" id="genTicketNote" maxlength="240" placeholder="Motivo / regularización" autocomplete="off">
@@ -9205,7 +9356,7 @@
         sidebar.classList.toggle('open');
     });
 
-    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'dinero', 'clients', 'cobranza', 'promos', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
+    const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'dinero', 'clients', 'cobranza', 'precompras', 'promos', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
     const LEGACY_TO_PRODUCTS = { prices: true, catalog: true, formulas: true };
 
     /* Roles / permisos — catálogo en roles.js; admin = acceso total (*). */
@@ -9305,6 +9456,7 @@
                 || (id === 'products' && (sec === 'prices' || sec === 'catalog' || sec === 'formulas'))
                 || (id === 'promos' && sec === 'clients')
                 || (id === 'cobranza' && sec === 'clients')
+                || (id === 'precompras' && sec === 'clients')
             );
         });
         sidebar.classList.remove('open');
@@ -9366,8 +9518,18 @@
         e.preventDefault();
         showSection('cobranza');
     });
+    const goPrecomprasBtn = document.getElementById('goPrecomprasBtn');
+    if (goPrecomprasBtn) goPrecomprasBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        showSection('precompras');
+    });
     const cobranzaBackToClientsBtn = document.getElementById('cobranzaBackToClientsBtn');
     if (cobranzaBackToClientsBtn) cobranzaBackToClientsBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        showSection('clients');
+    });
+    const precomprasBackToClientsBtn = document.getElementById('precomprasBackToClientsBtn');
+    if (precomprasBackToClientsBtn) precomprasBackToClientsBtn.addEventListener('click', function (e) {
         e.preventDefault();
         showSection('clients');
     });
@@ -16177,6 +16339,8 @@
         if (goPromos) goPromos.hidden = !canAccess('promos');
         const goCobranza = document.getElementById('goCobranzaBtn');
         if (goCobranza) goCobranza.hidden = !canAccess('cobranza');
+        const goPrecompras = document.getElementById('goPrecomprasBtn');
+        if (goPrecompras) goPrecompras.hidden = !canAccess('precompras');
         const msgBtn = document.getElementById('topbarMessagesBtn');
         if (msgBtn) msgBtn.hidden = !canAccess('messages');
     }

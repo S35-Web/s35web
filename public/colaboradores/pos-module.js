@@ -420,6 +420,134 @@
         }
         return (sale.paymentMethod || '') === 'por_cobrar';
     }
+
+    function isPrecompraSale(sale) {
+        return !!(sale && sale.meta && sale.meta.kind === 'precompra');
+    }
+
+    function precompraLineRemaining(line) {
+        if (!line) return 0;
+        return Math.max(0, (Number(line.prepaidQty) || 0) - (Number(line.deliveredQty) || 0));
+    }
+
+    function ensurePrecompraFulfillment(sale) {
+        if (!isPrecompraSale(sale)) return null;
+        if (!sale.meta) sale.meta = { kind: 'precompra' };
+        if (!sale.meta.fulfillment || !Array.isArray(sale.meta.fulfillment.lines)) {
+            sale.meta.fulfillment = {
+                status: 'open',
+                lines: (sale.items || []).map(function (it) {
+                    return {
+                        product: it.product,
+                        name: it.name || it.product || '',
+                        prepaidQty: Number(it.qty) || 0,
+                        deliveredQty: 0
+                    };
+                })
+            };
+        }
+        if (!Array.isArray(sale.meta.fulfillments)) sale.meta.fulfillments = [];
+        const pending = sale.meta.fulfillment.lines.reduce(function (n, line) {
+            return n + precompraLineRemaining(line);
+        }, 0);
+        sale.meta.fulfillment.status = pending > 0 ? 'open' : 'closed';
+        return sale.meta.fulfillment;
+    }
+
+    function precompraPendingUnits(sale) {
+        const ff = ensurePrecompraFulfillment(sale);
+        if (!ff) return 0;
+        return ff.lines.reduce(function (n, line) {
+            return n + precompraLineRemaining(line);
+        }, 0);
+    }
+
+    function precompraOpenAmount(sale) {
+        if (!isPrecompraSale(sale)) return 0;
+        const ff = ensurePrecompraFulfillment(sale);
+        if (!ff || !ff.lines.length) return 0;
+        const items = sale.items || [];
+        let amount = 0;
+        ff.lines.forEach(function (line) {
+            const rem = precompraLineRemaining(line);
+            if (rem <= 0) return;
+            const item = items.filter(function (it) { return it.product === line.product; })[0];
+            const price = item ? (Number(item.price) || 0) : 0;
+            amount += rem * price;
+        });
+        return roundMoney(amount);
+    }
+
+    function isOpenPrecompra(sale) {
+        return isPrecompraSale(sale) && precompraPendingUnits(sale) > 0;
+    }
+
+    function precompraHasDeliveries(sale) {
+        if (!isPrecompraSale(sale)) return false;
+        const ff = ensurePrecompraFulfillment(sale);
+        if (ff && ff.lines.some(function (l) { return (Number(l.deliveredQty) || 0) > 0; })) return true;
+        return !!(sale.meta.fulfillments && sale.meta.fulfillments.length);
+    }
+
+    function openPrecomprasList() {
+        return salesForAnalytics().filter(isOpenPrecompra);
+    }
+
+    function isPosPrecompraMode() {
+        const el = document.getElementById('posPrecompraMode');
+        return !!(el && el.checked);
+    }
+
+    function setPosPrecompraMode(on) {
+        const el = document.getElementById('posPrecompraMode');
+        if (el) el.checked = !!on;
+        syncPosPrecompraUi();
+    }
+
+    function syncPosPrecompraUi() {
+        const on = isPosPrecompraMode();
+        const porLabel = document.getElementById('posPayPorCobrarLabel');
+        const porInput = porLabel ? porLabel.querySelector('input') : null;
+        const splitEl = document.getElementById('posPaySplit');
+        if (porLabel) porLabel.style.display = on ? 'none' : '';
+        if (on) {
+            if (porInput && porInput.checked) {
+                const cash = document.querySelector('#venta input[name="payMethod"][value="efectivo"]');
+                if (cash) cash.checked = true;
+            }
+            if (splitEl && splitEl.checked) {
+                splitEl.checked = false;
+                const panel = document.getElementById('posPaySplitPanel');
+                if (panel) panel.hidden = true;
+            }
+        }
+        const btn = document.getElementById('posCheckoutBtn');
+        if (btn && !btn.disabled) {
+            btn.textContent = on ? 'Registrar precompra' : 'Cobrar';
+        } else if (btn) {
+            /* keep disabled label updated when cart empty via renderCart */
+        }
+        updatePosPrecompraBanner();
+    }
+
+    function buildPrecompraMeta(lineItems, extra) {
+        const lines = (lineItems || []).map(function (it) {
+            return {
+                product: it.product,
+                name: it.name || it.product || '',
+                prepaidQty: Number(it.qty) || 0,
+                deliveredQty: 0
+            };
+        });
+        const meta = Object.assign({
+            kind: 'precompra',
+            skipInventory: true,
+            fulfillment: { status: 'open', lines: lines },
+            fulfillments: []
+        }, extra || {});
+        return meta;
+    }
+
     function payMethodKeys() {
         return ['efectivo', 'tarjeta', 'transferencia', 'por_cobrar'];
     }
@@ -852,6 +980,7 @@
     }
 
     function saleOriginLabel(sale) {
+        if (isPrecompraSale(sale)) return 'Precompra';
         const store = saleStoreName(sale);
         if (store) return store;
         if (isHistoricalImportSale(sale)) return 'Histórico';
@@ -924,7 +1053,7 @@
                 ? '<div class="snd-company-sub">' + esc([city, store].filter(Boolean).join(' · ')) + '</div>'
                 : '') +
             '</div>' +
-            '<div class="snd-doctype">NOTA DE VENTA</div>' +
+            '<div class="snd-doctype">' + (isPrecompraSale(sale) ? 'PRECOMPRA' : 'NOTA DE VENTA') + '</div>' +
             '</div>' +
             '<div class="snd-summary">' +
             '<div class="snd-sum-cell">' +
@@ -1508,11 +1637,32 @@
     function saveSaleNoteEdit() {
         const sale = saleById(activeNoteSaleId);
         if (!sale) return;
+        if (precompraHasDeliveries(sale)) {
+            toast('No se puede editar una precompra con surtidos');
+            return;
+        }
         const patch = collectSaleNoteEditForm();
         if (!patch) return;
         const beforeItems = (sale.items || []).map(function (it) { return Object.assign({}, it); });
-        const trackStock = !isHistoricalImportSale(sale);
+        const trackStock = !isHistoricalImportSale(sale) && !isPrecompraSale(sale);
         Object.assign(sale, patch);
+        if (isPrecompraSale(sale)) {
+            if (!sale.meta) sale.meta = {};
+            sale.meta.kind = 'precompra';
+            sale.meta.skipInventory = true;
+            sale.meta.fulfillment = {
+                status: 'open',
+                lines: (sale.items || []).map(function (it) {
+                    return {
+                        product: it.product,
+                        name: it.name || it.product || '',
+                        prepaidQty: Number(it.qty) || 0,
+                        deliveredQty: 0
+                    };
+                })
+            };
+            if (!Array.isArray(sale.meta.fulfillments)) sale.meta.fulfillments = [];
+        }
         ensureSaleNote(sale);
         if (!persistSaleRecord(sale)) {
             toast('No se pudo guardar el ticket');
@@ -1527,6 +1677,7 @@
         renderDashboardRadar();
         toast('Ticket actualizado · ' + saleReceiptLabel(sale));
         renderCobranza();
+        renderPrecompras();
         confirmSaleEditInCloud(sale);
     }
 
@@ -1627,7 +1778,9 @@
         if (share) share.hidden = false;
         if (editBtn) editBtn.hidden = false;
         if (modal) modal.classList.remove('is-editing');
-        if (title) title.textContent = 'Nota de venta · ' + saleReceiptLabel(sale);
+        if (title) {
+            title.textContent = (isPrecompraSale(sale) ? 'Precompra · ' : 'Nota de venta · ') + saleReceiptLabel(sale);
+        }
         const phone = (sale.client && sale.client.phone) || (sale.note && sale.note.sharePhone) || '';
         const email = (sale.client && sale.client.email) || (sale.note && sale.note.shareEmail) || '';
         if (phoneEl) phoneEl.value = phone;
@@ -1658,10 +1811,14 @@
         const id = activeNoteSaleId;
         const sale = saleById(id);
         if (!sale) return;
+        if (precompraHasDeliveries(sale)) {
+            toast('No se puede eliminar una precompra con surtidos');
+            return;
+        }
         const label = saleReceiptLabel(sale);
         if (!confirm('¿Eliminar esta venta? No se puede deshacer')) return;
         const wasHist = isHistoricalImportSale(sale);
-        if (!wasHist) applySaleInventoryChange(sale.items, []);
+        if (!wasHist && !isPrecompraSale(sale)) applySaleInventoryChange(sale.items, []);
         if (wasHist) {
             historicalSales = historicalSales.filter(function (s) { return s.id !== id; });
             putSaleEdit(id, { deleted: true });
@@ -1681,6 +1838,7 @@
         refreshSalesDependentViews();
         updatePosKpis();
         renderDashboardRadar();
+        renderPrecompras();
         toast(label ? ('Venta ' + label + ' eliminada') : 'Venta eliminada');
     }
 
@@ -3271,6 +3429,7 @@
                 renderHistory();
                 if (sectionIsActive('cortes')) renderCortes();
                 if (sectionIsActive('cobranza')) renderCobranza();
+                if (sectionIsActive('precompras')) renderPrecompras();
                 if (sectionIsActive('dashboard')) {
                     try { renderDashboardRadar(); } catch (_) {}
                     try { updatePosKpis(); } catch (_) {}
@@ -4682,17 +4841,26 @@
                 const itemsN = (s.items || []).reduce(function (n, it) { return n + (Number(it.qty) || 0); }, 0);
                 const clientLabel = saleClientLabel(s);
                 const origin = saleOriginLabel(s);
+                const precompraBadge = isPrecompraSale(s)
+                    ? '<span class="badge b-primary" title="Precompra">Precompra</span> '
+                    : '';
+                const pendingHint = isOpenPrecompra(s)
+                    ? (' <span class="muted" style="font-size:11px">' + formatUnits(precompraPendingUnits(s)) + ' pend.</span>')
+                    : '';
                 return '<tr>' +
                     '<td class="muted">' + esc(dateStr) + '</td>' +
                     '<td>' + saleReceiptCellHtml(s) + '</td>' +
                     '<td>' + esc(clientLabel) + '</td>' +
                     '<td>' + formatSalePayBadgesHtml(s) + '</td>' +
-                    '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing, s)) + '</span></td>' +
+                    '<td>' + precompraBadge + '<span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing, s)) + '</span>' + pendingHint + '</td>' +
                     '<td class="num">' + itemsN + '</td>' +
                     '<td class="num">' + money(s.total) + '</td>' +
                     '<td class="muted">' + esc(origin) + '</td>' +
                     '<td><div class="row-actions">' +
                     '<button type="button" class="icon-action" data-open-note="' + esc(s.id) + '" title="Ver nota de venta"><i class="fa-solid fa-receipt"></i></button>' +
+                    (isOpenPrecompra(s)
+                        ? '<button type="button" class="icon-action" data-open-precompra="' + esc(s.id) + '" title="Surtir precompra"><i class="fa-solid fa-boxes-stacked"></i></button>'
+                        : '') +
                     '</div></td>' +
                     '</tr>';
             }).join('');
@@ -5355,6 +5523,7 @@
             renderProducts();
             renderCart();
         }
+        updatePosPrecompraBanner();
     }
 
     function pickClientFromPicker(id) {
@@ -5660,9 +5829,15 @@
             }).join('');
             if (btn) btn.disabled = !hasCheckoutClientSelection();
         }
+        if (btn) {
+            btn.textContent = isPosPrecompraMode()
+                ? (cart.length ? 'Registrar precompra' : 'Registrar precompra')
+                : 'Cobrar';
+        }
         if (totalEl) totalEl.textContent = money(cartTotal());
         updatePosKpis();
         refreshPosPaySplitSummary();
+        updatePosPrecompraBanner();
     }
 
     function setCartQty(idx, nextQty) {
@@ -6476,6 +6651,7 @@
             if (fromGenerate) toast('Agrega al menos un producto');
             return;
         }
+        const wantPrecompra = !!opts.precompra || (!fromGenerate && !useExternalItems && isPosPrecompraMode());
         const clientKey = opts.clientId != null ? String(opts.clientId || '') : selectedClientId();
         if (!clientKey) {
             toast('Selecciona un cliente (o Mostrador) antes de cobrar');
@@ -6484,6 +6660,13 @@
         }
         const walkin = clientKey === POS_CLIENT_WALKIN;
         const client = walkin ? null : clientById(clientKey);
+        if (wantPrecompra) {
+            if (walkin || !client) {
+                toast('La precompra requiere un cliente (no Mostrador)');
+                if (!fromGenerate) openClientPicker();
+                return;
+            }
+        }
         if (!walkin && !client) {
             toast('Selecciona un cliente válido');
             if (!fromGenerate) openClientPicker();
@@ -6503,6 +6686,10 @@
         let payments = opts.payments || null;
         if (!payments) {
             if (!useExternalItems && posPaySplitEnabled()) {
+                if (wantPrecompra) {
+                    toast('La precompra no admite pago mixto en fase 1');
+                    return;
+                }
                 const norm = normalizePaymentLines(readPosPaySplitLines(), total);
                 if (!norm.ok) {
                     toast(norm.error || 'Pago mixto inválido');
@@ -6517,9 +6704,16 @@
                 payments = [{ method: paymentMethod, amount: roundMoney(total) }];
             }
         }
+        if (wantPrecompra) {
+            const pendingPay = isPendingCollection({ paymentMethod: paymentMethod, payments: payments });
+            if (pendingPay || paymentMethod === 'por_cobrar') {
+                toast('La precompra requiere pago real (efectivo, tarjeta o transferencia)');
+                return;
+            }
+        }
 
         let createdAt = new Date().toISOString();
-        let skipInventory = !!opts.skipInventory;
+        let skipInventory = !!opts.skipInventory || wantPrecompra;
         let adminNote = String(opts.adminNote || '').trim();
         if (fromGenerate) {
             const atRaw = opts.backdatedDate != null ? opts.backdatedDate : '';
@@ -6529,7 +6723,7 @@
                 return;
             }
             createdAt = isoFromDatetimeLocal(atRaw);
-            skipInventory = !!opts.skipInventory;
+            skipInventory = !!opts.skipInventory || wantPrecompra;
         }
 
         const saleCityId = opts.city != null ? normalizeCityId(opts.city) : selectedSaleCity();
@@ -6593,7 +6787,13 @@
             sharePhone: clientSnapshot ? (clientSnapshot.phone || '') : '',
             shareEmail: clientSnapshot ? (clientSnapshot.email || '') : ''
         };
-        if (fromGenerate || skipInventory || adminNote) {
+        if (wantPrecompra) {
+            ticket.meta = buildPrecompraMeta(ticket.items, {
+                source: fromGenerate ? 'pos-generate' : 'pos',
+                generatedAt: new Date().toISOString()
+            });
+            if (adminNote) ticket.meta.note = adminNote;
+        } else if (fromGenerate || skipInventory || adminNote) {
             ticket.meta = {
                 source: fromGenerate ? 'pos-generate' : 'pos',
                 generatedAt: new Date().toISOString(),
@@ -6614,6 +6814,7 @@
             appliedPromoCode = null;
             editingPriceIdx = null;
             resetPosPaySplitUi();
+            setPosPrecompraMode(false);
             const payE = document.querySelector('#venta input[name="payMethod"][value="efectivo"]');
             const billS = document.querySelector('#venta input[name="billing"][value="sin_facturar"]');
             if (payE) payE.checked = true;
@@ -6625,8 +6826,11 @@
         }
         refreshSalesDependentViews();
 
-        const invHint = skipInventory ? ' · sin descontar inventario' : '';
-        toast((fromGenerate ? 'Ticket generado ' : 'Venta ') + ticket.folio + ' · ' + formatSalePayLabel(ticket) + ' · ' + billLabel(billing) + invHint);
+        const invHint = wantPrecompra
+            ? ' · precompra (sin descontar inventario)'
+            : (skipInventory ? ' · sin descontar inventario' : '');
+        toast((fromGenerate ? 'Ticket generado ' : (wantPrecompra ? 'Precompra ' : 'Venta ')) +
+            ticket.folio + ' · ' + formatSalePayLabel(ticket) + ' · ' + billLabel(billing) + invHint);
 
         if (fromGenerate) {
             closePosGenerateModal();
@@ -6638,6 +6842,7 @@
             openSaleNoteModal(ticket);
         }
         renderCobranza();
+        renderPrecompras();
     }
 
     function posPaySplitEnabled() {
@@ -7190,6 +7395,8 @@
         setGenDatetimePair('genTicketDate', 'genTicketTime', defaultGenerateTicketDatetimeLocal());
         const stockEl = document.getElementById('genTicketStock');
         if (stockEl) stockEl.checked = true;
+        const precompraEl = document.getElementById('genTicketPrecompra');
+        if (precompraEl) precompraEl.checked = false;
         const noteEl = document.getElementById('genTicketNote');
         if (noteEl) noteEl.value = '';
         const payEl = document.getElementById('genTicketPay');
@@ -7204,6 +7411,7 @@
         const body = document.getElementById('genTicketLinesBody');
         if (body) body.innerHTML = genTicketLineRowHtml({ qty: 1, price: 0 }, 0);
         refreshGenTicketTotals();
+        syncGenTicketPrecompraUi();
     }
 
     function resetGenGastoForm() {
@@ -7272,8 +7480,10 @@
         }
         const items = collectGenTicketLines();
         if (!items) return;
+        const precompraEl = document.getElementById('genTicketPrecompra');
+        const wantPrecompra = !!(precompraEl && precompraEl.checked);
         const stockEl = document.getElementById('genTicketStock');
-        const skipInventory = !(stockEl && stockEl.checked);
+        const skipInventory = wantPrecompra || !(stockEl && stockEl.checked);
         const adminNote = String((document.getElementById('genTicketNote') || {}).value || '').trim();
         const clientId = ((document.getElementById('genTicketClient') || {}).value || POS_CLIENT_WALKIN);
         const pay = ((document.getElementById('genTicketPay') || {}).value || 'efectivo');
@@ -7282,6 +7492,16 @@
         if (!isValidPayMethod(pay)) {
             toast('Elige método de pago');
             return;
+        }
+        if (wantPrecompra) {
+            if (clientId === POS_CLIENT_WALKIN || !clientById(clientId)) {
+                toast('La precompra requiere un cliente (no Mostrador)');
+                return;
+            }
+            if (pay === 'por_cobrar') {
+                toast('La precompra requiere pago real (efectivo, tarjeta o transferencia)');
+                return;
+            }
         }
         if (['facturado', 'sin_facturar'].indexOf(bill) < 0) {
             toast('Elige opción de facturación');
@@ -7294,6 +7514,7 @@
             fromGenerate: true,
             backdatedDate: atRaw,
             skipInventory: skipInventory,
+            precompra: wantPrecompra,
             adminNote: adminNote,
             clientId: clientId,
             billing: bill,
@@ -7872,6 +8093,8 @@
         if (pdSalesSlug) renderProductSalesAnalytics(pdSalesSlug);
         renderProductsMovementsChart();
         if (clientDashId) renderClientDashboard(clientDashId);
+        renderPrecompras();
+        updatePosPrecompraBanner();
     }
 
     function renderCortes() {
@@ -8463,6 +8686,12 @@
                 if (clientDashId) openCobranzaForClient(clientDashId);
             });
         }
+        const precompraBtn = document.getElementById('cdPrecompraBtn');
+        if (precompraBtn) {
+            precompraBtn.addEventListener('click', function () {
+                if (clientDashId) openPrecomprasForClient(clientDashId);
+            });
+        }
         const form = document.getElementById('cdForm');
         if (form) {
             form.addEventListener('submit', function (e) {
@@ -8584,6 +8813,15 @@
             debtBtn.hidden = !show;
             if (show) {
                 debtBtn.title = 'Saldo ' + money(pending.amount) + ' · ver cobranza';
+            }
+        }
+        const preGroup = clientPrecompraGroup(client);
+        const preBtn = document.getElementById('cdPrecompraBtn');
+        if (preBtn) {
+            const showPre = !!(preGroup && preGroup.units > 0);
+            preBtn.hidden = !showPre;
+            if (showPre) {
+                preBtn.title = formatUnits(preGroup.units) + ' pendientes · ver precompras';
             }
         }
 
@@ -9079,6 +9317,11 @@
         const histBody = document.getElementById('posHistoryBody');
         if (histBody) {
             histBody.addEventListener('click', function (e) {
+                const preBtn = e.target.closest('[data-open-precompra]');
+                if (preBtn) {
+                    openPrecomprasForSale(preBtn.getAttribute('data-open-precompra'));
+                    return;
+                }
                 const btn = e.target.closest('[data-open-note]');
                 if (!btn) return;
                 openSaleNoteById(btn.getAttribute('data-open-note'));
@@ -9344,6 +9587,11 @@
         if (noteEditBtn) {
             noteEditBtn.addEventListener('click', function () {
                 if (!activeNoteSaleId) return;
+                const sale = saleById(activeNoteSaleId);
+                if (precompraHasDeliveries(sale)) {
+                    toast('No se puede editar una precompra con surtidos');
+                    return;
+                }
                 setSaleNoteMode(true);
                 syncSaleNoteDeleteVisibility();
             });
@@ -10641,6 +10889,464 @@
         const collectBtn = document.getElementById('cobranzaCollectBtn');
         if (collectBtn) collectBtn.addEventListener('click', collectSelectedCobranza);
     }
+
+    // —— Precompras (anticipo de unidades + surtido parcial) ——
+    let precomprasActiveKey = null;
+    let precomprasFocusSaleId = null;
+
+    function precompraClientKey(sale) {
+        if (sale.clientId) return 'id:' + sale.clientId;
+        const name = String(sale.customer || saleClientLabel(sale) || 'Cliente').trim().toLowerCase();
+        return 'name:' + name;
+    }
+
+    function groupOpenPrecomprasByClient() {
+        const map = {};
+        openPrecomprasList().forEach(function (s) {
+            const key = precompraClientKey(s);
+            if (!map[key]) {
+                map[key] = {
+                    key: key,
+                    clientId: s.clientId || null,
+                    name: saleClientLabel(s),
+                    units: 0,
+                    amount: 0,
+                    tickets: []
+                };
+            }
+            map[key].units += precompraPendingUnits(s);
+            map[key].amount += precompraOpenAmount(s);
+            map[key].tickets.push(s);
+        });
+        Object.keys(map).forEach(function (k) {
+            map[k].tickets.sort(function (a, b) {
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            });
+        });
+        return Object.keys(map).map(function (k) { return map[k]; })
+            .sort(function (a, b) { return b.units - a.units || a.name.localeCompare(b.name, 'es'); });
+    }
+
+    function clientPrecompraGroup(client) {
+        if (!client) return null;
+        const groups = groupOpenPrecomprasByClient();
+        let g = groups.filter(function (x) {
+            return x.clientId === client.id || x.key === ('id:' + client.id);
+        })[0];
+        if (g) return g;
+        const nameKey = 'name:' + String(client.name || '').trim().toLowerCase();
+        return groups.filter(function (x) { return x.key === nameKey; })[0] || null;
+    }
+
+    function showPrecomprasSection() {
+        if (window.S35PanelAPI && typeof window.S35PanelAPI.showSection === 'function') {
+            window.S35PanelAPI.showSection('precompras');
+        } else {
+            const link = document.querySelector('.nav a[data-section="precompras"]');
+            if (link) link.click();
+            else {
+                const go = document.getElementById('goPrecomprasBtn');
+                if (go) go.click();
+            }
+        }
+    }
+
+    function openPrecomprasForClient(clientId) {
+        const client = clientById(clientId);
+        const group = clientPrecompraGroup(client);
+        if (!group) {
+            toast('Sin precompras abiertas para este cliente');
+            return;
+        }
+        showPrecomprasSection();
+        setTimeout(function () {
+            openPrecomprasDetail(group.key);
+        }, 60);
+    }
+
+    function openPrecomprasForSale(saleId) {
+        const sale = saleById(saleId);
+        if (!sale || !isOpenPrecompra(sale)) {
+            toast('Precompra no encontrada o ya surtida');
+            return;
+        }
+        precomprasFocusSaleId = saleId;
+        showPrecomprasSection();
+        setTimeout(function () {
+            openPrecomprasDetail(precompraClientKey(sale), saleId);
+        }, 60);
+    }
+
+    function updatePosPrecompraBanner() {
+        const banner = document.getElementById('posPrecompraBanner');
+        const msg = document.getElementById('posPrecompraBannerMsg');
+        const btn = document.getElementById('posPrecompraBannerBtn');
+        if (!banner) return;
+        const clientId = selectedClientId();
+        if (!clientId || clientId === POS_CLIENT_WALKIN) {
+            banner.hidden = true;
+            return;
+        }
+        const client = clientById(clientId);
+        const group = clientPrecompraGroup(client);
+        if (!group || !(group.units > 0)) {
+            banner.hidden = true;
+            return;
+        }
+        banner.hidden = false;
+        if (msg) {
+            msg.innerHTML = '<strong>' + esc(group.name) + '</strong> tiene ' +
+                esc(formatUnits(group.units)) + ' pendientes' +
+                (group.tickets.length > 1 ? (' · ' + group.tickets.length + ' notas') : '') +
+                ' <span class="muted">· el surtido se hace en Precompras</span>';
+        }
+        if (btn) {
+            btn.onclick = function () {
+                openPrecomprasForClient(clientId);
+            };
+        }
+    }
+
+    function syncGenTicketPrecompraUi() {
+        const pre = document.getElementById('genTicketPrecompra');
+        const stock = document.getElementById('genTicketStock');
+        const pay = document.getElementById('genTicketPay');
+        const on = !!(pre && pre.checked);
+        if (stock) {
+            if (on) {
+                stock.checked = false;
+                stock.disabled = true;
+            } else {
+                stock.disabled = false;
+            }
+        }
+        if (pay && on && pay.value === 'por_cobrar') pay.value = 'efectivo';
+        if (pay) {
+            Array.prototype.forEach.call(pay.options, function (opt) {
+                if (opt.value === 'por_cobrar') opt.disabled = on;
+            });
+        }
+    }
+
+    function precompraNoteCardHtml(sale) {
+        ensurePrecompraFulfillment(sale);
+        const ff = sale.meta.fulfillment;
+        const pending = precompraPendingUnits(sale);
+        const d = new Date(sale.createdAt);
+        const dateStr = isNaN(d) ? '' : d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+        const linesHtml = ff.lines.map(function (line) {
+            const rem = precompraLineRemaining(line);
+            return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:4px 0">' +
+                '<span>' + esc(line.name || line.product) + '</span>' +
+                '<span class="muted">' + esc(String(line.deliveredQty || 0)) + ' / ' +
+                esc(String(line.prepaidQty || 0)) +
+                (rem > 0 ? (' · <strong>' + esc(String(rem)) + ' pend.</strong>') : ' · surtido') +
+                '</span></div>';
+        }).join('');
+        const fulfillments = sale.meta.fulfillments || [];
+        const histHtml = fulfillments.length
+            ? ('<div class="precompra-fulfill-list"><div class="muted" style="font-size:12px">Surtidos</div>' +
+                fulfillments.slice().reverse().map(function (f) {
+                    const fd = new Date(f.createdAt);
+                    const fDate = isNaN(fd) ? '' : fd.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+                    const qty = (f.lines || []).reduce(function (n, l) { return n + (Number(l.qty) || 0); }, 0);
+                    return '<div class="precompra-fulfill-item">' +
+                        esc(fDate) + ' · ' + esc(formatUnits(qty)) +
+                        (f.userName ? (' · ' + esc(f.userName)) : '') +
+                        '</div>';
+                }).join('') + '</div>')
+            : '';
+        const surtirForm = pending > 0
+            ? ('<div class="precompra-surtir-panel" data-surtir-sale="' + esc(sale.id) + '" hidden>' +
+                '<div class="precompra-surtir-rows">' +
+                ff.lines.filter(function (line) { return precompraLineRemaining(line) > 0; }).map(function (line) {
+                    const rem = precompraLineRemaining(line);
+                    return '<div class="precompra-surtir-row">' +
+                        '<label>' + esc(line.name || line.product) +
+                        '<span class="muted">Máx. ' + esc(String(rem)) + '</span></label>' +
+                        '<input type="number" min="0" max="' + esc(String(rem)) + '" step="1" ' +
+                        'data-surtir-product="' + esc(line.product) + '" data-surtir-max="' + esc(String(rem)) + '" ' +
+                        'value="' + esc(String(rem)) + '" inputmode="numeric">' +
+                        '</div>';
+                }).join('') +
+                '</div>' +
+                '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+                '<button type="button" class="btn primary" data-surtir-confirm="' + esc(sale.id) + '">Confirmar surtido</button>' +
+                '<button type="button" class="btn" data-surtir-cancel="' + esc(sale.id) + '">Cancelar</button>' +
+                '</div></div>')
+            : '';
+        return '<div class="precompra-note-card" data-precompra-sale="' + esc(sale.id) + '">' +
+            '<div class="precompra-note-card-head">' +
+            '<div><strong>' + saleReceiptCellHtml(sale) + '</strong>' +
+            '<div class="muted" style="font-size:12px;margin-top:4px">' + esc(dateStr) +
+            ' · ' + esc(formatSalePayLabel(sale)) + ' · ' + esc(billLabel(sale.billing, sale)) +
+            ' · ' + money(sale.total) + '</div></div>' +
+            (pending > 0
+                ? '<button type="button" class="btn primary" data-surtir-open="' + esc(sale.id) + '">Surtir</button>'
+                : '<span class="badge b-success">Cerrada</span>') +
+            '</div>' +
+            '<div class="muted" style="font-size:12px;margin-bottom:4px">' +
+            esc(formatUnits(pending)) + ' pendientes</div>' +
+            linesHtml + histHtml + surtirForm +
+            '</div>';
+    }
+
+    function openPrecomprasDetail(key, focusSaleId) {
+        const groups = groupOpenPrecomprasByClient();
+        const group = groups.filter(function (g) { return g.key === key; })[0];
+        const card = document.getElementById('precomprasDetailCard');
+        const body = document.getElementById('precomprasDetailBody');
+        const title = document.getElementById('precomprasDetailTitle');
+        const sub = document.getElementById('precomprasDetailSub');
+        if (!card || !body || !group) return;
+        precomprasActiveKey = key;
+        if (title) title.textContent = group.name;
+        if (sub) {
+            sub.textContent = group.tickets.length + ' nota' + (group.tickets.length === 1 ? '' : 's') +
+                ' · ' + formatUnits(group.units) + ' pendientes · ' + money(group.amount);
+        }
+        body.innerHTML = group.tickets.map(precompraNoteCardHtml).join('');
+        card.hidden = false;
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const focusId = focusSaleId || precomprasFocusSaleId;
+        precomprasFocusSaleId = null;
+        if (focusId) {
+            const panel = body.querySelector('[data-surtir-panel="' + focusId + '"], [data-surtir-sale="' + focusId + '"]');
+            const openBtn = body.querySelector('[data-surtir-open="' + focusId + '"]');
+            if (openBtn) openBtn.click();
+            else if (panel) panel.hidden = false;
+            const cardEl = body.querySelector('[data-precompra-sale="' + focusId + '"]');
+            if (cardEl) cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function closePrecomprasDetail() {
+        precomprasActiveKey = null;
+        const card = document.getElementById('precomprasDetailCard');
+        if (card) card.hidden = true;
+        const body = document.getElementById('precomprasDetailBody');
+        if (body) body.innerHTML = '';
+    }
+
+    function confirmSurtirPrecompra(saleId) {
+        const sale = saleById(saleId);
+        if (!sale || !isPrecompraSale(sale)) {
+            toast('Precompra no encontrada');
+            return;
+        }
+        ensurePrecompraFulfillment(sale);
+        const panel = document.querySelector('.precompra-surtir-panel[data-surtir-sale="' + saleId + '"]');
+        if (!panel) return;
+        const inputs = panel.querySelectorAll('input[data-surtir-product]');
+        const deliveries = [];
+        let invalid = false;
+        inputs.forEach(function (inp) {
+            const product = inp.getAttribute('data-surtir-product');
+            const max = Number(inp.getAttribute('data-surtir-max')) || 0;
+            const qty = Math.floor(Number(inp.value) || 0);
+            if (qty < 0 || qty > max) {
+                invalid = true;
+                return;
+            }
+            if (qty > 0) deliveries.push({ product: product, qty: qty });
+        });
+        if (invalid) {
+            toast('Cantidad inválida: no puede superar el saldo');
+            return;
+        }
+        if (!deliveries.length) {
+            toast('Indica al menos una unidad a surtir');
+            return;
+        }
+        const ff = sale.meta.fulfillment;
+        const invItems = [];
+        deliveries.forEach(function (d) {
+            const line = ff.lines.filter(function (l) { return l.product === d.product; })[0];
+            if (!line) {
+                invalid = true;
+                return;
+            }
+            const rem = precompraLineRemaining(line);
+            if (d.qty > rem) {
+                invalid = true;
+                return;
+            }
+            const saleItem = (sale.items || []).filter(function (it) { return it.product === d.product; })[0];
+            invItems.push({
+                product: d.product,
+                name: (saleItem && saleItem.name) || line.name || d.product,
+                qty: d.qty,
+                price: saleItem ? saleItem.price : 0,
+                unit: saleItem ? saleItem.unit : ''
+            });
+        });
+        if (invalid) {
+            toast('Cantidad inválida: no puede superar el saldo');
+            return;
+        }
+        applySaleInventoryChange([], invItems);
+        deliveries.forEach(function (d) {
+            const line = ff.lines.filter(function (l) { return l.product === d.product; })[0];
+            if (line) line.deliveredQty = (Number(line.deliveredQty) || 0) + d.qty;
+        });
+        const user = currentUserSnapshot();
+        if (!Array.isArray(sale.meta.fulfillments)) sale.meta.fulfillments = [];
+        sale.meta.fulfillments.push({
+            id: 'ff-' + Date.now().toString(36),
+            createdAt: new Date().toISOString(),
+            userId: user.id,
+            userName: user.name || user.username || '',
+            lines: deliveries.map(function (d) {
+                return { product: d.product, qty: d.qty };
+            })
+        });
+        const pending = precompraPendingUnits(sale);
+        sale.meta.fulfillment.status = pending > 0 ? 'open' : 'closed';
+        if (!persistSaleRecord(sale)) {
+            toast('No se pudo guardar el surtido');
+            return;
+        }
+        confirmSaleEditInCloud(sale);
+        const units = deliveries.reduce(function (n, d) { return n + d.qty; }, 0);
+        toast('Surtido ' + formatUnits(units) + ' · ' + saleReceiptLabel(sale) +
+            (pending > 0 ? (' · quedan ' + formatUnits(pending)) : ' · precompra cerrada'));
+        renderPrecompras();
+        renderHistory();
+        refreshSalesDependentViews();
+        updatePosPrecompraBanner();
+        if (clientDashId) renderClientDashboard(clientDashId);
+        if (window.S35PanelAPI && window.S35PanelAPI.refreshStockViews) {
+            window.S35PanelAPI.refreshStockViews();
+        }
+        const stillOpen = isOpenPrecompra(sale);
+        if (stillOpen && precomprasActiveKey) {
+            openPrecomprasDetail(precomprasActiveKey, sale.id);
+        } else if (precomprasActiveKey) {
+            const still = groupOpenPrecomprasByClient().some(function (g) { return g.key === precomprasActiveKey; });
+            if (still) openPrecomprasDetail(precomprasActiveKey);
+            else closePrecomprasDetail();
+        }
+    }
+
+    function renderPrecompras() {
+        const body = document.getElementById('precomprasBody');
+        if (!body) return;
+        const q = (document.getElementById('precomprasSearch') && document.getElementById('precomprasSearch').value || '').toLowerCase().trim();
+        let groups = groupOpenPrecomprasByClient();
+        if (q) {
+            groups = groups.filter(function (g) {
+                if (String(g.name || '').toLowerCase().indexOf(q) >= 0) return true;
+                return g.tickets.some(function (s) {
+                    const rid = saleReceiptId(s);
+                    return (rid && rid.indexOf(q) >= 0) ||
+                        String(s.folio || '').toLowerCase().indexOf(q) >= 0;
+                });
+            });
+        }
+        const allOpen = openPrecomprasList();
+        let totalUnits = 0;
+        let totalAmount = 0;
+        allOpen.forEach(function (s) {
+            totalUnits += precompraPendingUnits(s);
+            totalAmount += precompraOpenAmount(s);
+        });
+        const unitsEl = document.getElementById('precomprasUnits');
+        const amountEl = document.getElementById('precomprasAmount');
+        const ticketsEl = document.getElementById('precomprasTickets');
+        const clientsEl = document.getElementById('precomprasClients');
+        if (unitsEl) unitsEl.textContent = String(Math.round(totalUnits) || totalUnits);
+        if (amountEl) amountEl.textContent = money(totalAmount);
+        if (ticketsEl) ticketsEl.textContent = String(allOpen.length);
+        if (clientsEl) clientsEl.textContent = String(groupOpenPrecomprasByClient().length);
+
+        if (!groups.length) {
+            body.innerHTML = '<tr><td colspan="5" class="empty">' +
+                (q ? 'Sin resultados' : 'Sin precompras abiertas') +
+                '</td></tr>';
+            if (precomprasActiveKey) closePrecomprasDetail();
+            return;
+        }
+        body.innerHTML = groups.map(function (g) {
+            return '<tr data-precompras-key="' + esc(g.key) + '">' +
+                '<td>' + esc(g.name) + '</td>' +
+                '<td class="num">' + g.tickets.length + '</td>' +
+                '<td class="num">' + esc(formatUnits(g.units).replace(/ u$/, '')) + '</td>' +
+                '<td class="num">' + money(g.amount) + '</td>' +
+                '<td><button type="button" class="btn" data-precompras-open="' + esc(g.key) + '">Ver / Surtir</button></td>' +
+                '</tr>';
+        }).join('');
+        if (precomprasActiveKey && !groups.some(function (g) { return g.key === precomprasActiveKey; })) {
+            closePrecomprasDetail();
+        } else if (precomprasActiveKey) {
+            openPrecomprasDetail(precomprasActiveKey);
+        }
+    }
+
+    function bindPrecompras() {
+        if (bindPrecompras.done) return;
+        bindPrecompras.done = true;
+        const search = document.getElementById('precomprasSearch');
+        if (search) {
+            search.addEventListener('input', function () {
+                renderPrecompras();
+            });
+        }
+        const body = document.getElementById('precomprasBody');
+        if (body) {
+            body.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-precompras-open]');
+                if (!btn) return;
+                openPrecomprasDetail(btn.getAttribute('data-precompras-open'));
+            });
+        }
+        const detailBody = document.getElementById('precomprasDetailBody');
+        if (detailBody) {
+            detailBody.addEventListener('click', function (e) {
+                const openBtn = e.target.closest('[data-surtir-open]');
+                if (openBtn) {
+                    const id = openBtn.getAttribute('data-surtir-open');
+                    const panel = detailBody.querySelector('.precompra-surtir-panel[data-surtir-sale="' + id + '"]');
+                    if (panel) panel.hidden = false;
+                    openBtn.hidden = true;
+                    return;
+                }
+                const cancelBtn = e.target.closest('[data-surtir-cancel]');
+                if (cancelBtn) {
+                    const id = cancelBtn.getAttribute('data-surtir-cancel');
+                    const panel = detailBody.querySelector('.precompra-surtir-panel[data-surtir-sale="' + id + '"]');
+                    if (panel) panel.hidden = true;
+                    const reopen = detailBody.querySelector('[data-surtir-open="' + id + '"]');
+                    if (reopen) reopen.hidden = false;
+                    return;
+                }
+                const confirmBtn = e.target.closest('[data-surtir-confirm]');
+                if (confirmBtn) {
+                    confirmSurtirPrecompra(confirmBtn.getAttribute('data-surtir-confirm'));
+                }
+            });
+        }
+        const closeBtn = document.getElementById('precomprasDetailClose');
+        if (closeBtn) closeBtn.addEventListener('click', closePrecomprasDetail);
+        const modeEl = document.getElementById('posPrecompraMode');
+        if (modeEl) {
+            modeEl.addEventListener('change', function () {
+                syncPosPrecompraUi();
+                renderCart();
+            });
+        }
+        const bannerBtn = document.getElementById('posPrecompraBannerBtn');
+        if (bannerBtn) {
+            bannerBtn.addEventListener('click', function () {
+                const clientId = selectedClientId();
+                if (clientId && clientId !== POS_CLIENT_WALKIN) openPrecomprasForClient(clientId);
+            });
+        }
+        const genPre = document.getElementById('genTicketPrecompra');
+        if (genPre) {
+            genPre.addEventListener('change', syncGenTicketPrecompraUi);
+        }
+    }
+
     function renderPromosAdmin() {
         const body = document.getElementById('promosTableBody');
         if (!body) return;
@@ -11032,6 +11738,8 @@
             renderPromosAdmin();
         } else if (id === 'cobranza') {
             renderCobranza();
+        } else if (id === 'precompras') {
+            renderPrecompras();
         }
     }
 
@@ -11048,10 +11756,12 @@
         renderProductsMovementsChart();
         renderClients();
         renderCobranza();
+        renderPrecompras();
         renderPriceChips();
         renderPrices();
         renderPromosAdmin();
         updatePosKpis();
+        updatePosPrecompraBanner();
     }
 
     function init() {
@@ -11103,6 +11813,7 @@
 
         bind();
         bindCobranza();
+        bindPrecompras();
         (function syncSaleCityRadios() {
             syncSaleCityControl();
             syncGastoCityControl();
@@ -11152,6 +11863,8 @@
             openClientDashboard: openClientDashboard,
             openClientModal: openClientModal,
             openCobranzaForClient: openCobranzaForClient,
+            openPrecomprasForClient: openPrecomprasForClient,
+            openPrecomprasForSale: openPrecomprasForSale,
             openSaleNoteById: openSaleNoteById,
             getClients: function () { return clients.slice(); },
             searchSales: searchSales,
@@ -11164,6 +11877,7 @@
             renderDashboardRadar: renderDashboardRadar,
             importHistoricalSales: importHistoricalSales,
             renderCobranza: renderCobranza,
+            renderPrecompras: renderPrecompras,
             baseUnitPrice: baseUnitPrice,
             monthAverageUnitPriceMap: monthAverageUnitPriceMap,
             unitFor: unitFor,
