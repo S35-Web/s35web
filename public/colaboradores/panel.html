@@ -1693,6 +1693,12 @@
         }
         .kpi:nth-child(3n) { border-right: none; }
         .kpi:nth-child(n+4) { border-bottom: none; }
+        .kpis.kpis-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        .kpis.kpis-4 .kpi:nth-child(3n) { border-right: 1px solid var(--border); }
+        .kpis.kpis-4 .kpi:nth-child(4n) { border-right: none; }
+        .kpis.kpis-4 .kpi { border-bottom: none; }
         .kpi .label {
             font-size: 11px;
             font-weight: 500;
@@ -3240,10 +3246,15 @@
 
         @media (max-width: 980px) {
             .kpis { grid-template-columns: 1fr 1fr; }
+            .kpis.kpis-4 { grid-template-columns: 1fr 1fr; }
             .kpi:nth-child(3n) { border-right: 1px solid var(--border); }
             .kpi:nth-child(2n) { border-right: none; }
             .kpi:nth-child(n+4) { border-bottom: 1px solid var(--border); }
             .kpi:nth-child(n+5) { border-bottom: none; }
+            .kpis.kpis-4 .kpi { border-bottom: 1px solid var(--border); }
+            .kpis.kpis-4 .kpi:nth-child(3n) { border-right: 1px solid var(--border); }
+            .kpis.kpis-4 .kpi:nth-child(2n) { border-right: none; }
+            .kpis.kpis-4 .kpi:nth-last-child(-n+2) { border-bottom: none; }
             .grid { grid-template-columns: 1fr; }
             .span-12, .span-8, .span-7, .span-6, .span-5, .span-4 { grid-column: auto; }
             .field { grid-template-columns: 1fr; }
