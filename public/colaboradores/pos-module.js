@@ -20,7 +20,8 @@
     const TESORERIA_OPENING = {
         efectivo: 20400,
         banco: 281934.94,
-        tarjeta_sf: 407.08
+        tarjeta_sf: 407.08,
+        efectivo_empresarial: 1028670
     };
     const TESORERIA_BANK_SEED_URL = '/colaboradores/data/banorte-2026-06-09.json';
     const TESORERIA_BANK_META = {
@@ -3571,7 +3572,8 @@
     const TESORERIA_ACCOUNTS = [
         { id: 'efectivo', label: 'Efectivo' },
         { id: 'banco', label: 'Transferencias y tarjetas facturadas' },
-        { id: 'tarjeta_sf', label: 'Tarjeta sin factura' }
+        { id: 'tarjeta_sf', label: 'Tarjeta sin factura' },
+        { id: 'efectivo_empresarial', label: 'Efectivo empresarial' }
     ];
     function tesoreriaAccountLabel(id) {
         const row = TESORERIA_ACCOUNTS.filter(function (a) { return a.id === id; })[0];
@@ -3725,6 +3727,17 @@
                 city: 'culiacan',
                 source: 'apertura',
                 locked: true
+            },
+            {
+                id: 'teso-apertura-efectivo-empresarial-20260926',
+                createdAt: at,
+                account: 'efectivo_empresarial',
+                type: 'apertura',
+                amount: TESORERIA_OPENING.efectivo_empresarial,
+                note: 'Saldo inicial efectivo empresarial',
+                city: 'culiacan',
+                source: 'apertura',
+                locked: true
             }
         ];
     }
@@ -3803,11 +3816,10 @@
         const list = filterSalesByCity(sales, city).filter(function (sale) {
             return afterTesoreriaOpening(sale && sale.createdAt);
         });
-        const buckets = {
-            efectivo: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0, extracto: 0 },
-            banco: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0, extracto: 0 },
-            tarjeta_sf: { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0, extracto: 0 }
-        };
+        const buckets = {};
+        TESORERIA_ACCOUNTS.forEach(function (acc) {
+            buckets[acc.id] = { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0, extracto: 0 };
+        });
         const statement = filterTesoreriaMovsByCity(tesoreriaMovs, city).filter(isPostOpeningBankStatement);
         const depositPool = {};
         statement.forEach(function (m) {
@@ -7553,6 +7565,15 @@
                 { label: 'Ajustes', amount: acc.tarjeta_sf.ajustes, out: acc.tarjeta_sf.ajustes < 0 }
             ]);
         }
+        const emp = acc.efectivo_empresarial;
+        setDineroCardTotal('dineroEmpresarialTotal', emp ? emp.total : 0);
+        const empLines = document.getElementById('dineroEmpresarialLines');
+        if (empLines && emp) {
+            empLines.innerHTML = dineroLinesHtml([
+                { label: 'Saldo de apertura', amount: emp.apertura },
+                { label: 'Ajustes', amount: emp.ajustes, out: emp.ajustes < 0 }
+            ]);
+        }
         let inv = { materials: { value: 0, items: 0, withStock: 0 }, finished: { value: 0, units: 0, skus: 0, fallbackSkus: 0 } };
         if (window.S35PanelAPI && typeof window.S35PanelAPI.getMoneyInventory === 'function') {
             inv = window.S35PanelAPI.getMoneyInventory() || inv;
@@ -7579,7 +7600,9 @@
                         esc(String(pt.fallbackSkus)) + '</span></div>'
                     : '');
         }
-        const cashTotal = roundMoney(acc.efectivo.total + acc.banco.total + acc.tarjeta_sf.total);
+        const cashTotal = roundMoney(TESORERIA_ACCOUNTS.reduce(function (n, a) {
+            return n + ((acc[a.id] && acc[a.id].total) || 0);
+        }, 0));
         const invTotal = roundMoney((mp.value || 0) + (pt.value || 0));
         const grand = roundMoney(cashTotal + invTotal);
         setDineroCardTotal('dineroGrandTotal', grand);
@@ -7685,7 +7708,8 @@
         rows.sort(function (a, b) {
             return a.sortAt - b.sortAt;
         });
-        let runByAccount = { efectivo: 0, banco: 0, tarjeta_sf: 0 };
+        const runByAccount = {};
+        TESORERIA_ACCOUNTS.forEach(function (a) { runByAccount[a.id] = 0; });
         rows.forEach(function (row) {
             if (row.setBalance != null) {
                 runByAccount[row.account] = row.setBalance;
