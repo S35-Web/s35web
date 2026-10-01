@@ -4391,6 +4391,19 @@
             const rid = s.meta && s.meta.receiptId != null ? String(s.meta.receiptId) : '';
             const existing = liveById[s.id] || (rid && liveByReceipt[rid]) || null;
             if (existing) {
+                const srcPending = !!(s.meta && s.meta.invoicePending);
+                const livePending = !!(existing.meta && existing.meta.invoicePending);
+                if (srcPending !== livePending || (existing.billing || '') !== (s.billing || '')) {
+                    existing.billing = s.billing || existing.billing;
+                    existing.meta = Object.assign({}, existing.meta || {}, { invoicePending: srcPending });
+                    if (!srcPending) delete existing.meta.invoicePending;
+                    touchSaleRecord(existing);
+                    // Persistir false explícito para que el patch pise un invoicePending viejo en sync.
+                    const payload = saleEditPayload(existing);
+                    payload.meta = Object.assign({}, payload.meta || {}, { invoicePending: srcPending });
+                    putSaleEdit(existing.id, payload);
+                    dirty = true;
+                }
                 if (existing.id === s.id && deductCatchupFinishedOnce(existing)) {
                     deducted += 1;
                     dirty = true;
