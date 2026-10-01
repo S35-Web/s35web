@@ -5613,6 +5613,22 @@
         .materials-inventory-chart .mat-inv-value {
             color: var(--muted);
         }
+        #materialsInventoryCard .products-inventory-head { align-items: center; }
+        #materialsInventoryCard .materials-inv-sort {
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+        .materials-inv-family {
+            grid-column: 1 / -1;
+            margin: 12px 0 2px;
+            padding: 0 6px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .materials-inv-family:first-child { margin-top: 0; }
         .mat-kpis {
             grid-template-columns: repeat(5, 1fr);
             margin-bottom: 16px;
@@ -7032,6 +7048,12 @@
                             <div>
                                 <p class="pd-section-label">Inventario</p>
                                 <p class="page-sub" id="materialsInventorySub">Materia prima</p>
+                            </div>
+                            <div class="products-inventory-actions">
+                                <div class="seg-control materials-inv-sort" id="materialsInventorySort" role="group" aria-label="Orden del inventario">
+                                    <button type="button" data-mat-inv-sort="az" class="active" aria-pressed="true">A–Z</button>
+                                    <button type="button" data-mat-inv-sort="fam" aria-pressed="false">Familia</button>
+                                </div>
                             </div>
                         </div>
                         <div class="products-inventory-chart materials-inventory-chart" id="materialsInventoryChart" role="group" aria-label="Inventario de todas las materias primas"></div>
@@ -10345,6 +10367,75 @@
     function fmtMatQty(n) {
         return (Number(n) || 0).toLocaleString('es-MX', { maximumFractionDigits: 2 });
     }
+    const MAT_INV_SORT_KEY = 's35_mp_ord';
+    let materialsInventorySort = 'az';
+    try {
+        const savedMatSort = localStorage.getItem(MAT_INV_SORT_KEY);
+        if (savedMatSort === 'fam' || savedMatSort === 'az') materialsInventorySort = savedMatSort;
+    } catch (_) {}
+    function cmpMatName(a, b) {
+        const byName = String(a.name || '').localeCompare(String(b.name || ''), 'es', { sensitivity: 'base' });
+        if (byName) return byName;
+        return String(a.id || '').localeCompare(String(b.id || ''), 'es', { sensitivity: 'base' });
+    }
+    function matInventoryRowHtml(m) {
+        const color = matFamilyColor(m.family);
+        const qty = fmtMatQty(m.stock) + (m.unit ? ' ' + m.unit : '');
+        const money = materialMissingCost(m) ? moneyMx(0) : moneyMx(materialInventoryValue(m));
+        const ratio = m.minStock > 0 ? (m.stock / m.minStock) : 0;
+        const fill = (m.minStock > 0 ? ratio.toFixed(2) : '0') + 'cm';
+        let mark = '';
+        if (m.minStock > 0) {
+            const minLabel = 'Mínimo ' + fmtMatQty(m.minStock) + (m.unit ? ' ' + m.unit : '');
+            mark = '<span class="mat-min-mark" title="' + esc(minLabel) + '"><span>min</span></span>';
+        }
+        return '<button type="button" class="products-inventory-row" data-open-plant="' + esc(m.id) + '" title="' + esc(m.name) + '">' +
+            '<span class="products-inventory-name"><span class="dot" style="background:' + esc(color) + '" aria-hidden="true"></span>' +
+            '<span class="products-inventory-label">' + esc(m.name) + '</span>' +
+            missingCostMark(materialMissingCost(m)) + '</span>' +
+            '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
+            fill + ';background:' + esc(color) + '"></span>' + mark + '</span>' +
+            '<span class="products-inventory-qty' + (m.stock ? '' : ' is-zero') + '">' + esc(qty) +
+            ' <span class="mat-inv-value">/ ' + esc(money) + '</span></span>' +
+            '</button>';
+    }
+    function materialsInventoryHtml(list) {
+        const rows = list.slice().sort(cmpMatName);
+        if (materialsInventorySort !== 'fam') return rows.map(matInventoryRowHtml).join('');
+        const groups = [];
+        const index = {};
+        rows.forEach(function (m) {
+            const none = !m.family || m.family === UNCATEGORIZED_ID;
+            const key = none ? UNCATEGORIZED_ID : m.family;
+            if (index[key] == null) {
+                index[key] = groups.length;
+                groups.push({
+                    key: key,
+                    label: none ? UNCATEGORIZED_LABEL : familyLabel(m.family),
+                    none: none,
+                    items: []
+                });
+            }
+            groups[index[key]].items.push(m);
+        });
+        groups.sort(function (a, b) {
+            if (a.none !== b.none) return a.none ? 1 : -1;
+            return String(a.label).localeCompare(String(b.label), 'es', { sensitivity: 'base' });
+        });
+        return groups.map(function (g) {
+            return '<div class="materials-inv-family">' + esc(g.label) + '</div>' +
+                g.items.map(matInventoryRowHtml).join('');
+        }).join('');
+    }
+    function syncMaterialsInventorySort() {
+        const bar = document.getElementById('materialsInventorySort');
+        if (!bar) return;
+        bar.querySelectorAll('[data-mat-inv-sort]').forEach(function (btn) {
+            const on = btn.getAttribute('data-mat-inv-sort') === materialsInventorySort;
+            btn.classList.toggle('active', on);
+            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+    }
     function renderMaterialsInventoryChart() {
         const host = document.getElementById('materialsInventoryChart');
         const countEl = document.getElementById('materialsKpiCount');
@@ -10365,8 +10456,6 @@
                 minStock: Math.max(0, Number(m.minStock) || 0),
                 unitCost: Number(m.unitCost) || 0
             };
-        }).sort(function (a, b) {
-            return b.stock - a.stock || String(a.name).localeCompare(String(b.name), 'es');
         });
         const withStock = list.filter(function (m) { return m.stock > 0; }).length;
         const belowMin = inventory.filter(function (m) {
@@ -10386,29 +10475,11 @@
         }
         if (!list.length) {
             host.innerHTML = '';
+            syncMaterialsInventorySort();
             return;
         }
-        host.innerHTML = list.map(function (m) {
-            const color = matFamilyColor(m.family);
-            const qty = fmtMatQty(m.stock) + (m.unit ? ' ' + m.unit : '');
-            const money = materialMissingCost(m) ? moneyMx(0) : moneyMx(materialInventoryValue(m));
-            const ratio = m.minStock > 0 ? (m.stock / m.minStock) : 0;
-            const fill = (m.minStock > 0 ? ratio.toFixed(2) : '0') + 'cm';
-            let mark = '';
-            if (m.minStock > 0) {
-                const minLabel = 'Mínimo ' + fmtMatQty(m.minStock) + (m.unit ? ' ' + m.unit : '');
-                mark = '<span class="mat-min-mark" title="' + esc(minLabel) + '"><span>min</span></span>';
-            }
-            return '<button type="button" class="products-inventory-row" data-open-plant="' + esc(m.id) + '" title="' + esc(m.name) + '">' +
-                '<span class="products-inventory-name"><span class="dot" style="background:' + esc(color) + '" aria-hidden="true"></span>' +
-                '<span class="products-inventory-label">' + esc(m.name) + '</span>' +
-                missingCostMark(materialMissingCost(m)) + '</span>' +
-                '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
-                fill + ';background:' + esc(color) + '"></span>' + mark + '</span>' +
-                '<span class="products-inventory-qty' + (m.stock ? '' : ' is-zero') + '">' + esc(qty) +
-                ' <span class="mat-inv-value">/ ' + esc(money) + '</span></span>' +
-                '</button>';
-        }).join('');
+        host.innerHTML = materialsInventoryHtml(list);
+        syncMaterialsInventorySort();
         host.setAttribute('aria-label', 'Inventario de materia prima. ' + list.length + ' materiales, ' + withStock + ' con existencia.');
     }
     function setMaterialsCatalogOpen(open) {
@@ -10632,6 +10703,18 @@
         });
         setMaterialsCatalogOpen(true);
     });
+    const materialsInventorySortBar = document.getElementById('materialsInventorySort');
+    if (materialsInventorySortBar) {
+        materialsInventorySortBar.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-mat-inv-sort]');
+            if (!btn) return;
+            const mode = btn.getAttribute('data-mat-inv-sort') === 'fam' ? 'fam' : 'az';
+            if (mode === materialsInventorySort) return;
+            materialsInventorySort = mode;
+            try { localStorage.setItem(MAT_INV_SORT_KEY, mode); } catch (_) {}
+            renderMaterialsInventoryChart();
+        });
+    }
     document.getElementById('matSearch').addEventListener('input', function () {
         const search = document.getElementById('matSearch');
         if (search && (search.value || '').trim()) setMaterialsCatalogOpen(true);
