@@ -1,7 +1,7 @@
 {
-  "version": 14,
-  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente | Ricbor notas 63989a/64001a/64002a (culiacan) + 63944a/63990a (mochis) transferencia facturado ya en Banorte; 64032a mochis por cobrar | 2026-09-23 faltantes 64071a ($360 tarj s/fac) + 64072a ($840 tarj fac Dominguez) = $1,200 hueco vs panel viejo | 64100 y 64103 ya facturadas: quitar invoicePending",
-  "generatedAt": "2026-09-30",
+  "version": 15,
+  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente | Ricbor notas 63989a/64001a/64002a (culiacan) + 63944a/63990a (mochis) transferencia facturado ya en Banorte; 64032a mochis por cobrar | 2026-09-23 faltantes 64071a ($360 tarj s/fac) + 64072a ($840 tarj fac Dominguez) = $1,200 hueco vs panel viejo | 64100 y 64103 ya facturadas: quitar invoicePending | 2026-10-01 SUCURSAL UNO 64105–64109 (hora −1h): 64105 Mostr efe; 64106 Eduardo Cota tarjeta fac; 64107/09 Mostr tarj perso; 64108 Materiales el Cheke efectivo sin factura",
+  "generatedAt": "2026-10-01",
   "items": [
     {
       "id": "sale-cfdi-11667",
@@ -4089,6 +4089,209 @@
         "productLabelPanel": "Estuco Interior/Exterior"
       },
       "city": "mochis"
+    },
+    {
+      "id": "sale-hist-rcpt-64105",
+      "folio": "HIST-R64105",
+      "createdAt": "2026-10-01T08:28:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 4,
+          "lineTotal": 840
+        }
+      ],
+      "total": 840,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64105,
+        "noteSuffix": "a-1",
+        "note": "64105a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 1,
+        "city": "culiacan",
+        "issuedAt": "2026-10-01T09:28:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64106",
+      "folio": "HIST-R64106",
+      "createdAt": "2026-10-01T08:46:00",
+      "customer": "EDUARDO COTA ACOSTA",
+      "clientId": "c_7399012b3b5b",
+      "client": {
+        "id": "c_7399012b3b5b",
+        "name": "EDUARDO COTA ACOSTA",
+        "phone": "",
+        "email": "ecota1977@gmail.com",
+        "company": "",
+        "rfc": "COAE770405FX8",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 175,
+          "qty": 5,
+          "lineTotal": 875
+        }
+      ],
+      "total": 875,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64106,
+        "noteSuffix": "a-2",
+        "note": "64106a",
+        "observations": "Mostr fac tarjeta Eduardo cota acosta",
+        "year": 2026,
+        "month": 10,
+        "day": 1,
+        "city": "culiacan",
+        "issuedAt": "2026-10-01T09:46:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64107",
+      "folio": "HIST-R64107",
+      "createdAt": "2026-10-01T09:12:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 2,
+          "lineTotal": 420
+        }
+      ],
+      "total": 420,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64107,
+        "noteSuffix": "a-3",
+        "note": "64107a",
+        "observations": "Mostr tarjeta perso",
+        "year": 2026,
+        "month": 10,
+        "day": 1,
+        "city": "culiacan",
+        "issuedAt": "2026-10-01T10:12:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64108",
+      "folio": "HIST-R64108",
+      "createdAt": "2026-10-01T09:16:00",
+      "customer": "Materiales el Cheke",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 175,
+          "qty": 80,
+          "lineTotal": 14000
+        }
+      ],
+      "total": 14000,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64108,
+        "noteSuffix": "a-4",
+        "note": "64108a",
+        "observations": "Materiales el Cheke",
+        "year": 2026,
+        "month": 10,
+        "day": 1,
+        "city": "culiacan",
+        "issuedAt": "2026-10-01T10:16:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64109",
+      "folio": "HIST-R64109",
+      "createdAt": "2026-10-01T09:31:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64109,
+        "noteSuffix": "a-5",
+        "note": "64109a",
+        "observations": "Mostr tarjet perso",
+        "year": 2026,
+        "month": 10,
+        "day": 1,
+        "city": "culiacan",
+        "issuedAt": "2026-10-01T10:31:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
     }
   ],
   "skippedCancelled": [
