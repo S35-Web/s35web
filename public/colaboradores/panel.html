@@ -7108,8 +7108,22 @@
                 </section>
 
                 <section id="materials" class="section">
-                    <h1 class="page-title">Materias primas</h1>
-                    <p class="page-sub">Inventario de planta. Los cambios se guardan en este navegador.</p>
+                    <div class="page-head" style="margin-bottom:12px">
+                        <div>
+                            <h1 class="page-title">Materias primas</h1>
+                            <p class="page-sub">Inventario de planta por ciudad. Los cambios se guardan en este navegador.</p>
+                        </div>
+                        <div class="page-head-actions">
+                            <div class="seg-control cortes-city-menu" id="materialsCityMenu">
+                                <select id="materialsCitySelect" aria-label="Ciudad del inventario de materias primas">
+                                    <option value="all">Todas</option>
+                                    <option value="culiacan">Culiacán</option>
+                                    <option value="mochis">Los Mochis</option>
+                                    <option value="mazatlan">Mazatlán</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                     <div class="kpis mat-kpis" id="materialsKpis">
                         <div class="kpi">
                             <div class="label">Materiales</div>
@@ -8054,8 +8068,22 @@
 
                 <section id="products" class="section">
                     <div id="productsListView">
-                        <h1 class="page-title">Productos</h1>
-                        <p class="page-sub">Precios, presentaciones y formulaciones en un solo lugar. Se guarda en este navegador.</p>
+                        <div class="page-head" style="margin-bottom:12px">
+                            <div>
+                                <h1 class="page-title">Productos</h1>
+                                <p class="page-sub">Precios, presentaciones e inventario por ciudad.</p>
+                            </div>
+                            <div class="page-head-actions">
+                                <div class="seg-control cortes-city-menu" id="productsCityMenu">
+                                    <select id="productsCitySelect" aria-label="Ciudad del inventario de productos">
+                                        <option value="all">Todas</option>
+                                        <option value="culiacan">Culiacán</option>
+                                        <option value="mochis">Los Mochis</option>
+                                        <option value="mazatlan">Mazatlán</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="kpis mat-kpis products-kpis" id="productsInventoryKpis">
                             <div class="kpi">
@@ -8609,6 +8637,13 @@
                     <label>Sacos / unidades reales
                         <input id="lotConfirmBags" class="customer-input" type="number" min="1" step="1" value="30">
                     </label>
+                    <label>Ciudad (ingreso PT)
+                        <select id="lotConfirmCity" class="customer-input">
+                            <option value="culiacan">Culiacán</option>
+                            <option value="mochis">Los Mochis</option>
+                            <option value="mazatlan">Mazatlán</option>
+                        </select>
+                    </label>
                     <label>Quién produjo
                         <input id="lotConfirmProducedBy" class="customer-input" type="text" placeholder="Nombre o turno" autocomplete="name">
                     </label>
@@ -8701,6 +8736,13 @@
                 <div class="form-grid">
                     <label>Producto
                         <select id="addInventoryProduct" required></select>
+                    </label>
+                    <label>Ciudad
+                        <select id="addInventoryCity" required>
+                            <option value="culiacan">Culiacán</option>
+                            <option value="mochis">Los Mochis</option>
+                            <option value="mazatlan">Mazatlán</option>
+                        </select>
                     </label>
                     <label>Cantidad a sumar
                         <input id="addInventoryQty" type="number" min="0.001" step="any" required value="1" inputmode="decimal">
@@ -9066,7 +9108,7 @@
         const stock = Math.max(0, Number(m.stock) || 0);
         let reserved = Math.max(0, Number(m.reserved) || 0);
         if (reserved > stock) reserved = stock;
-        return {
+        const item = {
             id: m.id,
             name: normalizeName(m.name),
             unit: normalizeUnit(m.unit),
@@ -9079,6 +9121,185 @@
             consumeOnConfirm: m.consumeOnConfirm === true,
             unitCost: Math.max(0, Math.round((Number(m.unitCost) || 0) * 100) / 100)
         };
+        if (m.byCity && typeof m.byCity === 'object') {
+            item.byCity = {
+                culiacan: Math.max(0, Number(m.byCity.culiacan) || 0),
+                mochis: Math.max(0, Number(m.byCity.mochis) || 0),
+                mazatlan: Math.max(0, Number(m.byCity.mazatlan) || 0)
+            };
+        }
+        if (m.reservedByCity && typeof m.reservedByCity === 'object') {
+            item.reservedByCity = {
+                culiacan: Math.max(0, Number(m.reservedByCity.culiacan) || 0),
+                mochis: Math.max(0, Number(m.reservedByCity.mochis) || 0),
+                mazatlan: Math.max(0, Number(m.reservedByCity.mazatlan) || 0)
+            };
+        }
+        ensureMaterialByCity(item);
+        return item;
+    }
+
+    /** Ciudades de inventario (mismas que ventas). */
+    const INV_CITIES = [
+        { id: 'culiacan', label: 'Culiacán' },
+        { id: 'mochis', label: 'Los Mochis' },
+        { id: 'mazatlan', label: 'Mazatlán' }
+    ];
+    const PRODUCTS_CITY_KEY = 's35_products_inv_city';
+    const MATERIALS_CITY_KEY = 's35_materials_inv_city';
+    const INV_DEFAULT_CITY = 'culiacan';
+    let productsCityFilter = 'all';
+    let materialsCityFilter = 'all';
+    try {
+        const pc = localStorage.getItem(PRODUCTS_CITY_KEY);
+        if (pc === 'all' || INV_CITIES.some(function (c) { return c.id === pc; })) productsCityFilter = pc;
+        const mc = localStorage.getItem(MATERIALS_CITY_KEY);
+        if (mc === 'all' || INV_CITIES.some(function (c) { return c.id === mc; })) materialsCityFilter = mc;
+    } catch (_) {}
+
+    function normalizeInvCity(raw) {
+        const v = String(raw || '').toLowerCase().trim()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (v === 'all' || v === 'todas') return 'all';
+        if (v === 'culiacan' || v === 'cln') return 'culiacan';
+        if (v === 'mochis' || v === 'los mochis' || v === 'lmm') return 'mochis';
+        if (v === 'mazatlan' || v === 'mzt') return 'mazatlan';
+        return INV_DEFAULT_CITY;
+    }
+    function invCityLabel(id) {
+        if (id === 'all') return 'Todas';
+        const c = INV_CITIES.filter(function (x) { return x.id === id; })[0];
+        return c ? c.label : 'Culiacán';
+    }
+    function emptyCityMap() {
+        return { culiacan: 0, mochis: 0, mazatlan: 0 };
+    }
+    function sumCityMap(map) {
+        if (!map) return 0;
+        return INV_CITIES.reduce(function (n, c) {
+            return n + (Math.max(0, Number(map[c.id]) || 0));
+        }, 0);
+    }
+    function activeProductsCity() {
+        return productsCityFilter === 'all' ? INV_DEFAULT_CITY : productsCityFilter;
+    }
+    function activeMaterialsCity() {
+        return materialsCityFilter === 'all' ? INV_DEFAULT_CITY : materialsCityFilter;
+    }
+    function ensureMaterialByCity(m) {
+        if (!m) return m;
+        if (!m.byCity || typeof m.byCity !== 'object') {
+            m.byCity = emptyCityMap();
+            m.byCity[INV_DEFAULT_CITY] = Math.max(0, Number(m.stock) || 0);
+        } else {
+            INV_CITIES.forEach(function (c) {
+                if (m.byCity[c.id] == null) m.byCity[c.id] = 0;
+                m.byCity[c.id] = Math.max(0, Number(m.byCity[c.id]) || 0);
+            });
+            const mapped = sumCityMap(m.byCity);
+            const stock = Math.max(0, Number(m.stock) || 0);
+            if (mapped === 0 && stock > 0) m.byCity[INV_DEFAULT_CITY] = stock;
+        }
+        if (!m.reservedByCity || typeof m.reservedByCity !== 'object') {
+            m.reservedByCity = emptyCityMap();
+            m.reservedByCity[INV_DEFAULT_CITY] = Math.max(0, Number(m.reserved) || 0);
+        } else {
+            INV_CITIES.forEach(function (c) {
+                if (m.reservedByCity[c.id] == null) m.reservedByCity[c.id] = 0;
+                m.reservedByCity[c.id] = Math.max(0, Number(m.reservedByCity[c.id]) || 0);
+            });
+            const mappedR = sumCityMap(m.reservedByCity);
+            const reserved = Math.max(0, Number(m.reserved) || 0);
+            if (mappedR === 0 && reserved > 0) m.reservedByCity[INV_DEFAULT_CITY] = reserved;
+        }
+        syncMaterialCityTotals(m);
+        return m;
+    }
+    function syncMaterialCityTotals(m) {
+        if (!m || !m.byCity) return;
+        m.stock = sumCityMap(m.byCity);
+        m.reserved = sumCityMap(m.reservedByCity);
+        if (m.reserved > m.stock) {
+            // Recorta reservado empezando por la ciudad default.
+            let over = m.reserved - m.stock;
+            const order = [INV_DEFAULT_CITY].concat(INV_CITIES.map(function (c) { return c.id; }).filter(function (id) {
+                return id !== INV_DEFAULT_CITY;
+            }));
+            order.forEach(function (id) {
+                if (over <= 0) return;
+                const cur = Number(m.reservedByCity[id]) || 0;
+                const cut = Math.min(cur, over);
+                m.reservedByCity[id] = cur - cut;
+                over -= cut;
+            });
+            m.reserved = sumCityMap(m.reservedByCity);
+        }
+    }
+    function materialStockInCity(m, city) {
+        if (!m) return 0;
+        ensureMaterialByCity(m);
+        const c = normalizeInvCity(city);
+        if (c === 'all') return Math.max(0, Number(m.stock) || 0);
+        return Math.max(0, Number(m.byCity[c]) || 0);
+    }
+    function materialReservedInCity(m, city) {
+        if (!m) return 0;
+        ensureMaterialByCity(m);
+        const c = normalizeInvCity(city);
+        if (c === 'all') return Math.max(0, Number(m.reserved) || 0);
+        return Math.max(0, Number(m.reservedByCity[c]) || 0);
+    }
+    function setMaterialStockInCity(m, city, qty) {
+        ensureMaterialByCity(m);
+        const c = normalizeInvCity(city === 'all' ? activeMaterialsCity() : city);
+        if (c === 'all') return;
+        m.byCity[c] = Math.max(0, Number(qty) || 0);
+        syncMaterialCityTotals(m);
+    }
+    function adjustMaterialStockInCity(m, city, delta) {
+        ensureMaterialByCity(m);
+        const c = normalizeInvCity(city === 'all' ? activeMaterialsCity() : city);
+        if (c === 'all') return;
+        m.byCity[c] = Math.max(0, (Number(m.byCity[c]) || 0) + (Number(delta) || 0));
+        syncMaterialCityTotals(m);
+    }
+    function ensureFinishedByCity(row) {
+        if (!row) return row;
+        if (!row.byCity || typeof row.byCity !== 'object') {
+            row.byCity = emptyCityMap();
+            row.byCity[INV_DEFAULT_CITY] = Math.max(0, Number(row.stock) || 0);
+        } else {
+            INV_CITIES.forEach(function (c) {
+                if (row.byCity[c.id] == null) row.byCity[c.id] = 0;
+                row.byCity[c.id] = Math.max(0, Number(row.byCity[c.id]) || 0);
+            });
+            const mapped = sumCityMap(row.byCity);
+            const stock = Math.max(0, Number(row.stock) || 0);
+            if (mapped === 0 && stock > 0) row.byCity[INV_DEFAULT_CITY] = stock;
+        }
+        syncFinishedCityTotals(row);
+        return row;
+    }
+    function syncFinishedCityTotals(row) {
+        if (!row || !row.byCity) return;
+        row.stock = sumCityMap(row.byCity);
+    }
+    function finishedStockInCity(row, city) {
+        if (!row) return 0;
+        ensureFinishedByCity(row);
+        const c = normalizeInvCity(city);
+        if (c === 'all') return Math.max(0, Number(row.stock) || 0);
+        return Math.max(0, Number(row.byCity[c]) || 0);
+    }
+    function invCitySelectHtml(selected, id) {
+        const cur = selected == null ? 'all' : selected;
+        return '<div class="seg-control cortes-city-menu" id="' + id + '">' +
+            '<select aria-label="Ciudad del inventario">' +
+            '<option value="all"' + (cur === 'all' ? ' selected' : '') + '>Todas</option>' +
+            INV_CITIES.map(function (c) {
+                return '<option value="' + c.id + '"' + (cur === c.id ? ' selected' : '') + '>' + c.label + '</option>';
+            }).join('') +
+            '</select></div>';
     }
     function seedInventory() {
         return (data.plantMaterials || []).map(normalizeItem);
@@ -9179,9 +9400,13 @@
                         return;
                     }
                     plantIdsRemapped = true;
-                    prev.stock = (Number(prev.stock) || 0) + (Number(m.stock) || 0);
-                    prev.reserved = (Number(prev.reserved) || 0) + (Number(m.reserved) || 0);
-                    if (prev.reserved > prev.stock) prev.reserved = prev.stock;
+                    ensureMaterialByCity(prev);
+                    ensureMaterialByCity(m);
+                    INV_CITIES.forEach(function (c) {
+                        prev.byCity[c.id] = (Number(prev.byCity[c.id]) || 0) + (Number(m.byCity[c.id]) || 0);
+                        prev.reservedByCity[c.id] = (Number(prev.reservedByCity[c.id]) || 0) + (Number(m.reservedByCity[c.id]) || 0);
+                    });
+                    syncMaterialCityTotals(prev);
                     if ((Number(m.minStock) || 0) > (Number(prev.minStock) || 0)) prev.minStock = Number(m.minStock) || 0;
                     if (!(prev.unitCost > 0) && m.unitCost > 0) prev.unitCost = m.unitCost;
                 });
@@ -9223,11 +9448,16 @@
     let inventory = loadInventory();
     if (persistNormalized) saveInventory(inventory, { preserveUpdatedAt: true });
 
-    function materialReserved(mat) {
+    function materialReserved(mat, city) {
+        if (city != null && city !== 'all') return materialReservedInCity(mat, city);
         return Math.max(0, Number(mat && mat.reserved) || 0);
     }
-    function materialFreeStock(mat) {
+    function materialFreeStock(mat, city) {
         if (!mat) return 0;
+        ensureMaterialByCity(mat);
+        if (city != null && city !== 'all') {
+            return Math.max(0, materialStockInCity(mat, city) - materialReservedInCity(mat, city));
+        }
         return Math.max(0, (Number(mat.stock) || 0) - materialReserved(mat));
     }
     function packagingHintText(mat) {
@@ -9254,24 +9484,37 @@
         if (String(it.role || '') === 'Empaque') return true;
         return isPackagingMaterial(plantById(it.plantId));
     }
-    function reservePlantQty(plantId, qty) {
+    function reservePlantQty(plantId, qty, city) {
         const mat = plantById(plantId);
         if (!mat) return false;
+        ensureMaterialByCity(mat);
+        const c = normalizeInvCity(city == null ? activeMaterialsCity() : city);
+        const cityKey = c === 'all' ? INV_DEFAULT_CITY : c;
         const q = Math.max(0, Number(qty) || 0);
-        if (q > materialFreeStock(mat) + 1e-9) return false;
-        mat.reserved = materialReserved(mat) + q;
+        if (q > materialFreeStock(mat, cityKey) + 1e-9) return false;
+        mat.reservedByCity[cityKey] = materialReservedInCity(mat, cityKey) + q;
+        syncMaterialCityTotals(mat);
         return true;
     }
-    function releasePlantQty(plantId, qty) {
+    function releasePlantQty(plantId, qty, city) {
         const mat = plantById(plantId);
         if (!mat) return;
-        mat.reserved = Math.max(0, materialReserved(mat) - Math.max(0, Number(qty) || 0));
+        ensureMaterialByCity(mat);
+        const c = normalizeInvCity(city == null ? activeMaterialsCity() : city);
+        const cityKey = c === 'all' ? INV_DEFAULT_CITY : c;
+        mat.reservedByCity[cityKey] = Math.max(0, materialReservedInCity(mat, cityKey) - Math.max(0, Number(qty) || 0));
+        syncMaterialCityTotals(mat);
     }
-    function consumePlantQty(plantId, qty) {
+    function consumePlantQty(plantId, qty, city) {
         const mat = plantById(plantId);
         if (!mat) return;
-        mat.stock = Math.max(0, (Number(mat.stock) || 0) - Math.max(0, Number(qty) || 0));
-        if (materialReserved(mat) > mat.stock) mat.reserved = mat.stock;
+        ensureMaterialByCity(mat);
+        const c = normalizeInvCity(city == null ? activeMaterialsCity() : city);
+        const cityKey = c === 'all' ? INV_DEFAULT_CITY : c;
+        const q = Math.max(0, Number(qty) || 0);
+        mat.byCity[cityKey] = Math.max(0, (Number(mat.byCity[cityKey]) || 0) - q);
+        mat.reservedByCity[cityKey] = Math.max(0, (Number(mat.reservedByCity[cityKey]) || 0) - q);
+        syncMaterialCityTotals(mat);
     }
 
     const FINISHED_KEY = 's35_finished_stock';
@@ -9279,7 +9522,7 @@
         const seed = {};
         function ensure(slug) {
             if (!slug || seed[slug]) return;
-            seed[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
+            seed[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza', byCity: emptyCityMap() };
         }
         (data.products || []).forEach(function (p) { ensure(p.slug); });
         (data.recipes || []).forEach(function (r) { ensure(r.product || r.slug); });
@@ -9294,9 +9537,18 @@
                     seed[slug].stock = Number(row.stock) || 0;
                     seed[slug].minStock = Number(row.minStock) || 0;
                     if (row.unit) seed[slug].unit = row.unit;
+                    if (row.byCity && typeof row.byCity === 'object') {
+                        seed[slug].byCity = {
+                            culiacan: Math.max(0, Number(row.byCity.culiacan) || 0),
+                            mochis: Math.max(0, Number(row.byCity.mochis) || 0),
+                            mazatlan: Math.max(0, Number(row.byCity.mazatlan) || 0)
+                        };
+                    }
+                    ensureFinishedByCity(seed[slug]);
                 });
             }
         } catch (_) {}
+        Object.keys(seed).forEach(function (slug) { ensureFinishedByCity(seed[slug]); });
         return seed;
     }
     function saveFinished(opts) {
@@ -9308,6 +9560,9 @@
                 if (prev && prev.updatedAt) updatedAt = String(prev.updatedAt);
             } catch (_) {}
         }
+        Object.keys(finishedStock || {}).forEach(function (slug) {
+            ensureFinishedByCity(finishedStock[slug]);
+        });
         localStorage.setItem(FINISHED_KEY, JSON.stringify({ items: finishedStock, updatedAt: updatedAt }));
         if (!opts.skipPush && window.S35PanelSync && typeof window.S35PanelSync.flushPush === 'function') {
             window.S35PanelSync.flushPush();
@@ -9324,16 +9579,25 @@
         inventory.splice(0, inventory.length);
         fresh.forEach(function (m) { inventory.push(m); });
     }
-    function adjustFinishedMap(deltas) {
+    function adjustFinishedMap(deltas, cityOrOpts) {
         hydrateFinishedFromLocal();
+        let city = activeProductsCity();
+        if (typeof cityOrOpts === 'string') city = cityOrOpts;
+        else if (cityOrOpts && typeof cityOrOpts === 'object' && cityOrOpts.city) city = cityOrOpts.city;
+        city = normalizeInvCity(city);
+        if (city === 'all') city = INV_DEFAULT_CITY;
         let changed = false;
         Object.keys(deltas || {}).forEach(function (slug) {
             const delta = Number(deltas[slug]) || 0;
             if (!slug || !delta) return;
-            if (!finishedStock[slug]) finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
-            const next = Math.max(0, (Number(finishedStock[slug].stock) || 0) + delta);
-            if (next === (Number(finishedStock[slug].stock) || 0)) return;
-            finishedStock[slug].stock = next;
+            if (!finishedStock[slug]) finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza', byCity: emptyCityMap() };
+            ensureFinishedByCity(finishedStock[slug]);
+            const nextCity = Math.max(0, (Number(finishedStock[slug].byCity[city]) || 0) + delta);
+            if (nextCity === (Number(finishedStock[slug].byCity[city]) || 0) && delta < 0 && (Number(finishedStock[slug].byCity[city]) || 0) === 0) {
+                return;
+            }
+            finishedStock[slug].byCity[city] = nextCity;
+            syncFinishedCityTotals(finishedStock[slug]);
             changed = true;
         });
         if (changed) saveFinished();
@@ -10498,20 +10762,24 @@
     function renderMaterials() {
         const tbody = document.getElementById('matBody');
         const list = filteredInventory();
+        const city = materialsCityFilter;
         let totalValue = 0;
         tbody.innerHTML = list.map(function (m) {
+            ensureMaterialByCity(m);
             const lab = m.labSlug
                 ? '<div class="muted"><a class="link" href="/laboratorio/materials/' + esc(m.labSlug) + '" target="_blank">Ficha</a></div>'
                 : '';
-            const free = materialFreeStock(m);
-            const reserved = materialReserved(m);
+            const stockQty = materialStockInCity(m, city);
+            const free = materialFreeStock(m, city === 'all' ? null : city);
+            const reserved = materialReserved(m, city === 'all' ? null : city);
             const low = m.minStock > 0 && free < m.minStock;
-            const stockCell = esc(String(m.stock)) +
+            const stockCell = esc(String(stockQty)) +
                 (reserved > 0
                     ? '<div class="muted" style="font-size:11px">libre ' + esc(String(free)) +
                         ' · res. ' + esc(String(reserved)) + '</div>'
                     : '');
-            const value = materialInventoryValue(m);
+            const valueBase = city === 'all' ? m : Object.assign({}, m, { stock: stockQty });
+            const value = materialInventoryValue(valueBase);
             totalValue += value;
             const valueCell = (Number(m.unitCost) || 0) > 0
                 ? moneyMx(value)
@@ -10534,15 +10802,17 @@
                 totalEl.innerHTML = '';
             } else {
                 totalEl.hidden = false;
+                const cityNote = city === 'all' ? '' : (' · ' + invCityLabel(city));
                 const filterNote = list.length !== inventory.length
                     ? (' · ' + list.length + ' de ' + inventory.length + ' materiales')
                     : '';
-                totalEl.innerHTML = '<span>Valor en inventario' + esc(filterNote) + '</span>' +
+                totalEl.innerHTML = '<span>Valor en inventario' + esc(cityNote) + esc(filterNote) + '</span>' +
                     '<span class="val">' + moneyMx(totalValue) + '</span>';
             }
         }
         updateDashExtras();
         renderMaterialsInventoryChart();
+        syncInventoryCityMenus();
     }
     const MAT_BAR_COLORS = ['#2f7d32', '#5a5a5a', '#1a1a1a', '#e65100', '#7b1fa2', '#c41626', '#1565c0', '#00838f'];
     function matFamilyColor(id) {
@@ -10633,14 +10903,17 @@
         const valueEl = document.getElementById('materialsKpiValue');
         const subEl = document.getElementById('materialsInventorySub');
         if (!host) return;
+        const city = materialsCityFilter;
         const list = inventory.map(function (m) {
+            ensureMaterialByCity(m);
             const cat = normalizeCategory(m.category);
+            const stock = materialStockInCity(m, city);
             return {
                 id: m.id,
                 name: m.name || m.id,
                 unit: m.unit || '',
                 family: cat,
-                stock: Math.max(0, Number(m.stock) || 0),
+                stock: stock,
                 minStock: Math.max(0, Number(m.minStock) || 0),
                 unitCost: Number(m.unitCost) || 0
             };
@@ -10648,18 +10921,22 @@
         const withStock = list.filter(function (m) { return m.stock > 0; }).length;
         const belowMin = inventory.filter(function (m) {
             const min = Math.max(0, Number(m.minStock) || 0);
-            return min > 0 && (Number(m.stock) || 0) < min;
+            const stock = materialStockInCity(m, city);
+            return min > 0 && stock < min;
         }).length;
-        const value = inventory.reduce(function (sum, m) { return sum + materialInventoryValue(m); }, 0);
+        const value = list.reduce(function (sum, m) {
+            return sum + materialInventoryValue(m);
+        }, 0);
         if (countEl) countEl.textContent = String(list.length);
         if (withEl) withEl.textContent = String(withStock);
         if (zeroEl) zeroEl.textContent = String(Math.max(0, list.length - withStock));
         if (belowEl) belowEl.textContent = String(belowMin);
         if (valueEl) valueEl.textContent = moneyMx(value);
         if (subEl) {
+            const cityHint = city === 'all' ? 'materia prima' : ('materia prima · ' + invCityLabel(city));
             if (!list.length) subEl.textContent = 'Sin materias primas';
-            else if (!withStock) subEl.textContent = list.length + ' materiales · sin existencia';
-            else subEl.textContent = (list.length - withStock) + ' en cero · materia prima';
+            else if (!withStock) subEl.textContent = list.length + ' materiales · sin existencia · ' + cityHint;
+            else subEl.textContent = (list.length - withStock) + ' en cero · ' + cityHint;
         }
         if (!list.length) {
             host.innerHTML = '';
@@ -10998,7 +11275,9 @@
         document.getElementById('plantId').value = item ? item.id : '';
         document.getElementById('plantName').value = item ? item.name : '';
         document.getElementById('plantUnit').value = item ? (item.unit || '') : 'Kg';
-        document.getElementById('plantStock').value = item ? item.stock : 0;
+        document.getElementById('plantStock').value = item
+            ? materialStockInCity(item, materialsCityFilter === 'all' ? 'all' : materialsCityFilter)
+            : 0;
         document.getElementById('plantUnitCost').value = item ? (Number(item.unitCost) || 0) : 0;
         document.getElementById('plantMin').value = item ? item.minStock : 0;
         document.getElementById('plantCategory').value = item ? normalizeCategory(item.category) : (plantFamilies[0] && plantFamilies[0].id) || UNCATEGORIZED_ID;
@@ -11085,8 +11364,10 @@
             id: id || slugifyPlant(document.getElementById('plantName').value),
             name: normalizeName(document.getElementById('plantName').value),
             unit: normalizeUnit(document.getElementById('plantUnit').value),
-            stock: stock,
-            reserved: Math.min(stock, prev ? materialReserved(prev) : 0),
+            stock: prev ? (Number(prev.stock) || 0) : stock,
+            reserved: prev ? materialReserved(prev) : 0,
+            byCity: prev && prev.byCity ? Object.assign({}, prev.byCity) : null,
+            reservedByCity: prev && prev.reservedByCity ? Object.assign({}, prev.reservedByCity) : null,
             minStock: Math.max(0, Number(document.getElementById('plantMin').value) || 0),
             unitCost: Math.max(0, Number(document.getElementById('plantUnitCost').value) || 0),
             category: normalizeCategory(document.getElementById('plantCategory').value),
@@ -11095,6 +11376,16 @@
             consumeOnConfirm: prev ? !!prev.consumeOnConfirm : false
         });
         if (!next.name) return;
+        ensureMaterialByCity(next);
+        if (materialsCityFilter === 'all') {
+            // Ajuste del total: la diferencia se aplica a Culiacán.
+            const oldTotal = sumCityMap(next.byCity);
+            const delta = stock - oldTotal;
+            next.byCity[INV_DEFAULT_CITY] = Math.max(0, (Number(next.byCity[INV_DEFAULT_CITY]) || 0) + delta);
+        } else {
+            next.byCity[materialsCityFilter] = stock;
+        }
+        syncMaterialCityTotals(next);
         const idx = inventory.findIndex(function (m) { return m.id === next.id; });
         if (idx >= 0) inventory[idx] = next;
         else inventory.push(next);
@@ -13291,13 +13582,15 @@
         const valueEl = document.getElementById('productsInventoryValue');
         const subEl = document.getElementById('productsInventorySub');
         if (!host) return;
+        const city = productsCityFilter;
         const list = sortFinishedInventory(hubCatalog().map(function (p) {
-            const fin = finishedStock[p.slug] || { stock: 0 };
+            const fin = finishedStock[p.slug] || { stock: 0, byCity: emptyCityMap() };
+            ensureFinishedByCity(fin);
             return {
                 slug: p.slug,
                 name: p.name || p.slug,
                 family: p.family || '',
-                stock: Math.max(0, Number(fin.stock) || 0)
+                stock: finishedStockInCity(fin, city)
             };
         }));
         list.forEach(function (p) {
@@ -13316,11 +13609,13 @@
         if (zeroEl) zeroEl.textContent = String(zeroStock);
         if (valueEl) valueEl.textContent = moneyMx(valueSum);
         if (subEl) {
+            const cityHint = city === 'all' ? 'producto terminado' : ('PT · ' + invCityLabel(city));
             if (!list.length) subEl.textContent = 'Sin productos';
-            else if (!withStock) subEl.textContent = list.length + ' productos · sin existencia';
-            else subEl.textContent = (list.length - withStock) + ' en cero · producto terminado' +
+            else if (!withStock) subEl.textContent = list.length + ' productos · sin existencia · ' + cityHint;
+            else subEl.textContent = (list.length - withStock) + ' en cero · ' + cityHint +
                 (missingCost ? ' · ' + missingCost + ' sin precio público' : '');
         }
+        syncInventoryCityMenus();
         if (!list.length) {
             host.innerHTML = '';
             syncProductsInventorySortBtn();
@@ -13957,8 +14252,10 @@
             if (!addInvCurrent || !addInvProduct) return;
             const slug = addInvProduct.value;
             const fin = finishedStock[slug];
-            const qty = fin ? (Number(fin.stock) || 0) : 0;
-            addInvCurrent.textContent = 'Existencia actual: ' + fmtStockQty(qty);
+            const cityEl = document.getElementById('addInventoryCity');
+            const city = cityEl ? normalizeInvCity(cityEl.value) : activeProductsCity();
+            const qty = fin ? finishedStockInCity(fin, city === 'all' ? 'all' : city) : 0;
+            addInvCurrent.textContent = 'Existencia en ' + invCityLabel(city === 'all' ? 'all' : city) + ': ' + fmtStockQty(qty);
         }
         function openAddInventory(preselect) {
             if (!addInvModal || !addInvProduct) return;
@@ -13970,6 +14267,8 @@
                 return '<option value="' + esc(p.slug) + '">' + esc(p.name || p.slug) + '</option>';
             }).join('');
             if (preselect && finishedStock[preselect]) addInvProduct.value = preselect;
+            const cityEl = document.getElementById('addInventoryCity');
+            if (cityEl) cityEl.value = activeProductsCity();
             if (addInvQty) addInvQty.value = '1';
             paintAddInventoryCurrent();
             addInvModal.classList.add('show');
@@ -13978,6 +14277,8 @@
         }
         if (addInvBtn) addInvBtn.addEventListener('click', function () { openAddInventory(); });
         if (addInvProduct) addInvProduct.addEventListener('change', paintAddInventoryCurrent);
+        const addInvCity = document.getElementById('addInventoryCity');
+        if (addInvCity) addInvCity.addEventListener('change', paintAddInventoryCurrent);
         ['addInventoryClose', 'addInventoryCancel'].forEach(function (id) {
             const el = document.getElementById(id);
             if (el) el.addEventListener('click', closeAddInventory);
@@ -13993,7 +14294,9 @@
                 const slug = addInvProduct ? addInvProduct.value : '';
                 const qty = Number(addInvQty && addInvQty.value);
                 if (!slug || !(qty > 0)) return;
-                adjustFinishedMap((function () { const d = {}; d[slug] = qty; return d; })());
+                const cityEl = document.getElementById('addInventoryCity');
+                const city = cityEl ? normalizeInvCity(cityEl.value) : activeProductsCity();
+                adjustFinishedMap((function () { const d = {}; d[slug] = qty; return d; })(), city === 'all' ? INV_DEFAULT_CITY : city);
                 refreshStockViews();
                 closeAddInventory();
                 const name = (hubCatalog().filter(function (p) { return p.slug === slug; })[0] || {}).name || slug;
@@ -15504,6 +15807,7 @@
             producedBy: '',
             notes: '',
             packagingPlantId: (packTheo && packTheo.plantId) || f.packagingPlantId || packagingId(r),
+            city: INV_DEFAULT_CITY,
             mpLines: snapLines,
             packLines: packLines,
             packReserved: true,
@@ -15520,22 +15824,22 @@
             const ln = packLines[i];
             const mat = plantById(ln.plantId);
             const need = Number(ln.amount) || 0;
-            if (!mat || materialFreeStock(mat) < need) {
+            if (!mat || materialFreeStock(mat, t.city || INV_DEFAULT_CITY) < need) {
                 alert(
                     'No hay empaque libre suficiente para reservar:\n• ' +
                     (ln.name || ln.plantId) + ': necesita ' + need +
-                    ', libre ' + (mat ? materialFreeStock(mat) : 0) +
-                    (mat && materialReserved(mat) ? ' (reservado ' + materialReserved(mat) + ')' : '')
+                    ', libre ' + (mat ? materialFreeStock(mat, t.city || INV_DEFAULT_CITY) : 0) +
+                    (mat && materialReserved(mat, t.city || INV_DEFAULT_CITY) ? ' (reservado ' + materialReserved(mat, t.city || INV_DEFAULT_CITY) + ')' : '')
                 );
                 return;
             }
         }
         (t.mpLines || []).forEach(function (ln) {
             const mat = plantById(ln.plantId);
-            if (mat) mat.stock = Math.max(0, (Number(mat.stock) || 0) - (Number(ln.amount) || 0));
+            if (mat) adjustMaterialStockInCity(mat, t.city || INV_DEFAULT_CITY, -(Number(ln.amount) || 0));
         });
         packLines.forEach(function (ln) {
-            reservePlantQty(ln.plantId, Number(ln.amount) || 0);
+            reservePlantQty(ln.plantId, Number(ln.amount) || 0, t.city || INV_DEFAULT_CITY);
         });
         saveInventory(inventory);
         const list = loadLotTickets();
@@ -15583,6 +15887,7 @@
         const bags = document.getElementById('lotConfirmBags');
         const producedBy = document.getElementById('lotConfirmProducedBy');
         const notes = document.getElementById('lotConfirmNotes');
+        const cityEl = document.getElementById('lotConfirmCity');
         if (doc) {
             doc.innerHTML = lotTicketDocHtml(t, { pending: pending });
             if (!pending) fillLotTicketQr(doc, t);
@@ -15603,6 +15908,7 @@
             bags.value = String(mid);
             if (producedBy) producedBy.value = t.producedBy || '';
             notes.value = t.notes || '';
+            if (cityEl) cityEl.value = normalizeInvCity(t.city || activeProductsCity());
         }
         syncLotTicketActionButtons();
         if (!modal) return;
@@ -16018,6 +16324,37 @@
                 ' · pasa el mouse por un punto';
         }
     }
+    function syncInventoryCityMenus() {
+        const pSel = document.getElementById('productsCitySelect');
+        const mSel = document.getElementById('materialsCitySelect');
+        const pMenu = document.getElementById('productsCityMenu');
+        const mMenu = document.getElementById('materialsCityMenu');
+        if (pSel) pSel.value = productsCityFilter;
+        if (mSel) mSel.value = materialsCityFilter;
+        if (pMenu) pMenu.classList.toggle('is-filtered', productsCityFilter !== 'all');
+        if (mMenu) mMenu.classList.toggle('is-filtered', materialsCityFilter !== 'all');
+    }
+    function setProductsCityFilter(next) {
+        if (next === 'all') productsCityFilter = 'all';
+        else productsCityFilter = normalizeInvCity(next);
+        if (productsCityFilter !== 'all' && !INV_CITIES.some(function (c) { return c.id === productsCityFilter; })) {
+            productsCityFilter = 'all';
+        }
+        try { localStorage.setItem(PRODUCTS_CITY_KEY, productsCityFilter); } catch (_) {}
+        syncInventoryCityMenus();
+        if (typeof renderProductsInventoryChart === 'function') renderProductsInventoryChart();
+        if (typeof renderFinished === 'function') renderFinished();
+    }
+    function setMaterialsCityFilter(next) {
+        if (next === 'all') materialsCityFilter = 'all';
+        else materialsCityFilter = normalizeInvCity(next);
+        if (materialsCityFilter !== 'all' && !INV_CITIES.some(function (c) { return c.id === materialsCityFilter; })) {
+            materialsCityFilter = 'all';
+        }
+        try { localStorage.setItem(MATERIALS_CITY_KEY, materialsCityFilter); } catch (_) {}
+        syncInventoryCityMenus();
+        renderMaterials();
+    }
     function refreshStockViews() {
         renderMaterials();
         if (typeof renderCatalog === 'function') renderCatalog(data.products);
@@ -16026,12 +16363,30 @@
         updateProdPreview();
         renderProdFormulaChart();
         refreshLotTicketLists();
+        syncInventoryCityMenus();
         if (window.S35PosModule && typeof window.S35PosModule.renderDinero === 'function') {
             window.S35PosModule.renderDinero();
         }
     }
 
     document.getElementById('prodProduct').addEventListener('change', updateProdPreview);
+    (function bindInventoryCityFilters() {
+        const pSel = document.getElementById('productsCitySelect');
+        if (pSel) {
+            pSel.value = productsCityFilter;
+            pSel.addEventListener('change', function () {
+                setProductsCityFilter(pSel.value);
+            });
+        }
+        const mSel = document.getElementById('materialsCitySelect');
+        if (mSel) {
+            mSel.value = materialsCityFilter;
+            mSel.addEventListener('change', function () {
+                setMaterialsCityFilter(mSel.value);
+            });
+        }
+        syncInventoryCityMenus();
+    })();
     (function initProdProductPicker() {
         const picker = document.getElementById('prodProductPicker');
         const trigger = document.getElementById('prodProductTrigger');
@@ -16225,6 +16580,9 @@
         const producedByEl = document.getElementById('lotConfirmProducedBy');
         const producedBy = producedByEl ? String(producedByEl.value || '').trim() : '';
         const notes = String(document.getElementById('lotConfirmNotes').value || '').trim();
+        const cityEl = document.getElementById('lotConfirmCity');
+        const lotCity = normalizeInvCity(cityEl ? cityEl.value : (t.city || INV_DEFAULT_CITY));
+        const confirmCity = lotCity === 'all' ? INV_DEFAULT_CITY : lotCity;
         if (t.yieldMin && t.yieldMax && (bagsOut < t.yieldMin || bagsOut > t.yieldMax)) {
             if (!confirm('Los sacos reales (' + bagsOut + ') están fuera del rango ' + t.yieldMin + '–' + t.yieldMax + '. ¿Confirmar de todos modos?')) return;
         }
@@ -16239,7 +16597,7 @@
                 const theo = Number(ln.amount) || 0;
                 const actual = bagsOut * pieces;
                 const mat = plantById(ln.plantId);
-                const freeAfterRelease = materialFreeStock(mat) + (t.packReserved !== false ? theo : 0);
+                const freeAfterRelease = materialFreeStock(mat, t.city || confirmCity) + (t.packReserved !== false ? theo : 0);
                 if (!mat || freeAfterRelease < actual) {
                     alert(
                         'No hay empaque suficiente:\n• ' + (ln.name || ln.plantId) +
@@ -16273,21 +16631,21 @@
                 });
             }
         }
-        if (!confirm('¿Confirmar ingreso de ' + bagsOut + ' a producto terminado para el lote ' + t.id + '?')) return;
+        if (!confirm('¿Confirmar ingreso de ' + bagsOut + ' a producto terminado (' + invCityLabel(confirmCity) + ') para el lote ' + t.id + '?')) return;
         packConsumptions.forEach(function (pc) {
             if (!pc.legacy && t.packReserved !== false) {
-                releasePlantQty(pc.plantId, pc.theo);
+                releasePlantQty(pc.plantId, pc.theo, t.city || confirmCity);
             }
-            consumePlantQty(pc.plantId, pc.actual);
+            consumePlantQty(pc.plantId, pc.actual, t.city || confirmCity);
         });
         if (packConsumptions.length) saveInventory(inventory);
-        hydrateFinishedFromLocal();
-        if (!finishedStock[t.product]) finishedStock[t.product] = { slug: t.product, stock: 0, minStock: 0, unit: 'Pza' };
-        finishedStock[t.product].stock = (Number(finishedStock[t.product].stock) || 0) + bagsOut;
-        saveFinished();
+        const finDelta = {};
+        finDelta[t.product] = bagsOut;
+        adjustFinishedMap(finDelta, confirmCity);
         t.status = 'confirmed';
         t.confirmedAt = new Date().toISOString();
         t.bagsOut = bagsOut;
+        t.city = confirmCity;
         t.producedBy = producedBy;
         t.notes = notes;
         t.packConsumed = packConsumptions.map(function (pc) {
@@ -16301,7 +16659,7 @@
         saveLotTickets(list);
         refreshStockViews();
         openLotTicketModal(t.id, { fromList: true });
-        alert('Lote ' + t.id + ' confirmado: +' + bagsOut + ' en producto terminado.\nImprime el ticket y anexalo a la tarima.');
+        alert('Lote ' + t.id + ' confirmado: +' + bagsOut + ' PT en ' + invCityLabel(confirmCity) + '.\nImprime el ticket y anexalo a la tarima.');
     });
     document.getElementById('lotTicketCancelBtn').addEventListener('click', function () {
         if (!currentLotTicket || currentLotTicketPending || currentLotTicketFromEmit || !currentLotTicketId) return;
@@ -16417,17 +16775,20 @@
 
     window.S35PanelAPI = {
         showSection: showSection,
-        getFinishedQty: function (slug) {
+        getFinishedQty: function (slug, city) {
             const fin = finishedStock[slug];
-            return fin ? (Number(fin.stock) || 0) : 0;
+            if (!fin) return 0;
+            ensureFinishedByCity(fin);
+            if (city == null || city === 'all') return Number(fin.stock) || 0;
+            return finishedStockInCity(fin, city);
         },
-        deductFinished: function (slug, qty) {
-            adjustFinishedMap((function () { const d = {}; d[slug] = -Math.abs(Number(qty) || 0); return d; })());
+        deductFinished: function (slug, qty, city) {
+            adjustFinishedMap((function () { const d = {}; d[slug] = -Math.abs(Number(qty) || 0); return d; })(), city);
         },
-        adjustFinished: function (slug, delta) {
+        adjustFinished: function (slug, delta, city) {
             const d = {};
             d[slug] = Number(delta) || 0;
-            return adjustFinishedMap(d);
+            return adjustFinishedMap(d, city);
         },
         adjustFinishedMap: adjustFinishedMap,
         refreshStockViews: function () {

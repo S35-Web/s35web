@@ -754,6 +754,7 @@
                 sel._s35CityBound = true;
                 sel.addEventListener('change', function () {
                     savePreferredSaleCity(sel.value);
+                    renderProducts();
                 });
             }
             return;
@@ -1671,7 +1672,7 @@
             toast('No se pudo guardar el ticket');
             return;
         }
-        if (trackStock) applySaleInventoryChange(beforeItems, sale.items);
+        if (trackStock) applySaleInventoryChange(beforeItems, sale.items, sale.city);
         setSaleNoteMode(false);
         openSaleNoteModal(sale);
         renderHistory();
@@ -1821,7 +1822,7 @@
         const label = saleReceiptLabel(sale);
         if (!confirm('¿Eliminar esta venta? No se puede deshacer')) return;
         const wasHist = isHistoricalImportSale(sale);
-        if (!wasHist && !isPrecompraSale(sale)) applySaleInventoryChange(sale.items, []);
+        if (!wasHist && !isPrecompraSale(sale)) applySaleInventoryChange(sale.items, [], sale.city);
         if (wasHist) {
             historicalSales = historicalSales.filter(function (s) { return s.id !== id; });
             putSaleEdit(id, { deleted: true });
@@ -4529,7 +4530,7 @@
         if (!sale || saleInventoryAlreadyApplied(sale)) return false;
         markCatchupInventory(sale.id);
         sale.meta = Object.assign({}, sale.meta || {}, { inventoryApplied: true });
-        applySaleInventoryChange([], sale.items);
+        applySaleInventoryChange([], sale.items, sale.city);
         return true;
     }
     function promotePostOpeningCatchupReceipts() {
@@ -4683,22 +4684,27 @@
     }
 
     // —— Finished stock (shared with panel) ——
-    function finishedQty(slug) {
+    function finishedQty(slug, city) {
+        const cityKey = city != null ? city : selectedSaleCity();
         try {
+            if (window.S35PanelAPI && window.S35PanelAPI.getFinishedQty) {
+                return window.S35PanelAPI.getFinishedQty(slug, cityKey);
+            }
             const raw = JSON.parse(localStorage.getItem(FINISHED_KEY) || 'null');
             const items = raw && raw.items ? raw.items : raw;
             if (items && items[slug]) {
-                return Number(items[slug].stock != null ? items[slug].stock : items[slug]) || 0;
+                const row = items[slug];
+                if (cityKey && cityKey !== 'all' && row.byCity && typeof row.byCity === 'object') {
+                    return Number(row.byCity[cityKey]) || 0;
+                }
+                return Number(row.stock != null ? row.stock : row) || 0;
             }
         } catch (_) {}
-        if (window.S35PanelAPI && window.S35PanelAPI.getFinishedQty) {
-            return window.S35PanelAPI.getFinishedQty(slug);
-        }
         return 0;
     }
-    function deductFinished(slug, qty) {
+    function deductFinished(slug, qty, city) {
         if (window.S35PanelAPI && window.S35PanelAPI.deductFinished) {
-            window.S35PanelAPI.deductFinished(slug, qty);
+            window.S35PanelAPI.deductFinished(slug, qty, city || selectedSaleCity());
             return;
         }
         let existing = {};
@@ -4707,9 +4713,15 @@
             existing = (raw && raw.items) ? raw.items : (raw || {});
         } catch (_) {}
         if (!existing[slug] || typeof existing[slug] !== 'object') {
-            existing[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza' };
+            existing[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza', byCity: { culiacan: 0, mochis: 0, mazatlan: 0 } };
         }
-        existing[slug].stock = Math.max(0, (Number(existing[slug].stock) || 0) - qty);
+        const row = existing[slug];
+        if (!row.byCity) row.byCity = { culiacan: Number(row.stock) || 0, mochis: 0, mazatlan: 0 };
+        const c = city || selectedSaleCity() || 'culiacan';
+        row.byCity[c] = Math.max(0, (Number(row.byCity[c]) || 0) - qty);
+        row.stock = ['culiacan', 'mochis', 'mazatlan'].reduce(function (n, k) {
+            return n + (Number(row.byCity[k]) || 0);
+        }, 0);
         localStorage.setItem(FINISHED_KEY, JSON.stringify({ items: existing, updatedAt: new Date().toISOString() }));
     }
     function saleQtyByProduct(items) {
@@ -4722,7 +4734,7 @@
         });
         return map;
     }
-    function applySaleInventoryChange(beforeItems, afterItems) {
+    function applySaleInventoryChange(beforeItems, afterItems, city) {
         const before = saleQtyByProduct(beforeItems);
         const after = saleQtyByProduct(afterItems);
         const deltas = {};
@@ -4734,12 +4746,13 @@
             if (soldDelta) deltas[slug] = -soldDelta;
         });
         if (!Object.keys(deltas).length) return;
+        const cityKey = city || selectedSaleCity() || 'culiacan';
         if (window.S35PanelAPI && window.S35PanelAPI.adjustFinishedMap) {
-            window.S35PanelAPI.adjustFinishedMap(deltas);
+            window.S35PanelAPI.adjustFinishedMap(deltas, cityKey);
         } else {
             Object.keys(deltas).forEach(function (slug) {
                 const delta = deltas[slug];
-                if (delta < 0) deductFinished(slug, -delta);
+                if (delta < 0) deductFinished(slug, -delta, cityKey);
             });
         }
         if (window.S35PanelAPI && window.S35PanelAPI.refreshStockViews) {
@@ -6847,7 +6860,7 @@
         }
 
         if (!skipInventory) {
-            applySaleInventoryChange([], ticket.items);
+            applySaleInventoryChange([], ticket.items, ticket.city || saleCityId);
         }
 
         sales.unshift(ticket);
@@ -11256,7 +11269,7 @@
             toast('Cantidad inválida: no puede superar el saldo');
             return;
         }
-        applySaleInventoryChange([], invItems);
+        applySaleInventoryChange([], invItems, sale.city);
         deliveries.forEach(function (d) {
             const line = ff.lines.filter(function (l) { return l.product === d.product; })[0];
             if (line) line.deliveredQty = (Number(line.deliveredQty) || 0) + d.qty;
