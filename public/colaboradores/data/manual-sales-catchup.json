@@ -1,7 +1,7 @@
 {
-  "version": 15,
-  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente | Ricbor notas 63989a/64001a/64002a (culiacan) + 63944a/63990a (mochis) transferencia facturado ya en Banorte; 64032a mochis por cobrar | 2026-09-23 faltantes 64071a ($360 tarj s/fac) + 64072a ($840 tarj fac Dominguez) = $1,200 hueco vs panel viejo | 64100 y 64103 ya facturadas: quitar invoicePending | 2026-10-01 SUCURSAL UNO 64105–64109 (hora −1h): 64105 Mostr efe; 64106 Eduardo Cota tarjeta fac; 64107/09 Mostr tarj perso; 64108 Materiales el Cheke efectivo sin factura",
-  "generatedAt": "2026-10-01",
+  "version": 16,
+  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente | Ricbor notas 63989a/64001a/64002a (culiacan) + 63944a/63990a (mochis) transferencia facturado ya en Banorte; 64032a mochis por cobrar | 2026-09-23 faltantes 64071a ($360 tarj s/fac) + 64072a ($840 tarj fac Dominguez) = $1,200 hueco vs panel viejo | 64100 y 64103 ya facturadas: quitar invoicePending | 2026-10-01 SUCURSAL UNO 64105–64109 (hora −1h): 64105 Mostr efe; 64106 Eduardo Cota tarjeta fac; 64107/09 Mostr tarj perso; 64108 Materiales el Cheke efectivo sin factura | 2026-10-03 SUCURSAL UNO 64119–64122 (hora −1h): 64119 Mostr efe Perla+PSP $475; 64120 Tania Regina Inzunza tarjeta fac Extra Anclaje $335; 64121 Mostr efe Perla $210; 64122 José Miguel Montoya Collantes efe fac 10×Perla $2100 = $3,120",
+  "generatedAt": "2026-10-03",
   "items": [
     {
       "id": "sale-cfdi-11667",
@@ -4288,6 +4288,187 @@
         "day": 1,
         "city": "culiacan",
         "issuedAt": "2026-10-01T10:31:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64119",
+      "folio": "HIST-R64119",
+      "createdAt": "2026-10-03T09:31:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        },
+        {
+          "product": "pegaxpress-psp",
+          "name": "Adhesivo PSP PRO+ S35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 265,
+          "qty": 1,
+          "lineTotal": 265
+        }
+      ],
+      "total": 475,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64119,
+        "noteSuffix": "a-2",
+        "note": "64119a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 3,
+        "city": "culiacan",
+        "issuedAt": "2026-10-03T10:31:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64120",
+      "folio": "HIST-R64120",
+      "createdAt": "2026-10-03T09:52:00",
+      "customer": "TANIA REGINA INZUNZA MORALES",
+      "clientId": "c_e4eb0e45e80e",
+      "client": {
+        "id": "c_e4eb0e45e80e",
+        "name": "TANIA REGINA INZUNZA MORALES",
+        "phone": "",
+        "email": "",
+        "company": "",
+        "rfc": "IUMT720226A81",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 1,
+          "lineTotal": 335
+        }
+      ],
+      "total": 335,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64120,
+        "noteSuffix": "a-3",
+        "note": "64120a",
+        "observations": "Mostr fac tarjeta Tania Regina Inzunza",
+        "year": 2026,
+        "month": 10,
+        "day": 3,
+        "city": "culiacan",
+        "issuedAt": "2026-10-03T10:52:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64121",
+      "folio": "HIST-R64121",
+      "createdAt": "2026-10-03T10:58:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64121,
+        "noteSuffix": "a-4",
+        "note": "64121a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 3,
+        "city": "culiacan",
+        "issuedAt": "2026-10-03T11:58:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64122",
+      "folio": "HIST-R64122",
+      "createdAt": "2026-10-03T11:50:00",
+      "customer": "JOSE MIGUEL MONTOYA COLLANTES",
+      "clientId": "c_7184df25f58c",
+      "client": {
+        "id": "c_7184df25f58c",
+        "name": "JOSE MIGUEL MONTOYA COLLANTES",
+        "phone": "",
+        "email": "",
+        "company": "",
+        "rfc": "",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 10,
+          "lineTotal": 2100
+        }
+      ],
+      "total": 2100,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64122,
+        "noteSuffix": "a-5",
+        "note": "64122a",
+        "observations": "Mostr fac efe Jos Miguel montoya collantes",
+        "year": 2026,
+        "month": 10,
+        "day": 3,
+        "city": "culiacan",
+        "issuedAt": "2026-10-03T12:50:00",
         "timeRule": "hora-expedida-minus-1h",
         "branch": "SUCURSAL UNO"
       },
