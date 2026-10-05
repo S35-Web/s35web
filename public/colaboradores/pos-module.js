@@ -3993,15 +3993,38 @@
             depositPool[key] = (depositPool[key] || 0) + 1;
         });
         function statementAlreadyReceived(sale, amount) {
-            const amt = roundMoney(amount).toFixed(2);
-            const keys = [
-                tesoreriaDayKey(sale && sale.createdAt) + '|' + amt,
-                tesoreriaNextDayKey(sale && sale.createdAt) + '|' + amt
-            ];
-            for (let i = 0; i < keys.length; i++) {
-                if (depositPool[keys[i]] > 0) {
-                    depositPool[keys[i]] -= 1;
+            const amt = roundMoney(amount);
+            const day0 = tesoreriaDayKey(sale && sale.createdAt);
+            const day1 = tesoreriaNextDayKey(sale && sale.createdAt);
+            let day2 = '';
+            try {
+                const d = new Date(sale && sale.createdAt);
+                if (!isNaN(d.getTime())) {
+                    day2 = tesoreriaDayKey(new Date(d.getTime() + 2 * 86400000).toISOString());
+                }
+            } catch (_) {}
+            const days = [day0, day1, day2].filter(Boolean);
+            // Exacto por día (hoy / +1 / +2) — liquidación TDC a veces cae a T+2.
+            for (let i = 0; i < days.length; i++) {
+                const exact = days[i] + '|' + amt.toFixed(2);
+                if (depositPool[exact] > 0) {
+                    depositPool[exact] -= 1;
                     return true;
+                }
+            }
+            // Tolerancia ±$0.05 (SPEI con centavos vs ticket redondo, p.ej. Humaya 175000.04).
+            const poolKeys = Object.keys(depositPool);
+            for (let i = 0; i < days.length; i++) {
+                const prefix = days[i] + '|';
+                for (let k = 0; k < poolKeys.length; k++) {
+                    const key = poolKeys[k];
+                    if (depositPool[key] <= 0 || key.indexOf(prefix) !== 0) continue;
+                    const poolAmt = Number(key.slice(prefix.length));
+                    if (!isFinite(poolAmt)) continue;
+                    if (Math.abs(poolAmt - amt) <= 0.05) {
+                        depositPool[key] -= 1;
+                        return true;
+                    }
                 }
             }
             return false;
