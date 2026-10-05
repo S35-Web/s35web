@@ -4700,10 +4700,9 @@
         #lotTicketModal.is-pending #lotTicketCancelBtn {
             display: none !important;
         }
-        /* Tras Confirmar emisión en esta sesión: solo Imprimir / tarima (+ Cerrar) */
+        /* Tras Confirmar emisión en esta sesión: Imprimir + Cancelar lote (+ Cerrar). Sin fase 2 aún. */
         #lotTicketModal.is-from-emit #lotConfirmFields,
         #lotTicketModal.is-from-emit #lotTicketConfirmBtn,
-        #lotTicketModal.is-from-emit #lotTicketCancelBtn,
         #lotTicketModal.is-from-emit #lotTicketIssueConfirmBtn,
         #lotTicketModal.is-from-emit #lotTicketIssueCancelBtn {
             display: none !important;
@@ -15713,11 +15712,20 @@
             packBlock +
             '<p class="muted" style="margin-top:16px;font-size:12px">Confirma para emitir al sistema. La mezcla se descuenta; el empaque queda reservado hasta confirmar sacos reales. Hasta entonces no se puede imprimir ni enviar a planta.</p>';
     }
+    function canVoidConfirmedLotTickets() {
+        if (window.S35Roles && typeof window.S35Roles.isFullAccess === 'function') {
+            return window.S35Roles.isFullAccess(currentRole);
+        }
+        return currentRole === 'admin';
+    }
     function syncLotTicketActionButtons() {
         const pending = !!currentLotTicketPending;
         const fromEmit = !!currentLotTicketFromEmit && !pending;
         const open = !!(currentLotTicket && currentLotTicket.status === 'open' && !pending);
+        const confirmed = !!(currentLotTicket && currentLotTicket.status === 'confirmed' && !pending);
         const showPhase2 = open && !fromEmit;
+        const showCancelOpen = open;
+        const showVoidConfirmed = confirmed && canVoidConfirmedLotTickets();
         const issued = !!(currentLotTicket && !pending);
         const modal = document.getElementById('lotTicketModal');
         const issueConfirm = document.getElementById('lotTicketIssueConfirmBtn');
@@ -15742,8 +15750,14 @@
         }
         // Fase 2: solo al abrir desde Lotes abiertos / historial (no tras emitir en esta sesión)
         if (confirmBtn) confirmBtn.hidden = !showPhase2;
-        if (cancelBtn) cancelBtn.hidden = !showPhase2;
         if (fields) fields.hidden = !showPhase2;
+        // Cancelar: lotes abiertos (también tras emitir). Anular: confirmados (admin).
+        if (cancelBtn) {
+            cancelBtn.hidden = !(showCancelOpen || showVoidConfirmed);
+            cancelBtn.innerHTML = confirmed
+                ? '<i class="fa-solid fa-trash"></i> Anular producción'
+                : '<i class="fa-solid fa-ban"></i> Cancelar lote';
+        }
     }
     function buildLotTicket(slug, lots, r, f, ver) {
         const lotMode = isPlantLot(f);
@@ -16662,33 +16676,77 @@
         alert('Lote ' + t.id + ' confirmado: +' + bagsOut + ' PT en ' + invCityLabel(confirmCity) + '.\nImprime el ticket y anexalo a la tarima.');
     });
     document.getElementById('lotTicketCancelBtn').addEventListener('click', function () {
-        if (!currentLotTicket || currentLotTicketPending || currentLotTicketFromEmit || !currentLotTicketId) return;
+        if (!currentLotTicket || currentLotTicketPending || !currentLotTicketId) return;
         const list = loadLotTickets();
         const idx = list.findIndex(function (t) { return t.id === currentLotTicketId; });
         if (idx < 0) return;
         const t = list[idx];
-        if (t.status !== 'open') return;
+        const lotCityRaw = normalizeInvCity(t.city || INV_DEFAULT_CITY);
+        const lotCity = lotCityRaw === 'all' ? INV_DEFAULT_CITY : lotCityRaw;
+
+        if (t.status === 'open') {
+            if (!confirm(
+                '¿Cancelar el lote ' + t.id + '?\nSe devolverán las materias primas de mezcla descontadas al emitir' +
+                ((t.packLines && t.packLines.length) ? ' y se liberará la reserva de empaque.' : '.')
+            )) return;
+            (t.mpLines || []).forEach(function (ln) {
+                const mat = plantById(ln.plantId);
+                if (mat) adjustMaterialStockInCity(mat, lotCity, Number(ln.amount) || 0);
+            });
+            if (t.packReserved !== false) {
+                (t.packLines || []).forEach(function (ln) {
+                    releasePlantQty(ln.plantId, Number(ln.amount) || 0, lotCity);
+                });
+            }
+            t.packReserved = false;
+            saveInventory(inventory);
+            t.status = 'cancelled';
+            t.cancelledAt = new Date().toISOString();
+            list[idx] = t;
+            saveLotTickets(list);
+            refreshStockViews();
+            closeLotTicketModal();
+            panelToast('Lote ' + t.id + ' cancelado');
+            return;
+        }
+
+        if (t.status !== 'confirmed') return;
+        if (!canVoidConfirmedLotTickets()) {
+            alert('Solo un administrador puede anular un lote ya confirmado.');
+            return;
+        }
+        const bags = Number(t.bagsOut) || 0;
         if (!confirm(
-            '¿Cancelar el lote ' + t.id + '?\nSe devolverán las materias primas de mezcla descontadas al emitir' +
-            ((t.packLines && t.packLines.length) ? ' y se liberará la reserva de empaque.' : '.')
+            '¿Anular la producción ' + t.id + '?\n\n' +
+            'Se revertirá el inventario:\n' +
+            '• −' + bags + ' PT de ' + (t.name || t.product) + ' (' + invCityLabel(lotCity) + ')\n' +
+            '• Devolver empaque consumido\n' +
+            '• Devolver materias primas de mezcla\n\n' +
+            'El lote quedará como Cancelado en el historial.'
         )) return;
+        if (bags > 0 && t.product) {
+            const finDelta = {};
+            finDelta[t.product] = -bags;
+            adjustFinishedMap(finDelta, lotCity);
+        }
+        (t.packConsumed || []).forEach(function (pc) {
+            const mat = plantById(pc.plantId);
+            if (mat) adjustMaterialStockInCity(mat, lotCity, Number(pc.amount) || 0);
+        });
         (t.mpLines || []).forEach(function (ln) {
             const mat = plantById(ln.plantId);
-            if (mat) mat.stock = (Number(mat.stock) || 0) + (Number(ln.amount) || 0);
+            if (mat) adjustMaterialStockInCity(mat, lotCity, Number(ln.amount) || 0);
         });
-        if (t.packReserved !== false) {
-            (t.packLines || []).forEach(function (ln) {
-                releasePlantQty(ln.plantId, Number(ln.amount) || 0);
-            });
-        }
-        t.packReserved = false;
         saveInventory(inventory);
         t.status = 'cancelled';
         t.cancelledAt = new Date().toISOString();
+        t.voidedFromConfirmed = true;
+        t.notes = (t.notes ? t.notes + ' · ' : '') + 'Anulado (producción accidental / corrección)';
         list[idx] = t;
         saveLotTickets(list);
         refreshStockViews();
         closeLotTicketModal();
+        panelToast('Producción ' + t.id + ' anulada · inventario revertido');
     });
 
     fillProdProducts();
