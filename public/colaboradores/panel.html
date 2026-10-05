@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
     <title>S-35 | Colaboradores</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,6 +37,10 @@
             --font: "DM Sans", "Helvetica Neue", sans-serif;
             --font-display: "Instrument Serif", Georgia, serif;
             --shadow-modal: 0 24px 64px rgba(0,0,0,.12);
+            --sat: env(safe-area-inset-top, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
+            --sar: env(safe-area-inset-right, 0px);
         }
         [data-theme="dark"] {
             --bg: #0a0a0a;
@@ -61,7 +65,11 @@
             --shadow-modal: 0 24px 64px rgba(0,0,0,.55);
         }
         * { box-sizing: border-box; }
-        html, body { margin: 0; height: 100%; }
+        html, body {
+            margin: 0;
+            height: 100%;
+            overflow-x: clip;
+        }
         body {
             font-family: var(--font);
             font-weight: 400;
@@ -78,6 +86,8 @@
             display: grid;
             grid-template-columns: var(--sidebar-w) 1fr;
             min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: clip;
         }
 
         /* —— Sidebar rail —— */
@@ -85,6 +95,7 @@
             position: sticky;
             top: 0;
             height: 100vh;
+            height: 100dvh;
             border-right: 1px solid var(--border);
             background: var(--panel);
             display: flex;
@@ -92,6 +103,9 @@
             align-items: center;
             padding: 12px 0;
             z-index: 40;
+        }
+        .sidebar-scrim {
+            display: none;
         }
         .sidebar-logo {
             width: 36px;
@@ -195,24 +209,28 @@
         /* —— Main column —— */
         .main {
             display: grid;
-            grid-template-rows: var(--topbar-h) 1fr;
+            grid-template-rows: calc(var(--topbar-h) + var(--sat)) 1fr;
             min-width: 0;
             min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: clip;
         }
         .topbar {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 0 20px;
+            padding: var(--sat) max(20px, var(--sar)) 0 max(20px, var(--sal));
             border-bottom: 1px solid var(--border);
             background: var(--panel);
             position: sticky;
             top: 0;
             z-index: 30;
+            min-width: 0;
         }
         .menu-btn {
             display: none;
             width: 36px; height: 36px;
+            flex: 0 0 auto;
             place-items: center;
             border: 1px solid var(--border);
             background: transparent;
@@ -222,6 +240,7 @@
         }
         .global-search {
             flex: 1;
+            min-width: 0;
             max-width: 420px;
             height: 34px;
             display: flex;
@@ -409,6 +428,8 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            flex: 0 0 auto;
+            min-width: 0;
         }
         .sync-chip {
             font-size: 11px;
@@ -419,6 +440,14 @@
             padding: 4px 10px;
             white-space: nowrap;
             user-select: none;
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            max-width: 110px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .sync-chip.is-ok { color: #1a7f37; border-color: rgba(26, 127, 55, 0.35); }
         .sync-chip.is-err { color: var(--danger); border-color: rgba(180, 40, 40, 0.35); }
@@ -427,6 +456,7 @@
             position: relative;
             width: 34px;
             height: 34px;
+            flex: 0 0 auto;
             display: inline-grid;
             place-items: center;
             border: 1px solid var(--border);
@@ -714,7 +744,8 @@
             max-width: none;
             margin: -24px -20px -48px;
             padding: 0;
-            min-height: calc(100vh - var(--topbar-h, 52px));
+            min-height: calc(100vh - var(--topbar-h, 52px) - var(--sat));
+            min-height: calc(100dvh - var(--topbar-h, 52px) - var(--sat));
             flex-direction: column;
             overflow: hidden;
         }
@@ -1101,7 +1132,8 @@
         #venta.section.active {
             display: flex;
             flex-direction: column;
-            min-height: calc(100vh - var(--topbar-h) - 24px);
+            min-height: calc(100vh - var(--topbar-h) - var(--sat) - 24px);
+            min-height: calc(100dvh - var(--topbar-h) - var(--sat) - 24px);
             margin: -8px -4px 0;
         }
         .content:has(#venta.active) {
@@ -1778,7 +1810,8 @@
         /* —— Mensajes: bandeja 3 paneles (lista | lector | copiloto) —— */
         #messages.section-mail {
             flex-direction: column;
-            min-height: calc(100vh - var(--topbar-h) - 16px);
+            min-height: calc(100vh - var(--topbar-h) - var(--sat) - 16px);
+            min-height: calc(100dvh - var(--topbar-h) - var(--sat) - 16px);
             gap: 0;
         }
         #messages.section-mail.section.active { display: flex; }
@@ -3267,20 +3300,137 @@
             .content { padding: 20px 16px 40px; }
         }
         @media (max-width: 760px) {
+            html, body, .app, .main { overflow-x: clip; }
             .app { grid-template-columns: 1fr; }
-            .menu-btn { display: grid; }
+            .menu-btn {
+                display: grid;
+                width: 44px;
+                height: 44px;
+            }
+            .sidebar-scrim {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(10, 10, 10, 0.45);
+                z-index: 35;
+                border: none;
+                padding: 0;
+                margin: 0;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .sidebar-scrim.is-open { display: block; }
             .sidebar {
                 display: none;
                 position: fixed;
                 left: 0; top: 0; bottom: 0;
-                width: var(--sidebar-w);
+                width: calc(var(--sidebar-w) + var(--sal));
+                height: 100vh;
+                height: 100dvh;
+                padding-top: max(12px, var(--sat));
+                padding-bottom: max(12px, var(--sab));
+                padding-left: var(--sal);
+                z-index: 40;
             }
-            .sidebar.open { display: flex; box-shadow: 8px 0 32px rgba(0,0,0,.18); }
+            .sidebar.open {
+                display: flex;
+                box-shadow: 8px 0 32px rgba(0,0,0,.18);
+                width: min(220px, calc(100vw - 56px));
+                align-items: stretch;
+            }
+            .sidebar.open .sidebar-logo {
+                margin-left: 14px;
+                margin-right: auto;
+            }
+            .sidebar.open .nav {
+                align-items: stretch;
+                padding: 0 10px;
+                gap: 4px;
+            }
+            .sidebar.open .nav a {
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                width: auto;
+                min-width: 0;
+                height: 44px;
+                gap: 12px;
+                padding: 0 12px;
+                font-size: 14px;
+                color: var(--muted);
+            }
+            .sidebar.open .nav a.active { color: var(--text); }
+            .sidebar.open .nav a::after {
+                content: attr(title);
+                font-size: 13.5px;
+                font-weight: 500;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .sidebar.open .sidebar-foot {
+                flex-direction: row;
+                justify-content: flex-start;
+                padding: 8px 14px max(8px, var(--sab));
+                gap: 8px;
+            }
+            .sidebar.open .iconbtn {
+                width: 44px;
+                height: 44px;
+            }
+            .topbar {
+                gap: 8px;
+                padding-left: max(12px, var(--sal));
+                padding-right: max(12px, var(--sar));
+            }
+            .global-search {
+                max-width: none;
+                min-width: 0;
+                height: 40px;
+            }
             .global-search kbd { display: none; }
+            .global-search input { font-size: 16px; }
+            .topbar-actions { gap: 4px; }
+            .topbar-msg-btn {
+                width: 44px;
+                height: 44px;
+            }
+            .sync-chip {
+                max-width: 64px;
+            }
             .user-chip { display: none; }
             .kpis { grid-template-columns: 1fr; }
             .kpi { border-right: none !important; border-bottom: 1px solid var(--border); }
             .kpi:last-child { border-bottom: none; }
+            /* Evita zoom iOS al enfocar (Safari <16px) */
+            input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]),
+            select,
+            textarea {
+                font-size: 16px !important;
+            }
+            body.drawer-open { overflow: hidden; }
+        }
+        @media (max-width: 480px) {
+            .sync-chip {
+                width: 32px;
+                height: 32px;
+                padding: 0;
+                max-width: none;
+                border-radius: 999px;
+                font-size: 0;
+                line-height: 0;
+                color: transparent;
+            }
+            .sync-chip::after {
+                content: '';
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--muted);
+            }
+            .sync-chip.is-ok::after { background: #1a7f37; }
+            .sync-chip.is-err::after { background: var(--danger); }
+            .sync-chip.is-pending::after { background: var(--muted); }
         }
 
         /* —— POS cart line items —— */
@@ -3808,7 +3958,11 @@
         .btn.primary:disabled { opacity: .45; cursor: not-allowed; }
         .nav a[data-section][hidden] { display: none !important; }
         .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            position: fixed;
+            bottom: max(20px, var(--sab));
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: calc(100vw - 32px - var(--sal) - var(--sar));
             background: var(--text); color: var(--bg); padding: 10px 16px;
             border-radius: var(--radius-sm); font-size: 13px; z-index: 100;
             opacity: 0; pointer-events: none; transition: opacity .2s, background .2s;
@@ -6929,6 +7083,7 @@
 </head>
 <body>
     <div class="app">
+        <button type="button" class="sidebar-scrim" id="sidebarScrim" aria-label="Cerrar menú" tabindex="-1"></button>
         <aside class="sidebar" id="sidebar">
             <a class="sidebar-logo" href="/" title="S-35" aria-label="Sitio S-35">
                 <img src="/Assets/Logotipo Principal.png" alt="S-35">
@@ -6955,7 +7110,7 @@
 
         <div class="main">
             <header class="topbar">
-                <button class="menu-btn" id="menuBtn" type="button" aria-label="Menú"><i class="fa-solid fa-bars"></i></button>
+                <button class="menu-btn" id="menuBtn" type="button" aria-label="Menú" aria-expanded="false" aria-controls="sidebar"><i class="fa-solid fa-bars"></i></button>
                 <label class="global-search" for="globalSearch">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input id="globalSearch" type="search" placeholder="Buscar, @cliente, /cortes…" autocomplete="off" readonly>
@@ -8914,34 +9069,48 @@
     (function wireSyncStatusChip() {
         const chip = document.getElementById('syncStatusChip');
         if (!chip) return;
+        function isCompactSync() {
+            try { return window.matchMedia && window.matchMedia('(max-width: 480px)').matches; }
+            catch (_) { return false; }
+        }
         function paint(detail) {
             const d = detail || (window.S35PanelSync && window.S35PanelSync.getStatus && window.S35PanelSync.getStatus()) || {};
+            const compact = isCompactSync();
             chip.classList.remove('is-ok', 'is-err', 'is-pending');
             if (d.lastError || d.ok === false) {
                 chip.classList.add('is-err');
-                chip.textContent = 'Sync error';
+                chip.textContent = compact ? '·' : 'Sync error';
                 chip.title = String(d.lastError || 'Error de sincronización');
+                chip.setAttribute('aria-label', chip.title);
                 return;
             }
             if (!d.bootDone) {
                 chip.classList.add('is-pending');
-                chip.textContent = 'Sync…';
+                chip.textContent = compact ? '·' : 'Sync…';
                 chip.title = 'Sincronizando con el servidor';
+                chip.setAttribute('aria-label', chip.title);
                 return;
             }
             if (d.pending && d.pending.length) {
                 chip.classList.add('is-pending');
-                chip.textContent = 'Subiendo…';
+                chip.textContent = compact ? '·' : 'Subiendo…';
                 chip.title = 'Pendiente: ' + d.pending.join(', ');
+                chip.setAttribute('aria-label', chip.title);
                 return;
             }
             chip.classList.add('is-ok');
-            chip.textContent = 'En nube';
+            chip.textContent = compact ? '·' : 'En nube';
             chip.title = d.lastPushAt
                 ? ('Última subida: ' + d.lastPushAt)
                 : 'Datos sincronizados entre computadoras';
+            chip.setAttribute('aria-label', chip.title);
         }
         window.addEventListener('s35-sync-status', function (e) { paint(e.detail); });
+        try {
+            const mq = window.matchMedia('(max-width: 480px)');
+            if (mq.addEventListener) mq.addEventListener('change', function () { paint(); });
+            else if (mq.addListener) mq.addListener(function () { paint(); });
+        } catch (_) {}
         paint();
         setInterval(paint, 4000);
     })();
@@ -9646,8 +9815,31 @@
     }
 
     const sidebar = document.getElementById('sidebar');
-    document.getElementById('menuBtn').addEventListener('click', function () {
-        sidebar.classList.toggle('open');
+    const sidebarScrim = document.getElementById('sidebarScrim');
+    const menuBtn = document.getElementById('menuBtn');
+    function setDrawerOpen(open) {
+        const next = !!open;
+        if (sidebar) sidebar.classList.toggle('open', next);
+        if (sidebarScrim) {
+            sidebarScrim.classList.toggle('is-open', next);
+            sidebarScrim.setAttribute('aria-hidden', next ? 'false' : 'true');
+        }
+        document.body.classList.toggle('drawer-open', next);
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', next ? 'true' : 'false');
+    }
+    function closeDrawer() { setDrawerOpen(false); }
+    if (menuBtn) {
+        menuBtn.addEventListener('click', function () {
+            setDrawerOpen(!(sidebar && sidebar.classList.contains('open')));
+        });
+    }
+    if (sidebarScrim) {
+        sidebarScrim.addEventListener('click', closeDrawer);
+    }
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
+            closeDrawer();
+        }
     });
 
     const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'dinero', 'clients', 'cobranza', 'precompras', 'promos', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
@@ -9753,7 +9945,7 @@
                 || (id === 'precompras' && sec === 'clients')
             );
         });
-        sidebar.classList.remove('open');
+        closeDrawer();
         if (id === 'products' && typeof openProductHub === 'function') {
             if (legacyRecipe || opts.slug) {
                 openProductHub(legacyRecipe || opts.slug, {
