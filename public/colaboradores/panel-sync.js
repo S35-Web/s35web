@@ -1,0 +1,973 @@
+/**
+ * S35 Panel cloud sync — localStorage ↔ /api/panel-state (Mongo).
+ *
+ * Estrategia: last-write-wins por `updatedAt` en documentos escalares.
+ * Colecciones (ventas, gastos, lotes, etc.): unión por id para no perder
+ * cambios de otro dispositivo / pestaña.
+ * localStorage sigue siendo caché/offline; la nube es fuente de verdad cuando responde.
+ * Clientes POS siguen en /api/clients (no se duplican aquí).
+ */
+(function (global) {
+    'use strict';
+
+    var SYNC_KEYS = [
+        's35_plant_inventory',
+        's35_plant_families',
+        's35_finished_stock',
+        's35_plant_formulas_v3',
+        's35_production_lots',
+        's35_compra_tickets',
+        's35_pos_prices_v4',
+        's35_pos_sales',
+        's35_caja_gastos_v1',
+        's35_tesoreria_movs_v1',
+        's35_sale_edits_v1',
+        's35_promo_codes_v1',
+        's35_product_families',
+        's35_product_family_overrides',
+        's35_product_catalog_v1'
+        // Flags locales (no cloud): s35_plant_unit_costs_flag_v1, s35_plant_count_*, s35_hist_sales_imported_*
+    ];
+
+    /** Colecciones { items: [] } que se fusionan por id (cliente + servidor). */
+    var MERGE_ITEMS_KEYS = {
+        s35_pos_sales: true,
+        s35_caja_gastos_v1: true,
+        s35_tesoreria_movs_v1: true,
+        s35_production_lots: true,
+        s35_compra_tickets: true,
+        s35_promo_codes_v1: true
+    };
+
+    /** Mapas { byId: {} } fusionados por clave. */
+    var MERGE_MAP_KEYS = {
+        s35_sale_edits_v1: true
+    };
+
+    /**
+     * Fórmulas { items: { [slug]: formula } }: unión por producto.
+     * Gana la que tiene dosis de MP; si ambas (o ninguna), la más reciente por editedAt.
+     * Evita que un blob LWW vacío/seed pise ediciones (p. ej. Microconcreto Blanco Pulido).
+     */
+    var MERGE_FORMULAS_KEY = 's35_plant_formulas_v3';
+
+    /** Catálogo panel { names, added[] }: unión por slug (altas desde varios dispositivos). */
+    var MERGE_CATALOG_KEY = 's35_product_catalog_v1';
+
+    var META_KEY = 's35_panel_sync_meta_v1';
+    var RELOAD_FLAG = 's35_panel_sync_reloaded';
+    var DEBOUNCE_MS = 700;
+    var API = '/api/panel-state';
+
+    var syncKeySet = {};
+    SYNC_KEYS.forEach(function (k) { syncKeySet[k] = true; });
+
+    var suppressWriteHook = false;
+    var bootDone = false;
+    var bootPromise = null;
+    var pendingKeys = {};
+    var pushTimer = null;
+    var pushing = false;
+    var pushAgain = false;
+    var status = {
+        ok: null,
+        lastPullAt: null,
+        lastPushAt: null,
+        lastError: null,
+        appliedRemote: false
+    };
+
+    function emitStatus() {
+        try {
+            if (typeof window !== 'undefined' && window.dispatchEvent) {
+                window.dispatchEvent(new CustomEvent('s35-sync-status', {
+                    detail: Object.assign({}, status, {
+                        bootDone: bootDone,
+                        pending: Object.keys(pendingKeys)
+                    })
+                }));
+            }
+        } catch (_) {}
+    }
+
+    function getToken() {
+        try { return localStorage.getItem('s35_admin_token') || ''; } catch (_) { return ''; }
+    }
+
+    function authHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + getToken()
+        };
+    }
+
+    function loadMeta() {
+        try {
+            var raw = JSON.parse(localStorage.getItem(META_KEY) || '{}');
+            return raw && typeof raw === 'object' ? raw : {};
+        } catch (_) {
+            return {};
+        }
+    }
+
+    function saveMeta(meta) {
+        try {
+            localStorage.setItem(META_KEY, JSON.stringify(meta || {}));
+        } catch (_) {}
+    }
+
+    function touchMeta(key, updatedAt) {
+        var meta = loadMeta();
+        meta[key] = updatedAt || new Date().toISOString();
+        saveMeta(meta);
+        return meta[key];
+    }
+
+    function metaFor(key) {
+        var meta = loadMeta();
+        return meta[key] || null;
+    }
+
+    function cmpIso(a, b) {
+        var ta = Date.parse(a || '') || 0;
+        var tb = Date.parse(b || '') || 0;
+        return ta - tb;
+    }
+
+    function isHistoricalImportSale(row) {
+        if (!row) return false;
+        if (row.user === 'import-historico') return true;
+        var src = row.meta && row.meta.source;
+        return src === 'old-panel';
+    }
+
+    function itemRecency(row) {
+        if (!row || typeof row !== 'object') return 0;
+        // createdAt no es sello de edición: ver api/panel-state.js.
+        var stamp = row.editedAt || row.updatedAt;
+        if (!stamp || stamp === row.createdAt) return 0;
+        return Date.parse(stamp) || 0;
+    }
+
+    function itemsRecencyFingerprint(list) {
+        return (list || []).map(function (r) {
+            return String(r && r.id != null ? r.id : '') + ':' + itemRecency(r) + ':' + (r && r.deleted ? '1' : '0');
+        }).join('|');
+    }
+
+    function mapRecencyFingerprint(val) {
+        var map = (val && val.byId && typeof val.byId === 'object') ? val.byId : {};
+        return Object.keys(map).sort().map(function (id) {
+            return id + ':' + itemRecency(map[id]) + ':' + (map[id] && map[id].deleted ? '1' : '0');
+        }).join('|');
+    }
+
+    function extractItems(value) {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+        if (value && Array.isArray(value.items)) return value.items;
+        return [];
+    }
+
+    function mergeItemLists(a, b, dropHistorical) {
+        var byId = Object.create(null);
+        var order = [];
+        function consider(row) {
+            if (!row || typeof row !== 'object') return;
+            if (dropHistorical && isHistoricalImportSale(row) && !row.editedAt && !row.deleted) return;
+            var id = row.id != null ? String(row.id) : (row.code != null ? String(row.code) : '');
+            if (!id) return;
+            if (!byId[id]) {
+                byId[id] = row;
+                order.push(id);
+                return;
+            }
+            var prev = byId[id];
+            var tr = itemRecency(row);
+            var tp = itemRecency(prev);
+            if (tr > tp) {
+                byId[id] = row;
+                return;
+            }
+            if (tr < tp) return;
+            // Empate: tombstone de borrado gana (no resucitar).
+            if (row.deleted && !prev.deleted) byId[id] = row;
+        }
+        (a || []).forEach(consider);
+        (b || []).forEach(consider);
+        return order.map(function (id) { return byId[id]; });
+    }
+
+    function mergeItemsValue(key, localVal, remoteVal, updatedAt) {
+        var merged = mergeItemLists(
+            extractItems(localVal),
+            extractItems(remoteVal),
+            key === 's35_pos_sales'
+        );
+        var base = (localVal && typeof localVal === 'object' && !Array.isArray(localVal))
+            ? localVal
+            : ((remoteVal && typeof remoteVal === 'object' && !Array.isArray(remoteVal)) ? remoteVal : {});
+        return Object.assign({}, base, { items: merged, updatedAt: updatedAt });
+    }
+
+    function mergeByIdMaps(localVal, remoteVal, updatedAt) {
+        var localMap = (localVal && localVal.byId && typeof localVal.byId === 'object') ? localVal.byId : {};
+        var remoteMap = (remoteVal && remoteVal.byId && typeof remoteVal.byId === 'object') ? remoteVal.byId : {};
+        var outMap = Object.assign({}, remoteMap);
+        Object.keys(localMap).forEach(function (id) {
+            var a = outMap[id];
+            var b = localMap[id];
+            if (!a) {
+                outMap[id] = b;
+                return;
+            }
+            if (!b) return;
+            outMap[id] = itemRecency(b) >= itemRecency(a) ? Object.assign({}, a, b) : Object.assign({}, b, a);
+        });
+        var base = (localVal && typeof localVal === 'object') ? localVal : (remoteVal || {});
+        return Object.assign({}, base, { byId: outMap, updatedAt: updatedAt });
+    }
+
+    function isPackagingFormulaLine(it) {
+        if (!it) return false;
+        if (String(it.role || '') === 'Empaque') return true;
+        var id = String(it.plantId || '');
+        return id.indexOf('saco-') === 0 || id.indexOf('cubeta-') === 0 || id.indexOf('bote-') === 0;
+    }
+
+    function formulaHasMaterialDose(f) {
+        if (!f) return false;
+        var lists = [];
+        if (Array.isArray(f.items)) lists.push(f.items);
+        (f.versions || []).forEach(function (ver) {
+            if (ver && Array.isArray(ver.items)) lists.push(ver.items);
+        });
+        for (var i = 0; i < lists.length; i++) {
+            for (var j = 0; j < lists[i].length; j++) {
+                var it = lists[i][j];
+                if (!it || isPackagingFormulaLine(it)) continue;
+                if (Number(it.amount) > 0) return true;
+            }
+        }
+        return false;
+    }
+
+    /** Nº máximo de líneas MP (sin empaque) en items o versiones; sirve aunque amount sea 0. */
+    function formulaMaterialLineCount(f) {
+        if (!f) return 0;
+        function count(list) {
+            var n = 0;
+            (list || []).forEach(function (it) {
+                if (it && it.plantId && !isPackagingFormulaLine(it)) n += 1;
+            });
+            return n;
+        }
+        var max = count(f.items);
+        (f.versions || []).forEach(function (ver) {
+            max = Math.max(max, count(ver && ver.items));
+        });
+        return max;
+    }
+
+    function formulaRecency(f) {
+        if (!f || typeof f !== 'object') return 0;
+        return Date.parse(f.editedAt || f.updatedAt || '') || 0;
+    }
+
+    function extractFormulaMap(value) {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+        if (value.items && typeof value.items === 'object' && !Array.isArray(value.items)) return value.items;
+        // Legado: el valor era el mapa de slugs directo.
+        var keys = Object.keys(value).filter(function (k) {
+            return k !== 'updatedAt' && k !== 'items' && value[k] && typeof value[k] === 'object';
+        });
+        if (!keys.length) return {};
+        var looksLikeFormula = keys.some(function (k) {
+            var f = value[k];
+            return f && (Array.isArray(f.items) || Array.isArray(f.versions) || f.mode);
+        });
+        if (!looksLikeFormula) return {};
+        var out = {};
+        keys.forEach(function (k) { out[k] = value[k]; });
+        return out;
+    }
+
+    /**
+     * Por slug: dosis (>0) gana a vacío; si ninguna tiene dosis, gana el esqueleto
+     * con más líneas MP (aunque en 0 kg); si empatan, editedAt más reciente.
+     */
+    function preferFormula(a, b) {
+        if (!a) return b;
+        if (!b) return a;
+        var aHas = formulaHasMaterialDose(a);
+        var bHas = formulaHasMaterialDose(b);
+        if (aHas && !bHas) return a;
+        if (bHas && !aHas) return b;
+        if (!aHas && !bHas) {
+            var aLines = formulaMaterialLineCount(a);
+            var bLines = formulaMaterialLineCount(b);
+            if (aLines && !bLines) return a;
+            if (bLines && !aLines) return b;
+        }
+        return formulaRecency(b) >= formulaRecency(a) ? b : a;
+    }
+
+    function mergeFormulasValue(localVal, remoteVal, updatedAt) {
+        var localMap = extractFormulaMap(localVal);
+        var remoteMap = extractFormulaMap(remoteVal);
+        var outMap = {};
+        var seen = {};
+        Object.keys(localMap).forEach(function (slug) {
+            outMap[slug] = preferFormula(localMap[slug], remoteMap[slug]);
+            seen[slug] = true;
+        });
+        Object.keys(remoteMap).forEach(function (slug) {
+            if (seen[slug]) return;
+            outMap[slug] = remoteMap[slug];
+        });
+        var base = (localVal && typeof localVal === 'object' && !Array.isArray(localVal))
+            ? localVal
+            : ((remoteVal && typeof remoteVal === 'object' && !Array.isArray(remoteVal)) ? remoteVal : {});
+        return Object.assign({}, base, { items: outMap, updatedAt: updatedAt });
+    }
+
+    function catalogItemRecency(item) {
+        if (!item || typeof item !== 'object') return 0;
+        return Date.parse(item.updatedAt || item.createdAt || '') || 0;
+    }
+
+    function preferCatalogItem(a, b) {
+        if (!a) return b;
+        if (!b) return a;
+        var ta = catalogItemRecency(a);
+        var tb = catalogItemRecency(b);
+        if (tb > ta) return b;
+        if (ta > tb) return a;
+        if (b.deleted && !a.deleted) return b;
+        if (a.deleted && !b.deleted) return a;
+        return b;
+    }
+
+    function mergeProductCatalogValue(localVal, remoteVal, updatedAt) {
+        var local = localVal && typeof localVal === 'object' && !Array.isArray(localVal) ? localVal : {};
+        var remote = remoteVal && typeof remoteVal === 'object' && !Array.isArray(remoteVal) ? remoteVal : {};
+        var bySlug = Object.create(null);
+        function consider(item) {
+            if (!item || !item.slug) return;
+            var slug = String(item.slug);
+            bySlug[slug] = preferCatalogItem(bySlug[slug], item);
+        }
+        (Array.isArray(local.added) ? local.added : []).forEach(consider);
+        (Array.isArray(remote.added) ? remote.added : []).forEach(consider);
+        var added = Object.keys(bySlug).map(function (k) { return bySlug[k]; });
+        var names = Object.assign({}, local.names || {}, remote.names || {});
+        added.forEach(function (item) {
+            if (!item || item.deleted) return;
+            if (item.name) names[item.slug] = item.name;
+        });
+        var images = Object.create(null);
+        function considerImage(slug, entry) {
+            if (!slug || entry == null) return;
+            var key = String(slug);
+            var nextEntry = entry;
+            if (typeof entry === 'string') nextEntry = { url: entry, updatedAt: '' };
+            if (!nextEntry || !nextEntry.url) return;
+            var prevEntry = images[key];
+            if (!prevEntry) {
+                images[key] = nextEntry;
+                return;
+            }
+            var ta = Date.parse(prevEntry.updatedAt || '') || 0;
+            var tb = Date.parse(nextEntry.updatedAt || '') || 0;
+            images[key] = tb >= ta ? nextEntry : prevEntry;
+        }
+        Object.keys(local.images || {}).forEach(function (slug) { considerImage(slug, local.images[slug]); });
+        Object.keys(remote.images || {}).forEach(function (slug) { considerImage(slug, remote.images[slug]); });
+        added.forEach(function (item) {
+            if (!item || item.deleted || !item.image) return;
+            considerImage(item.slug, { url: item.image, updatedAt: item.updatedAt || item.createdAt || '' });
+        });
+        return { names: names, added: added, images: images, updatedAt: updatedAt };
+    }
+
+    function catalogFingerprint(val) {
+        var added = (val && Array.isArray(val.added)) ? val.added.slice() : [];
+        added.sort(function (a, b) {
+            return String(a && a.slug || '').localeCompare(String(b && b.slug || ''));
+        });
+        var names = (val && val.names && typeof val.names === 'object') ? val.names : {};
+        var nameKeys = Object.keys(names).sort();
+        var images = (val && val.images && typeof val.images === 'object') ? val.images : {};
+        var imageKeys = Object.keys(images).sort();
+        return added.map(function (item) {
+            return String(item && item.slug || '') + ':' + catalogItemRecency(item) + ':' +
+                (item && item.deleted ? '1' : '0') + ':' + String(item && item.name || '');
+        }).join('|') + '#' + nameKeys.map(function (k) {
+            return k + '=' + String(names[k] || '');
+        }).join('|') + '#' + imageKeys.map(function (k) {
+            var entry = images[k];
+            var url = typeof entry === 'string' ? entry : (entry && entry.url) || '';
+            var ts = typeof entry === 'object' && entry ? (entry.updatedAt || '') : '';
+            return k + '=' + String(url).slice(0, 80) + '@' + ts;
+        }).join('|');
+    }
+
+    function catalogActiveCount(val) {
+        if (!val || !Array.isArray(val.added)) return 0;
+        return val.added.filter(function (item) { return item && item.slug && !item.deleted; }).length;
+    }
+
+    function formulasMapChanged(a, b) {
+        var am = extractFormulaMap(a);
+        var bm = extractFormulaMap(b);
+        var aks = Object.keys(am).sort();
+        var bks = Object.keys(bm).sort();
+        if (aks.length !== bks.length) return true;
+        for (var i = 0; i < aks.length; i++) {
+            if (aks[i] !== bks[i]) return true;
+            if (preferFormula(am[aks[i]], bm[aks[i]]) !== am[aks[i]]) return true;
+            if (formulaHasMaterialDose(am[aks[i]]) !== formulaHasMaterialDose(bm[aks[i]])) return true;
+        }
+        return false;
+    }
+
+    function maxIso(a, b) {
+        return cmpIso(a, b) >= 0 ? (a || b) : (b || a);
+    }
+
+    /** Compara payloads ignorando updatedAt de envoltura (evita “cambios” solo de marca). */
+    function stripWrapperUpdatedAt(value) {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+        var copy = Object.assign({}, value);
+        delete copy.updatedAt;
+        return copy;
+    }
+
+    function valuesEqual(a, b) {
+        try {
+            return JSON.stringify(stripWrapperUpdatedAt(a)) === JSON.stringify(stripWrapperUpdatedAt(b));
+        } catch (_) {
+            return false;
+        }
+    }
+
+    /** Aviso de datos remotos aplicados → la UI hidrata sin location.reload. */
+    function notifyApplied(keys) {
+        status.appliedRemote = true;
+        status.appliedKeys = keys || [];
+        emitStatus();
+        status.appliedRemote = false;
+        status.appliedKeys = [];
+    }
+
+    /** Fusiona local+remoto para claves de colección; null = usar LWW. */
+    function mergeStoreValues(key, localVal, remoteVal, localTs, remoteTs) {
+        if (MERGE_ITEMS_KEYS[key]) {
+            var ts = maxIso(localTs, remoteTs) || new Date().toISOString();
+            var merged = mergeItemsValue(key, localVal, remoteVal, ts);
+            var localN = extractItems(localVal).length;
+            var remoteN = extractItems(remoteVal).length;
+            var mergedN = extractItems(merged).length;
+            // Si la unión aportó ítems que faltaban en el "ganador" LWW, forzar push.
+            var needPush = mergedN > remoteN || (mergedN > localN && cmpIso(localTs, remoteTs) <= 0);
+            var needApply = itemsRecencyFingerprint(extractItems(localVal)) !==
+                itemsRecencyFingerprint(extractItems(merged));
+            if (needPush && mergedN > Math.max(localN, remoteN)) {
+                ts = new Date().toISOString();
+                merged = Object.assign({}, merged, { updatedAt: ts });
+            }
+            return { value: merged, updatedAt: ts, applyLocal: needApply, push: needPush || cmpIso(localTs, remoteTs) > 0 };
+        }
+        if (MERGE_MAP_KEYS[key]) {
+            var tsM = maxIso(localTs, remoteTs) || new Date().toISOString();
+            var mergedM = mergeByIdMaps(localVal, remoteVal, tsM);
+            var localKeys = Object.keys((localVal && localVal.byId) || {});
+            var remoteKeys = Object.keys((remoteVal && remoteVal.byId) || {});
+            var mergedKeys = Object.keys((mergedM && mergedM.byId) || {});
+            var needPushM = mergedKeys.length > remoteKeys.length ||
+                mapRecencyFingerprint(localVal) !== mapRecencyFingerprint(mergedM);
+            var needApplyM = mapRecencyFingerprint(localVal) !== mapRecencyFingerprint(mergedM);
+            if (needPushM && mergedKeys.length > Math.max(localKeys.length, remoteKeys.length)) {
+                tsM = new Date().toISOString();
+                mergedM = Object.assign({}, mergedM, { updatedAt: tsM });
+            }
+            return {
+                value: mergedM,
+                updatedAt: tsM,
+                applyLocal: needApplyM,
+                push: needPushM || cmpIso(localTs, remoteTs) > 0
+            };
+        }
+        if (key === MERGE_FORMULAS_KEY) {
+            var tsF = maxIso(localTs, remoteTs) || new Date().toISOString();
+            var mergedF = mergeFormulasValue(localVal, remoteVal, tsF);
+            var needApplyF = formulasMapChanged(localVal, mergedF);
+            var needPushF = formulasMapChanged(remoteVal, mergedF) || cmpIso(localTs, remoteTs) > 0;
+            if (needPushF && formulasMapChanged(remoteVal, mergedF) && cmpIso(localTs, remoteTs) <= 0) {
+                tsF = new Date().toISOString();
+                mergedF = Object.assign({}, mergedF, { updatedAt: tsF });
+            }
+            return {
+                value: mergedF,
+                updatedAt: tsF,
+                applyLocal: needApplyF,
+                push: needPushF
+            };
+        }
+        if (key === MERGE_CATALOG_KEY) {
+            var tsC = maxIso(localTs, remoteTs) || new Date().toISOString();
+            var mergedC = mergeProductCatalogValue(localVal, remoteVal, tsC);
+            var needApplyC = catalogFingerprint(localVal) !== catalogFingerprint(mergedC);
+            var needPushC = catalogFingerprint(remoteVal) !== catalogFingerprint(mergedC) ||
+                cmpIso(localTs, remoteTs) > 0;
+            if (needPushC && catalogActiveCount(mergedC) > catalogActiveCount(remoteVal) &&
+                cmpIso(localTs, remoteTs) <= 0) {
+                tsC = new Date().toISOString();
+                mergedC = Object.assign({}, mergedC, { updatedAt: tsC });
+            }
+            return {
+                value: mergedC,
+                updatedAt: tsC,
+                applyLocal: needApplyC,
+                push: needPushC
+            };
+        }
+        return null;
+    }
+
+    /** Lee valor + updatedAt desde localStorage (soporta wrapper, arrays planos y strings). */
+    function readLocal(key) {
+        var rawStr;
+        try {
+            rawStr = localStorage.getItem(key);
+        } catch (_) {
+            return null;
+        }
+        if (rawStr == null) return null;
+
+        var value;
+        var fromJson = false;
+        try {
+            value = JSON.parse(rawStr);
+            fromJson = true;
+        } catch (_) {
+            value = rawStr;
+        }
+
+        var updatedAt = null;
+        if (fromJson && value && typeof value === 'object' && !Array.isArray(value) && value.updatedAt) {
+            updatedAt = String(value.updatedAt);
+        }
+        if (!updatedAt) updatedAt = metaFor(key);
+        if (!updatedAt) {
+            // Sin marca: epoch. En bootstrap, si la nube está vacía se sube con "ahora";
+            // si la nube ya tiene datos, gana la nube (fuente de verdad).
+            updatedAt = '1970-01-01T00:00:00.000Z';
+        }
+        return { value: value, updatedAt: updatedAt, raw: rawStr };
+    }
+
+    function writeLocal(key, value, updatedAt) {
+        suppressWriteHook = true;
+        try {
+            var toStore = value;
+            var iso = updatedAt || new Date().toISOString();
+            if (value && typeof value === 'object' && !Array.isArray(value)) {
+                // Mantener updatedAt dentro del wrapper cuando ya lo usa el panel.
+                if ('updatedAt' in value || 'items' in value || 'byId' in value || 'map' in value) {
+                    toStore = Object.assign({}, value, { updatedAt: iso });
+                }
+            }
+            if (typeof toStore === 'string') {
+                localStorage.setItem(key, toStore);
+            } else {
+                localStorage.setItem(key, JSON.stringify(toStore));
+            }
+            touchMeta(key, iso);
+        } finally {
+            suppressWriteHook = false;
+        }
+    }
+
+    function schedulePush(key) {
+        if (!key || !syncKeySet[key]) return;
+        if (suppressWriteHook) return;
+        // Cualquier escritura local sin updatedAt en wrapper recibe marca de tiempo.
+        try {
+            var raw = localStorage.getItem(key);
+            if (raw != null) {
+                var parsed = null;
+                try { parsed = JSON.parse(raw); } catch (_) {}
+                var hasWrapTs = parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.updatedAt;
+                if (!hasWrapTs) touchMeta(key, new Date().toISOString());
+                else touchMeta(key, parsed.updatedAt);
+            }
+        } catch (_) {}
+
+        pendingKeys[key] = true;
+        if (!bootDone) return;
+        if (pushTimer) clearTimeout(pushTimer);
+        pushTimer = setTimeout(function () {
+            pushTimer = null;
+            flushPush();
+        }, DEBOUNCE_MS);
+    }
+
+    function flushPush() {
+        var token = getToken();
+        if (!token) return Promise.resolve({ ok: false, reason: 'no-token' });
+        var keys = Object.keys(pendingKeys);
+        if (!keys.length) return Promise.resolve({ ok: true, empty: true });
+        if (pushing) {
+            pushAgain = true;
+            return Promise.resolve({ ok: false, reason: 'busy' });
+        }
+
+        pendingKeys = {};
+        var stores = {};
+        keys.forEach(function (key) {
+            var local = readLocal(key);
+            if (!local) return;
+            // Si era epoch (sin meta real) y aún no había remoto, subir con now.
+            var ts = local.updatedAt;
+            if (ts === '1970-01-01T00:00:00.000Z') {
+                ts = new Date().toISOString();
+                touchMeta(key, ts);
+                if (local.value && typeof local.value === 'object' && !Array.isArray(local.value) && local.value.updatedAt) {
+                    // keep wrapper in sync
+                    writeLocal(key, local.value, ts);
+                    local = readLocal(key);
+                }
+            }
+            stores[key] = { value: local.value, updatedAt: ts };
+        });
+        if (!Object.keys(stores).length) return Promise.resolve({ ok: true, empty: true });
+
+        pushing = true;
+        return fetch(API, {
+            method: 'PUT',
+            headers: authHeaders(),
+            body: JSON.stringify({ stores: stores })
+        })
+            .then(function (r) {
+                return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; });
+            })
+            .then(function (res) {
+                if (!res.ok || !res.data || !res.data.ok) {
+                    throw new Error((res.data && res.data.error) || ('HTTP ' + res.status));
+                }
+                status.ok = true;
+                status.lastPushAt = new Date().toISOString();
+                status.lastError = null;
+                // Si el servidor rechazó por stale, adoptar remoto.
+                // Si aceptó con merge, adoptar el valor fusionado del servidor.
+                var rejected = res.data.rejected || [];
+                var accepted = res.data.accepted || [];
+                var appliedKeys = [];
+                rejected.forEach(function (row) {
+                    if (!row || row.reason !== 'stale') return;
+                    var remote = res.data.stores && res.data.stores[row.key];
+                    if (remote && 'value' in remote) {
+                        var prevStale = readLocal(row.key);
+                        writeLocal(row.key, remote.value, remote.updatedAt);
+                        if (!prevStale || !valuesEqual(prevStale.value, remote.value)) {
+                            appliedKeys.push(row.key);
+                        }
+                    }
+                });
+                accepted.forEach(function (key) {
+                    var remote = res.data.stores && res.data.stores[key];
+                    if (!remote || !('value' in remote)) return;
+                    if (!MERGE_ITEMS_KEYS[key] && !MERGE_MAP_KEYS[key] &&
+                        key !== MERGE_FORMULAS_KEY && key !== MERGE_CATALOG_KEY) return;
+                    var prevAcc = readLocal(key);
+                    var toWrite = remote.value;
+                    var ts = remote.updatedAt;
+                    if (prevAcc && prevAcc.value != null) {
+                        if (MERGE_ITEMS_KEYS[key]) {
+                            toWrite = mergeItemsValue(key, prevAcc.value, remote.value, ts);
+                            if (itemsRecencyFingerprint(extractItems(toWrite)) !==
+                                itemsRecencyFingerprint(extractItems(remote.value))) {
+                                pendingKeys[key] = true;
+                            }
+                        } else if (MERGE_MAP_KEYS[key]) {
+                            toWrite = mergeByIdMaps(prevAcc.value, remote.value, ts);
+                            if (mapRecencyFingerprint(toWrite) !== mapRecencyFingerprint(remote.value)) {
+                                pendingKeys[key] = true;
+                            }
+                        }
+                    }
+                    writeLocal(key, toWrite, ts);
+                    if (!prevAcc || !valuesEqual(prevAcc.value, toWrite)) {
+                        appliedKeys.push(key);
+                    }
+                });
+                if (appliedKeys.length) {
+                    notifyApplied(appliedKeys);
+                } else {
+                    emitStatus();
+                }
+                return {
+                    ok: true,
+                    accepted: accepted,
+                    rejected: rejected,
+                    appliedStale: appliedKeys.length > 0,
+                    stores: res.data.stores || {}
+                };
+            })
+            .catch(function (err) {
+                status.ok = false;
+                status.lastError = (err && err.message) || String(err);
+                emitStatus();
+                console.warn('[S35 sync] push', status.lastError);
+                // Reencolar para reintento
+                keys.forEach(function (k) { pendingKeys[k] = true; });
+                return { ok: false, error: status.lastError };
+            })
+            .then(function (result) {
+                pushing = false;
+                if (pushAgain || Object.keys(pendingKeys).length) {
+                    pushAgain = false;
+                    return flushPush().then(function (next) {
+                        if (!next || next.empty) return result;
+                        return {
+                            ok: !!(result && result.ok && next.ok),
+                            accepted: ((result && result.accepted) || []).concat(next.accepted || []),
+                            rejected: ((result && result.rejected) || []).concat(next.rejected || []),
+                            stores: Object.assign({}, (result && result.stores) || {}, next.stores || {}),
+                            empty: false
+                        };
+                    });
+                }
+                return result;
+            });
+    }
+
+    function pullAll() {
+        var token = getToken();
+        if (!token) return Promise.resolve({ ok: false, reason: 'no-token' });
+        return fetch(API, {
+            method: 'GET',
+            headers: authHeaders(),
+            cache: 'no-store'
+        })
+            .then(function (r) {
+                return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; });
+            })
+            .then(function (res) {
+                if (!res.ok || !res.data || !res.data.ok) {
+                    throw new Error((res.data && res.data.error) || ('HTTP ' + res.status));
+                }
+                status.lastPullAt = new Date().toISOString();
+                status.ok = true;
+                status.lastError = null;
+                emitStatus();
+                return res.data.stores || {};
+            });
+    }
+
+    /**
+     * Pull + merge. Aplica remoto a localStorage y notifica a la UI
+     * (s35-sync-status + appliedKeys) sin location.reload.
+     */
+    function bootstrap(opts) {
+        opts = opts || {};
+        if (bootPromise) return bootPromise;
+        var token = getToken();
+        if (!token) {
+            bootDone = true;
+            return Promise.resolve({ ok: false, reason: 'no-token' });
+        }
+
+        bootPromise = pullAll()
+            .then(function (remoteStores) {
+                var applied = [];
+                var toPush = [];
+
+                SYNC_KEYS.forEach(function (key) {
+                    var local = readLocal(key);
+                    var remote = remoteStores[key];
+                    if (!remote && local) {
+                        toPush.push(key);
+                        return;
+                    }
+                    if (remote && !local) {
+                        writeLocal(key, remote.value, remote.updatedAt);
+                        applied.push(key);
+                        return;
+                    }
+                    if (!remote && !local) return;
+
+                    var merged = mergeStoreValues(
+                        key,
+                        local.value,
+                        remote.value,
+                        local.updatedAt,
+                        remote.updatedAt
+                    );
+                    if (merged) {
+                        if (merged.applyLocal) {
+                            writeLocal(key, merged.value, merged.updatedAt);
+                            applied.push(key);
+                        }
+                        if (merged.push) toPush.push(key);
+                        return;
+                    }
+
+                    var cmp = cmpIso(remote.updatedAt, local.updatedAt);
+                    if (cmp > 0) {
+                        writeLocal(key, remote.value, remote.updatedAt);
+                        applied.push(key);
+                    } else if (cmp < 0) {
+                        toPush.push(key);
+                    }
+                    // igual → nada
+                });
+
+                status.appliedRemote = applied.length > 0;
+                try { sessionStorage.removeItem(RELOAD_FLAG); } catch (_) {}
+
+                toPush.forEach(function (k) { pendingKeys[k] = true; });
+                // También cualquier escritura que ocurrió durante el boot.
+                bootDone = true;
+                // Hidratar en caliente (sin location.reload): evita flash del historial.
+                if (applied.length) {
+                    notifyApplied(applied);
+                } else {
+                    emitStatus();
+                }
+                return flushPush().then(function (pushRes) {
+                    return {
+                        ok: true,
+                        applied: applied,
+                        pushed: (pushRes && pushRes.accepted) || toPush,
+                        reloading: false
+                    };
+                });
+            })
+            .catch(function (err) {
+                status.ok = false;
+                status.lastError = (err && err.message) || String(err);
+                console.warn('[S35 sync] pull', status.lastError);
+                bootDone = true;
+                emitStatus();
+                // Offline: seguir con localStorage; intentar push de pendientes luego.
+                if (Object.keys(pendingKeys).length) {
+                    setTimeout(function () { flushPush(); }, 2000);
+                }
+                return { ok: false, error: status.lastError, offline: true };
+            });
+
+        return bootPromise;
+    }
+
+    // Interceptar escrituras a claves sincronizadas (cubre panel + POS).
+    try {
+        var origSetItem = localStorage.setItem.bind(localStorage);
+        localStorage.setItem = function (key, value) {
+            origSetItem(key, value);
+            if (syncKeySet[key]) schedulePush(key);
+        };
+    } catch (err) {
+        console.warn('[S35 sync] no se pudo enganchar localStorage', err);
+    }
+
+    // Arranque automático si hay sesión.
+    if (getToken()) {
+        // Diferir un tick para no bloquear parse de scripts siguientes.
+        setTimeout(function () { bootstrap(); }, 0);
+    }
+
+    // Reintento al volver online / foco / cada 45s.
+    // Aplica a localStorage + hidrata UI; no hace location.reload (evita parpadeo).
+    function softPullAndApply() {
+        if (!bootDone || !getToken()) return;
+        // Primero subir pendientes locales para no perder ventas/gastos recientes.
+        flushPush().then(function () {
+            return pullAll();
+        }).then(function (remoteStores) {
+            var applied = [];
+            var toPush = [];
+            SYNC_KEYS.forEach(function (key) {
+                var local = readLocal(key);
+                var remote = remoteStores[key];
+                if (!remote) {
+                    if (local) toPush.push(key);
+                    return;
+                }
+                if (!local) {
+                    writeLocal(key, remote.value, remote.updatedAt);
+                    applied.push(key);
+                    return;
+                }
+                var merged = mergeStoreValues(
+                    key,
+                    local.value,
+                    remote.value,
+                    local.updatedAt,
+                    remote.updatedAt
+                );
+                if (merged) {
+                    if (merged.applyLocal) {
+                        if (!valuesEqual(local.value, merged.value)) {
+                            writeLocal(key, merged.value, merged.updatedAt);
+                            applied.push(key);
+                        } else if (cmpIso(merged.updatedAt, local.updatedAt) !== 0) {
+                            // Solo alinear marca de tiempo; sin re-render.
+                            writeLocal(key, merged.value, merged.updatedAt);
+                        }
+                    }
+                    if (merged.push) toPush.push(key);
+                    return;
+                }
+                if (cmpIso(remote.updatedAt, local.updatedAt) > 0) {
+                    if (!valuesEqual(local.value, remote.value)) {
+                        writeLocal(key, remote.value, remote.updatedAt);
+                        applied.push(key);
+                    } else {
+                        // Remoto “más nuevo” pero mismo contenido → solo meta, sin parpadeo.
+                        writeLocal(key, remote.value, remote.updatedAt);
+                    }
+                }
+            });
+            toPush.forEach(function (k) { pendingKeys[k] = true; });
+            var pushPromise = toPush.length ? flushPush() : Promise.resolve();
+            return pushPromise.then(function () {
+                if (applied.length) notifyApplied(applied);
+            });
+        }).catch(function () {});
+    }
+
+    try {
+        window.addEventListener('online', function () {
+            if (bootDone) flushPush();
+            else bootstrap({ skipReload: true });
+        });
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible' && bootDone) {
+                softPullAndApply();
+            }
+        });
+        setInterval(function () {
+            if (document.visibilityState === 'visible') softPullAndApply();
+        }, 45000);
+        // Flush al cerrar / ocultar pestaña (best-effort; keepalive no siempre disponible).
+        window.addEventListener('pagehide', function () {
+            try {
+                if (Object.keys(pendingKeys).length) flushPush();
+            } catch (_) {}
+        });
+    } catch (_) {}
+
+    global.S35PanelSync = {
+        KEYS: SYNC_KEYS.slice(),
+        bootstrap: bootstrap,
+        schedulePush: schedulePush,
+        flushPush: flushPush,
+        pullAll: pullAll,
+        softPull: softPullAndApply,
+        getStatus: function () {
+            return Object.assign({}, status, { bootDone: bootDone, pending: Object.keys(pendingKeys) });
+        }
+    };
+})(typeof window !== 'undefined' ? window : this);

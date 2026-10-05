@@ -1,0 +1,29 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/qr/:code", "destination": "/api/qr?code=:code" },
+    { "source": "/laboratorio/:path*", "destination": "/materialab/:path*" }
+  ],
+  "redirects": [
+    { "source": "/pos", "destination": "/colaboradores", "permanent": false },
+    { "source": "/pos/app", "destination": "/colaboradores/panel", "permanent": false },
+    { "source": "/laboratorio", "destination": "/laboratorio/materials", "permanent": true },
+    { "source": "/materialab", "destination": "/laboratorio/materials", "permanent": true },
+    { "source": "/materialab/about", "destination": "/laboratorio/about", "permanent": true },
+    { "source": "/materialab/methodology", "destination": "/laboratorio/methodology", "permanent": true },
+    { "source": "/materialab/research", "destination": "/laboratorio/research", "permanent": true },
+    { "source": "/materialab/materials", "destination": "/laboratorio/materials", "permanent": true },
+    { "source": "/materialab/materials/:slug", "destination": "/laboratorio/materials/:slug", "permanent": true },
+    { "source": "/catalogo", "destination": "/productos", "permanent": true },
+    { "source": "/catalogo.html", "destination": "/productos", "permanent": true },
+    { "source": "/producto-waxtard-perla", "destination": "/productos/waxtard-blanco-perla", "permanent": true },
+    { "source": "/producto-waxtard-perla.html", "destination": "/productos/waxtard-blanco-perla", "permanent": true },
+    { "source": "/producto-waxtard-extra-anclaje", "destination": "/productos/waxtard-extra-anclaje", "permanent": true },
+    { "source": "/producto-waxtard-extra-anclaje.html", "destination": "/productos/waxtard-extra-anclaje", "permanent": true },
+    { "source": "/producto-cemento-plastico-concreto", "destination": "/productos/cemento-plastico-concreto", "permanent": true },
+    { "source": "/producto-cemento-plastico-concreto.html", "destination": "/productos/cemento-plastico-concreto", "permanent": true },
+    { "source": "/productos/cellbond-pro", "destination": "/productos", "permanent": true },
+    { "source": "/productos/cellbond-pro.html", "destination": "/productos", "permanent": true }
+  ]
+}

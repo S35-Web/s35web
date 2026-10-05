@@ -1,0 +1,219 @@
+{
+  "confirmed": [
+    {
+      "rule": "Estuco hidrófugo / Waxtard Hidrofugo → waxtard-blanco-perla",
+      "by": "user",
+      "date": "2026-09-21",
+      "old_names": [
+        "Estuco hidrófugo Interior® 35KG",
+        "Waxtard Hidrofugo Premium 35KG",
+        "ESTUCO HIDROFUGO PREMIUM SACO 25KG"
+      ]
+    },
+    {
+      "rule": "Textura / Tirol / Acabado pulido → crear productos nuevos en catálogo",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "create_products",
+      "proposed": [
+        {
+          "slug": "textura-adhesile",
+          "name": "Textura Adhesile",
+          "income_m": 4.26,
+          "old_names": [
+            "PLUXEL T.F.I. 25 Kgs.",
+            "TEXTURA ADHESILE 25 Kgs.",
+            "Textura Adhesile S-35®"
+          ],
+          "note": "Incluye Pluxel T.F.I."
+        },
+        {
+          "slug": "tirol-plaste",
+          "name": "Tirol Plaste",
+          "income_m": 2.82,
+          "old_names": [
+            "TIROL PLASTE 25 Kgs.",
+            "Tirol Plaste S-35®"
+          ]
+        },
+        {
+          "slug": "microconcreto-blanco-pulido",
+          "name": "Microconcreto: Blanco (Pulido)",
+          "income_m": 3.53,
+          "old_names": [
+            "Acabado Premium Pulido S-35®",
+            "Acabado Premium Pulido S35",
+            "Microconcreto Blanco S-35® (25KG)"
+          ],
+          "family": "microconcretos",
+          "listName": "MICROCONCRETO BLANCO (PULIDO)",
+          "note": "Familia microconcretos. Incluye Acabado Premium Pulido + Microconcreto Blanco histórico."
+        }
+      ],
+      "note": "Pluxel T.F.I. → textura-adhesile (confirmado usuario 2026-09-21). Acabado Premium Pulido → microconcreto-blanco-pulido (familia microconcretos)."
+    },
+    {
+      "rule": "PLUXEL T.F.I. → textura-adhesile",
+      "by": "user",
+      "date": "2026-09-21"
+    },
+    {
+      "rule": "Acabado Premium Pulido → microconcreto-blanco-pulido (Microconcreto: Blanco (Pulido), familia microconcretos)",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "create_product",
+      "slug": "microconcreto-blanco-pulido",
+      "open_question": "¿Microconcreto Blanco S-35® (25KG) histórico (~$1.53M) también mapea aquí, o es otro?",
+      "old_names": [
+        "Acabado Premium Pulido S-35®",
+        "Acabado Premium Pulido S35",
+        "Microconcreto Blanco S-35® (25KG)"
+      ]
+    },
+    {
+      "rule": "Mortercom y Cemencom/Fibracon → crear productos nuevos (nombre comercial TBD)",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "create_products",
+      "proposed": [
+        {
+          "slug_temp": "mortercom",
+          "working_name": "Mortercom",
+          "income_m": 3.42,
+          "old_names": [
+            "Mortercom S-35®"
+          ],
+          "note": "Nombre final por definir"
+        },
+        {
+          "slug_temp": "cemencom",
+          "working_name": "Cemencom",
+          "income_m": 2.48,
+          "old_names": [
+            "CEMENCOM GRIS S-35 25 Kgs.",
+            "CEMENCON GRIS SACO 50 Kgs.",
+            "FIBRO-CEMENTO EXTRA 25 Kgs:",
+            "IMPERFIBRACON GRIS 50 Kgs.",
+            "FIBRACON GRIS 50 Kgs.",
+            "IMPER-CEMENCON 25 Kgs."
+          ],
+          "note": "Nombre final por definir. Incluye Fibracon / Imper variantes históricas."
+        }
+      ]
+    },
+    {
+      "rule": "Estucos de color B2B (Turín/Oslo/Milán/Venice/Galo) → bucket histórico b2b-estucos-color, sellable:false",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "historical_bucket",
+      "slug": "b2b-estucos-color",
+      "sellable": false,
+      "old_names": [
+        "Turin S-35®",
+        "Turin Interiores S-35®",
+        "Turin interiores S35 (Mazatlan)",
+        "OSLO S-35 (CMX7979)",
+        "OSLO S-35 (CMX7979) (Mazatlan)",
+        "OSLO S-35® (CMX7979) ",
+        "Milan S35® (FCMX-324)",
+        "Milan S35 (Mazatlan)",
+        "Venice S-35®",
+        "Venice S35 (Mazatlan)",
+        "Galo (DOMO-01) S-35®"
+      ],
+      "note": "Productos especiales B2B. No catálogo/POS. Solo analytics históricos."
+    },
+    {
+      "rule": "Aditivo SP85 → crear producto nuevo",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "create_product",
+      "slug_temp": "aditivo-sp85",
+      "income_m": 0.12,
+      "old_names": [
+        "Aditivo SP85 1 kg."
+      ]
+    },
+    {
+      "rule": "Waxtard Thermo → crear producto nuevo",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "create_product",
+      "slug_temp": "waxtard-thermo",
+      "income_m": 0.06,
+      "old_names": [
+        "Waxtard Thermo S-35®"
+      ]
+    },
+    {
+      "rule": "Estuco Base PRO+ → waxtard-gris",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "map_existing",
+      "slug": "waxtard-gris",
+      "income_m": 0.05,
+      "old_names": [
+        "Estuco Base PRO+ (35KG)®"
+      ]
+    },
+    {
+      "rule": "Super Sellador → sellador-premium-pintura",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "map_existing",
+      "slug": "sellador-premium-pintura",
+      "income_m": 0.05,
+      "old_names": [
+        "Super Sellador S-35®",
+        "Super Sellador S-35",
+        "SUPER SELLA SEAL S-35 15 KG.",
+        "SUPER SELLA SEAL S-35 7.5 KG."
+      ],
+      "note": "Usuario: es Adhesivo Sellador premium. Incluye variantes Super Sella Seal pendientes de confirmación fina."
+    },
+    {
+      "rule": "CellBond PRO → crear producto nuevo",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "create_product",
+      "slug_temp": "cellbond-pro",
+      "income_m": 0.01,
+      "old_names": [
+        "CellBond PRO"
+      ]
+    },
+    {
+      "rule": "MP/agregados → historico-mp-agregados (no PT, no vendible)",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "historical_bucket",
+      "slug": "historico-mp-agregados",
+      "sellable": false,
+      "exclude_from_pt": true,
+      "income_m": 3.88,
+      "note": "Ya no se vende cemento/cal/arena/jal a granel. Solo cuadrar histórico."
+    },
+    {
+      "rule": "Ferretería/obra → historico-ferreteria (no PT, no vendible)",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "historical_bucket",
+      "slug": "historico-ferreteria",
+      "sellable": false,
+      "exclude_from_pt": true,
+      "income_m": 1.54,
+      "note": "Ya no se vende varilla/block/armex/etc. Solo cuadrar histórico."
+    },
+    {
+      "rule": "Microconcreto Blanco S-35® (25KG) → microconcreto-blanco-pulido (mismo producto)",
+      "by": "user",
+      "date": "2026-09-21",
+      "action": "map_to_new",
+      "slug": "microconcreto-blanco-pulido",
+      "old_names": [
+        "Microconcreto Blanco S-35® (25KG)"
+      ],
+      "note": "Usuario confirmó: es el nuevo Microconcreto: Blanco (Pulido). Ya no va a concreto aparente."
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "generatedAt": "2026-09-22T19:40:05",
+  "action": "revert_ocean_january_combo_create_mazatlan_sale",
+  "revertedSaleIds": [
+    "sale-hist-rcpt-62715",
+    "sale-hist-rcpt-62747",
+    "sale-hist-rcpt-62786"
+  ],
+  "newSale": {
+    "id": "sale-cfdi-12276-ocean-mzt",
+    "folio": "CFDI-12276",
+    "city": "mazatlan",
+    "storeId": 35,
+    "createdAt": "2026-02-27T13:15:19",
+    "total": 3957.92,
+    "items": [
+      {
+        "product": "microconcreto-blanco-pulido",
+        "name": "microconcreto-blanco-pulido",
+        "code": "",
+        "unit": "Pza",
+        "price": 200,
+        "qty": 10,
+        "lineTotal": 2000.0
+      },
+      {
+        "product": "adhesivo-darawell",
+        "name": "adhesivo-darawell",
+        "code": "",
+        "unit": "Pza",
+        "price": 275,
+        "qty": 6,
+        "lineTotal": 1650.0
+      },
+      {
+        "product": "adhesivo-darawell",
+        "name": "adhesivo-darawell",
+        "code": "",
+        "unit": "Pza",
+        "price": 307.92,
+        "qty": 1,
+        "lineTotal": 307.92
+      }
+    ],
+    "clientId": "c_0bd09cc68fa7",
+    "cfdiFolio": "12276"
+  }
+}

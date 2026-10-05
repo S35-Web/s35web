@@ -1,0 +1,13 @@
+# Archivos que Vercel debe ignorar
+.DS_Store
+*.log
+node_modules/
+.git/
+.gitignore
+README.md
+OPTIMIZATION_GUIDE.md
+oldpage/
+Productos 2025/
+s35web-update.zip
+s35web-zoom-update.zip
+test.html

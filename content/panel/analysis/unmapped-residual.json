@@ -1,0 +1,67 @@
+[
+  {
+    "name": "Concreto F`c=220",
+    "income": 38875.0,
+    "qty": 372.0
+  },
+  {
+    "name": "Base Premium Enjarre S-35®",
+    "income": 14955.0,
+    "qty": 193.0
+  },
+  {
+    "name": "RESINA QR PORRON 5 LTS.",
+    "income": 9515.0,
+    "qty": 54.0
+  },
+  {
+    "name": "MICRO-CONCRETO PIGS-35 15 KG.",
+    "income": 6500.0,
+    "qty": 10.0
+  },
+  {
+    "name": "Tapagrietas 1Kg S-35®",
+    "income": 4772.0,
+    "qty": 234.0
+  },
+  {
+    "name": "REPELLO S-35",
+    "income": 2965.0,
+    "qty": 92.0
+  },
+  {
+    "name": "Aditivo Fibraxtard 1 kg.",
+    "income": 2400.0,
+    "qty": 48.0
+  },
+  {
+    "name": "TAMBO 200 LTS.",
+    "income": 1800.0,
+    "qty": 24.0
+  },
+  {
+    "name": "PANEL ESTRUCTURAL 2",
+    "income": 1375.0,
+    "qty": 5.0
+  },
+  {
+    "name": "Anti Termita Salitre 1 kg.",
+    "income": 970.0,
+    "qty": 12.0
+  },
+  {
+    "name": "Colorimetry Kit - Dark Concrete",
+    "income": 300.0,
+    "qty": 2.0
+  },
+  {
+    "name": "CONCREMIX",
+    "income": 115.0,
+    "qty": 4.0
+  },
+  {
+    "name": "Aditivo VN30 1 kg.",
+    "income": 80.0,
+    "qty": 2.0
+  }
+]
