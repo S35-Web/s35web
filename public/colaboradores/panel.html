@@ -3311,7 +3311,7 @@
                 display: none;
                 position: fixed;
                 inset: 0;
-                background: rgba(10, 10, 10, 0.4);
+                background: rgba(10, 10, 10, 0.45);
                 z-index: 35;
                 border: none;
                 padding: 0;
@@ -3348,10 +3348,12 @@
                 gap: 4px;
             }
             .sidebar.open .nav a {
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
                 width: auto;
                 min-width: 0;
                 height: 44px;
-                justify-content: flex-start;
                 gap: 12px;
                 padding: 0 12px;
                 font-size: 14px;
