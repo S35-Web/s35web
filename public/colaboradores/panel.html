@@ -4703,8 +4703,19 @@
         /* Tras Confirmar emisión en esta sesión: Imprimir + Cancelar lote (+ Cerrar). Sin fase 2 aún. */
         #lotTicketModal.is-from-emit #lotConfirmFields,
         #lotTicketModal.is-from-emit #lotTicketConfirmBtn,
+        #lotTicketModal.is-from-emit #lotTicketEditBtn,
+        #lotTicketModal.is-from-emit #lotTicketSaveEditBtn,
+        #lotTicketModal.is-from-emit #lotTicketCancelEditBtn,
         #lotTicketModal.is-from-emit #lotTicketIssueConfirmBtn,
         #lotTicketModal.is-from-emit #lotTicketIssueCancelBtn {
+            display: none !important;
+        }
+        #lotTicketModal.is-editing #lotTicketPrint,
+        #lotTicketModal.is-editing #lotTicketConfirmBtn,
+        #lotTicketModal.is-editing #lotTicketEditBtn,
+        #lotTicketModal.is-editing #lotTicketCancelBtn,
+        #lotTicketModal.is-editing #lotTicketIssueConfirmBtn,
+        #lotTicketModal.is-editing #lotTicketIssueCancelBtn {
             display: none !important;
         }
         .lot-confirm-fields {
@@ -8655,6 +8666,9 @@
                     <button type="button" class="btn" id="lotTicketIssueCancelBtn" hidden><i class="fa-solid fa-xmark"></i> Cancelar</button>
                     <button type="button" class="btn primary" id="lotTicketPrint"><i class="fa-solid fa-print"></i> Imprimir / tarima</button>
                     <button type="button" class="btn" id="lotTicketConfirmBtn" hidden><i class="fa-solid fa-check"></i> Confirmar ingreso PT</button>
+                    <button type="button" class="btn" id="lotTicketEditBtn" hidden><i class="fa-solid fa-pen"></i> Editar</button>
+                    <button type="button" class="btn primary" id="lotTicketSaveEditBtn" hidden><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button>
+                    <button type="button" class="btn" id="lotTicketCancelEditBtn" hidden><i class="fa-solid fa-xmark"></i> Descartar</button>
                     <button type="button" class="btn danger" id="lotTicketCancelBtn" hidden><i class="fa-solid fa-ban"></i> Cancelar lote</button>
                 </div>
             </div>
@@ -14679,6 +14693,7 @@
     let currentLotTicket = null;
     let currentLotTicketPending = false;
     let currentLotTicketFromEmit = false;
+    let currentLotTicketEditing = false;
     let currentPurchaseTicketId = null;
     let currentPurchaseTicket = null;
     let currentPurchaseTicketSaved = false;
@@ -15718,39 +15733,74 @@
         }
         return currentRole === 'admin';
     }
+    function canEditLotTickets() {
+        return canVoidConfirmedLotTickets();
+    }
+    function fillLotConfirmFieldsFromTicket(t) {
+        const bags = document.getElementById('lotConfirmBags');
+        const producedBy = document.getElementById('lotConfirmProducedBy');
+        const notes = document.getElementById('lotConfirmNotes');
+        const cityEl = document.getElementById('lotConfirmCity');
+        const cityLabel = cityEl && cityEl.closest('label');
+        if (!bags || !notes) return;
+        const confirmed = t && t.status === 'confirmed';
+        const mid = confirmed
+            ? (Number(t.bagsOut) || Number(t.bagsExpected) || 0)
+            : (t.bagsExpected || Math.round(Number(t.yieldTheoretical) || 0) ||
+                (t.yieldMin && t.yieldMax
+                    ? Math.round((Number(t.yieldMin) + Number(t.yieldMax)) / 2)
+                    : 0));
+        bags.value = String(Math.max(1, Math.floor(Number(mid) || 1)));
+        if (producedBy) producedBy.value = t.producedBy || '';
+        notes.value = t.notes || '';
+        if (cityEl) {
+            cityEl.value = normalizeInvCity(t.city || activeProductsCity());
+            cityEl.disabled = !!confirmed;
+        }
+        if (cityLabel) cityLabel.hidden = !!confirmed;
+    }
     function syncLotTicketActionButtons() {
         const pending = !!currentLotTicketPending;
-        const fromEmit = !!currentLotTicketFromEmit && !pending;
+        const editing = !!currentLotTicketEditing && !pending;
+        const fromEmit = !!currentLotTicketFromEmit && !pending && !editing;
         const open = !!(currentLotTicket && currentLotTicket.status === 'open' && !pending);
         const confirmed = !!(currentLotTicket && currentLotTicket.status === 'confirmed' && !pending);
-        const showPhase2 = open && !fromEmit;
-        const showCancelOpen = open;
-        const showVoidConfirmed = confirmed && canVoidConfirmedLotTickets();
+        const showPhase2 = open && !fromEmit && !editing;
+        const showCancelOpen = open && !editing;
+        const showVoidConfirmed = confirmed && canVoidConfirmedLotTickets() && !editing;
+        const showEdit = !pending && !fromEmit && !editing && confirmed && canEditLotTickets();
         const issued = !!(currentLotTicket && !pending);
         const modal = document.getElementById('lotTicketModal');
         const issueConfirm = document.getElementById('lotTicketIssueConfirmBtn');
         const issueCancel = document.getElementById('lotTicketIssueCancelBtn');
         const printBtn = document.getElementById('lotTicketPrint');
         const confirmBtn = document.getElementById('lotTicketConfirmBtn');
+        const editBtn = document.getElementById('lotTicketEditBtn');
+        const saveEditBtn = document.getElementById('lotTicketSaveEditBtn');
+        const cancelEditBtn = document.getElementById('lotTicketCancelEditBtn');
         const cancelBtn = document.getElementById('lotTicketCancelBtn');
         const fields = document.getElementById('lotConfirmFields');
         if (modal) {
             modal.classList.toggle('is-pending', pending);
             modal.classList.toggle('is-from-emit', fromEmit);
+            modal.classList.toggle('is-editing', editing);
         }
         // Emisión (preview): solo Confirmar / Cancelar
         if (issueConfirm) issueConfirm.hidden = !pending;
         if (issueCancel) issueCancel.hidden = !pending;
         // Imprimir solo con ticket ya emitido al sistema
         if (printBtn) {
-            printBtn.hidden = !issued;
-            printBtn.classList.toggle('primary', issued);
-            printBtn.disabled = !issued;
-            printBtn.setAttribute('aria-disabled', issued ? 'false' : 'true');
+            printBtn.hidden = !issued || editing;
+            printBtn.classList.toggle('primary', issued && !editing && !showPhase2);
+            printBtn.disabled = !issued || editing;
+            printBtn.setAttribute('aria-disabled', (issued && !editing) ? 'false' : 'true');
         }
         // Fase 2: solo al abrir desde Lotes abiertos / historial (no tras emitir en esta sesión)
         if (confirmBtn) confirmBtn.hidden = !showPhase2;
-        if (fields) fields.hidden = !showPhase2;
+        if (fields) fields.hidden = !(showPhase2 || editing);
+        if (editBtn) editBtn.hidden = !showEdit;
+        if (saveEditBtn) saveEditBtn.hidden = !editing;
+        if (cancelEditBtn) cancelEditBtn.hidden = !editing;
         // Cancelar: lotes abiertos (también tras emitir). Anular: confirmados (admin).
         if (cancelBtn) {
             cancelBtn.hidden = !(showCancelOpen || showVoidConfirmed);
@@ -15895,6 +15945,7 @@
         currentLotTicketPending = pending;
         // fromEmit: acabamos de confirmar en esta sesión. fromList / apertura por id: controles de planta.
         currentLotTicketFromEmit = !pending && !!options.fromEmit && !options.fromList;
+        currentLotTicketEditing = false;
         const modal = document.getElementById('lotTicketModal');
         const doc = document.getElementById('lotTicketDoc');
         const title = document.getElementById('lotTicketModalTitle');
@@ -15914,18 +15965,13 @@
                     : ('Ticket de lote · ' + t.id));
         }
         const open = t.status === 'open' && !pending && !currentLotTicketFromEmit;
-        if (open && bags && notes) {
-            const mid = t.bagsExpected || Math.round(Number(t.yieldTheoretical) || 0) ||
-                (t.yieldMin && t.yieldMax
-                    ? Math.round((Number(t.yieldMin) + Number(t.yieldMax)) / 2)
-                    : 0);
-            bags.value = String(mid);
-            if (producedBy) producedBy.value = t.producedBy || '';
-            notes.value = t.notes || '';
-            if (cityEl) cityEl.value = normalizeInvCity(t.city || activeProductsCity());
+        if ((open || t.status === 'confirmed') && bags && notes) {
+            fillLotConfirmFieldsFromTicket(t);
         }
+        if (cityEl && t.status !== 'confirmed') cityEl.disabled = false;
         syncLotTicketActionButtons();
         if (!modal) return;
+        modal.classList.remove('is-editing');
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
     }
@@ -15935,12 +15981,16 @@
             modal.classList.remove('show');
             modal.classList.remove('is-pending');
             modal.classList.remove('is-from-emit');
+            modal.classList.remove('is-editing');
             modal.setAttribute('aria-hidden', 'true');
         }
         currentLotTicketId = null;
         currentLotTicket = null;
         currentLotTicketPending = false;
         currentLotTicketFromEmit = false;
+        currentLotTicketEditing = false;
+        const cityEl = document.getElementById('lotConfirmCity');
+        if (cityEl) cityEl.disabled = false;
         syncLotTicketActionButtons();
     }
     function renderFinished() {
@@ -16675,6 +16725,140 @@
         openLotTicketModal(t.id, { fromList: true });
         alert('Lote ' + t.id + ' confirmado: +' + bagsOut + ' PT en ' + invCityLabel(confirmCity) + '.\nImprime el ticket y anexalo a la tarima.');
     });
+    function lotPackPiecesPerBag(t, plantId) {
+        const lines = t.packLines || [];
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].plantId === plantId) return Math.max(1, Number(lines[i].piecesPerBag) || 1);
+        }
+        const oldBags = Number(t.bagsOut) || 0;
+        const consumed = (t.packConsumed || []).filter(function (pc) { return pc.plantId === plantId; })[0];
+        if (consumed && oldBags > 0) {
+            const per = (Number(consumed.amount) || 0) / oldBags;
+            if (per > 0) return per;
+        }
+        return 1;
+    }
+    function startLotTicketEdit() {
+        if (!currentLotTicket || currentLotTicketPending || currentLotTicketFromEmit) return;
+        if (!canEditLotTickets()) {
+            alert('Solo un administrador puede editar lotes.');
+            return;
+        }
+        if (currentLotTicket.status !== 'open' && currentLotTicket.status !== 'confirmed') return;
+        fillLotConfirmFieldsFromTicket(currentLotTicket);
+        currentLotTicketEditing = true;
+        syncLotTicketActionButtons();
+        const title = document.getElementById('lotTicketModalTitle');
+        if (title) title.textContent = 'Editar lote · ' + currentLotTicket.id;
+    }
+    function cancelLotTicketEdit() {
+        if (!currentLotTicketEditing) return;
+        currentLotTicketEditing = false;
+        const cityEl = document.getElementById('lotConfirmCity');
+        if (cityEl) cityEl.disabled = false;
+        if (currentLotTicketId) openLotTicketModal(currentLotTicketId, { fromList: true });
+        else syncLotTicketActionButtons();
+    }
+    function saveLotTicketEdit() {
+        if (!currentLotTicketEditing || !currentLotTicket || !currentLotTicketId) return;
+        if (!canEditLotTickets()) {
+            alert('Solo un administrador puede editar lotes.');
+            return;
+        }
+        const list = loadLotTickets();
+        const idx = list.findIndex(function (t) { return t.id === currentLotTicketId; });
+        if (idx < 0) return;
+        const t = list[idx];
+        const bagsEl = document.getElementById('lotConfirmBags');
+        const producedByEl = document.getElementById('lotConfirmProducedBy');
+        const notesEl = document.getElementById('lotConfirmNotes');
+        const cityEl = document.getElementById('lotConfirmCity');
+        const newBags = Math.max(1, Math.floor(Number(bagsEl && bagsEl.value) || 1));
+        const producedBy = producedByEl ? String(producedByEl.value || '').trim() : '';
+        const notes = notesEl ? String(notesEl.value || '').trim() : '';
+
+        if (t.status === 'open') {
+            const lotCity = normalizeInvCity(cityEl ? cityEl.value : (t.city || INV_DEFAULT_CITY));
+            t.bagsExpected = newBags;
+            t.producedBy = producedBy;
+            t.notes = notes;
+            t.city = lotCity === 'all' ? INV_DEFAULT_CITY : lotCity;
+            list[idx] = t;
+            saveLotTickets(list);
+            currentLotTicketEditing = false;
+            refreshStockViews();
+            openLotTicketModal(t.id, { fromList: true });
+            panelToast('Lote ' + t.id + ' actualizado');
+            return;
+        }
+
+        if (t.status !== 'confirmed') return;
+        const lotCityRaw = normalizeInvCity(t.city || INV_DEFAULT_CITY);
+        const lotCity = lotCityRaw === 'all' ? INV_DEFAULT_CITY : lotCityRaw;
+        const oldBags = Math.max(0, Number(t.bagsOut) || 0);
+        const deltaBags = newBags - oldBags;
+
+        if (deltaBags !== 0) {
+            // Empaque: si aumentan sacos, verificar stock libre
+            if (deltaBags > 0 && (t.packConsumed || []).length) {
+                for (let i = 0; i < t.packConsumed.length; i++) {
+                    const pc = t.packConsumed[i];
+                    const pieces = lotPackPiecesPerBag(t, pc.plantId);
+                    const need = deltaBags * pieces;
+                    const mat = plantById(pc.plantId);
+                    const free = mat ? materialFreeStock(mat, lotCity) : 0;
+                    if (!mat || free < need) {
+                        alert(
+                            'No hay empaque suficiente para subir a ' + newBags + ' u.:\n• ' +
+                            (pc.name || pc.plantId) + ': necesita +' + need + ', libre ' + free
+                        );
+                        return;
+                    }
+                }
+            }
+            if (!confirm(
+                '¿Guardar cambios en ' + t.id + '?\n' +
+                'Sacos: ' + oldBags + ' → ' + newBags +
+                (deltaBags ? ('\nInventario PT: ' + (deltaBags > 0 ? '+' : '') + deltaBags + ' en ' + invCityLabel(lotCity)) : '')
+            )) return;
+            const finDelta = {};
+            finDelta[t.product] = deltaBags;
+            adjustFinishedMap(finDelta, lotCity);
+            (t.packConsumed || []).forEach(function (pc) {
+                const pieces = lotPackPiecesPerBag(t, pc.plantId);
+                const packDelta = deltaBags * pieces;
+                if (!packDelta) return;
+                const mat = plantById(pc.plantId);
+                if (!mat) return;
+                // deltaBags > 0 → consumir más empaque; < 0 → devolver
+                adjustMaterialStockInCity(mat, lotCity, -packDelta);
+                pc.amount = Math.max(0, (Number(pc.amount) || 0) + packDelta);
+            });
+            saveInventory(inventory);
+            t.bagsOut = newBags;
+            t.mermaKg = t.totalKg != null
+                ? Math.max(0, Number(t.totalKg) - newBags * (Number(t.packSizeKg) || 25))
+                : null;
+        } else if (!confirm('¿Guardar cambios en ' + t.id + '?')) {
+            return;
+        }
+
+        t.producedBy = producedBy;
+        t.notes = notes;
+        t.editedAt = new Date().toISOString();
+        list[idx] = t;
+        saveLotTickets(list);
+        currentLotTicketEditing = false;
+        refreshStockViews();
+        openLotTicketModal(t.id, { fromList: true });
+        panelToast('Lote ' + t.id + ' actualizado');
+    }
+    const lotEditBtn = document.getElementById('lotTicketEditBtn');
+    if (lotEditBtn) lotEditBtn.addEventListener('click', startLotTicketEdit);
+    const lotSaveEditBtn = document.getElementById('lotTicketSaveEditBtn');
+    if (lotSaveEditBtn) lotSaveEditBtn.addEventListener('click', saveLotTicketEdit);
+    const lotCancelEditBtn = document.getElementById('lotTicketCancelEditBtn');
+    if (lotCancelEditBtn) lotCancelEditBtn.addEventListener('click', cancelLotTicketEdit);
     document.getElementById('lotTicketCancelBtn').addEventListener('click', function () {
         if (!currentLotTicket || currentLotTicketPending || !currentLotTicketId) return;
         const list = loadLotTickets();
