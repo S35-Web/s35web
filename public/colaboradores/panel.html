@@ -103,6 +103,8 @@
             text-decoration: none;
             border-radius: var(--radius-sm);
             box-sizing: border-box;
+            pointer-events: none;
+            user-select: none;
         }
         .sidebar-logo img {
             height: 12px;
@@ -3273,13 +3275,18 @@
                 display: none;
                 position: fixed;
                 left: max(10px, env(safe-area-inset-left, 0px));
-                top: max(12px, env(safe-area-inset-top, 0px));
+                /* Debajo de la topbar + safe-area para no chocar con el menú / Safari */
+                top: calc(
+                    var(--topbar-h)
+                    + max(8px, env(safe-area-inset-top, 0px))
+                );
                 bottom: max(12px, env(safe-area-inset-bottom, 0px));
                 width: var(--sidebar-w);
                 height: auto;
                 max-height: calc(
                     100dvh
-                    - max(12px, env(safe-area-inset-top, 0px))
+                    - var(--topbar-h)
+                    - max(8px, env(safe-area-inset-top, 0px))
                     - max(12px, env(safe-area-inset-bottom, 0px))
                 );
                 border: 1px solid var(--border);
@@ -6953,9 +6960,9 @@
 <body>
     <div class="app">
         <aside class="sidebar" id="sidebar">
-            <a class="sidebar-logo" href="/" title="S-35" aria-label="Sitio S-35">
-                <img src="/Assets/Logotipo Principal.png" alt="S-35">
-            </a>
+            <div class="sidebar-logo" title="S-35" aria-hidden="true">
+                <img src="/Assets/Logotipo Principal.png" alt="">
+            </div>
             <nav class="nav">
                 <a href="#dashboard" data-section="dashboard" class="active" title="Copiloto S35" aria-label="Copiloto S35">
                     <span class="nav-copilot-orb" aria-hidden="true"></span>
@@ -9669,9 +9676,26 @@
     }
 
     const sidebar = document.getElementById('sidebar');
-    document.getElementById('menuBtn').addEventListener('click', function () {
-        sidebar.classList.toggle('open');
-    });
+    const menuBtn = document.getElementById('menuBtn');
+    function syncMenuBtnIcon() {
+        if (!menuBtn) return;
+        const open = !!(sidebar && sidebar.classList.contains('open'));
+        const icon = menuBtn.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fa-bars', !open);
+            icon.classList.toggle('fa-xmark', open);
+        }
+        menuBtn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Menú');
+        menuBtn.setAttribute('title', open ? 'Cerrar' : 'Menú');
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    if (menuBtn) {
+        menuBtn.addEventListener('click', function () {
+            if (sidebar) sidebar.classList.toggle('open');
+            syncMenuBtnIcon();
+        });
+        syncMenuBtnIcon();
+    }
 
     const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'dinero', 'clients', 'cobranza', 'precompras', 'promos', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
     const LEGACY_TO_PRODUCTS = { prices: true, catalog: true, formulas: true };
@@ -9777,6 +9801,7 @@
             );
         });
         sidebar.classList.remove('open');
+        if (typeof syncMenuBtnIcon === 'function') syncMenuBtnIcon();
         if (id === 'products' && typeof openProductHub === 'function') {
             if (legacyRecipe || opts.slug) {
                 openProductHub(legacyRecipe || opts.slug, {
