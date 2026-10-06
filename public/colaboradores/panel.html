@@ -7125,26 +7125,63 @@
                 border-radius: var(--radius-sm);
             }
             #venta .pos-station-top {
-                padding: 10px 12px 12px;
-                gap: 10px 12px;
+                padding: 8px 10px 10px;
+                gap: 8px 10px;
                 flex-shrink: 0;
             }
             #venta .pos-station-title {
-                font-size: 18px;
+                font-size: 16px;
+                padding-bottom: 0;
+            }
+            #venta .pos-station-top .pos-client-trigger,
+            #venta .pos-station-top .pos-select,
+            #venta .pos-station-top .btn {
+                height: 40px;
+            }
+            #venta .pos-station-fields {
+                grid-template-columns: minmax(0, 1.4fr) minmax(110px, 0.9fr);
+                gap: 8px 10px;
+                align-items: end;
+            }
+            #venta .pos-station-top .field-label {
+                font-size: 10px;
+                margin: 0;
+            }
+            #venta .pos-station-actions .btn {
+                padding: 0 10px;
+                font-size: 12px;
             }
             #venta .pos-station-main {
                 grid-template-columns: 1fr;
-                overflow: auto;
-                -webkit-overflow-scrolling: touch;
+                grid-template-rows: minmax(0, 1.25fr) minmax(0, 1fr);
+                overflow: hidden;
                 min-height: 0;
-                overscroll-behavior: contain;
+            }
+            #venta .pos-pad {
+                min-height: 0;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                border-bottom: 1px solid var(--border);
             }
             #venta .pos-pad .product-grid {
+                flex: 1;
                 max-height: none;
-                min-height: 160px;
+                min-height: 120px;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
                 grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
                 padding: 10px;
                 gap: 8px;
+                align-content: start;
+            }
+            #venta .pos-pad-tools {
+                padding: 8px 10px;
+                min-height: 0;
+                gap: 6px;
+            }
+            #venta .pos-pad-tools .search {
+                height: 40px;
             }
             #venta .pos-pad-tools .chips {
                 max-height: none;
@@ -7160,40 +7197,74 @@
             #venta .pos-pad-tools .chips::-webkit-scrollbar { display: none; }
             #venta .pos-pad-tools .chips .chip {
                 flex: 0 0 auto;
-                min-height: 36px;
-                padding: 8px 12px;
+                min-height: 34px;
+                padding: 6px 10px;
             }
             #venta .pos-ticket {
                 border-left: none;
-                border-top: 1px solid var(--border);
+                border-top: none;
                 min-height: 0;
+                overflow: hidden;
             }
             #venta .pos-cart-body {
-                min-height: 80px;
+                min-height: 0;
+                flex: 1;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
                 padding: 6px 12px 12px;
+            }
+            #venta .cart-item .ci-meta,
+            #venta .cart-item .qty-row {
+                flex-wrap: wrap;
+            }
+            #venta .cart-item .ci-line {
+                font-size: 13px;
             }
             #venta .pos-station-pay {
                 grid-template-columns: 1fr;
-                gap: 10px 12px;
-                padding: 12px 12px max(12px, calc(10px + var(--sab)));
+                gap: 8px;
+                padding: 8px 10px max(8px, calc(6px + var(--sab)));
                 position: relative;
                 z-index: 16;
                 flex-shrink: 0;
                 box-shadow: 0 -8px 28px rgba(10, 10, 10, 0.08);
                 border-top: 1px solid var(--border);
             }
+            #venta .pos-pay-block,
+            #venta .pos-bill-block {
+                gap: 4px;
+            }
+            #venta .pos-pay-block {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                column-gap: 12px;
+                row-gap: 4px;
+            }
+            #venta .pos-pay-block > .field-label,
+            #venta .pos-pay-block > .seg.seg-pay {
+                flex: 1 1 100%;
+            }
+            #venta .pos-station-pay .field-label {
+                margin: 0;
+                font-size: 10px;
+            }
+            #venta .pos-pay-block .pay-split-panel {
+                flex: 1 1 100%;
+            }
             #venta .pos-pay-checkout {
                 width: 100%;
                 align-items: center;
-                gap: 12px;
+                gap: 10px;
             }
             #venta .pos-station-pay .cart-total {
                 justify-items: start;
                 text-align: left;
                 min-width: 0;
+                gap: 2px;
             }
             #venta .pos-station-pay .cart-total .amount {
-                font-size: 28px;
+                font-size: 24px;
             }
             #posCheckoutBtn {
                 flex: 1;
@@ -7203,16 +7274,38 @@
             }
             #venta .seg.seg-pay {
                 display: flex;
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
                 gap: 6px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding-bottom: 2px;
             }
+            #venta .seg.seg-pay::-webkit-scrollbar { display: none; }
             #venta .seg.seg-pay label,
             #venta .seg.two label {
-                min-height: 44px;
-                padding: 8px 10px;
+                flex: 0 0 auto;
+                min-height: 40px;
+                padding: 6px 12px;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
+                white-space: nowrap;
+            }
+            #venta .seg.two {
+                display: flex;
+                width: 100%;
+            }
+            #venta .seg.two label {
+                flex: 1;
+            }
+            #venta .pay-split-check,
+            #venta .pos-precompra-check {
+                font-size: 12px;
+                min-height: 32px;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
             }
             .cart-item {
                 grid-template-columns: 56px minmax(0, 1fr) auto;
@@ -7442,8 +7535,32 @@
                 min-height: 44px;
             }
             #saleNoteModal .modal-card,
-            #promoAdminModal .modal-card {
+            #promoAdminModal .modal-card,
+            #posGenerateModal .modal-card,
+            #lotTicketModal .modal-card,
+            #purchaseTicketModal .modal-card {
                 max-height: min(92dvh, calc(100dvh - var(--kb-inset, 0px) - 8px));
+                width: 100%;
+                max-width: 100%;
+                border-radius: 16px 16px 0 0;
+            }
+            #posGenerateModal .modal-card {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            #posGenerateModal .gen-panel .form-grid {
+                grid-template-columns: 1fr;
+            }
+            #posGenerateModal .gen-datetime-row {
+                grid-template-columns: 1fr;
+            }
+            #posGenerateModal .gen-lines-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                max-width: 100%;
+            }
+            #posGenerateModal .gen-tabs button {
+                min-height: 44px;
             }
 
             /* F4: Command palette — sheet desde arriba */
@@ -7531,8 +7648,14 @@
         }
 
         @media (max-width: 480px) {
+            #venta .pos-station-title { display: none; }
+            #venta .pos-station-top {
+                grid-template-columns: 1fr auto;
+            }
+            #venta .pos-station-actions { grid-column: 2; }
+            #venta .pos-station-fields { grid-column: 1 / -1; }
             #venta .pos-station-pay .cart-total .amount {
-                font-size: 24px;
+                font-size: 22px;
             }
             #venta .pos-pad .product-grid {
                 grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
