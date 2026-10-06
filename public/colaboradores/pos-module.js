@@ -9087,8 +9087,70 @@
         editingClientId = null;
     }
 
+    function isPhoneViewport() {
+        try {
+            return window.matchMedia('(max-width: 760px)').matches;
+        } catch (_) {
+            return window.innerWidth <= 760;
+        }
+    }
+
+    /** Ajusta --kb-inset con visualViewport y hace scroll del control enfocado (teclado iOS). */
+    function wireMobilePosViewport() {
+        if (window.__s35MobilePosViewportBound) return;
+        window.__s35MobilePosViewportBound = true;
+        const root = document.documentElement;
+
+        function updateKbInset() {
+            if (!isPhoneViewport()) {
+                root.style.setProperty('--kb-inset', '0px');
+                return;
+            }
+            const vv = window.visualViewport;
+            if (!vv) {
+                root.style.setProperty('--kb-inset', '0px');
+                return;
+            }
+            const inset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+            root.style.setProperty('--kb-inset', inset + 'px');
+        }
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', updateKbInset);
+            window.visualViewport.addEventListener('scroll', updateKbInset);
+        }
+        window.addEventListener('resize', updateKbInset);
+        updateKbInset();
+
+        document.addEventListener('focusin', function (e) {
+            if (!isPhoneViewport()) return;
+            const t = e.target;
+            if (!t || !t.matches) return;
+            if (!t.matches('input, select, textarea')) return;
+            if (!t.closest('#venta, .modal-backdrop.show, #cmdPalette.show, #messages, .mail-copilot-float.is-open')) return;
+            window.setTimeout(function () {
+                updateKbInset();
+                try {
+                    t.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+                } catch (_) {
+                    try { t.scrollIntoView(true); } catch (__) {}
+                }
+                const pay = document.querySelector('#venta .pos-station-pay');
+                if (pay && t.closest('#venta .pos-station-pay, #venta .pos-cart-body, #venta .pos-station-top')) {
+                    try {
+                        pay.scrollIntoView({ block: 'end', inline: 'nearest', behavior: 'smooth' });
+                    } catch (_) {}
+                }
+            }, 120);
+        });
+        document.addEventListener('focusout', function () {
+            window.setTimeout(updateKbInset, 180);
+        });
+    }
+
     function bind() {
         bindPeriodRangePicker();
+        wireMobilePosViewport();
 
         const modeTabs = document.getElementById('posModeTabs');
         if (modeTabs) {
