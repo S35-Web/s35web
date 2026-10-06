@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
     <title>S-35 | Colaboradores</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,6 +37,10 @@
             --font: "DM Sans", "Helvetica Neue", sans-serif;
             --font-display: "Instrument Serif", Georgia, serif;
             --shadow-modal: 0 24px 64px rgba(0,0,0,.12);
+            --sat: env(safe-area-inset-top, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
+            --sar: env(safe-area-inset-right, 0px);
         }
         [data-theme="dark"] {
             --bg: #0a0a0a;
@@ -61,7 +65,11 @@
             --shadow-modal: 0 24px 64px rgba(0,0,0,.55);
         }
         * { box-sizing: border-box; }
-        html, body { margin: 0; height: 100%; }
+        html, body {
+            margin: 0;
+            height: 100%;
+            overflow-x: clip;
+        }
         body {
             font-family: var(--font);
             font-weight: 400;
@@ -78,6 +86,8 @@
             display: grid;
             grid-template-columns: var(--sidebar-w) 1fr;
             min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: clip;
         }
 
         /* —— Sidebar rail —— */
@@ -85,6 +95,7 @@
             position: sticky;
             top: 0;
             height: 100vh;
+            height: 100dvh;
             border-right: 1px solid var(--border);
             background: var(--panel);
             display: flex;
@@ -92,6 +103,9 @@
             align-items: center;
             padding: 12px 0;
             z-index: 40;
+        }
+        .sidebar-scrim {
+            display: none;
         }
         .sidebar-logo {
             width: 36px;
@@ -195,24 +209,28 @@
         /* —— Main column —— */
         .main {
             display: grid;
-            grid-template-rows: var(--topbar-h) 1fr;
+            grid-template-rows: calc(var(--topbar-h) + var(--sat)) 1fr;
             min-width: 0;
             min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: clip;
         }
         .topbar {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 0 20px;
+            padding: var(--sat) max(20px, var(--sar)) 0 max(20px, var(--sal));
             border-bottom: 1px solid var(--border);
             background: var(--panel);
             position: sticky;
             top: 0;
             z-index: 30;
+            min-width: 0;
         }
         .menu-btn {
             display: none;
             width: 36px; height: 36px;
+            flex: 0 0 auto;
             place-items: center;
             border: 1px solid var(--border);
             background: transparent;
@@ -222,6 +240,7 @@
         }
         .global-search {
             flex: 1;
+            min-width: 0;
             max-width: 420px;
             height: 34px;
             display: flex;
@@ -409,6 +428,8 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            flex: 0 0 auto;
+            min-width: 0;
         }
         .sync-chip {
             font-size: 11px;
@@ -419,6 +440,14 @@
             padding: 4px 10px;
             white-space: nowrap;
             user-select: none;
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            max-width: 110px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .sync-chip.is-ok { color: #1a7f37; border-color: rgba(26, 127, 55, 0.35); }
         .sync-chip.is-err { color: var(--danger); border-color: rgba(180, 40, 40, 0.35); }
@@ -427,6 +456,7 @@
             position: relative;
             width: 34px;
             height: 34px;
+            flex: 0 0 auto;
             display: inline-grid;
             place-items: center;
             border: 1px solid var(--border);
@@ -714,7 +744,8 @@
             max-width: none;
             margin: -24px -20px -48px;
             padding: 0;
-            min-height: calc(100vh - var(--topbar-h, 52px));
+            min-height: calc(100vh - var(--topbar-h, 52px) - var(--sat));
+            min-height: calc(100dvh - var(--topbar-h, 52px) - var(--sat));
             flex-direction: column;
             overflow: hidden;
         }
@@ -1101,7 +1132,8 @@
         #venta.section.active {
             display: flex;
             flex-direction: column;
-            min-height: calc(100vh - var(--topbar-h) - 24px);
+            min-height: calc(100vh - var(--topbar-h) - var(--sat) - 24px);
+            min-height: calc(100dvh - var(--topbar-h) - var(--sat) - 24px);
             margin: -8px -4px 0;
         }
         .content:has(#venta.active) {
@@ -1778,7 +1810,8 @@
         /* —— Mensajes: bandeja 3 paneles (lista | lector | copiloto) —— */
         #messages.section-mail {
             flex-direction: column;
-            min-height: calc(100vh - var(--topbar-h) - 16px);
+            min-height: calc(100vh - var(--topbar-h) - var(--sat) - 16px);
+            min-height: calc(100dvh - var(--topbar-h) - var(--sat) - 16px);
             gap: 0;
         }
         #messages.section-mail.section.active { display: flex; }
@@ -3267,20 +3300,137 @@
             .content { padding: 20px 16px 40px; }
         }
         @media (max-width: 760px) {
+            html, body, .app, .main { overflow-x: clip; }
             .app { grid-template-columns: 1fr; }
-            .menu-btn { display: grid; }
+            .menu-btn {
+                display: grid;
+                width: 44px;
+                height: 44px;
+            }
+            .sidebar-scrim {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(10, 10, 10, 0.45);
+                z-index: 35;
+                border: none;
+                padding: 0;
+                margin: 0;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .sidebar-scrim.is-open { display: block; }
             .sidebar {
                 display: none;
                 position: fixed;
                 left: 0; top: 0; bottom: 0;
-                width: var(--sidebar-w);
+                width: calc(var(--sidebar-w) + var(--sal));
+                height: 100vh;
+                height: 100dvh;
+                padding-top: max(12px, var(--sat));
+                padding-bottom: max(12px, var(--sab));
+                padding-left: var(--sal);
+                z-index: 40;
             }
-            .sidebar.open { display: flex; box-shadow: 8px 0 32px rgba(0,0,0,.18); }
+            .sidebar.open {
+                display: flex;
+                box-shadow: 8px 0 32px rgba(0,0,0,.18);
+                width: min(220px, calc(100vw - 56px));
+                align-items: stretch;
+            }
+            .sidebar.open .sidebar-logo {
+                margin-left: 14px;
+                margin-right: auto;
+            }
+            .sidebar.open .nav {
+                align-items: stretch;
+                padding: 0 10px;
+                gap: 4px;
+            }
+            .sidebar.open .nav a {
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                width: auto;
+                min-width: 0;
+                height: 44px;
+                gap: 12px;
+                padding: 0 12px;
+                font-size: 14px;
+                color: var(--muted);
+            }
+            .sidebar.open .nav a.active { color: var(--text); }
+            .sidebar.open .nav a::after {
+                content: attr(title);
+                font-size: 13.5px;
+                font-weight: 500;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .sidebar.open .sidebar-foot {
+                flex-direction: row;
+                justify-content: flex-start;
+                padding: 8px 14px max(8px, var(--sab));
+                gap: 8px;
+            }
+            .sidebar.open .iconbtn {
+                width: 44px;
+                height: 44px;
+            }
+            .topbar {
+                gap: 8px;
+                padding-left: max(12px, var(--sal));
+                padding-right: max(12px, var(--sar));
+            }
+            .global-search {
+                max-width: none;
+                min-width: 0;
+                height: 40px;
+            }
             .global-search kbd { display: none; }
+            .global-search input { font-size: 16px; }
+            .topbar-actions { gap: 4px; }
+            .topbar-msg-btn {
+                width: 44px;
+                height: 44px;
+            }
+            .sync-chip {
+                max-width: 64px;
+            }
             .user-chip { display: none; }
             .kpis { grid-template-columns: 1fr; }
             .kpi { border-right: none !important; border-bottom: 1px solid var(--border); }
             .kpi:last-child { border-bottom: none; }
+            /* Evita zoom iOS al enfocar (Safari <16px) */
+            input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]),
+            select,
+            textarea {
+                font-size: 16px !important;
+            }
+            body.drawer-open { overflow: hidden; }
+        }
+        @media (max-width: 480px) {
+            .sync-chip {
+                width: 32px;
+                height: 32px;
+                padding: 0;
+                max-width: none;
+                border-radius: 999px;
+                font-size: 0;
+                line-height: 0;
+                color: transparent;
+            }
+            .sync-chip::after {
+                content: '';
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--muted);
+            }
+            .sync-chip.is-ok::after { background: #1a7f37; }
+            .sync-chip.is-err::after { background: var(--danger); }
+            .sync-chip.is-pending::after { background: var(--muted); }
         }
 
         /* —— POS cart line items —— */
@@ -3808,7 +3958,11 @@
         .btn.primary:disabled { opacity: .45; cursor: not-allowed; }
         .nav a[data-section][hidden] { display: none !important; }
         .toast {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            position: fixed;
+            bottom: max(20px, var(--sab));
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: calc(100vw - 32px - var(--sal) - var(--sar));
             background: var(--text); color: var(--bg); padding: 10px 16px;
             border-radius: var(--radius-sm); font-size: 13px; z-index: 100;
             opacity: 0; pointer-events: none; transition: opacity .2s, background .2s;
@@ -6925,10 +7079,637 @@
             .pos-pay-checkout { width: 100%; }
             #posCheckoutBtn { flex: 1; }
         }
+
+        /* —— iPhone / móvil Fases 2–4 (≤760 / ≤480) —— */
+        @media (max-width: 760px) {
+            :root { --kb-inset: 0px; }
+
+            /* F2: Venta — estación fija al viewport; Cobrar siempre visible */
+            .content:has(#venta.active) {
+                padding: 8px 10px 0;
+                height: calc(100vh - var(--topbar-h) - var(--sat) - var(--kb-inset, 0px));
+                height: calc(100dvh - var(--topbar-h) - var(--sat) - var(--kb-inset, 0px));
+                max-height: calc(100vh - var(--topbar-h) - var(--sat) - var(--kb-inset, 0px));
+                max-height: calc(100dvh - var(--topbar-h) - var(--sat) - var(--kb-inset, 0px));
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                box-sizing: border-box;
+            }
+            #venta.section.active {
+                flex: 1;
+                min-height: 0;
+                max-height: 100%;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            #venta .pos-mode-bar {
+                margin-bottom: 8px;
+                flex-shrink: 0;
+            }
+            #venta .pos-mode-bar .seg-control button {
+                min-height: 44px;
+                padding: 0 14px;
+            }
+            #venta .pos-mode-panel {
+                flex: 1;
+                min-height: 0;
+                overflow: hidden;
+            }
+            #venta .pos-station {
+                flex: 1;
+                min-height: 0;
+                overflow: hidden;
+                border-radius: var(--radius-sm);
+            }
+            #venta .pos-station-top {
+                padding: 8px 10px 10px;
+                gap: 8px 10px;
+                flex-shrink: 0;
+            }
+            #venta .pos-station-title {
+                font-size: 16px;
+                padding-bottom: 0;
+            }
+            #venta .pos-station-top .pos-client-trigger,
+            #venta .pos-station-top .pos-select,
+            #venta .pos-station-top .btn {
+                height: 40px;
+            }
+            #venta .pos-station-fields {
+                grid-template-columns: minmax(0, 1.4fr) minmax(110px, 0.9fr);
+                gap: 8px 10px;
+                align-items: end;
+            }
+            #venta .pos-station-top .field-label {
+                font-size: 10px;
+                margin: 0;
+            }
+            #venta .pos-station-actions .btn {
+                padding: 0 10px;
+                font-size: 12px;
+            }
+            #venta .pos-station-main {
+                grid-template-columns: 1fr;
+                grid-template-rows: minmax(0, 1.25fr) minmax(0, 1fr);
+                overflow: hidden;
+                min-height: 0;
+            }
+            #venta .pos-pad {
+                min-height: 0;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                border-bottom: 1px solid var(--border);
+            }
+            #venta .pos-pad .product-grid {
+                flex: 1;
+                max-height: none;
+                min-height: 120px;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                padding: 10px;
+                gap: 8px;
+                align-content: start;
+            }
+            #venta .pos-pad-tools {
+                padding: 8px 10px;
+                min-height: 0;
+                gap: 6px;
+            }
+            #venta .pos-pad-tools .search {
+                height: 40px;
+            }
+            #venta .pos-pad-tools .chips {
+                max-height: none;
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                overflow-y: hidden;
+                -webkit-overflow-scrolling: touch;
+                gap: 6px;
+                padding-bottom: 2px;
+                scrollbar-width: none;
+            }
+            #venta .pos-pad-tools .chips::-webkit-scrollbar { display: none; }
+            #venta .pos-pad-tools .chips .chip {
+                flex: 0 0 auto;
+                min-height: 34px;
+                padding: 6px 10px;
+            }
+            #venta .pos-ticket {
+                border-left: none;
+                border-top: none;
+                min-height: 0;
+                overflow: hidden;
+            }
+            #venta .pos-cart-body {
+                min-height: 0;
+                flex: 1;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+                padding: 6px 12px 12px;
+            }
+            #venta .cart-item .ci-meta,
+            #venta .cart-item .qty-row {
+                flex-wrap: wrap;
+            }
+            #venta .cart-item .ci-line {
+                font-size: 13px;
+            }
+            #venta .pos-station-pay {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                padding: 8px 10px max(8px, calc(6px + var(--sab)));
+                position: relative;
+                z-index: 16;
+                flex-shrink: 0;
+                box-shadow: 0 -8px 28px rgba(10, 10, 10, 0.08);
+                border-top: 1px solid var(--border);
+            }
+            #venta .pos-pay-block,
+            #venta .pos-bill-block {
+                gap: 4px;
+            }
+            #venta .pos-pay-block {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                column-gap: 12px;
+                row-gap: 4px;
+            }
+            #venta .pos-pay-block > .field-label,
+            #venta .pos-pay-block > .seg.seg-pay {
+                flex: 1 1 100%;
+            }
+            #venta .pos-station-pay .field-label {
+                margin: 0;
+                font-size: 10px;
+            }
+            #venta .pos-pay-block .pay-split-panel {
+                flex: 1 1 100%;
+            }
+            #venta .pos-pay-checkout {
+                width: 100%;
+                align-items: center;
+                gap: 10px;
+            }
+            #venta .pos-station-pay .cart-total {
+                justify-items: start;
+                text-align: left;
+                min-width: 0;
+                gap: 2px;
+            }
+            #venta .pos-station-pay .cart-total .amount {
+                font-size: 24px;
+            }
+            #posCheckoutBtn {
+                flex: 1;
+                height: 48px;
+                min-height: 48px;
+                min-width: 0;
+            }
+            #venta .seg.seg-pay {
+                display: flex;
+                flex-wrap: nowrap;
+                gap: 6px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding-bottom: 2px;
+            }
+            #venta .seg.seg-pay::-webkit-scrollbar { display: none; }
+            #venta .seg.seg-pay label,
+            #venta .seg.two label {
+                flex: 0 0 auto;
+                min-height: 40px;
+                padding: 6px 12px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                white-space: nowrap;
+            }
+            #venta .seg.two {
+                display: flex;
+                width: 100%;
+            }
+            #venta .seg.two label {
+                flex: 1;
+            }
+            #venta .pay-split-check,
+            #venta .pos-precompra-check {
+                font-size: 12px;
+                min-height: 32px;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .cart-item {
+                grid-template-columns: 56px minmax(0, 1fr) auto;
+                gap: 4px 10px;
+            }
+            .cart-item .ci-thumb {
+                width: 56px;
+                min-height: 56px;
+            }
+            .qty-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+            }
+            .qty-input {
+                width: 52px;
+                min-width: 52px;
+                max-width: 64px;
+                flex-basis: 52px;
+                height: 44px;
+                font-size: 16px;
+            }
+            .qty-val { min-width: 28px; }
+            .qty-row { gap: 8px; }
+
+            /* F2: Cortes — filtros/tablas contenidos */
+            .cortes-head,
+            .page-head {
+                gap: 10px;
+            }
+            .cortes-range {
+                flex-wrap: wrap;
+                width: 100%;
+            }
+            .cortes-range-label {
+                min-width: 0;
+                flex: 1;
+                min-height: 44px;
+            }
+            .cortes-nav-btn,
+            .cortes-today-btn {
+                min-width: 44px;
+                min-height: 44px;
+            }
+            .cortes-filters-bar {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                gap: 8px;
+                padding-bottom: 4px;
+                scrollbar-width: thin;
+            }
+            .cortes-filters-bar .seg-control {
+                flex: 0 0 auto;
+            }
+            .seg-control button {
+                min-height: 44px;
+                padding: 0 12px;
+            }
+            .table-card,
+            .cortes-chart-panel,
+            .dinero-ledger-wrap,
+            .card:has(table) {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                max-width: 100%;
+            }
+            .cortes-secondary,
+            .cortes-breakdowns {
+                grid-template-columns: 1fr;
+            }
+            .kpis.kpis-4,
+            .mat-kpis {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            /* F3: Productos hub / precios / fórmula / producción / materiales */
+            .products-inventory-head {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .products-inventory-actions,
+            .products-inventory-btns {
+                flex-wrap: wrap;
+                width: 100%;
+            }
+            .products-print-btn,
+            .products-sort-btn {
+                min-height: 44px;
+                height: 44px;
+            }
+            .products-print-btn { width: 44px; }
+            #productsAddInventoryBtn {
+                min-height: 44px;
+                flex: 1 1 auto;
+            }
+            .products-inventory-chart {
+                grid-template-columns: 1fr;
+                gap: 2px;
+            }
+            .products-inventory-name .products-inventory-label {
+                white-space: normal;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .pd-tabs.seg-control,
+            #pdTabs {
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                width: 100%;
+                max-width: 100%;
+                scrollbar-width: none;
+            }
+            .pd-tabs.seg-control::-webkit-scrollbar,
+            #pdTabs::-webkit-scrollbar { display: none; }
+            .pd-tabs.seg-control button,
+            #pdTabs button {
+                flex: 0 0 auto;
+                min-height: 44px;
+                white-space: nowrap;
+            }
+            .pd-prices-head,
+            .pd-formula-head,
+            .pd-hero {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .pd-prices-actions,
+            .pd-formula-actions {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+            .pd-prices-actions .btn,
+            .pd-formula-actions .btn {
+                min-height: 44px;
+                height: 44px;
+            }
+            .card:has(.prices-table),
+            #pdPanelPrecios .card,
+            #pdPanelFormula .card {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .prices-table {
+                min-width: 520px;
+            }
+            .formula-meta {
+                grid-template-columns: 1fr;
+            }
+            .formula-line,
+            .formula-line.formula-line-pack {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .formula-line .formula-slider {
+                grid-column: 1;
+                width: 100%;
+                min-height: 44px;
+            }
+            .formula-actions .btn,
+            #prodLotsWrap .btn,
+            #production .btn {
+                min-height: 44px;
+            }
+            #prodLotsWrap.prod-lots-wrap {
+                gap: 12px;
+            }
+            .prod-lots-controls {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .prod-lots-controls input[type="number"] {
+                min-height: 44px;
+                font-size: 16px;
+            }
+            .mat-kpis .kpi .val { font-size: 20px; }
+            .lot-ticket-doc,
+            #lotTicketModal .modal-body,
+            #purchaseTicketModal .modal-body {
+                max-height: min(70dvh, 560px);
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* F4: Modales bottom-sheet */
+            .modal-backdrop {
+                align-items: flex-end;
+                justify-content: center;
+                padding: 0;
+                padding-left: var(--sal);
+                padding-right: var(--sar);
+            }
+            .modal-backdrop .modal-card,
+            .modal-card {
+                max-width: 100%;
+                width: 100%;
+                max-height: min(92dvh, calc(100dvh - var(--kb-inset, 0px) - 8px));
+                border-radius: 16px 16px 0 0;
+                border-bottom: none;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                margin: 0;
+            }
+            .modal-backdrop .modal-body,
+            .modal-card .modal-body {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                flex: 1;
+                min-height: 0;
+                padding-bottom: max(16px, var(--sab));
+            }
+            .modal-head {
+                flex-shrink: 0;
+                min-height: 52px;
+                padding: 12px 16px;
+            }
+            .modal-head .iconbtn,
+            .modal-head .btn {
+                min-width: 44px;
+                min-height: 44px;
+            }
+            #saleNoteModal .modal-card,
+            #promoAdminModal .modal-card,
+            #posGenerateModal .modal-card,
+            #lotTicketModal .modal-card,
+            #purchaseTicketModal .modal-card {
+                max-height: min(92dvh, calc(100dvh - var(--kb-inset, 0px) - 8px));
+                width: 100%;
+                max-width: 100%;
+                border-radius: 16px 16px 0 0;
+            }
+            #posGenerateModal .modal-card {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            #posGenerateModal .gen-panel .form-grid {
+                grid-template-columns: 1fr;
+            }
+            #posGenerateModal .gen-datetime-row {
+                grid-template-columns: 1fr;
+            }
+            #posGenerateModal .gen-lines-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                max-width: 100%;
+            }
+            #posGenerateModal .gen-tabs button {
+                min-height: 44px;
+            }
+
+            /* F4: Command palette — sheet desde arriba */
+            #cmdPalette {
+                padding: max(8px, var(--sat)) 0 0;
+                align-items: stretch;
+            }
+            #cmdPalette .cmd-palette-card,
+            .cmd-palette-card {
+                max-width: 100%;
+                width: 100%;
+                max-height: min(88dvh, calc(100dvh - var(--kb-inset, 0px) - 12px));
+                border-radius: 0 0 16px 16px;
+                margin: 0;
+            }
+            .cmd-palette-foot { display: none; }
+            .cmd-item {
+                min-height: 48px;
+                padding: 12px 14px;
+            }
+
+            /* F4: Mensajes / mail float → sheet full-screen */
+            .content:has(#messages.active) {
+                padding: 8px 10px max(12px, var(--sab));
+            }
+            .mail-workspace {
+                min-height: calc(100dvh - var(--topbar-h) - var(--sat) - 40px);
+            }
+            .mail-list-pane {
+                max-height: 36vh;
+            }
+            .mail-copilot-float {
+                inset: 0 !important;
+                left: 0 !important;
+                top: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                min-width: 0 !important;
+                min-height: 0 !important;
+                max-width: none !important;
+                max-height: none !important;
+                border-radius: 0;
+                border: none;
+                padding-top: var(--sat);
+                padding-bottom: var(--sab);
+                z-index: 90;
+            }
+            .mail-copilot-float-bar {
+                cursor: default;
+                touch-action: manipulation;
+                min-height: 52px;
+                padding-top: 14px;
+            }
+            .mail-copilot-float-close {
+                width: 44px;
+                height: 44px;
+            }
+            .mail-copilot-composer {
+                padding-bottom: max(14px, var(--sab));
+            }
+            .mail-copilot-composer input {
+                font-size: 16px;
+                height: 44px;
+            }
+            .mail-copilot-composer .btn {
+                width: 44px;
+                height: 44px;
+            }
+            .mail-copilot-resize { display: none; }
+            .mail-copilot-launch {
+                width: 44px;
+                height: 44px;
+            }
+            .mail-draft-body { font-size: 16px; }
+            body.mail-copilot-sheet-open {
+                overflow: hidden;
+            }
+
+            /* Toasts ya usan --sab; reforzar en móvil */
+            .toast {
+                bottom: max(16px, calc(12px + var(--sab) + var(--kb-inset, 0px)));
+            }
+        }
+
+        @media (max-width: 480px) {
+            #venta .pos-station-title { display: none; }
+            #venta .pos-station-top {
+                grid-template-columns: 1fr auto;
+            }
+            #venta .pos-station-actions { grid-column: 2; }
+            #venta .pos-station-fields { grid-column: 1 / -1; }
+            #venta .pos-station-pay .cart-total .amount {
+                font-size: 22px;
+            }
+            #venta .pos-pad .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            }
+            .cart-item {
+                grid-template-columns: 48px minmax(0, 1fr) auto;
+            }
+            .cart-item .ci-thumb {
+                width: 48px;
+                min-height: 48px;
+            }
+            .mat-kpis,
+            .kpis.kpis-4,
+            .products-kpis {
+                grid-template-columns: 1fr;
+            }
+            .mat-kpis .kpi,
+            .products-kpis .kpi {
+                border-right: none !important;
+                border-bottom: 1px solid var(--border);
+            }
+            .mat-kpis .kpi:last-child,
+            .products-kpis .kpi:last-child {
+                border-bottom: none;
+            }
+            #productsAddInventoryBtn .fa-plus + span,
+            #productsAddInventoryBtn {
+                font-size: 13px;
+            }
+            .products-catalog-card .toolbar {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .products-catalog-card .toolbar .search {
+                flex: 1 1 100%;
+                min-width: 0;
+            }
+            .period-range-popover {
+                left: 8px !important;
+                right: 8px !important;
+                width: auto;
+                max-width: none;
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 760px) and (pointer: coarse) {
+            .cmd-palette-foot { display: none; }
+        }
     </style>
 </head>
 <body>
     <div class="app">
+        <button type="button" class="sidebar-scrim" id="sidebarScrim" aria-label="Cerrar menú" tabindex="-1"></button>
         <aside class="sidebar" id="sidebar">
             <a class="sidebar-logo" href="/" title="S-35" aria-label="Sitio S-35">
                 <img src="/Assets/Logotipo Principal.png" alt="S-35">
@@ -6955,7 +7736,7 @@
 
         <div class="main">
             <header class="topbar">
-                <button class="menu-btn" id="menuBtn" type="button" aria-label="Menú"><i class="fa-solid fa-bars"></i></button>
+                <button class="menu-btn" id="menuBtn" type="button" aria-label="Menú" aria-expanded="false" aria-controls="sidebar"><i class="fa-solid fa-bars"></i></button>
                 <label class="global-search" for="globalSearch">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input id="globalSearch" type="search" placeholder="Buscar, @cliente, /cortes…" autocomplete="off" readonly>
@@ -8914,34 +9695,48 @@
     (function wireSyncStatusChip() {
         const chip = document.getElementById('syncStatusChip');
         if (!chip) return;
+        function isCompactSync() {
+            try { return window.matchMedia && window.matchMedia('(max-width: 480px)').matches; }
+            catch (_) { return false; }
+        }
         function paint(detail) {
             const d = detail || (window.S35PanelSync && window.S35PanelSync.getStatus && window.S35PanelSync.getStatus()) || {};
+            const compact = isCompactSync();
             chip.classList.remove('is-ok', 'is-err', 'is-pending');
             if (d.lastError || d.ok === false) {
                 chip.classList.add('is-err');
-                chip.textContent = 'Sync error';
+                chip.textContent = compact ? '·' : 'Sync error';
                 chip.title = String(d.lastError || 'Error de sincronización');
+                chip.setAttribute('aria-label', chip.title);
                 return;
             }
             if (!d.bootDone) {
                 chip.classList.add('is-pending');
-                chip.textContent = 'Sync…';
+                chip.textContent = compact ? '·' : 'Sync…';
                 chip.title = 'Sincronizando con el servidor';
+                chip.setAttribute('aria-label', chip.title);
                 return;
             }
             if (d.pending && d.pending.length) {
                 chip.classList.add('is-pending');
-                chip.textContent = 'Subiendo…';
+                chip.textContent = compact ? '·' : 'Subiendo…';
                 chip.title = 'Pendiente: ' + d.pending.join(', ');
+                chip.setAttribute('aria-label', chip.title);
                 return;
             }
             chip.classList.add('is-ok');
-            chip.textContent = 'En nube';
+            chip.textContent = compact ? '·' : 'En nube';
             chip.title = d.lastPushAt
                 ? ('Última subida: ' + d.lastPushAt)
                 : 'Datos sincronizados entre computadoras';
+            chip.setAttribute('aria-label', chip.title);
         }
         window.addEventListener('s35-sync-status', function (e) { paint(e.detail); });
+        try {
+            const mq = window.matchMedia('(max-width: 480px)');
+            if (mq.addEventListener) mq.addEventListener('change', function () { paint(); });
+            else if (mq.addListener) mq.addListener(function () { paint(); });
+        } catch (_) {}
         paint();
         setInterval(paint, 4000);
     })();
@@ -9646,8 +10441,31 @@
     }
 
     const sidebar = document.getElementById('sidebar');
-    document.getElementById('menuBtn').addEventListener('click', function () {
-        sidebar.classList.toggle('open');
+    const sidebarScrim = document.getElementById('sidebarScrim');
+    const menuBtn = document.getElementById('menuBtn');
+    function setDrawerOpen(open) {
+        const next = !!open;
+        if (sidebar) sidebar.classList.toggle('open', next);
+        if (sidebarScrim) {
+            sidebarScrim.classList.toggle('is-open', next);
+            sidebarScrim.setAttribute('aria-hidden', next ? 'false' : 'true');
+        }
+        document.body.classList.toggle('drawer-open', next);
+        if (menuBtn) menuBtn.setAttribute('aria-expanded', next ? 'true' : 'false');
+    }
+    function closeDrawer() { setDrawerOpen(false); }
+    if (menuBtn) {
+        menuBtn.addEventListener('click', function () {
+            setDrawerOpen(!(sidebar && sidebar.classList.contains('open')));
+        });
+    }
+    if (sidebarScrim) {
+        sidebarScrim.addEventListener('click', closeDrawer);
+    }
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
+            closeDrawer();
+        }
     });
 
     const SECTION_IDS = ['dashboard', 'venta', 'cortes', 'dinero', 'clients', 'cobranza', 'precompras', 'promos', 'salesHistory', 'products', 'prices', 'messages', 'catalog', 'materials', 'formulas', 'production'];
@@ -9753,7 +10571,7 @@
                 || (id === 'precompras' && sec === 'clients')
             );
         });
-        sidebar.classList.remove('open');
+        closeDrawer();
         if (id === 'products' && typeof openProductHub === 'function') {
             if (legacyRecipe || opts.slug) {
                 openProductHub(legacyRecipe || opts.slug, {
@@ -17163,9 +17981,9 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20261005-banorte-oct"></script>
-    <script src="/colaboradores/command-palette.js?v=20260926-dinero"></script>
-    <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
+    <script src="/colaboradores/pos-module.js?v=20261006-iphone-f2f4"></script>
+    <script src="/colaboradores/command-palette.js?v=20261006-iphone-f2f4"></script>
+    <script src="/colaboradores/mail-copilot.js?v=20261006-iphone-f2f4"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>
 </body>
 </html>

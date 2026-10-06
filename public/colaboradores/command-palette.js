@@ -826,6 +826,10 @@
         open = true;
         backdrop.classList.add('show');
         backdrop.setAttribute('aria-hidden', 'false');
+        try {
+            const touch = window.matchMedia('(max-width: 760px), (pointer: coarse)').matches;
+            backdrop.classList.toggle('is-touch', !!touch);
+        } catch (_) {}
         const input = document.getElementById('cmdPaletteInput');
         if (input) {
             input.value = seed != null ? seed : '';
