@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
     <title>S-35 | Colaboradores</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3272,10 +3272,33 @@
             .sidebar {
                 display: none;
                 position: fixed;
-                left: 0; top: 0; bottom: 0;
+                left: max(10px, env(safe-area-inset-left, 0px));
+                top: max(12px, env(safe-area-inset-top, 0px));
+                bottom: max(12px, env(safe-area-inset-bottom, 0px));
                 width: var(--sidebar-w);
+                height: auto;
+                max-height: calc(
+                    100dvh
+                    - max(12px, env(safe-area-inset-top, 0px))
+                    - max(12px, env(safe-area-inset-bottom, 0px))
+                );
+                border: 1px solid var(--border);
+                border-right: 1px solid var(--border);
+                border-radius: calc(var(--sidebar-w) / 2);
+                overflow: hidden;
+                padding: 14px 0;
+                box-sizing: border-box;
             }
-            .sidebar.open { display: flex; box-shadow: 8px 0 32px rgba(0,0,0,.18); }
+            .sidebar.open {
+                display: flex;
+                box-shadow: 0 10px 36px rgba(0, 0, 0, 0.18);
+            }
+            .sidebar .nav {
+                min-height: 0;
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                -webkit-overflow-scrolling: touch;
+            }
             .global-search kbd { display: none; }
             .user-chip { display: none; }
             .kpis { grid-template-columns: 1fr; }
