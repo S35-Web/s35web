@@ -5675,7 +5675,7 @@
                 '<div class="fam">' + (fam ? familyDot(fam) : '') + esc(fam || PRODUCT_UNCATEGORIZED_LABEL) + '</div>' +
                 '<div class="name">' + esc(r.name) + '</div>' +
                 '<div class="meta">' +
-                '<span class="unit">Inventario: <strong>' + stock + '</strong></span>' +
+                '<span class="unit">' + stock + ' Unidades</span>' +
                 '</div>' +
                 priceNote +
                 '<div class="muted product-code">' +
