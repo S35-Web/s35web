@@ -564,6 +564,28 @@
     function roundMoney(n) {
         return Math.round((Number(n) || 0) * 100) / 100;
     }
+    /**
+     * Clip (tarjeta sin factura): comisión 3.60% del cobro + IVA 16% sobre esa comisión.
+     * Ej. $1,300 → comisión $46.80 + IVA $7.49 = neto $1,245.71
+     */
+    const CLIP_TARJETA_SF_FEE_RATE = 0.036;
+    const CLIP_TARJETA_SF_FEE_IVA = 0.16;
+    function clipTarjetaSfBreakdown(gross) {
+        const g = roundMoney(gross);
+        const commission = roundMoney(g * CLIP_TARJETA_SF_FEE_RATE);
+        const iva = roundMoney(commission * CLIP_TARJETA_SF_FEE_IVA);
+        const fee = roundMoney(commission + iva);
+        return {
+            gross: g,
+            commission: commission,
+            iva: iva,
+            fee: fee,
+            net: roundMoney(g - fee)
+        };
+    }
+    function clipTarjetaSfNet(gross) {
+        return clipTarjetaSfBreakdown(gross).net;
+    }
     /** Líneas de pago de una venta (compat: 1 método = total completo). */
     function salePaymentLines(sale) {
         const total = roundMoney(sale && sale.total);
@@ -3981,7 +4003,10 @@
         });
         const buckets = {};
         TESORERIA_ACCOUNTS.forEach(function (acc) {
-            buckets[acc.id] = { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0, extracto: 0 };
+            buckets[acc.id] = {
+                tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0,
+                tarjetaFact: 0, tarjetaSf: 0, tarjetaSfGross: 0, clipFees: 0, extracto: 0
+            };
         });
         const statement = filterTesoreriaMovsByCity(tesoreriaMovs, city).filter(isPostOpeningBankStatement);
         const depositPool = {};
@@ -4037,13 +4062,18 @@
                 const account = tesoreriaAccountOfPayment(p.method, billing);
                 if (!account) return;
                 if (account === 'banco' && statementAlreadyReceived(sale, p.amount)) return;
-                buckets[account].tickets = roundMoney(buckets[account].tickets + p.amount);
+                // Tarjeta s/factura (Clip): abona el neto tras comisión 3.60% + IVA 16% sobre comisión.
+                const credit = account === 'tarjeta_sf' ? clipTarjetaSfNet(p.amount) : p.amount;
+                buckets[account].tickets = roundMoney(buckets[account].tickets + credit);
                 if (p.method === 'transferencia') {
                     buckets[account].transfer = roundMoney(buckets[account].transfer + p.amount);
                 } else if (p.method === 'tarjeta' && billing === 'facturado') {
                     buckets[account].tarjetaFact = roundMoney(buckets[account].tarjetaFact + p.amount);
                 } else if (p.method === 'tarjeta') {
-                    buckets[account].tarjetaSf = roundMoney(buckets[account].tarjetaSf + p.amount);
+                    const clip = clipTarjetaSfBreakdown(p.amount);
+                    buckets[account].tarjetaSf = roundMoney(buckets[account].tarjetaSf + clip.net);
+                    buckets[account].tarjetaSfGross = roundMoney(buckets[account].tarjetaSfGross + clip.gross);
+                    buckets[account].clipFees = roundMoney(buckets[account].clipFees + clip.fee);
                 }
             });
         });
@@ -5674,6 +5704,7 @@
                 '<div class="pc-body">' +
                 '<div class="fam">' + (fam ? familyDot(fam) : '') + esc(fam || PRODUCT_UNCATEGORIZED_LABEL) + '</div>' +
                 '<div class="name">' + esc(r.name) + '</div>' +
+                '<div class="pc-price">' + money(live) + '</div>' +
                 '<div class="meta">' +
                 '<span class="unit">' + stock + ' Unidades</span>' +
                 '</div>' +
@@ -5784,13 +5815,11 @@
                     ? ('Distribuidor · ' + units + ' u pagadas · precio fijo distribuidores')
                     : 'Cliente distribuidor: se aplica el precio distribuidores de cada producto';
             } else {
-                tierHint.textContent = units
-                    ? ('Volumen ticket: ' + units + ' u · escalón «' + tierLabelForQty(units) + '»')
-                    : 'Volumen de compra: el escalón depende de las unidades totales del ticket';
+                tierHint.textContent = 'Volumen ticket: ' + units + ' u';
             }
         }
         if (!cart.length) {
-            body.innerHTML = '<div class="empty">Agrega productos del catálogo.</div>';
+            body.innerHTML = '<div class="empty"><span class="empty-title">Ticket vacío</span><span class="empty-sub">Toca un producto para sumarlo.</span></div>';
             if (btn) btn.disabled = true;
         } else {
             body.innerHTML = cart.map(function (it, idx) {
@@ -5856,9 +5885,9 @@
                         'data-qty="' + idx + '" value="' + esc(String(it.qty)) + '" ' +
                         'aria-label="Cantidad" title="Escribe la cantidad">' +
                         '<button type="button" class="qty-btn" data-inc="' + idx + '" aria-label="Más">+</button>' +
-                        '<button type="button" class="btn ghost" data-dup-line="' + idx + '" style="margin-left:auto;height:28px;padding:0 8px" title="Duplicar línea (mismo producto, otro precio)">' +
-                        '<i class="fa-solid fa-clone" aria-hidden="true"></i> Duplicar</button>' +
-                        '<button type="button" class="btn ghost danger" data-rm="' + idx + '" style="height:28px;padding:0 8px">Quitar</button>' +
+                        '<button type="button" class="btn ghost ci-dup" data-dup-line="' + idx + '" title="Duplicar línea (mismo producto, otro precio)">' +
+                        '<i class="fa-solid fa-clone" aria-hidden="true"></i></button>' +
+                        '<button type="button" class="btn ghost danger ci-rm" data-rm="' + idx + '" aria-label="Quitar">Quitar</button>' +
                         '</div>');
                 return '<div class="' + itemClass + '" data-product="' + esc(it.product) + '">' +
                     thumbHtml +
@@ -7873,11 +7902,19 @@
         }
         const cardLines = document.getElementById('dineroTarjetaSfLines');
         if (cardLines) {
-            cardLines.innerHTML = dineroLinesHtml([
+            const clipRows = [
                 { label: 'Saldo de apertura', amount: acc.tarjeta_sf.apertura },
-                { label: 'Tickets posteriores', amount: acc.tarjeta_sf.tarjetaSf },
+                { label: 'Tickets brutos', amount: acc.tarjeta_sf.tarjetaSfGross },
+                { label: 'Comisión Clip 3.6% + IVA', amount: acc.tarjeta_sf.clipFees, out: true },
+                { label: 'Tickets netos', amount: acc.tarjeta_sf.tarjetaSf },
                 { label: 'Ajustes', amount: acc.tarjeta_sf.ajustes, out: acc.tarjeta_sf.ajustes < 0 }
-            ]);
+            ];
+            cardLines.innerHTML = dineroLinesHtml(clipRows.filter(function (row) {
+                if (row.label === 'Tickets brutos' || row.label === 'Comisión Clip 3.6% + IVA') {
+                    return !!acc.tarjeta_sf.clipFees;
+                }
+                return true;
+            }));
         }
         const emp = acc.efectivo_empresarial;
         setDineroCardTotal('dineroEmpresarialTotal', emp ? emp.total : 0);
@@ -7978,6 +8015,9 @@
             salePaymentLines(sale).forEach(function (p, idx) {
                 const account = tesoreriaAccountOfPayment(p.method, billing);
                 if (!account) return;
+                const isClipSf = account === 'tarjeta_sf';
+                const clip = isClipSf ? clipTarjetaSfBreakdown(p.amount) : null;
+                const credited = clip ? clip.net : roundMoney(p.amount);
                 rows.push({
                     id: (sale.id || 'sale') + '-' + p.method + '-' + idx,
                     createdAt: sale.createdAt,
@@ -7986,11 +8026,12 @@
                     type: 'venta',
                     source: 'pos',
                     note: folio + ' · ' + client + ' · ' + payLabel(p.method) +
-                        (billing === 'facturado' ? ' facturado' : ' s/factura'),
+                        (billing === 'facturado' ? ' facturado' : ' s/factura') +
+                        (clip ? ' · neto Clip (' + money(clip.gross) + ' − ' + money(clip.fee) + ')' : ''),
                     reference: sale.folio || '',
-                    amount: roundMoney(p.amount),
-                    signed: roundMoney(p.amount),
-                    ingreso: roundMoney(p.amount),
+                    amount: credited,
+                    signed: credited,
+                    ingreso: credited,
                     gasto: 0,
                     city: saleCity(sale),
                     locked: true,
