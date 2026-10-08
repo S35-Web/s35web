@@ -1116,7 +1116,7 @@
             justify-content: space-between;
             gap: 12px;
             flex: 0 0 auto;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
         .pos-mode-bar .seg-control {
             width: fit-content;
@@ -1574,7 +1574,7 @@
             font-weight: 600;
             letter-spacing: -0.01em;
         }
-        .pos-station-pay .pay-split-check { margin-top: 4px; }
+        .pos-station-pay .pay-split-check { margin-top: 0; }
         .pos-station-pay .seg.seg-pay label {
             font-size: 12.5px;
             font-weight: 550;
@@ -6955,6 +6955,368 @@
             .pos-pay-checkout { width: 100%; }
             #posCheckoutBtn { flex: 1; }
         }
+
+        /* —— Venta: catálogo + ticket integrado (Square / Fresha) —— */
+        #posModeVenta .pos-station {
+            grid-template-rows: auto minmax(0, 1fr);
+            border-radius: 16px;
+        }
+        #posModeVenta .pos-station-top {
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: end;
+            padding: 8px 12px;
+            background: var(--panel);
+        }
+        #posModeVenta .pos-station-title { display: none; }
+        #posModeVenta .pos-station-fields {
+            grid-template-columns: minmax(220px, 1fr) minmax(160px, 200px);
+        }
+        #posModeVenta .pos-station-top .field-label {
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+        #posModeVenta .pos-field { gap: 4px; }
+        #posModeVenta .pos-station-top .pos-client-trigger,
+        #posModeVenta .pos-select,
+        #posModeVenta .pos-station-top .btn {
+            height: 34px;
+            border-radius: 10px;
+        }
+        #posModeVenta .pos-station-main {
+            grid-template-columns: minmax(0, 1fr) minmax(300px, 332px);
+        }
+        #posModeVenta .pos-pad { background: var(--bg-soft); }
+        #posModeVenta .pos-pad-tools {
+            padding: 8px 12px 6px;
+            gap: 6px;
+            background: var(--bg-soft);
+            border-bottom: none;
+        }
+        #posModeVenta .pos-search {
+            position: relative;
+            display: block;
+        }
+        #posModeVenta .pos-search i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 13px;
+            pointer-events: none;
+        }
+        #posModeVenta .pos-search .search {
+            width: 100%;
+            height: 34px;
+            padding: 0 12px 0 34px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            font-size: 13px;
+        }
+        #posModeVenta .pos-search .search:focus { border-color: var(--text); }
+        #posModeVenta .pos-pad-tools .chips { max-height: none; }
+        #posModeVenta .pos-pad-tools .chip {
+            height: 26px;
+            padding: 0 10px;
+            font-size: 11px;
+            background: var(--panel);
+        }
+        #posModeVenta .pos-pad-tools .chip.active {
+            background: var(--text);
+            color: var(--primary-fg);
+            border-color: var(--text);
+        }
+        #posModeVenta .pos-pad .product-grid {
+            padding: 2px 12px 12px;
+            gap: 8px;
+            grid-template-columns: repeat(auto-fill, minmax(188px, 1fr));
+        }
+        #posModeVenta .product-card {
+            grid-template-columns: 48px minmax(0, 1fr);
+            gap: 0 10px;
+            padding: 7px 10px 7px 7px;
+            border-radius: 12px;
+            background: var(--panel);
+            border-color: transparent;
+            box-shadow: 0 0 0 1px var(--border);
+            min-height: 0;
+        }
+        #posModeVenta .product-card:hover {
+            background: var(--panel);
+            box-shadow: 0 0 0 1px var(--text);
+        }
+        #posModeVenta .product-card .thumb {
+            width: 48px;
+            height: 48px;
+            max-height: 48px;
+            border-radius: 8px;
+            background: var(--bg-soft);
+        }
+        #posModeVenta .product-card .thumb img {
+            max-width: 44px;
+            max-height: 44px;
+        }
+        #posModeVenta .product-card .pc-body { gap: 0; }
+        #posModeVenta .product-card .name {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        #posModeVenta .product-card .pc-price {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+        }
+        #posModeVenta .product-card .unit {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        #posModeVenta .product-card .fam { display: none; }
+        #posModeVenta .pos-ticket {
+            background: var(--panel);
+        }
+        #posModeVenta .pos-ticket-head {
+            min-height: 44px;
+            padding: 8px 12px;
+        }
+        #posModeVenta .pos-ticket-head h3 {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            text-transform: none;
+            color: var(--text);
+        }
+        #posModeVenta .pos-cart-body {
+            background: var(--panel);
+            padding: 4px 12px 12px;
+        }
+        #posModeVenta .pos-cart-body .empty {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-height: 0;
+            padding: 28px 16px;
+            color: var(--muted);
+        }
+        #posModeVenta .pos-cart-body .empty::before {
+            content: "\f07a";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 16px;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: var(--bg-soft);
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        #posModeVenta .pos-cart-body .empty-title {
+            color: var(--text);
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        #posModeVenta .pos-cart-body .empty-sub { font-size: 13px; }
+        #posModeVenta .cart-item {
+            grid-template-columns: 52px minmax(0, 1fr) auto;
+            gap: 2px 12px;
+            padding: 12px 4px;
+            align-items: center;
+        }
+        #posModeVenta .cart-item .ci-thumb {
+            width: 52px;
+            min-height: 52px;
+            height: 52px;
+            margin: 0;
+            border-radius: 10px;
+            background: var(--bg-soft);
+            grid-row: 1 / span 3;
+            align-self: center;
+        }
+        #posModeVenta .cart-item .ci-name {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        #posModeVenta .cart-item .ci-line {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        #posModeVenta .qty-row { gap: 8px; }
+        #posModeVenta .qty-btn,
+        #posModeVenta .qty-input {
+            height: 32px;
+            background: var(--bg-soft);
+            border-color: transparent;
+        }
+        #posModeVenta .qty-btn { width: 32px; border-radius: 8px; }
+        #posModeVenta .qty-input { border-radius: 8px; }
+        #posModeVenta .qty-row .ci-dup,
+        #posModeVenta .qty-row .ci-rm {
+            height: 32px;
+            padding: 0 8px;
+            border-radius: 8px;
+        }
+        #posModeVenta .qty-row .ci-dup { margin-left: auto; }
+        #posModeVenta .pos-station-pay {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            grid-template-columns: none;
+            align-items: stretch;
+            padding: 8px 10px 10px;
+            border-top: 1px solid var(--border);
+            background: var(--panel);
+            flex-shrink: 0;
+        }
+        #posModeVenta .pos-pay-block,
+        #posModeVenta .pos-bill-block { gap: 8px; }
+        #posModeVenta #posPaySeg {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+            border: none;
+            overflow: visible;
+            background: transparent;
+        }
+        #posModeVenta #posPaySeg label {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-height: 48px;
+            padding: 6px 2px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-soft);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+            text-align: center;
+        }
+        #posModeVenta #posPaySeg label i { font-size: 13px; }
+        #posModeVenta #posPaySeg input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #posModeVenta #posPaySeg label:has(input:checked) {
+            background: var(--text);
+            color: var(--primary-fg);
+            border-color: var(--text);
+        }
+        #posModeVenta .pos-pay-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        #posModeVenta .pay-split-check,
+        #posModeVenta .pos-precompra-check {
+            position: relative;
+            display: grid;
+            place-items: center;
+            margin: 0;
+            min-height: 32px;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-soft);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--muted);
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: background .12s, border-color .12s, color .12s;
+        }
+        #posModeVenta .pay-split-check input,
+        #posModeVenta .pos-precompra-check input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #posModeVenta .pay-split-check:has(input:checked),
+        #posModeVenta .pos-precompra-check:has(input:checked) {
+            background: var(--text);
+            color: var(--primary-fg);
+            border-color: var(--text);
+        }
+        #posModeVenta .pay-split-check:focus-within,
+        #posModeVenta .pos-precompra-check:focus-within {
+            outline: 2px solid color-mix(in srgb, var(--text) 28%, transparent);
+            outline-offset: 1px;
+        }
+        #posModeVenta .pay-split-check:hover:not(:has(input:checked)),
+        #posModeVenta .pos-precompra-check:hover:not(:has(input:checked)) {
+            border-color: color-mix(in srgb, var(--text) 28%, var(--border));
+            color: var(--text);
+        }
+        #posModeVenta .pos-bill-block .seg {
+            gap: 8px;
+            border: none;
+            overflow: visible;
+            background: transparent;
+        }
+        #posModeVenta .pos-bill-block .seg label {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-soft);
+            min-height: 32px;
+            padding: 6px 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        #posModeVenta .pos-bill-block .seg label:has(input:checked) {
+            background: var(--text);
+            color: var(--primary-fg);
+            border-color: var(--text);
+        }
+        #posModeVenta .pos-pay-checkout {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            align-items: center;
+            gap: 16px;
+            padding-top: 4px;
+        }
+        #posModeVenta .pos-station-pay .cart-total {
+            justify-items: start;
+            text-align: left;
+            min-width: 0;
+        }
+        #posModeVenta .pos-station-pay .cart-total .amount {
+            font-size: 22px;
+        }
+        #posModeVenta #posCheckoutBtn {
+            width: 100%;
+            height: 40px;
+            min-width: 0;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        #posModeVenta #posCheckoutBtn:disabled {
+            opacity: 0.38;
+        }
+        @media (max-width: 1100px) {
+            #posModeVenta .pos-station-main {
+                grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+            }
+            #posModeVenta #posPaySeg { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 900px) {
+            #posModeVenta .pos-station-main { grid-template-columns: 1fr; }
+            #posModeVenta .pos-pad .product-grid { max-height: 320px; }
+            #posModeVenta .pos-station-pay { max-height: none; }
+            #posModeVenta .pos-pay-checkout { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -7361,8 +7723,9 @@
                         <div class="pos-station-main">
                             <div class="pos-pad">
                                 <div class="pos-pad-tools">
-                                    <div class="toolbar">
-                                        <input id="posProductSearch" class="search" type="search" placeholder="Buscar producto…">
+                                    <div class="toolbar pos-search">
+                                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                        <input id="posProductSearch" class="search" type="search" placeholder="Buscar producto, código o familia…">
                                     </div>
                                     <div class="chips" id="posFamilyChips"></div>
                                 </div>
@@ -7384,49 +7747,50 @@
                                     <button type="button" class="btn" id="posPrecompraBannerBtn">Surtir</button>
                                 </div>
                                 <div class="pos-cart-body" id="posCartBody">
-                                    <div class="empty">Toca un producto para agregarlo al ticket.</div>
+                                    <div class="empty"><span class="empty-title">Ticket vacío</span><span class="empty-sub">Toca un producto para sumarlo.</span></div>
                                 </div>
+                                <footer class="pos-station-pay">
+                                    <div class="pos-pay-block">
+                                        <div class="field-label">Pago</div>
+                                        <div class="seg seg-pay" id="posPaySeg">
+                                            <label><input type="radio" name="payMethod" value="efectivo" checked><i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i><span>Efectivo</span></label>
+                                            <label><input type="radio" name="payMethod" value="tarjeta"><i class="fa-solid fa-credit-card" aria-hidden="true"></i><span>Tarjeta</span></label>
+                                            <label><input type="radio" name="payMethod" value="transferencia"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Transfer.</span></label>
+                                            <label id="posPayPorCobrarLabel"><input type="radio" name="payMethod" value="por_cobrar"><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i><span>Por cobrar</span></label>
+                                        </div>
+                                        <div class="pos-pay-options">
+                                            <label class="pay-split-check"><input type="checkbox" id="posPaySplit"><span>Dividir pago</span></label>
+                                            <label class="pos-precompra-check" title="Anticipo de mercancía: el dinero entra ya; el inventario baja al surtir">
+                                                <input type="checkbox" id="posPrecompraMode">
+                                                <span>Precompra</span>
+                                            </label>
+                                        </div>
+                                        <div class="pay-split-panel" id="posPaySplitPanel" hidden>
+                                            <div class="pay-split-rows" id="posPaySplitRows"></div>
+                                            <button type="button" class="btn" id="posPaySplitAdd"><i class="fa-solid fa-plus"></i> Método</button>
+                                            <div class="pay-split-summary">
+                                                <span>Asignado <strong id="posPaySplitSum">$0.00</strong></span>
+                                                <span>Restante <strong id="posPaySplitRemain">$0.00</strong></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="pos-bill-block">
+                                        <div class="field-label">Facturación</div>
+                                        <div class="seg two">
+                                            <label><input type="radio" name="billing" value="sin_facturar" checked> Sin factura</label>
+                                            <label><input type="radio" name="billing" value="facturado"> Facturado</label>
+                                        </div>
+                                    </div>
+                                    <div class="pos-pay-checkout">
+                                        <div class="cart-total">
+                                            <span class="label">Total</span>
+                                            <span class="amount" id="posCartTotal">$0.00</span>
+                                        </div>
+                                        <button type="button" class="btn primary" id="posCheckoutBtn" disabled>Cobrar</button>
+                                    </div>
+                                </footer>
                             </div>
                         </div>
-
-                        <footer class="pos-station-pay">
-                            <div class="pos-pay-block">
-                                <div class="field-label">Pago</div>
-                                <div class="seg seg-pay" id="posPaySeg">
-                                    <label><input type="radio" name="payMethod" value="efectivo" checked> Efectivo</label>
-                                    <label><input type="radio" name="payMethod" value="tarjeta"> Tarjeta</label>
-                                    <label><input type="radio" name="payMethod" value="transferencia"> Transfer.</label>
-                                    <label id="posPayPorCobrarLabel"><input type="radio" name="payMethod" value="por_cobrar"> Por cobrar</label>
-                                </div>
-                                <label class="pay-split-check"><input type="checkbox" id="posPaySplit"> Dividir pago</label>
-                                <div class="pay-split-panel" id="posPaySplitPanel" hidden>
-                                    <div class="pay-split-rows" id="posPaySplitRows"></div>
-                                    <button type="button" class="btn" id="posPaySplitAdd"><i class="fa-solid fa-plus"></i> Método</button>
-                                    <div class="pay-split-summary">
-                                        <span>Asignado <strong id="posPaySplitSum">$0.00</strong></span>
-                                        <span>Restante <strong id="posPaySplitRemain">$0.00</strong></span>
-                                    </div>
-                                </div>
-                                <label class="pos-precompra-check" title="Anticipo de mercancía: el dinero entra ya; el inventario baja al surtir">
-                                    <input type="checkbox" id="posPrecompraMode">
-                                    Precompra (anticipo de unidades)
-                                </label>
-                            </div>
-                            <div class="pos-bill-block">
-                                <div class="field-label">Facturación</div>
-                                <div class="seg two">
-                                    <label><input type="radio" name="billing" value="sin_facturar" checked> Sin factura</label>
-                                    <label><input type="radio" name="billing" value="facturado"> Facturado</label>
-                                </div>
-                            </div>
-                            <div class="pos-pay-checkout">
-                                <div class="cart-total">
-                                    <span class="label">Total</span>
-                                    <span class="amount" id="posCartTotal">$0.00</span>
-                                </div>
-                                <button type="button" class="btn primary" id="posCheckoutBtn" disabled>Cobrar</button>
-                            </div>
-                        </footer>
                     </div>
                     </div>
 
@@ -17211,7 +17575,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20261005-banorte-oct"></script>
+    <script src="/colaboradores/pos-module.js?v=20261006-venta-ui"></script>
     <script src="/colaboradores/command-palette.js?v=20260926-dinero"></script>
     <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>
