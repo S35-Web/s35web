@@ -21,11 +21,21 @@ function bySlug(slug) {
   return products.filter(function (p) { return p.slug === slug; })[0] || null;
 }
 
-// Los descontinuados se siguen construyendo para no perder el trabajo, pero
-// quedan fuera del catálogo, del índice y del sitemap. Reactivar uno es quitar
-// `legacy: true` de su archivo.
-function published() {
+// Activos = no descontinuados (incluye borradores). Sirve para sync de precios,
+// formulaciones y panel interno. El catálogo público usa `published()`.
+function active() {
   return products.filter(function (p) { return !p.legacy; });
+}
+
+// Públicos = verificados y no descontinuados. Los `status: 'draft'` quedan en
+// content/ pero fuera del índice, fichas públicas y sitemap. Publicar uno es
+// cambiar su status a `verified` y correr `npm run build:products`.
+function published() {
+  return active().filter(function (p) { return p.status === 'verified'; });
+}
+
+function drafts() {
+  return active().filter(function (p) { return p.status !== 'verified'; });
 }
 
 function legacy() {
@@ -45,11 +55,13 @@ function byFamily() {
 
 function stats() {
   const pub = published();
+  const dr = drafts();
   return {
     published: pub.length,
+    active: active().length,
     legacy: legacy().length,
-    verified: pub.filter(function (p) { return p.status === 'verified'; }).length,
-    drafts: pub.filter(function (p) { return p.status !== 'verified'; }).length,
+    verified: pub.length,
+    drafts: dr.length,
     families: byFamily().length,
   };
 }
@@ -59,7 +71,9 @@ module.exports = {
   products: products,
   commerce: commerce,
   bySlug: bySlug,
+  active: active,
   published: published,
+  drafts: drafts,
   legacy: legacy,
   byFamily: byFamily,
   stats: stats,

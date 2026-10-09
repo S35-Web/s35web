@@ -517,8 +517,7 @@ function indexPage() {
     '<div class="pr-rail-line">' + s.families + ' familias</div></div>' +
     '<div class="pr-body"><h1>Productos</h1>' +
     '<p class="pr-index-lead">Cada producto tiene su ficha técnica: identificación, datos de cabecera, ' +
-    'propiedades con su método de ensayo, usos, modo de empleo y condiciones de almacenamiento. ' +
-    'Las fichas marcadas como borrador están redactadas internamente y siguen en revisión.</p></div></section>';
+    'propiedades con su método de ensayo, usos, modo de empleo y condiciones de almacenamiento.</p></div></section>';
 
   const accents = familyAccentMap();
   groups.forEach(function (g) {
@@ -536,8 +535,7 @@ function indexPage() {
           '<span class="pr-list-copy">' +
           '<span class="pr-list-name">' + esc(fullName(p)) + '</span>' +
           '<span class="pr-list-line">' + esc(p.line) + '</span></span>' +
-          '<span class="pr-list-meta">' + esc(p.packaging) +
-          (p.status === 'verified' ? '' : ' · borrador') + '</span></a></li>';
+          '<span class="pr-list-meta">' + esc(p.packaging) + '</span></a></li>';
       }).join('') +
       '</ul></div></section>';
   });
@@ -706,6 +704,14 @@ write('index.html', indexPage());
 catalog.published().forEach(function (p) {
   write(p.slug + '.html', productPage(p));
 });
+// Borradores: se mantienen en content/ pero no se publican fichas ni enlaces.
+catalog.drafts().forEach(function (p) {
+  const stale = path.join(OUT, p.slug + '.html');
+  if (fs.existsSync(stale)) {
+    fs.unlinkSync(stale);
+    console.log('  (oculto borrador) public/productos/' + p.slug + '.html');
+  }
+});
 catalog.legacy().forEach(function (p) {
   write('descontinuados/' + p.slug + '.html', productPage(p));
   const stale = path.join(OUT, p.slug + '.html');
@@ -730,7 +736,7 @@ if (fs.existsSync(sitemapPath)) {
     const oldLoc = ORIGIN + '/' + pair[0];
     sm = sm.replace(new RegExp('\\s*<url>\\s*<loc>' + oldLoc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<\\/loc>[\\s\\S]*?<\\/url>', 'g'), '');
   });
-  catalog.legacy().forEach(function (p) {
+  catalog.drafts().concat(catalog.legacy()).forEach(function (p) {
     const loc = ORIGIN + '/productos/' + p.slug;
     sm = sm.replace(new RegExp('\\s*<url>\\s*<loc>' + loc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<\\/loc>[\\s\\S]*?<\\/url>', 'g'), '');
   });
@@ -750,5 +756,5 @@ if (fs.existsSync(sitemapPath)) {
 }
 
 const s = catalog.stats();
-console.log('Listo: ' + s.published + ' publicados (' + s.verified + ' verificados, ' + s.drafts +
-  ' borradores) en ' + s.families + ' familias, ' + s.legacy + ' descontinuados.');
+console.log('Listo: ' + s.published + ' publicados en catálogo, ' + s.drafts +
+  ' borradores ocultos, ' + s.legacy + ' descontinuados · ' + s.families + ' familias.');

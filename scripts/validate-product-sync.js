@@ -59,7 +59,9 @@ function productTextBlob(p) {
   return bits.filter(Boolean).join(' · ');
 }
 
-const published = catalog.published();
+// Sync precios/formulaciones incluye borradores (status draft); el catálogo
+// público (`published`) solo lista verificados.
+const published = typeof catalog.active === 'function' ? catalog.active() : catalog.published();
 const pubSlugs = sorted(published.map(function (p) { return p.slug; }));
 const formSlugs = sorted(uniq(formulations.map(function (f) { return f.product; })));
 const priceRecipeSlugs = sorted(uniq(
