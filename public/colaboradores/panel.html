@@ -1110,26 +1110,92 @@
             padding-top: 12px;
             padding-bottom: 12px;
         }
+        /* Folder tabs: inactive sheets sit behind the POS frame; active is selected black */
+        .pos-workspace {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
         .pos-mode-bar {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
+            align-items: flex-end;
+            gap: 0;
             flex: 0 0 auto;
-            margin-bottom: 6px;
+            margin: 0;
+            padding: 0 12px;
+            min-height: 0;
+            position: relative;
+            /* No z-index here: buttons must stack against .pos-mode-panel */
         }
         .pos-mode-bar .seg-control {
+            display: inline-flex;
+            flex-wrap: nowrap;
+            align-items: flex-end;
             width: fit-content;
             max-width: 100%;
+            margin: 0 0 -1px;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            overflow: visible;
+            background: transparent;
+            gap: 3px;
+        }
+        .pos-mode-bar .seg-control button {
+            position: relative;
+            height: auto;
+            min-height: 0;
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            background: color-mix(in srgb, var(--bg-soft) 68%, var(--border));
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.2;
+            white-space: nowrap;
+            /* Same size always; tuck under frame via z-index only */
+            transform: none;
+            z-index: 1;
+        }
+        .pos-mode-bar .seg-control button:last-child { border-right: 1px solid var(--border); }
+        .pos-mode-bar .seg-control button:hover:not(.active) {
+            color: var(--text);
+            background: color-mix(in srgb, var(--bg-soft) 50%, var(--panel));
+        }
+        .pos-mode-bar .seg-control button.active {
+            background: #0a0a0a;
+            color: #fafafa;
+            border-color: #0a0a0a;
+            font-weight: 500;
+            /* Solo color: sin padding/transform/scale extra */
+            z-index: 3;
+        }
+        .pos-mode-bar .seg-control button:focus-visible {
+            outline: 2px solid var(--text);
+            outline-offset: 2px;
         }
         .pos-mode-panel {
             flex: 1;
             min-height: 0;
             display: flex;
             flex-direction: column;
+            position: relative;
+            /* Covers inactive tab feet so they read as behind the frame */
+            z-index: 2;
         }
         .pos-mode-panel[hidden] {
             display: none !important;
+        }
+        .pos-workspace .pos-station,
+        .pos-workspace .pos-gastos {
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        .pos-workspace .pos-gastos {
+            border-radius: 12px;
         }
         .pos-gastos {
             display: grid;
@@ -1321,9 +1387,9 @@
         .pos-station-top {
             display: grid;
             grid-template-columns: auto minmax(0, 1fr) auto;
-            gap: 16px 24px;
-            align-items: end;
-            padding: 16px 20px 18px;
+            gap: 8px 10px;
+            align-items: center;
+            padding: 8px 12px;
             border-bottom: 1px solid var(--border);
             background: color-mix(in srgb, var(--bg-soft) 55%, var(--panel));
             position: relative;
@@ -1336,21 +1402,30 @@
             letter-spacing: -0.03em;
             align-self: center;
             line-height: 1;
-            padding-bottom: 2px;
         }
         .pos-station-fields {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
-            gap: 12px 16px;
-            align-items: end;
+            grid-template-columns: minmax(0, 1fr) minmax(120px, 148px);
+            gap: 8px;
+            align-items: center;
             min-width: 0;
         }
         .pos-field {
             display: grid;
-            gap: 7px;
+            gap: 0;
             min-width: 0;
         }
-        .pos-station-top .field-label,
+        .pos-station-top .field-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
         .pos-station-pay .field-label {
             margin: 0;
             line-height: 1;
@@ -1363,31 +1438,40 @@
         .pos-select,
         .pos-station-top .btn,
         .pos-pad-tools .search {
-            height: 44px;
+            height: 34px;
         }
         .pos-station-top .pos-client-trigger {
-            padding: 0 14px;
+            padding: 0 12px;
             border-width: 1.5px;
             background: var(--panel);
         }
         .pos-station-top .pos-client-trigger-label {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
         }
         .pos-station-top .pos-select {
-            padding: 0 32px 0 12px;
-            font-size: 14px;
+            padding: 0 28px 0 10px;
+            font-size: 13px;
             font-weight: 500;
             border-width: 1.5px;
             background-color: var(--panel);
         }
         .pos-station-top .btn {
-            padding: 0 14px;
+            padding: 0 12px;
             font-size: 13px;
             font-weight: 550;
             border-width: 1.5px;
             background: var(--panel);
         }
+        .pos-station-top .pos-promo-btn {
+            width: 34px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .pos-station-top .pos-promo-btn .pos-promo-btn-text { display: none; }
         .pos-select {
             width: 100%;
             border: 1px solid var(--border);
@@ -1409,7 +1493,7 @@
             align-items: center;
             gap: 8px;
             justify-content: flex-end;
-            align-self: end;
+            align-self: center;
         }
         .pos-kpi-inline { display: none; }
         .pos-station-main {
@@ -6943,13 +7027,13 @@
             .pos-pad .product-grid { max-height: 260px; }
             .pos-station-top {
                 grid-template-columns: 1fr auto;
-                align-items: start;
+                align-items: center;
             }
             .pos-station-title { grid-column: 1; }
-            .pos-station-actions { grid-column: 2; align-self: start; }
+            .pos-station-actions { grid-column: 2; align-self: center; }
             .pos-station-fields {
                 grid-column: 1 / -1;
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(110px, 132px);
             }
             .pos-station-pay { grid-template-columns: 1fr; }
             .pos-pay-checkout { width: 100%; }
@@ -6959,28 +7043,28 @@
         /* —— Venta: catálogo + ticket integrado (Square / Fresha) —— */
         #posModeVenta .pos-station {
             grid-template-rows: auto minmax(0, 1fr);
-            border-radius: 16px;
+            border-radius: 12px 12px 16px 16px;
         }
         #posModeVenta .pos-station-top {
             grid-template-columns: minmax(0, 1fr) auto;
-            align-items: end;
-            padding: 8px 12px;
+            align-items: center;
+            padding: 6px 12px;
+            gap: 8px;
             background: var(--panel);
         }
         #posModeVenta .pos-station-title { display: none; }
         #posModeVenta .pos-station-fields {
-            grid-template-columns: minmax(220px, 1fr) minmax(160px, 200px);
+            grid-template-columns: minmax(0, 1fr) minmax(118px, 140px);
+            gap: 8px;
         }
-        #posModeVenta .pos-station-top .field-label {
-            font-size: 10px;
-            margin-bottom: 4px;
-        }
-        #posModeVenta .pos-field { gap: 4px; }
         #posModeVenta .pos-station-top .pos-client-trigger,
         #posModeVenta .pos-select,
         #posModeVenta .pos-station-top .btn {
-            height: 34px;
+            height: 32px;
             border-radius: 10px;
+        }
+        #posModeVenta .pos-station-top .pos-promo-btn {
+            width: 32px;
         }
         #posModeVenta .pos-station-main {
             grid-template-columns: minmax(0, 1fr) minmax(300px, 332px);
@@ -7665,7 +7749,8 @@
 
 
                 <section id="venta" class="section">
-                    <div class="pos-mode-bar">
+                    <div class="pos-workspace">
+                    <div class="pos-mode-bar" aria-label="Modo de caja">
                         <div class="seg-control" id="posModeTabs" role="tablist" aria-label="Modo de caja">
                             <button type="button" role="tab" data-pos-mode="venta" class="active" aria-selected="true">Venta</button>
                             <button type="button" role="tab" data-pos-mode="gastos" aria-selected="false">Gastos de caja</button>
@@ -7678,11 +7763,11 @@
                             <h1 class="pos-station-title" id="posStationTitle">Venta</h1>
                             <div class="pos-station-fields">
                                 <div class="pos-field pos-field-client">
-                                    <span class="field-label">Cliente</span>
+                                    <span class="field-label" id="posClientFieldLabel">Cliente</span>
                                     <div class="pos-client-picker" id="posClientPicker">
                                         <input type="hidden" id="posClientSelect" value="" autocomplete="off">
                                         <button type="button" class="pos-client-trigger is-placeholder" id="posClientTrigger"
-                                            aria-haspopup="listbox" aria-expanded="false" aria-controls="posClientPickerList">
+                                            aria-labelledby="posClientFieldLabel" aria-haspopup="listbox" aria-expanded="false" aria-controls="posClientPickerList">
                                             <span class="pos-client-trigger-text">
                                                 <span class="pos-client-trigger-label" id="posClientTriggerLabel">Seleccionar cliente…</span>
                                                 <span class="pos-client-trigger-badge" id="posClientTriggerBadge" hidden></span>
@@ -7714,8 +7799,9 @@
                                     <span class="val" id="posKpiToday">$0</span>
                                     <span class="hint" id="posKpiTodayHint">0 ventas</span>
                                 </span>
-                                <button type="button" class="btn" id="posPromoBtn" title="Aplicar código de promoción">
-                                    <i class="fa-solid fa-percent" aria-hidden="true"></i> Código
+                                <button type="button" class="btn pos-promo-btn" id="posPromoBtn" title="Aplicar código de promoción" aria-label="Código de promoción">
+                                    <i class="fa-solid fa-percent" aria-hidden="true"></i>
+                                    <span class="pos-promo-btn-text">Código</span>
                                 </button>
                             </div>
                         </header>
@@ -7735,7 +7821,7 @@
                                 <div class="pos-ticket-head pos-cart-head">
                                     <div class="pos-ticket-head-text">
                                         <h3>Ticket</h3>
-                                        <p class="pos-cart-tier" id="posCartTierHint">Volumen ticket: 0 u</p>
+                                        <p class="pos-cart-tier" id="posCartTierHint">0 Piezas</p>
                                     </div>
                                     <button type="button" class="btn ghost" id="posClearCartBtn">Vaciar</button>
                                 </div>
@@ -7839,6 +7925,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                     </div>
 
                     <button type="button" id="posPromoCartBtn" hidden aria-hidden="true" tabindex="-1"></button>

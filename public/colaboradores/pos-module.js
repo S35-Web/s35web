@@ -5815,7 +5815,7 @@
                     ? ('Distribuidor · ' + units + ' u pagadas · precio fijo distribuidores')
                     : 'Cliente distribuidor: se aplica el precio distribuidores de cada producto';
             } else {
-                tierHint.textContent = 'Volumen ticket: ' + units + ' u';
+                tierHint.textContent = units + ' Piezas';
             }
         }
         if (!cart.length) {
