@@ -4,10 +4,7 @@
   "functions": {
     "api/s35-chat.js": {
       "maxDuration": 60,
-      "includeFiles": [
-        "public/colaboradores/data/historical-sales-import.json",
-        "public/colaboradores/data/manual-sales-catchup.json"
-      ]
+      "includeFiles": "public/colaboradores/data/{historical-sales-import.json,manual-sales-catchup.json}"
     }
   },
   "rewrites": [
