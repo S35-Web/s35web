@@ -1,9 +1,9 @@
 /**
  * S35 Copiloto — cerebro del panel.
- * Sin mode, o mode distinto de "agent": las tools de lectura las ejecuta el
- * navegador (datos ya cargados) y navigate es una acción de UI.
- * mode "agent": el servidor ejecuta las mismas tools en solo lectura y
- * devuelve la respuesta ya cerrada. No navega ni escribe.
+ * Inventario y ventas se leen en el servidor desde Mongo (panel_state),
+ * más el historial de notas. El navegador ya no contesta con su copia local.
+ * mode "agent": igual, solo lectura, sin navegación.
+ * navigate sigue siendo una acción de UI del panel.
  */
 const jwt = require('jsonwebtoken');
 const { agentKeyMatches } = require('./_lib/auth');
@@ -176,7 +176,8 @@ const TOOLS = [
     function: {
       name: 'stock_alerts',
       description:
-        'Alertas de materia prima de planta (stock bajo) y productos sin movimiento reciente. ' +
+        'Alertas de materia prima bajo mínimo y productos sin movimiento reciente. ' +
+        'Para existencia actual de una materia prima usa get_material_stock. ' +
         'No sirve para existencia de producto terminado (sacos).',
       parameters: { type: 'object', properties: {} }
     }
@@ -186,19 +187,24 @@ const TOOLS = [
     function: {
       name: 'get_finished_stock',
       description:
-        'Existencia de producto terminado en s35_finished_stock, por ciudad. ' +
-        'Úsala para «cuántos sacos de Waxtard Perla hay en Culiacán». ' +
+        'Existencia actual de producto terminado en Mongo (s35_finished_stock), por ciudad. ' +
+        'Sin query, o query "inventario", lista el inventario actual. ' +
+        'Con query filtra por slug o nombre (ej. waxtard-blanco-perla). ' +
         'Devuelve byCity.culiacan, byCity.mochis y byCity.mazatlan. 0 es cero piezas, no falta de datos. ' +
-        'Si results viene vacío, el slug no está; no inventes 0.',
+        'updatedAt es la última escritura en la nube. Si results viene vacío, no está en el inventario; no inventes 0.',
       parameters: {
         type: 'object',
         properties: {
           query: {
             type: 'string',
-            description: 'Slug o nombre. Ej. waxtard-blanco-perla o "Waxtard Blanco Perla"'
+            description: 'Slug, nombre, o vacío para listar todo. Ej. "Waxtard Blanco Perla"'
+          },
+          city: {
+            type: 'string',
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan'],
+            description: 'Sucursal a resaltar. Igual devuelve las tres ciudades. Default all'
           }
-        },
-        required: ['query']
+        }
       }
     }
   },
@@ -245,6 +251,31 @@ const TOOLS = [
         required: ['section']
       }
     }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_material_stock',
+      description:
+        'Existencia actual de materias primas en Mongo (s35_plant_inventory), por ciudad. ' +
+        'Úsala para «cuánto cemento hay», «inventario de materias primas», arena, bentonita, etc. ' +
+        'Sin query lista el inventario. stock es existencia, reserved es comprometido, free es disponible. ' +
+        'byCity es existencia por ciudad. 0 es cero. updatedAt es la última escritura en la nube.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'Nombre o id. Vacío para listar todo. Ej. "cemento gris" o bentonita-sodica'
+          },
+          city: {
+            type: 'string',
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan'],
+            description: 'Sucursal a resaltar. Igual devuelve las tres ciudades. Default all'
+          }
+        }
+      }
+    }
   }
 ];
 
@@ -256,7 +287,8 @@ const CLIENT_DATA_TOOLS = {
   top_products: true,
   top_clients: true,
   stock_alerts: true,
-  get_finished_stock: true
+  get_finished_stock: true,
+  get_material_stock: true
 };
 
 const AGENT_TOOLS = TOOLS.filter(function (t) {
@@ -288,8 +320,10 @@ function systemPrompt(context) {
     'Si piden ventas desde una fecha o entre fechas, search_sales debe llevar from y/o to en YYYY-MM-DD. No listes notas fuera de ese rango. Si truncated es true, di que hay más.',
     'total de una nota es la suma de la nota. El precio del saco está en items[].price y items[].lineTotal. Si hay varios ítems, no digas que un saco costó el total.',
     'origin=historico es nota importada (folio HIST-). origin=viva es venta capturada en el punto de venta. No las mezcles como si fueran la misma nota.',
-    'Para existencia de producto terminado (sacos, Waxtard, etc.) usa get_finished_stock. stock_alerts es solo materia prima.',
-    'get_finished_stock devuelve byCity de Culiacán, Los Mochis y Mazatlán. Si el número es 0, di 0 piezas. No digas «sin datos» cuando la ciudad viene en byCity. Si results está vacío, di que no está en el inventario; no inventes 0.',
+    'Para existencia de producto terminado (sacos, Waxtard, etc.) usa get_finished_stock. Para materias primas (cemento, arena, bentonita, etc.) usa get_material_stock. stock_alerts es solo lo que está bajo mínimo.',
+    'Sin query, get_finished_stock y get_material_stock listan el inventario actual. Con query filtran.',
+    'Esas tools leen Mongo en esta petición: s35_finished_stock, s35_plant_inventory y s35_pos_sales, más el historial de notas. updatedAt es la última escritura en la nube. Cita esa fecha si te preguntan qué tan fresco está.',
+    'get_finished_stock y get_material_stock devuelven byCity de Culiacán, Los Mochis y Mazatlán. Si el número es 0, di 0. No digas «sin datos» cuando la ciudad viene en byCity. Si results está vacío, di que no está en el inventario; no inventes 0.',
     'Para abrir pantallas de inmediato (sin esperar clic) usa navigate. Para solo informar, no navegues: deja los botones [[…]] en el texto.',
     '',
     'SNAPSHOT (JSON):',
@@ -477,17 +511,66 @@ function classifyToolCalls(message) {
   return { dataCalls: dataCalls, navigateCalls: navigateCalls, all: calls };
 }
 
-async function answerAgent(userMessages) {
+function cloudStamp(dataset) {
+  const counts = (dataset && dataset.counts) || {};
+  return {
+    finishedUpdatedAt: (dataset && dataset.finishedUpdatedAt) || null,
+    materialsUpdatedAt: (dataset && dataset.materialsUpdatedAt) || null,
+    liveSalesUpdatedAt: (dataset && dataset.liveSalesUpdatedAt) || null,
+    tickets: counts.tickets || 0,
+    posTickets: counts.posTickets || 0,
+    historicalTickets: counts.historicalTickets || 0,
+    materials: counts.materials || 0,
+    finishedSkus: counts.finishedSkus || 0,
+    warnings: (dataset && dataset.warnings) || []
+  };
+}
+
+function navigateActionFromArgs(args) {
+  args = args || {};
+  return {
+    type: 'navigate',
+    section: args.section,
+    period: args.period || null,
+    city: args.city || null,
+    clientId: args.clientId || null,
+    productSlug: args.productSlug || null,
+    saleId: args.saleId || null,
+    materialId: args.materialId || null,
+    reason: args.reason || ''
+  };
+}
+
+async function answerFromCloud(userMessages, opts) {
+  const allowNavigate = !!(opts && opts.allowNavigate);
   const dataset = await loadReadDataset();
   const runtime = createReadRuntime(dataset);
   const modelName = process.env.S35_AI_MODEL || 'gpt-4o-mini';
-  let messages = [
-    { role: 'system', content: agentSystemPrompt(runtime.snapshot()) }
-  ].concat(userMessages);
+  const tools = allowNavigate ? TOOLS : AGENT_TOOLS;
+  const system = allowNavigate
+    ? systemPrompt(runtime.snapshot())
+    : agentSystemPrompt(runtime.snapshot());
+  let messages = [{ role: 'system', content: system }].concat(userMessages);
   let usage = null;
+  const actions = [];
 
-  for (let round = 0; round < 4; round++) {
-    const data = await openaiChat(messages, { tools: AGENT_TOOLS, temperature: 0.2 });
+  async function finish(reply) {
+    const usageSummary = await trackUsage(usage, modelName);
+    return {
+      ok: true,
+      status: 'reply',
+      reply: reply,
+      actions: actions,
+      mode: allowNavigate ? 'chat' : 'agent',
+      model: modelName,
+      usage: usage,
+      usageSummary: usageSummary,
+      dataAsOf: cloudStamp(dataset)
+    };
+  }
+
+  for (let round = 0; round < 5; round++) {
+    const data = await openaiChat(messages, { tools: tools, temperature: 0.2 });
     usage = mergeUsage(usage, data.usage);
     const choice = data.choices && data.choices[0];
     const message = choice && choice.message;
@@ -495,17 +578,7 @@ async function answerAgent(userMessages) {
     if (!message || !calls.length) {
       const reply = String((message && message.content) || '').trim() ||
         'No pude generar respuesta. Intenta de nuevo.';
-      const usageSummary = await trackUsage(usage, modelName);
-      return {
-        ok: true,
-        status: 'reply',
-        reply: reply,
-        actions: [],
-        mode: 'agent',
-        model: modelName,
-        usage: usage,
-        usageSummary: usageSummary
-      };
+      return finish(reply);
     }
     messages = messages.concat([{
       role: 'assistant',
@@ -516,8 +589,15 @@ async function answerAgent(userMessages) {
       const name = call && call.function && call.function.name;
       const args = parseToolArgs(call);
       let result;
-      if (!name || name === 'navigate' || !CLIENT_DATA_TOOLS[name]) {
-        result = { ok: false, skipped: true, error: 'Solo lectura: sin navegación ni escrituras.' };
+      if (name === 'navigate') {
+        if (!allowNavigate) {
+          result = { ok: false, skipped: true, error: 'Modo agent: sin navegación.' };
+        } else {
+          actions.push(navigateActionFromArgs(args));
+          result = { ok: true, queued: true, note: 'El panel abrirá esa pantalla.' };
+        }
+      } else if (!name || !CLIENT_DATA_TOOLS[name]) {
+        result = { ok: false, skipped: true, error: 'Solo lectura: sin escrituras.' };
       } else {
         try {
           result = runtime.execute(name, args);
@@ -539,17 +619,7 @@ async function answerAgent(userMessages) {
   const message = choice && choice.message;
   const reply = String((message && message.content) || '').trim() ||
     'Consulté el sistema pero no pude armar una respuesta.';
-  const usageSummary = await trackUsage(usage, modelName);
-  return {
-    ok: true,
-    status: 'reply',
-    reply: reply,
-    actions: [],
-    mode: 'agent',
-    model: modelName,
-    usage: usage,
-    usageSummary: usageSummary
-  };
+  return finish(reply);
 }
 
 module.exports = async function handler(req, res) {
@@ -592,8 +662,8 @@ module.exports = async function handler(req, res) {
   ].concat(cleaned);
 
   try {
-    if (isAgentMode) {
-      const payload = await answerAgent(cleaned);
+    if (isAgentMode || !isMailMode) {
+      const payload = await answerFromCloud(cleaned, { allowNavigate: !isAgentMode });
       res.status(200).json(payload);
       return;
     }
@@ -608,7 +678,7 @@ module.exports = async function handler(req, res) {
     const classified = classifyToolCalls(message);
     const navigateActions = extractNavigateActions(message);
 
-    // Tools de datos → el cliente las ejecuta y reenvía
+    // Correo: lookup_client sigue en el cliente. Inventario y ventas del panel ya no pasan por aquí.
     if (classified.dataCalls.length) {
       const usageSummary = await trackUsage(data.usage, modelName);
       res.status(200).json({

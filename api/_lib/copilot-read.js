@@ -276,7 +276,19 @@ function extractEditMap(value) {
 }
 
 function extractMaterials(value) {
-  return extractItems(value).filter(function (m) { return m && (m.id || m.name); });
+  const fromList = extractItems(value).filter(function (m) { return m && (m.id || m.name); });
+  if (fromList.length) return fromList;
+  const map = value && value.items && typeof value.items === 'object' && !Array.isArray(value.items)
+    ? value.items
+    : null;
+  if (!map) return [];
+  return Object.keys(map).map(function (id) {
+    const row = map[id];
+    if (!row || typeof row !== 'object') return null;
+    if (!row.id && !row.name) return null;
+    if (!row.id) row.id = id;
+    return row;
+  }).filter(Boolean);
 }
 
 function extractFinished(value) {
@@ -309,7 +321,7 @@ function extractFinished(value) {
     }
     bySlug[key] = {
       slug: key,
-      name: row.name || key,
+      name: row.name || String(key).replace(/-/g, ' '),
       unit: row.unit || 'Pza',
       stock: stock,
       minStock: Number(row.minStock) || 0,
@@ -587,23 +599,62 @@ function topClientsInSales(list, limit, byId) {
   };
 }
 
-function materialFree(m) {
-  let stock = Math.max(0, Number(m && m.stock) || 0);
-  let reserved = Math.max(0, Number(m && m.reserved) || 0);
-  if (m && m.byCity && typeof m.byCity === 'object') {
-    const sum = ['culiacan', 'mochis', 'mazatlan'].reduce(function (n, id) {
-      return n + (Number(m.byCity[id]) || 0);
-    }, 0);
-    if (sum > 0) stock = sum;
+function cityQtyMap(src) {
+  const out = { culiacan: 0, mochis: 0, mazatlan: 0 };
+  if (src && typeof src === 'object') {
+    CITIES.forEach(function (c) {
+      out[c.id] = Math.max(0, Number(src[c.id]) || 0);
+    });
   }
-  if (m && m.reservedByCity && typeof m.reservedByCity === 'object') {
-    const sum = ['culiacan', 'mochis', 'mazatlan'].reduce(function (n, id) {
-      return n + (Number(m.reservedByCity[id]) || 0);
-    }, 0);
-    if (sum > 0) reserved = sum;
+  return out;
+}
+
+function materialQuantities(m) {
+  const hasByCity = !!(m && m.byCity && typeof m.byCity === 'object');
+  const byCity = hasByCity ? cityQtyMap(m.byCity) : cityQtyMap(null);
+  if (!hasByCity) byCity.culiacan = Math.max(0, Number(m && m.stock) || 0);
+  let stock = CITIES.reduce(function (n, c) { return n + byCity[c.id]; }, 0);
+  if (hasByCity && stock === 0) {
+    const raw = Math.max(0, Number(m && m.stock) || 0);
+    if (raw > 0) {
+      byCity.culiacan = raw;
+      stock = raw;
+    }
+  }
+  const hasReservedByCity = !!(m && m.reservedByCity && typeof m.reservedByCity === 'object');
+  const reservedByCity = hasReservedByCity ? cityQtyMap(m.reservedByCity) : cityQtyMap(null);
+  if (!hasReservedByCity) reservedByCity.culiacan = Math.max(0, Number(m && m.reserved) || 0);
+  let reserved = CITIES.reduce(function (n, c) { return n + reservedByCity[c.id]; }, 0);
+  if (hasReservedByCity && reserved === 0) {
+    const raw = Math.max(0, Number(m && m.reserved) || 0);
+    if (raw > 0) {
+      reservedByCity.culiacan = raw;
+      reserved = raw;
+    }
   }
   if (reserved > stock) reserved = stock;
-  return Math.max(0, stock - reserved);
+  return {
+    stock: stock,
+    reserved: reserved,
+    free: Math.max(0, stock - reserved),
+    byCity: byCity,
+    reservedByCity: reservedByCity
+  };
+}
+
+function materialFree(m) {
+  return materialQuantities(m).free;
+}
+
+function storeUpdatedAt(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return value.updatedAt || null;
+}
+
+function wantsFullList(query) {
+  const needle = normalizeSearchText(query);
+  if (!needle) return true;
+  return ['todo', 'todos', 'todas', 'inventario', 'existencia', 'existencias', 'stock', 'all', 'completo', 'actual'].indexOf(needle) >= 0;
 }
 
 function lowStockMaterials(materials, limit) {
@@ -612,13 +663,16 @@ function lowStockMaterials(materials, limit) {
     return minStock > 0 && materialFree(m) < minStock;
   }).slice(0, limit || 12).map(function (m) {
     const name = m.name || m.id;
+    const qty = materialQuantities(m);
     return {
       type: 'stock',
       id: m.id || null,
       name: name,
-      free: materialFree(m),
+      free: qty.free,
+      stock: qty.stock,
       minStock: Number(m.minStock) || 0,
       unit: m.unit || '',
+      byCity: qty.byCity,
       open: m.id ? ('[[material:' + m.id + '|' + name + ']]') : null
     };
   });
@@ -800,14 +854,17 @@ function buildDataset(parts) {
     clients: clients,
     materials: materials,
     finished: finished.bySlug,
-    finishedUpdatedAt: finished.updatedAt,
+    finishedUpdatedAt: finished.updatedAt || storeUpdatedAt(parts.finished),
+    materialsUpdatedAt: storeUpdatedAt(parts.materials),
+    liveSalesUpdatedAt: storeUpdatedAt(parts.liveSales),
     warnings: warnings,
     counts: {
       tickets: sales.length,
       historicalTickets: historical.length,
       posTickets: live.length,
       clients: clients.length,
-      materials: materials.length
+      materials: materials.length,
+      finishedSkus: Object.keys(finished.bySlug).length
     }
   };
 }
@@ -863,6 +920,8 @@ function createReadRuntime(dataset) {
   const materials = data.materials || [];
   const finished = data.finished || {};
   const finishedUpdatedAt = data.finishedUpdatedAt || null;
+  const materialsUpdatedAt = data.materialsUpdatedAt || null;
+  const liveSalesUpdatedAt = data.liveSalesUpdatedAt || null;
   const byId = Object.create(null);
   clients.forEach(function (c) { if (c && c.id) byId[c.id] = c; });
 
@@ -913,16 +972,23 @@ function createReadRuntime(dataset) {
       return { type: 'stock', name: m.name, meta: 'libre ' + m.free + (m.unit ? ' ' + m.unit : '') };
     });
     const noteParts = [
-      'Snapshot del servidor (America/Mazatlan). Tools para el detalle.',
-      'Producto terminado (sacos): get_finished_stock. Este snapshot no trae esas existencias.',
+      'Snapshot leído de Mongo en esta petición (America/Mazatlan).',
+      'Producto terminado: get_finished_stock. Sin query lista el inventario actual. updatedAt ' + (finishedUpdatedAt || 'sin marca') + '.',
+      'Materias primas: get_material_stock. Sin query lista el inventario actual. updatedAt ' + (materialsUpdatedAt || 'sin marca') + '.',
+      'Ventas vivas en s35_pos_sales, updatedAt ' + (liveSalesUpdatedAt || 'sin marca') + '. El historial importado se suma a esas ventas.',
       '«Histórico importado» = data migrada sin nombre de cliente (NO es un cliente).',
-      'Offsets: 0=hoy, -1=ayer, -2=antier.'
+      'Offsets: 0=hoy, -1=ayer, -2=antier. 0 piezas es cero, no falta de datos.'
     ];
     (data.warnings || []).forEach(function (w) { if (w) noteParts.push(w); });
     return {
       generatedAt: new Date().toISOString(),
-      source: 'panel_state+historical-sales-import',
+      source: 'mongo:panel_state+historical-sales-import',
       timezone: TZ,
+      cloud: {
+        finishedUpdatedAt: finishedUpdatedAt,
+        materialsUpdatedAt: materialsUpdatedAt,
+        liveSalesUpdatedAt: liveSalesUpdatedAt
+      },
       note: noteParts.join(' '),
       catalog: data.counts || {
         clients: clients.length,
@@ -1012,10 +1078,16 @@ function createReadRuntime(dataset) {
   }
 
   function finishedStockHits(query) {
-    const needle = normalizeSearchText(query);
-    if (!needle || needle.length < 2) return [];
-    const tokens = searchTokens(query);
     const rows = Object.keys(finished).map(function (k) { return finished[k]; });
+    if (wantsFullList(query)) {
+      rows.sort(function (a, b) {
+        return String(a.name || a.slug).localeCompare(String(b.name || b.slug), 'es');
+      });
+      return { rows: rows.slice(0, 80), truncated: rows.length > 80, listed: true };
+    }
+    const needle = normalizeSearchText(query);
+    if (!needle || needle.length < 2) return { rows: [], truncated: false, listed: false };
+    const tokens = searchTokens(query);
     const hits = rows.filter(function (row) {
       const slug = normalizeSearchText(row.slug).replace(/-/g, ' ');
       const name = normalizeSearchText(row.name || '');
@@ -1028,27 +1100,92 @@ function createReadRuntime(dataset) {
       const bs = normalizeSearchText(b.slug).replace(/-/g, ' ') === needle ? 1 : 0;
       return bs - as;
     });
-    return hits.slice(0, 8);
+    return { rows: hits.slice(0, 8), truncated: hits.length > 8, listed: false };
   }
 
-  function publicFinished(row) {
+  function focusCityId(raw) {
+    if (!raw || raw === 'all') return 'all';
+    return normalizeCityId(raw) || 'all';
+  }
+
+  function publicFinished(row, cityId) {
+    const byCity = {
+      culiacan: Number(row.byCity && row.byCity.culiacan) || 0,
+      mochis: Number(row.byCity && row.byCity.mochis) || 0,
+      mazatlan: Number(row.byCity && row.byCity.mazatlan) || 0
+    };
     const cities = CITIES.map(function (c) {
-      return { id: c.id, label: c.label, qty: Number(row.byCity && row.byCity[c.id]) || 0 };
+      return { id: c.id, label: c.label, qty: byCity[c.id] };
     });
-    return {
+    const out = {
       slug: row.slug,
       name: row.name || row.slug,
       unit: row.unit || 'Pza',
       stock: Number(row.stock) || 0,
-      byCity: {
-        culiacan: Number(row.byCity && row.byCity.culiacan) || 0,
-        mochis: Number(row.byCity && row.byCity.mochis) || 0,
-        mazatlan: Number(row.byCity && row.byCity.mazatlan) || 0
-      },
+      byCity: byCity,
       cities: cities,
+      open: row.slug ? ('[[product:' + row.slug + '|' + (row.name || row.slug) + ']]') : null,
       updatedAt: finishedUpdatedAt,
+      source: 'mongo:s35_finished_stock',
       note: '0 es cero piezas en esa ciudad, no falta de datos.'
     };
+    if (cityId && cityId !== 'all') {
+      out.focusCity = cityId;
+      out.qty = byCity[cityId] || 0;
+    }
+    return out;
+  }
+
+  function publicMaterial(m, cityId) {
+    const qty = materialQuantities(m);
+    const name = m.name || m.id;
+    const out = {
+      id: m.id || null,
+      name: name,
+      unit: m.unit || '',
+      category: m.category || null,
+      stock: qty.stock,
+      reserved: qty.reserved,
+      free: qty.free,
+      minStock: Number(m.minStock) || 0,
+      byCity: qty.byCity,
+      reservedByCity: qty.reservedByCity,
+      open: m.id ? ('[[material:' + m.id + '|' + name + ']]') : null,
+      updatedAt: materialsUpdatedAt,
+      source: 'mongo:s35_plant_inventory',
+      note: 'stock es existencia, reserved es comprometido, free es disponible. byCity es existencia por ciudad. 0 es cero.'
+    };
+    if (cityId && cityId !== 'all') {
+      out.focusCity = cityId;
+      out.qty = qty.byCity[cityId] || 0;
+      out.qtyFree = Math.max(0, (qty.byCity[cityId] || 0) - (qty.reservedByCity[cityId] || 0));
+    }
+    return out;
+  }
+
+  function materialStockHits(query) {
+    const rows = (materials || []).slice();
+    if (wantsFullList(query)) {
+      rows.sort(function (a, b) {
+        return String(a.name || a.id).localeCompare(String(b.name || b.id), 'es');
+      });
+      return { rows: rows.slice(0, 80), truncated: rows.length > 80, listed: true };
+    }
+    const needle = normalizeSearchText(query);
+    if (!needle || needle.length < 2) return { rows: [], truncated: false, listed: false };
+    const tokens = searchTokens(query);
+    const hits = rows.filter(function (m) {
+      const hay = [m.name, m.id, m.labSlug].filter(Boolean).join(' ');
+      const idN = normalizeSearchText(m.id).replace(/-/g, ' ');
+      if (idN && (idN === needle || idN.indexOf(needle) >= 0 || needle.indexOf(idN) >= 0)) return true;
+      return textMatchesTokens(hay, tokens, needle);
+    });
+    hits.sort(function (a, b) {
+      const as = normalizeSearchText(a.name) === needle ? 1 : 0;
+      const bs = normalizeSearchText(b.name) === needle ? 1 : 0;
+      return bs - as;
+    });
+    return { rows: hits.slice(0, 8), truncated: hits.length > 8, listed: false };
   }
 
   function execute(name, args) {
@@ -1057,7 +1194,12 @@ function createReadRuntime(dataset) {
       return { ok: false, skipped: true, error: 'Modo agent: sin navegación.' };
     }
     if (name === 'get_sales_summary') {
-      return publicSlice(salesFor(args.period, args.offset, args.city));
+      const row = publicSlice(salesFor(args.period, args.offset, args.city));
+      row.source = 'mongo:s35_pos_sales + historial de notas';
+      row.liveSalesUpdatedAt = liveSalesUpdatedAt;
+      row.historicalTickets = (data.counts && data.counts.historicalTickets) || 0;
+      row.posTickets = (data.counts && data.counts.posTickets) || 0;
+      return row;
     }
     if (name === 'compare_sales_periods') {
       const a = publicSlice(salesFor(args.period, args.offsetA, args.city));
@@ -1201,22 +1343,57 @@ function createReadRuntime(dataset) {
       };
     }
     if (name === 'get_finished_stock') {
-      const hits = finishedStockHits(args.query).map(publicFinished);
+      const found = finishedStockHits(args.query);
+      const cityId = focusCityId(args.city);
+      const hits = found.rows.map(function (row) { return publicFinished(row, cityId); });
       if (!hits.length) {
         return {
           ok: true,
           query: args.query || '',
+          city: cityId,
           updatedAt: finishedUpdatedAt,
+          source: 'mongo:s35_finished_stock',
           results: [],
           note: 'No está en s35_finished_stock. No inventes 0.'
         };
       }
       return {
         ok: true,
-        query: args.query,
+        query: args.query || '',
+        city: cityId,
         updatedAt: finishedUpdatedAt,
+        source: 'mongo:s35_finished_stock',
+        truncated: found.truncated,
+        listed: found.listed,
         results: hits,
-        note: 'byCity.culiacan, byCity.mochis y byCity.mazatlan son piezas. 0 es cero, no falta de datos.'
+        note: 'byCity.culiacan, byCity.mochis y byCity.mazatlan son piezas en la nube. 0 es cero, no falta de datos.'
+      };
+    }
+    if (name === 'get_material_stock') {
+      const found = materialStockHits(args.query);
+      const cityId = focusCityId(args.city);
+      const hits = found.rows.map(function (row) { return publicMaterial(row, cityId); });
+      if (!hits.length) {
+        return {
+          ok: true,
+          query: args.query || '',
+          city: cityId,
+          updatedAt: materialsUpdatedAt,
+          source: 'mongo:s35_plant_inventory',
+          results: [],
+          note: 'No está en s35_plant_inventory. No inventes 0.'
+        };
+      }
+      return {
+        ok: true,
+        query: args.query || '',
+        city: cityId,
+        updatedAt: materialsUpdatedAt,
+        source: 'mongo:s35_plant_inventory',
+        truncated: found.truncated,
+        listed: found.listed,
+        results: hits,
+        note: 'stock es existencia, reserved es comprometido, free es disponible. byCity es existencia por ciudad. 0 es cero.'
       };
     }
     return { ok: false, error: 'Tool desconocida: ' + name };
