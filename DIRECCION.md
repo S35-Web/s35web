@@ -211,7 +211,7 @@ Ventas, gastos, tesorería, lotes, compras y promos se fusionan por id (no se pi
 
 - `.data/` — espejo local del servidor de desarrollo (`server-local-simple.js` lee y escribe aquí en `/api/panel-state`). Gitignored. La copia de stock es del 8 oct; la nube puede ir más adelante.
 - MongoDB — la operación real del panel (ventas, caja, inventario, fórmulas, lotes).
-- Variables de Vercel. Nombres, sin valores: `MONGODB_URI`, `MONGODB_DB` (default `s35web`), `JWT_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `VENTAS_USERNAME`, `VENTAS_PASSWORD`, `RESEND_API_KEY`, `MAIL_TO`, `MAIL_FROM`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `GMAIL_USER`, `BLOB_READ_WRITE_TOKEN`, `OPENAI_API_KEY`, `S35_AI_MODEL`. No copiar `.env` ni inventar valores.
+- Variables de Vercel. Nombres, sin valores: `MONGODB_URI`, `MONGODB_DB` (default `s35web`), `JWT_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `VENTAS_USERNAME`, `VENTAS_PASSWORD`, `RESEND_API_KEY`, `MAIL_TO`, `MAIL_FROM`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `GMAIL_USER`, `BLOB_READ_WRITE_TOKEN`, `OPENAI_API_KEY`, `S35_AI_MODEL`, `S35_AGENT_KEY`. No copiar `.env` ni inventar valores. `S35_AGENT_KEY` es la llave fija del modo agent; no va en git.
 - `public/Assets/productos_thumbs/panel/` — fotos subidas en local, gitignored.
 - Copias « 2», `.DS_Store`, `node_modules/`.
 
@@ -276,9 +276,16 @@ Grokbot usa el mismo cerebro que el chat del panel. No hay otra base. El panel (
 
 `POST https://www.s-35.com.mx/api/s35-chat`
 
-Header: `Authorization: Bearer <token>` y `Content-Type: application/json`.
+Header: `Authorization: Bearer <llave>` y `Content-Type: application/json`. También vale el header `x-s35-agent-key` con el mismo valor.
 
-El token es el mismo del panel: `POST https://www.s-35.com.mx/api/login` con el usuario admin. Dura 8 horas. Rol `ventas` no entra. No se guarda en el repo, ni en este archivo, ni en el chat. Quien lo use lo deja fuera de git (memoria de la sesión o un archivo local ignorado).
+La llave no caduca. Solo sirve con `mode: "agent"` (lectura). No abre el panel, no navega y no escribe. Si `S35_AGENT_KEY` no está en el servidor, esa llave no entra: hace falta el JWT de admin.
+
+Una sola vez:
+
+1. Inventar una frase larga y crearla en Vercel como variable `S35_AGENT_KEY` (Production). No pegarla en el chat ni en este archivo.
+2. Guardar esa misma frase, sola, en `.data/s35-agent-key` en la Mac. `.data/` está en `.gitignore`. Grokbot lee ese archivo y lo manda como Bearer.
+
+El JWT de admin (login, 8 horas, rol `ventas` no entra) sigue sirviendo para el panel y también para este modo.
 
 ```json
 {
@@ -302,7 +309,7 @@ Sin token el endpoint responde 401. No hace falta pegar un token de prueba para 
 - No republicar drafts cambiando el status y haciendo build si Juanello no lo pidió.
 - No usar `--no-verify` ni force push. Hay un freno de borrado masivo (`scripts/guard-mass-delete.sh`): más de 25 archivos borrados en un commit o en un push aborta el hook.
 - No borrar `.git/index.lock` para «destrabar» y commitear enseguida.
-- No pegar contraseñas, JWT, URIs de Mongo ni números de cuenta en commits, en este archivo ni en el chat. El Bearer del modo agent se obtiene con login y no se versiona.
+- No pegar contraseñas, JWT, URIs de Mongo ni números de cuenta en commits, en este archivo ni en el chat. `S35_AGENT_KEY` vive en Vercel y en `.data/s35-agent-key`, no en git.
 
 ---
 

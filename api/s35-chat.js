@@ -6,6 +6,7 @@
  * devuelve la respuesta ya cerrada. No navega ni escribe.
  */
 const jwt = require('jsonwebtoken');
+const { agentKeyMatches } = require('./_lib/auth');
 const { recordCopilotUsage } = require('../lib/copilot-usage');
 const { loadReadDataset, createReadRuntime } = require('./_lib/copilot-read');
 
@@ -522,17 +523,20 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const user = requireAdmin(req);
+  const body = parseBody(req);
+  const isAgentMode = body.mode === 'agent';
+  // La llave fija solo abre el modo agent (lectura). El panel sigue con JWT admin.
+  const user = (isAgentMode && agentKeyMatches(req))
+    ? { role: 'agent', sub: 's35-agent', readOnly: true }
+    : requireAdmin(req);
   if (!user) {
     res.status(401).json({ ok: false, error: 'Solo admin puede usar el copiloto' });
     return;
   }
 
-  const body = parseBody(req);
   const context = body.context || {};
   const cleaned = sanitizeMessages(body.messages);
   const isMailMode = body.mode === 'mail';
-  const isAgentMode = body.mode === 'agent';
 
   if (!cleaned.length) {
     res.status(400).json({ ok: false, error: 'Falta mensaje' });
