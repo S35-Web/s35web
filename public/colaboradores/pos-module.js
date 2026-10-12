@@ -8463,13 +8463,32 @@
             multiCity ? null : cityColor(cortesCityFilter)
         );
 
-        const payKeys = payMethodKeys();
-        const payRows = payKeys.map(function (k) {
+        // Desglose por método; tarjeta se parte por billing (igual que tesorería).
+        const payRows = [];
+        payMethodKeys().forEach(function (k) {
+            if (k === 'tarjeta') {
+                [
+                    { bill: 'facturado', key: 'facturado_tarjeta', label: 'Tarjeta facturada' },
+                    { bill: 'sin_facturar', key: 'sin_facturar_tarjeta', label: 'Tarjeta sin facturar' }
+                ].forEach(function (row) {
+                    const amount = list.reduce(function (n, s) {
+                        const bill = s.billing || 'sin_facturar';
+                        if (bill !== row.bill) return n;
+                        return n + amountPaidByMethod(s, 'tarjeta');
+                    }, 0);
+                    if (amount > 0) {
+                        payRows.push({ key: row.key, label: row.label, amount: amount });
+                    }
+                });
+                return;
+            }
             const amount = list.reduce(function (n, s) {
                 return n + amountPaidByMethod(s, k);
             }, 0);
-            return { key: k, label: payLabel(k), amount: amount };
-        }).filter(function (r) { return r.amount > 0; });
+            if (amount > 0) {
+                payRows.push({ key: k, label: payLabel(k), amount: amount });
+            }
+        });
         const efectivoCobrado = list.reduce(function (n, s) {
             return n + amountPaidByMethod(s, 'efectivo');
         }, 0);
