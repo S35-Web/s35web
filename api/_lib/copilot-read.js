@@ -291,19 +291,83 @@ function extractMaterials(value) {
   }).filter(Boolean);
 }
 
+function parseJsonMaybe(raw) {
+  if (typeof raw !== 'string') return raw;
+  try {
+    return JSON.parse(raw);
+  } catch (_) {
+    return null;
+  }
+}
+
+function finishedSlugKey(row, fallback) {
+  const fromRow = row && typeof row === 'object' ? (row.slug || row.productSlug) : '';
+  const raw = String(fromRow || fallback || '').trim().toLowerCase();
+  return raw.replace(/[\s_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+}
+
+/** Desenvuelve string JSON y value.value (hasta 2 niveles). No incluye cifras. */
+function unwrapFinishedInput(value) {
+  let current = value;
+  const steps = [];
+  if (typeof current === 'string') {
+    steps.push('string');
+    current = parseJsonMaybe(current);
+  }
+  for (let i = 0; i < 2; i++) {
+    if (!current || typeof current !== 'object' || Array.isArray(current)) break;
+    if (current.value == null) break;
+    if (typeof current.value !== 'object' && typeof current.value !== 'string') break;
+    steps.push('value');
+    current = typeof current.value === 'string' ? parseJsonMaybe(current.value) : current.value;
+  }
+  return { current: current, steps: steps };
+}
+
+function finishedItemsFrom(current) {
+  if (!current || typeof current !== 'object' || Array.isArray(current)) {
+    return { items: null, shape: 'unrecognized' };
+  }
+  if (current.items && typeof current.items === 'object' && !Array.isArray(current.items)) {
+    return { items: current.items, shape: 'items-map' };
+  }
+  if (Array.isArray(current.items)) {
+    const map = {};
+    current.items.forEach(function (row) {
+      if (!row || typeof row !== 'object' || Array.isArray(row)) return;
+      const key = row.slug || row.id;
+      if (!key) return;
+      map[String(key)] = row;
+    });
+    return { items: map, shape: 'items-array' };
+  }
+  const map = {};
+  Object.keys(current).forEach(function (key) {
+    if (key === 'updatedAt') return;
+    map[key] = current[key];
+  });
+  if (!Object.keys(map).length) return { items: {}, shape: 'empty' };
+  return { items: map, shape: 'flat-map' };
+}
+
 function extractFinished(value) {
-  const empty = { bySlug: {}, updatedAt: null };
-  if (!value || typeof value !== 'object') return empty;
-  const updatedAt = value.updatedAt || null;
-  const items = value.items && typeof value.items === 'object' && !Array.isArray(value.items)
-    ? value.items
-    : null;
-  if (!items) return { bySlug: {}, updatedAt: updatedAt };
+  const empty = { bySlug: {}, updatedAt: null, shape: 'empty' };
+  if (value == null || value === '') return empty;
+  const opened = unwrapFinishedInput(value);
+  const current = opened.current;
+  const updatedAt = (current && typeof current === 'object' && current.updatedAt) ||
+    (value && typeof value === 'object' && value.updatedAt) ||
+    null;
+  const found = finishedItemsFrom(current);
+  const shape = (opened.steps.length ? opened.steps.join('+') + '+' : '') + found.shape;
+  if (!found.items) return { bySlug: {}, updatedAt: updatedAt, shape: shape };
   const bySlug = {};
-  Object.keys(items).forEach(function (slug) {
-    const row = items[slug];
-    if (!row || typeof row !== 'object') return;
-    const key = String(row.slug || slug);
+  Object.keys(found.items).forEach(function (slug) {
+    let row = found.items[slug];
+    if (typeof row === 'number') row = { stock: row };
+    if (!row || typeof row !== 'object' || Array.isArray(row)) return;
+    const key = finishedSlugKey(row, slug);
+    if (!key) return;
     const byCity = { culiacan: 0, mochis: 0, mazatlan: 0 };
     const hasByCity = !!(row.byCity && typeof row.byCity === 'object');
     if (hasByCity) {
@@ -328,7 +392,7 @@ function extractFinished(value) {
       byCity: byCity
     };
   });
-  return { bySlug: bySlug, updatedAt: updatedAt };
+  return { bySlug: bySlug, updatedAt: updatedAt, shape: shape };
 }
 
 function parseYmd(raw) {
@@ -854,6 +918,7 @@ function buildDataset(parts) {
     clients: clients,
     materials: materials,
     finished: finished.bySlug,
+    finishedShape: finished.shape || 'empty',
     finishedUpdatedAt: finished.updatedAt || storeUpdatedAt(parts.finished),
     materialsUpdatedAt: storeUpdatedAt(parts.materials),
     liveSalesUpdatedAt: storeUpdatedAt(parts.liveSales),
@@ -902,7 +967,7 @@ async function loadReadDataset() {
   const warnings = [];
   if (historical.warning) warnings.push(historical.warning);
 
-  return buildDataset({
+  const dataset = buildDataset({
     historical: historical.rows,
     liveSales: stores.s35_pos_sales,
     edits: extractEditMap(stores.s35_sale_edits_v1),
@@ -911,6 +976,15 @@ async function loadReadDataset() {
     finished: stores.s35_finished_stock,
     warnings: warnings
   });
+  const finishedSkus = (dataset.counts && dataset.counts.finishedSkus) || 0;
+  if (!finishedSkus) {
+    dataset.warnings.push('s35_finished_stock vacío o con forma no reconocida');
+  } else {
+    dataset.warnings.push(
+      's35_finished_stock forma=' + (dataset.finishedShape || 'empty') + ' skus=' + finishedSkus
+    );
+  }
+  return dataset;
 }
 
 function createReadRuntime(dataset) {
@@ -1406,5 +1480,6 @@ module.exports = {
   loadReadDataset: loadReadDataset,
   createReadRuntime: createReadRuntime,
   buildDataset: buildDataset,
-  loadHistoricalRows: loadHistoricalRows
+  loadHistoricalRows: loadHistoricalRows,
+  extractFinished: extractFinished
 };

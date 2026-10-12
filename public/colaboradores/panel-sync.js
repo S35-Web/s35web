@@ -535,6 +535,47 @@
         return null;
     }
 
+    /**
+     * Producto terminado se sube como { items: { slug: { stock, minStock, unit, byCity } }, updatedAt }.
+     * Si localStorage trae un string JSON o value.value, se desenvuelve antes del PUT.
+     */
+    function canonicalFinishedStock(value) {
+        var current = value;
+        if (typeof current === 'string') {
+            try { current = JSON.parse(current); } catch (_) { return null; }
+        }
+        for (var i = 0; i < 2; i++) {
+            if (current && typeof current === 'object' && !Array.isArray(current) &&
+                current.value != null &&
+                (typeof current.value === 'object' || typeof current.value === 'string') &&
+                !current.items) {
+                if (typeof current.value === 'string') {
+                    try { current = JSON.parse(current.value); } catch (_) { return null; }
+                } else current = current.value;
+            } else break;
+        }
+        if (!current || typeof current !== 'object' || Array.isArray(current)) return null;
+        var updatedAt = current.updatedAt || null;
+        var items = null;
+        if (current.items && typeof current.items === 'object' && !Array.isArray(current.items)) {
+            items = current.items;
+        } else if (Array.isArray(current.items)) {
+            items = {};
+            current.items.forEach(function (row) {
+                if (!row || typeof row !== 'object') return;
+                var key = row.slug || row.id || row.productSlug;
+                if (key) items[String(key)] = row;
+            });
+        } else {
+            items = {};
+            Object.keys(current).forEach(function (key) {
+                if (key === 'updatedAt') return;
+                items[key] = current[key];
+            });
+        }
+        return { items: items, updatedAt: updatedAt };
+    }
+
     /** Lee valor + updatedAt desde localStorage (soporta wrapper, arrays planos y strings). */
     function readLocal(key) {
         var rawStr;
@@ -639,7 +680,12 @@
                     local = readLocal(key);
                 }
             }
-            stores[key] = { value: local.value, updatedAt: ts };
+            var payload = local.value;
+            if (key === 's35_finished_stock') {
+                var canon = canonicalFinishedStock(local.value);
+                if (canon) payload = canon;
+            }
+            stores[key] = { value: payload, updatedAt: ts };
         });
         if (!Object.keys(stores).length) return Promise.resolve({ ok: true, empty: true });
 

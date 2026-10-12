@@ -10012,6 +10012,34 @@
     }
 
     const FINISHED_KEY = 's35_finished_stock';
+    function finishedStockItems(raw) {
+        let current = raw;
+        if (typeof current === 'string') {
+            try { current = JSON.parse(current); } catch (_) { return null; }
+        }
+        for (let i = 0; i < 2; i++) {
+            if (current && typeof current === 'object' && !Array.isArray(current) &&
+                current.value != null &&
+                (typeof current.value === 'object' || typeof current.value === 'string') &&
+                !current.items) {
+                if (typeof current.value === 'string') {
+                    try { current = JSON.parse(current.value); } catch (_) { return null; }
+                } else current = current.value;
+            } else break;
+        }
+        if (!current || typeof current !== 'object') return null;
+        if (Array.isArray(current.items)) {
+            const map = {};
+            current.items.forEach(function (row) {
+                if (!row || typeof row !== 'object') return;
+                const key = row.slug || row.id || row.productSlug;
+                if (key) map[String(key)] = row;
+            });
+            return map;
+        }
+        if (current.items && typeof current.items === 'object') return current.items;
+        return current;
+    }
     function loadFinished() {
         const seed = {};
         function ensure(slug) {
@@ -10022,10 +10050,12 @@
         (data.recipes || []).forEach(function (r) { ensure(r.product || r.slug); });
         try {
             const raw = JSON.parse(localStorage.getItem(FINISHED_KEY) || 'null');
-            const items = raw && raw.items ? raw.items : raw;
-            if (items && typeof items === 'object') {
+            const items = finishedStockItems(raw);
+            if (items && typeof items === 'object' && !Array.isArray(items)) {
                 Object.keys(items).forEach(function (slug) {
-                    const row = items[slug];
+                    if (slug === 'updatedAt') return;
+                    let row = items[slug];
+                    if (typeof row === 'number') row = { stock: row };
                     if (!row || typeof row !== 'object') return;
                     ensure(slug);
                     seed[slug].stock = Number(row.stock) || 0;
