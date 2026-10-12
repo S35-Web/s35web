@@ -6201,10 +6201,10 @@
       "descripcion": "AEVLX03 SPEI. BANORTE. 072730001111896905. HUMAYA MADERERA SA. 8846APR1202610015838393716. 0011026. HUMAYA MADERERA",
       "referencia": "8846APR1202610015838393716",
       "cargo": 0,
-      "abono": 175000,
+      "abono": 175000.04,
       "saldo": 176228.14,
       "type": "deposito",
-      "amount": 175000
+      "amount": 175000.04
     },
     {
       "id": "banorte-0527",

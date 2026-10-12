@@ -3873,7 +3873,31 @@
         return loadTesoreriaMovsRaw().some(function (m) { return m && m.id === id; });
     }
     function upsertTesoreriaSeed(mov) {
-        if (!mov || !mov.id || tesoreriaHasId(mov.id)) return false;
+        if (!mov || !mov.id) return false;
+        const idx = tesoreriaMovs.findIndex(function (m) { return m && m.id === mov.id; });
+        if (idx >= 0) {
+            const prev = tesoreriaMovs[idx];
+            // Re-sincroniza montos del seed Banregio/Banorte si el JSON se corrigió (p. ej. centavos SPEI).
+            if (prev && prev.source === 'banorte-csv' && mov.source === 'banorte-csv') {
+                const nextAmount = roundMoney(mov.amount);
+                const nextSaldo = mov.bankSaldo != null ? roundMoney(mov.bankSaldo) : prev.bankSaldo;
+                if (roundMoney(prev.amount) !== nextAmount ||
+                    (prev.bankSaldo != null && nextSaldo != null && roundMoney(prev.bankSaldo) !== nextSaldo)) {
+                    tesoreriaMovs[idx] = Object.assign({}, prev, {
+                        amount: nextAmount,
+                        bankSaldo: nextSaldo,
+                        type: mov.type || prev.type,
+                        note: mov.note != null ? mov.note : prev.note,
+                        reference: mov.reference != null ? mov.reference : prev.reference,
+                        fecha: mov.fecha || prev.fecha,
+                        createdAt: mov.createdAt || prev.createdAt
+                    });
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (tesoreriaHasId(mov.id)) return false;
         tesoreriaMovs.push(mov);
         return true;
     }
@@ -4094,6 +4118,90 @@
             );
         });
         return buckets;
+    }
+    /** YYYY-MM del movimiento Banregio/Banorte (fecha DD/MM/YYYY o iso). */
+    function banorteCsvMonthKey(mov) {
+        if (!mov) return '';
+        const fecha = String(mov.fecha || '');
+        const m = fecha.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (m) return m[3] + '-' + m[2];
+        const iso = String(mov.createdAt || mov.iso || '');
+        if (/^\d{4}-\d{2}/.test(iso)) return iso.slice(0, 7);
+        const day = tesoreriaDayKey(mov.createdAt || mov.iso);
+        return day ? day.slice(0, 7) : '';
+    }
+    function banorteCsvSortKey(mov) {
+        const id = String((mov && mov.id) || '');
+        const n = parseInt(id.replace(/\D+/g, ''), 10);
+        const iso = String((mov && (mov.createdAt || mov.iso)) || '');
+        return (iso || '9999') + '|' + (isFinite(n) ? ('000000' + n).slice(-6) : id);
+    }
+    /**
+     * Líneas visibles de la card banco: resumen del extracto CSV del mes
+     * (saldo inicio / cargos / depósitos). No altera computeDineroAccounts.
+     */
+    function computeBancoMesCsvSummary(cityFilter) {
+        const city = cityFilter == null ? dineroCityFilter : cityFilter;
+        const list = filterTesoreriaMovsByCity(tesoreriaMovs, city).filter(function (m) {
+            if (!m || m.deleted || m.account !== 'banco') return false;
+            if (m.type === 'apertura') return false;
+            return m.source === 'banorte-csv' || m.type === 'banco_csv' || !!m.ledgerOnly;
+        });
+        let month = '';
+        list.forEach(function (m) {
+            const ym = banorteCsvMonthKey(m);
+            if (ym && ym > month) month = ym;
+        });
+        if (!month) {
+            try {
+                month = new Intl.DateTimeFormat('en-CA', {
+                    timeZone: 'America/Mazatlan',
+                    year: 'numeric',
+                    month: '2-digit'
+                }).format(new Date()).slice(0, 7);
+            } catch (_) {
+                const d = new Date();
+                month = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+            }
+        }
+        const monthMovs = list.filter(function (m) {
+            return banorteCsvMonthKey(m) === month;
+        }).slice().sort(function (a, b) {
+            return banorteCsvSortKey(a).localeCompare(banorteCsvSortKey(b));
+        });
+        let cargos = 0;
+        let depositos = 0;
+        monthMovs.forEach(function (m) {
+            const amt = roundMoney(m.amount);
+            if (m.type === 'retiro' || m.type === 'gasto') cargos = roundMoney(cargos + amt);
+            else depositos = roundMoney(depositos + amt);
+        });
+        let inicio = 0;
+        if (monthMovs.length) {
+            const first = monthMovs[0];
+            if (first.bankSaldo != null) {
+                inicio = roundMoney(roundMoney(first.bankSaldo) - tesoreriaSignedAmount(first));
+            } else {
+                const prevYm = (function (ym) {
+                    const y = Number(ym.slice(0, 4));
+                    const mo = Number(ym.slice(5, 7));
+                    if (mo <= 1) return (y - 1) + '-12';
+                    return y + '-' + String(mo - 1).padStart(2, '0');
+                })(month);
+                let prevLast = null;
+                list.forEach(function (m) {
+                    if (banorteCsvMonthKey(m) !== prevYm || m.bankSaldo == null) return;
+                    if (!prevLast || banorteCsvSortKey(m) > banorteCsvSortKey(prevLast)) prevLast = m;
+                });
+                if (prevLast) inicio = roundMoney(prevLast.bankSaldo);
+            }
+        }
+        return {
+            month: month,
+            inicio: inicio,
+            cargos: cargos,
+            depositos: depositos
+        };
     }
     function currentUserSnapshot() {
         let soldBy = { id: 'admin', username: 'admin', name: 'Admin', role: 'admin' };
@@ -7897,16 +8005,13 @@
         }
         const bankLines = document.getElementById('dineroBancoLines');
         if (bankLines) {
-            const bankRows = [
-                { label: 'Saldo ' + TESORERIA_BANK_META.name, amount: acc.banco.apertura },
-                { label: 'Estado de cuenta posterior', amount: acc.banco.extracto, out: acc.banco.extracto < 0 },
-                { label: 'Transferencias posteriores', amount: acc.banco.transfer },
-                { label: 'Tarjeta facturada posterior', amount: acc.banco.tarjetaFact },
-                { label: 'Ajustes', amount: acc.banco.ajustes, out: acc.banco.ajustes < 0 }
-            ];
-            bankLines.innerHTML = dineroLinesHtml(bankRows.filter(function (row) {
-                return row.label !== 'Estado de cuenta posterior' || row.amount;
-            }));
+            // Visible: resumen del CSV Banregio del mes. Interno (apertura/extracto/matching) sigue en computeDineroAccounts.
+            const mesCsv = computeBancoMesCsvSummary(dineroCityFilter);
+            bankLines.innerHTML = dineroLinesHtml([
+                { label: 'Saldo inicio de mes', amount: mesCsv.inicio },
+                { label: 'Cargos del mes', amount: mesCsv.cargos, out: true },
+                { label: 'Depósitos del mes', amount: mesCsv.depositos }
+            ]);
         }
         const cardLines = document.getElementById('dineroTarjetaSfLines');
         if (cardLines) {
