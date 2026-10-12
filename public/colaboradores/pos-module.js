@@ -25,7 +25,7 @@
     };
     const TESORERIA_BANK_SEED_URL = '/colaboradores/data/banorte-2026-06-09.json';
     const TESORERIA_BANK_META = {
-        name: 'Banorte',
+        name: 'Banregio',
         account: '112017860014',
         clabe: '058730000001816719',
         holder: 'PRODUCTOS S35 S.A. DE C.V.',
@@ -3951,14 +3951,16 @@
             if (upsertTesoreriaSeed(mov)) added = true;
         });
         if (data && Array.isArray(data.items)) {
-            const bank = data.bank || TESORERIA_BANK_META;
+            const bank = Object.assign({}, TESORERIA_BANK_META, data.bank || {});
+            // El CSV histórico puede venir etiquetado Banorte; el banco operativo es Banregio.
+            bank.name = TESORERIA_BANK_META.name;
             if (upsertTesoreriaSeed({
                 id: 'banorte-saldo-inicial',
                 createdAt: '2026-06-01T06:00:00.000Z',
                 account: 'banco',
                 type: 'apertura',
                 amount: roundMoney(bank.opening != null ? bank.opening : TESORERIA_BANK_META.opening),
-                note: 'Saldo inicial Banorte',
+                note: 'Saldo inicial ' + TESORERIA_BANK_META.name,
                 reference: bank.account || TESORERIA_BANK_META.account,
                 bankSaldo: roundMoney(bank.opening != null ? bank.opening : TESORERIA_BANK_META.opening),
                 fecha: '01/06/2026',
@@ -7878,6 +7880,12 @@
         setDineroCardTotal('dineroEfectivoTotal', acc.efectivo.total);
         setDineroCardTotal('dineroBancoTotal', acc.banco.total);
         setDineroCardTotal('dineroTarjetaSfTotal', acc.tarjeta_sf.total);
+        const bancoSub = document.getElementById('dineroBancoSub') ||
+            document.querySelector('#dineroCardBanco .panel-sub');
+        if (bancoSub) {
+            bancoSub.textContent = TESORERIA_BANK_META.name + ' · ' +
+                TESORERIA_BANK_META.account + ' · ' + cityLabel(TESORERIA_BANK_META.city || 'culiacan');
+        }
         const efLines = document.getElementById('dineroEfectivoLines');
         if (efLines) {
             efLines.innerHTML = dineroLinesHtml([
@@ -7890,7 +7898,7 @@
         const bankLines = document.getElementById('dineroBancoLines');
         if (bankLines) {
             const bankRows = [
-                { label: 'Saldo Banorte', amount: acc.banco.apertura },
+                { label: 'Saldo ' + TESORERIA_BANK_META.name, amount: acc.banco.apertura },
                 { label: 'Estado de cuenta posterior', amount: acc.banco.extracto, out: acc.banco.extracto < 0 },
                 { label: 'Transferencias posteriores', amount: acc.banco.transfer },
                 { label: 'Tarjeta facturada posterior', amount: acc.banco.tarjetaFact },
