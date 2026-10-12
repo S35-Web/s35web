@@ -1,10 +1,13 @@
 /**
  * S35 Copiloto — cerebro del panel.
- * Tools de lectura se ejecutan en el cliente (datos locales + histórico).
- * navigate se ejecuta en el cliente como acción de UI.
+ * Sin mode, o mode distinto de "agent": las tools de lectura las ejecuta el
+ * navegador (datos ya cargados) y navigate es una acción de UI.
+ * mode "agent": el servidor ejecuta las mismas tools en solo lectura y
+ * devuelve la respuesta ya cerrada. No navega ni escribe.
  */
 const jwt = require('jsonwebtoken');
 const { recordCopilotUsage } = require('../lib/copilot-usage');
+const { loadReadDataset, createReadRuntime } = require('./_lib/copilot-read');
 
 function parseBody(req) {
   try {
@@ -221,6 +224,10 @@ const CLIENT_DATA_TOOLS = {
   stock_alerts: true
 };
 
+const AGENT_TOOLS = TOOLS.filter(function (t) {
+  return t && t.function && t.function.name !== 'navigate';
+});
+
 function systemPrompt(context) {
   const ctx = context && typeof context === 'object' ? context : {};
   return [
@@ -272,6 +279,19 @@ function mailSystemPrompt(context) {
     'CONTEXTO EXTRA:',
     JSON.stringify({ note: ctx.note || null, now: ctx.now || null }).slice(0, 2000)
   ].join('\n');
+}
+
+function agentSystemPrompt(context) {
+  return systemPrompt(context) +
+    '\n\nMODO AGENTE (solo lectura): no tienes panel ni navegación. No llames navigate. ' +
+    'No digas que abriste una pantalla. Las tools de cifras, clientes y stock se ejecutan en el servidor ' +
+    'contra el mismo panel. Responde con los datos y los enlaces [[tipo:id|etiqueta]].';
+}
+
+function sanitizePublicError(err) {
+  const msg = String((err && err.message) || 'Error del copiloto');
+  if (/mongodb(\+srv)?:\/\//i.test(msg)) return 'No se pudo leer el panel.';
+  return msg;
 }
 
 function sanitizeMessages(messagesIn) {
@@ -417,6 +437,81 @@ function classifyToolCalls(message) {
   return { dataCalls: dataCalls, navigateCalls: navigateCalls, all: calls };
 }
 
+async function answerAgent(userMessages) {
+  const dataset = await loadReadDataset();
+  const runtime = createReadRuntime(dataset);
+  const modelName = process.env.S35_AI_MODEL || 'gpt-4o-mini';
+  let messages = [
+    { role: 'system', content: agentSystemPrompt(runtime.snapshot()) }
+  ].concat(userMessages);
+  let usage = null;
+
+  for (let round = 0; round < 4; round++) {
+    const data = await openaiChat(messages, { tools: AGENT_TOOLS, temperature: 0.2 });
+    usage = mergeUsage(usage, data.usage);
+    const choice = data.choices && data.choices[0];
+    const message = choice && choice.message;
+    const calls = (message && message.tool_calls) || [];
+    if (!message || !calls.length) {
+      const reply = String((message && message.content) || '').trim() ||
+        'No pude generar respuesta. Intenta de nuevo.';
+      const usageSummary = await trackUsage(usage, modelName);
+      return {
+        ok: true,
+        status: 'reply',
+        reply: reply,
+        actions: [],
+        mode: 'agent',
+        model: modelName,
+        usage: usage,
+        usageSummary: usageSummary
+      };
+    }
+    messages = messages.concat([{
+      role: 'assistant',
+      content: message.content || null,
+      tool_calls: message.tool_calls
+    }]);
+    calls.forEach(function (call) {
+      const name = call && call.function && call.function.name;
+      const args = parseToolArgs(call);
+      let result;
+      if (!name || name === 'navigate' || !CLIENT_DATA_TOOLS[name]) {
+        result = { ok: false, skipped: true, error: 'Solo lectura: sin navegación ni escrituras.' };
+      } else {
+        try {
+          result = runtime.execute(name, args);
+        } catch (err) {
+          result = { ok: false, error: 'No se pudo consultar ' + name };
+        }
+      }
+      messages.push({
+        role: 'tool',
+        tool_call_id: call.id,
+        content: JSON.stringify(result)
+      });
+    });
+  }
+
+  const data = await openaiChat(messages, { noTools: true, temperature: 0.2 });
+  usage = mergeUsage(usage, data.usage);
+  const choice = data.choices && data.choices[0];
+  const message = choice && choice.message;
+  const reply = String((message && message.content) || '').trim() ||
+    'Consulté el sistema pero no pude armar una respuesta.';
+  const usageSummary = await trackUsage(usage, modelName);
+  return {
+    ok: true,
+    status: 'reply',
+    reply: reply,
+    actions: [],
+    mode: 'agent',
+    model: modelName,
+    usage: usage,
+    usageSummary: usageSummary
+  };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.status(204).end();
@@ -437,6 +532,7 @@ module.exports = async function handler(req, res) {
   const context = body.context || {};
   const cleaned = sanitizeMessages(body.messages);
   const isMailMode = body.mode === 'mail';
+  const isAgentMode = body.mode === 'agent';
 
   if (!cleaned.length) {
     res.status(400).json({ ok: false, error: 'Falta mensaje' });
@@ -453,6 +549,12 @@ module.exports = async function handler(req, res) {
   ].concat(cleaned);
 
   try {
+    if (isAgentMode) {
+      const payload = await answerAgent(cleaned);
+      res.status(200).json(payload);
+      return;
+    }
+
     const data = await openaiChat(apiMessages, {
       tools: isMailMode ? mailTools : TOOLS,
       temperature: isMailMode ? 0.35 : 0.2
@@ -539,10 +641,10 @@ module.exports = async function handler(req, res) {
       usageSummary: usageSummary
     });
   } catch (err) {
-    const status = err.code === 'NO_KEY' ? 503 : err.status && err.status < 500 ? 400 : 502;
+    const status = err.code === 'NO_KEY' || err.code === 'NO_MONGO' ? 503 : err.status && err.status < 500 ? 400 : 502;
     res.status(status).json({
       ok: false,
-      error: err.message || 'Error del copiloto'
+      error: sanitizePublicError(err)
     });
   }
 };
