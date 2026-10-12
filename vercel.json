@@ -3,7 +3,10 @@
   "trailingSlash": false,
   "functions": {
     "api/s35-chat.js": {
-      "includeFiles": "public/colaboradores/data/historical-sales-import.json"
+      "includeFiles": [
+        "public/colaboradores/data/historical-sales-import.json",
+        "public/colaboradores/data/manual-sales-catchup.json"
+      ]
     }
   },
   "rewrites": [

@@ -89,15 +89,25 @@ const TOOLS = [
       description:
         'Busca tickets/notas por folio, cliente, RFC, UUID CFDI o producto (nombre, slug o código). ' +
         'Úsala para «quién compró X», «última nota de Pulido», «microconcreto blanco», etc. ' +
-        'Los resultados vienen ordenados por relevancia y fecha (más recientes primero) e incluyen items[], client y total.',
+        'Para «desde / hasta / entre fechas» pasa from y to (YYYY-MM-DD, America/Mazatlan, inclusivos). ' +
+        'Sin from/to no recorta por fecha. total es el importe de la nota; el precio del producto está en items[].price y lineTotal. ' +
+        'origin=historico son notas HIST importadas; origin=viva son ventas del punto de venta.',
       parameters: {
         type: 'object',
         properties: {
           query: {
             type: 'string',
-            description: 'Texto libre: folio, cliente, RFC o producto (ej. "Pulido", "microconcreto blanco")'
+            description: 'Texto libre: folio, cliente, RFC o producto (ej. "Pulido", "waxtard blanco perla")'
           },
-          limit: { type: 'integer', description: 'Máx resultados, default 8' }
+          from: {
+            type: 'string',
+            description: 'Fecha inicial YYYY-MM-DD inclusive. Ej. ventas desde el 8 oct 2026 → 2026-10-08'
+          },
+          to: {
+            type: 'string',
+            description: 'Fecha final YYYY-MM-DD inclusive. Omite para no poner tope.'
+          },
+          limit: { type: 'integer', description: 'Máx resultados. Default 8, o 25 si hay from/to. Tope 25' }
         },
         required: ['query']
       }
@@ -165,8 +175,31 @@ const TOOLS = [
     type: 'function',
     function: {
       name: 'stock_alerts',
-      description: 'Alertas de stock bajo / materias primas y productos sin movimiento reciente.',
+      description:
+        'Alertas de materia prima de planta (stock bajo) y productos sin movimiento reciente. ' +
+        'No sirve para existencia de producto terminado (sacos).',
       parameters: { type: 'object', properties: {} }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_finished_stock',
+      description:
+        'Existencia de producto terminado en s35_finished_stock, por ciudad. ' +
+        'Úsala para «cuántos sacos de Waxtard Perla hay en Culiacán». ' +
+        'Devuelve byCity.culiacan, byCity.mochis y byCity.mazatlan. 0 es cero piezas, no falta de datos. ' +
+        'Si results viene vacío, el slug no está; no inventes 0.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'Slug o nombre. Ej. waxtard-blanco-perla o "Waxtard Blanco Perla"'
+          }
+        },
+        required: ['query']
+      }
     }
   },
   {
@@ -222,7 +255,8 @@ const CLIENT_DATA_TOOLS = {
   lookup_client: true,
   top_products: true,
   top_clients: true,
-  stock_alerts: true
+  stock_alerts: true,
+  get_finished_stock: true
 };
 
 const AGENT_TOOLS = TOOLS.filter(function (t) {
@@ -251,6 +285,11 @@ function systemPrompt(context) {
     'No inventes tickets ni totales. Si la tool devuelve vacío, dilo.',
     'Para «último cliente que compró X / nota de producto X» usa search_sales con el nombre del producto; responde con cliente, folio, fecha, total e ítems relevantes de results[0] (ya vienen los más recientes primero) y su link open.',
     'Si search_sales encuentra notas, cita folio/cliente/total/fecha e incluye el botón [[note:…]].',
+    'Si piden ventas desde una fecha o entre fechas, search_sales debe llevar from y/o to en YYYY-MM-DD. No listes notas fuera de ese rango. Si truncated es true, di que hay más.',
+    'total de una nota es la suma de la nota. El precio del saco está en items[].price y items[].lineTotal. Si hay varios ítems, no digas que un saco costó el total.',
+    'origin=historico es nota importada (folio HIST-). origin=viva es venta capturada en el punto de venta. No las mezcles como si fueran la misma nota.',
+    'Para existencia de producto terminado (sacos, Waxtard, etc.) usa get_finished_stock. stock_alerts es solo materia prima.',
+    'get_finished_stock devuelve byCity de Culiacán, Los Mochis y Mazatlán. Si el número es 0, di 0 piezas. No digas «sin datos» cuando la ciudad viene en byCity. Si results está vacío, di que no está en el inventario; no inventes 0.',
     'Para abrir pantallas de inmediato (sin esperar clic) usa navigate. Para solo informar, no navegues: deja los botones [[…]] en el texto.',
     '',
     'SNAPSHOT (JSON):',

@@ -6393,7 +6393,14 @@
                 };
             }
             if (name === 'search_sales') {
-                const hits = searchSales(args.query, args.limit || 8).map(function (s) {
+                const from = String(args.from || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+                const to = String(args.to || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+                const fromYmd = from ? (from[1] + '-' + from[2] + '-' + from[3]) : '';
+                const toYmd = to ? (to[1] + '-' + to[2] + '-' + to[3]) : '';
+                const hasRange = !!(fromYmd || toYmd);
+                const limit = Math.min(25, Math.max(1, Number(args.limit) || (hasRange ? 25 : 8)));
+                const found = searchSales(args.query, limit, { from: fromYmd, to: toYmd });
+                const hits = found.rows.map(function (s) {
                     const items = (s.items || []).slice(0, 12).map(function (it) {
                         const slug = it.product || null;
                         const label = it.name || it.product || 'Producto';
@@ -6414,6 +6421,8 @@
                         receiptId: saleReceiptId(s) || null,
                         total: Number(s.total) || 0,
                         createdAt: s.createdAt,
+                        date: saleYmdMazatlan(s.createdAt) || null,
+                        origin: saleOriginLabel(s),
                         client: saleClientLabel(s),
                         clientId: s.clientId || (s.client && s.client.id) || null,
                         city: cityLabel(saleCity(s)),
@@ -6425,7 +6434,18 @@
                         open: s.id ? ('[[note:' + s.id + '|Ver nota ' + folio + ']]') : null
                     };
                 });
-                return { ok: true, query: args.query, results: hits };
+                const multi = hits.some(function (h) { return (h.items || []).length > 1; });
+                return {
+                    ok: true,
+                    query: args.query,
+                    from: fromYmd || null,
+                    to: toYmd || null,
+                    truncated: found.truncated,
+                    results: hits,
+                    note: multi
+                        ? 'total es el importe de toda la nota. El precio de cada producto está en items[].price y items[].lineTotal; no atribuyas total a un solo saco.'
+                        : null
+                };
             }
             if (name === 'lookup_client') {
                 const needle = String(args.query || '').toLowerCase().trim();
@@ -6495,6 +6515,53 @@
                             '). El top lista solo clientes identificados.')
                         : null,
                     meta: ranked.meta
+                };
+            }
+            if (name === 'get_finished_stock') {
+                let map = {};
+                if (window.S35PanelAPI && typeof window.S35PanelAPI.getFinishedStockMap === 'function') {
+                    map = window.S35PanelAPI.getFinishedStockMap() || {};
+                } else {
+                    try {
+                        const raw = JSON.parse(localStorage.getItem(FINISHED_KEY) || 'null');
+                        map = (raw && raw.items) ? raw.items : (raw || {});
+                    } catch (_) { map = {}; }
+                }
+                const needle = normalizeSearchText(args.query);
+                if (!needle || needle.length < 2) return { ok: false, error: 'query corta' };
+                const tokens = searchTokens(args.query);
+                const hits = Object.keys(map).filter(function (slug) {
+                    const row = map[slug] || {};
+                    const slugN = normalizeSearchText(String(slug).replace(/-/g, ' '));
+                    const hay = normalizeSearchText(slugN + ' ' + (row.name || ''));
+                    if (slugN && (slugN === needle || slugN.indexOf(needle) >= 0 || needle.indexOf(slugN) >= 0)) return true;
+                    return textMatchesTokens(hay, tokens, needle);
+                }).slice(0, 8).map(function (slug) {
+                    const row = map[slug] || {};
+                    const byCity = { culiacan: 0, mochis: 0, mazatlan: 0 };
+                    if (row.byCity && typeof row.byCity === 'object') {
+                        byCity.culiacan = Math.max(0, Number(row.byCity.culiacan) || 0);
+                        byCity.mochis = Math.max(0, Number(row.byCity.mochis) || 0);
+                        byCity.mazatlan = Math.max(0, Number(row.byCity.mazatlan) || 0);
+                    } else {
+                        byCity.culiacan = Math.max(0, Number(row.stock) || 0);
+                    }
+                    return {
+                        slug: slug,
+                        unit: row.unit || 'Pza',
+                        stock: byCity.culiacan + byCity.mochis + byCity.mazatlan,
+                        byCity: byCity,
+                        note: '0 es cero piezas en esa ciudad, no falta de datos.'
+                    };
+                });
+                if (!hits.length) {
+                    return { ok: true, query: args.query || '', results: [], note: 'No está en s35_finished_stock. No inventes 0.' };
+                }
+                return {
+                    ok: true,
+                    query: args.query,
+                    results: hits,
+                    note: 'byCity.culiacan, byCity.mochis y byCity.mazatlan son piezas. 0 es cero, no falta de datos.'
                 };
             }
             if (name === 'stock_alerts') {
@@ -6597,16 +6664,54 @@
         return true;
     }
 
-    function searchSales(query, limit) {
+    function saleYmdMazatlan(raw) {
+        const s = String(raw || '').trim();
+        if (!s) return '';
+        if (!/[zZ]$/.test(s) && !/[+-]\d{2}:?\d{2}$/.test(s)) {
+            const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            return m ? (m[1] + '-' + m[2] + '-' + m[3]) : '';
+        }
+        const t = Date.parse(s);
+        if (!isFinite(t)) return '';
+        const parts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'America/Mazatlan',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).formatToParts(new Date(t));
+        const get = function (type) {
+            const row = parts.filter(function (p) { return p.type === type; })[0];
+            return row && row.value;
+        };
+        const y = get('year');
+        const m = get('month');
+        const d = get('day');
+        return (y && m && d) ? (y + '-' + m + '-' + d) : '';
+    }
+    function saleOriginLabel(sale) {
+        if (!sale) return 'viva';
+        if (isHistoricalImportSale(sale)) return 'historico';
+        if (String(sale.folio || '').indexOf('HIST-') === 0) return 'historico';
+        if (String(sale.id || '').indexOf('sale-hist-') === 0) return 'historico';
+        return 'viva';
+    }
+    function searchSales(query, limit, range) {
         const needle = normalizeSearchText(query);
-        if (!needle || needle.length < 2) return [];
+        if (!needle || needle.length < 2) return { rows: [], truncated: false };
         const tokens = searchTokens(query);
-        const max = limit || 8;
+        const from = range && range.from;
+        const to = range && range.to;
+        const hasRange = !!(from || to);
+        const max = Math.min(25, Math.max(1, Number(limit) || (hasRange ? 25 : 8)));
         const all = salesForAnalytics();
         const out = [];
-        for (let i = all.length - 1; i >= 0 && out.length < max * 4; i--) {
+        for (let i = all.length - 1; i >= 0 && (hasRange || out.length < max * 4); i--) {
             const s = all[i];
             if (!s) continue;
+            if (hasRange) {
+                const ymd = saleYmdMazatlan(s.createdAt);
+                if (!ymd || (from && ymd < from) || (to && ymd > to)) continue;
+            }
             const folio = normalizeSearchText(s.folio);
             const id = normalizeSearchText(s.id);
             const rid = normalizeSearchText(saleReceiptId(s));
@@ -6667,7 +6772,7 @@
             if (b._score !== a._score) return b._score - a._score;
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
-        return out.slice(0, max);
+        return { rows: out.slice(0, max), truncated: out.length > max };
     }
 
     function openCortesPeriod(period) {

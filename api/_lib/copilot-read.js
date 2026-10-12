@@ -2,8 +2,9 @@
  * Lectura del Copiloto para modo agent (solo consultas).
  * Mismas tools que executeCopilotTool en pos-module.js.
  * Ventas vivas e inventario: Mongo panel_state.
+ * Producto terminado: s35_finished_stock (byCity), no el inventario de planta.
  * Clientes: colección clients (solo lectura, sin sembrar).
- * Historial: JSON público historical-sales-import.json.
+ * Historial: historical-sales-import.json + manual-sales-catchup.json.
  * Horario de cortes: America/Mazatlan (UTC-7), como el panel en Sinaloa.
  */
 'use strict';
@@ -18,8 +19,13 @@ const HIST_FILE = path.join(
   '../../public/colaboradores/data/historical-sales-import.json'
 );
 const HIST_URL = 'https://www.s-35.com.mx/colaboradores/data/historical-sales-import.json';
+const CATCHUP_FILE = path.join(
+  __dirname,
+  '../../public/colaboradores/data/manual-sales-catchup.json'
+);
+const CATCHUP_URL = 'https://www.s-35.com.mx/colaboradores/data/manual-sales-catchup.json';
 
-const PANEL_KEYS = ['s35_pos_sales', 's35_sale_edits_v1', 's35_plant_inventory'];
+const PANEL_KEYS = ['s35_pos_sales', 's35_sale_edits_v1', 's35_plant_inventory', 's35_finished_stock'];
 
 const CITIES = [
   { id: 'culiacan', label: 'Culiacán', short: 'CLN' },
@@ -28,6 +34,32 @@ const CITIES = [
 ];
 
 let cachedHistorical = null;
+
+function readItemsFile(filePath) {
+  const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return data && Array.isArray(data.items) ? data.items : [];
+}
+
+async function fetchItems(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  return data && Array.isArray(data.items) ? data.items : [];
+}
+
+function mergeRowsById(base, extra) {
+  const byId = Object.create(null);
+  const order = [];
+  function put(row) {
+    if (!row || !row.id) return;
+    const id = String(row.id);
+    if (!byId[id]) order.push(id);
+    byId[id] = row;
+  }
+  (base || []).forEach(put);
+  (extra || []).forEach(put);
+  return order.map(function (id) { return byId[id]; });
+}
 
 function roundMoney(n) {
   return Math.round((Number(n) || 0) * 100) / 100;
@@ -245,6 +277,83 @@ function extractEditMap(value) {
 
 function extractMaterials(value) {
   return extractItems(value).filter(function (m) { return m && (m.id || m.name); });
+}
+
+function extractFinished(value) {
+  const empty = { bySlug: {}, updatedAt: null };
+  if (!value || typeof value !== 'object') return empty;
+  const updatedAt = value.updatedAt || null;
+  const items = value.items && typeof value.items === 'object' && !Array.isArray(value.items)
+    ? value.items
+    : null;
+  if (!items) return { bySlug: {}, updatedAt: updatedAt };
+  const bySlug = {};
+  Object.keys(items).forEach(function (slug) {
+    const row = items[slug];
+    if (!row || typeof row !== 'object') return;
+    const key = String(row.slug || slug);
+    const byCity = { culiacan: 0, mochis: 0, mazatlan: 0 };
+    const hasByCity = !!(row.byCity && typeof row.byCity === 'object');
+    if (hasByCity) {
+      CITIES.forEach(function (c) {
+        byCity[c.id] = Math.max(0, Number(row.byCity[c.id]) || 0);
+      });
+    }
+    let stock = Math.max(0, Number(row.stock) || 0);
+    if (hasByCity) {
+      const summed = CITIES.reduce(function (n, c) { return n + byCity[c.id]; }, 0);
+      if (summed === 0 && stock > 0) byCity.culiacan = stock;
+      stock = CITIES.reduce(function (n, c) { return n + byCity[c.id]; }, 0);
+    } else {
+      byCity.culiacan = stock;
+    }
+    bySlug[key] = {
+      slug: key,
+      name: row.name || key,
+      unit: row.unit || 'Pza',
+      stock: stock,
+      minStock: Number(row.minStock) || 0,
+      byCity: byCity
+    };
+  });
+  return { bySlug: bySlug, updatedAt: updatedAt };
+}
+
+function parseYmd(raw) {
+  const m = String(raw || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? (m[1] + '-' + m[2] + '-' + m[3]) : '';
+}
+
+function saleYmd(sale) {
+  const raw = sale && sale.createdAt;
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  if (!/[zZ]$/.test(s) && !/[+-]\d{2}:?\d{2}$/.test(s)) {
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? (m[1] + '-' + m[2] + '-' + m[3]) : '';
+  }
+  const t = parseSaleTime(raw);
+  if (!isFinite(t)) return '';
+  const p = zonedYmd(new Date(t));
+  if (!p.y || !p.m || !p.d) return '';
+  return String(p.y) + '-' + String(p.m).padStart(2, '0') + '-' + String(p.d).padStart(2, '0');
+}
+
+function saleInYmdRange(sale, from, to) {
+  if (!from && !to) return true;
+  const ymd = saleYmd(sale);
+  if (!ymd) return false;
+  if (from && ymd < from) return false;
+  if (to && ymd > to) return false;
+  return true;
+}
+
+function saleOrigin(sale) {
+  if (!sale) return 'viva';
+  if (isHistoricalImportSale(sale)) return 'historico';
+  if (String(sale.folio || '').indexOf('HIST-') === 0) return 'historico';
+  if (String(sale.id || '').indexOf('sale-hist-') === 0) return 'historico';
+  return 'viva';
 }
 
 function periodBounds(period, offset, now, sales) {
@@ -620,36 +729,27 @@ function normalizeHistoricalRow(row) {
   return compactSale(base);
 }
 
-function readHistoricalFile() {
-  const raw = fs.readFileSync(HIST_FILE, 'utf8');
-  const data = JSON.parse(raw);
-  const items = data && Array.isArray(data.items) ? data.items : [];
-  return items.map(normalizeHistoricalRow).filter(Boolean);
-}
-
 async function loadHistoricalRows() {
-  if (cachedHistorical) return { rows: cachedHistorical, warning: null };
+  if (cachedHistorical) return cachedHistorical;
+  const warnings = [];
+  let histItems = [];
+  let catchItems = [];
   try {
-    if (fs.existsSync(HIST_FILE)) {
-      cachedHistorical = readHistoricalFile();
-      return { rows: cachedHistorical, warning: null };
-    }
+    histItems = fs.existsSync(HIST_FILE) ? readItemsFile(HIST_FILE) : await fetchItems(HIST_URL);
   } catch (err) {
-    cachedHistorical = null;
+    warnings.push('Historial de notas no disponible en este proceso; las ventas vivas sí.');
   }
   try {
-    const res = await fetch(HIST_URL);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const items = data && Array.isArray(data.items) ? data.items : [];
-    cachedHistorical = items.map(normalizeHistoricalRow).filter(Boolean);
-    return { rows: cachedHistorical, warning: null };
+    catchItems = fs.existsSync(CATCHUP_FILE) ? readItemsFile(CATCHUP_FILE) : await fetchItems(CATCHUP_URL);
   } catch (err) {
-    return {
-      rows: [],
-      warning: 'Historial de notas no disponible en este proceso; las ventas vivas sí.'
-    };
+    warnings.push('Falta el catch-up de notas recientes.');
   }
+  const rows = mergeRowsById(histItems, catchItems).map(normalizeHistoricalRow).filter(Boolean);
+  cachedHistorical = {
+    rows: rows,
+    warning: warnings.length ? warnings.join(' ') : null
+  };
+  return cachedHistorical;
 }
 
 function finalizeList(rows, edits) {
@@ -694,10 +794,13 @@ function buildDataset(parts) {
     .sort(function (a, b) { return (parseSaleTime(a.createdAt) || 0) - (parseSaleTime(b.createdAt) || 0); });
   const clients = (parts.clients || []).map(compactClient).filter(function (c) { return c && c.id && c.name; });
   const materials = extractMaterials(parts.materials);
+  const finished = extractFinished(parts.finished);
   return {
     sales: sales,
     clients: clients,
     materials: materials,
+    finished: finished.bySlug,
+    finishedUpdatedAt: finished.updatedAt,
     warnings: warnings,
     counts: {
       tickets: sales.length,
@@ -748,6 +851,7 @@ async function loadReadDataset() {
     edits: extractEditMap(stores.s35_sale_edits_v1),
     clients: clients,
     materials: stores.s35_plant_inventory,
+    finished: stores.s35_finished_stock,
     warnings: warnings
   });
 }
@@ -757,6 +861,8 @@ function createReadRuntime(dataset) {
   const sales = data.sales || [];
   const clients = data.clients || [];
   const materials = data.materials || [];
+  const finished = data.finished || {};
+  const finishedUpdatedAt = data.finishedUpdatedAt || null;
   const byId = Object.create(null);
   clients.forEach(function (c) { if (c && c.id) byId[c.id] = c; });
 
@@ -808,6 +914,7 @@ function createReadRuntime(dataset) {
     });
     const noteParts = [
       'Snapshot del servidor (America/Mazatlan). Tools para el detalle.',
+      'Producto terminado (sacos): get_finished_stock. Este snapshot no trae esas existencias.',
       '«Histórico importado» = data migrada sin nombre de cliente (NO es un cliente).',
       'Offsets: 0=hoy, -1=ayer, -2=antier.'
     ];
@@ -837,15 +944,17 @@ function createReadRuntime(dataset) {
     };
   }
 
-  function searchSales(query, limit) {
+  function searchSales(query, limit, range) {
     const needle = normalizeSearchText(query);
-    if (!needle || needle.length < 2) return [];
+    if (!needle || needle.length < 2) return { rows: [], truncated: false };
     const tokens = searchTokens(query);
-    const max = limit || 8;
+    const max = Math.min(25, Math.max(1, Number(limit) || 8));
+    const from = range && range.from;
+    const to = range && range.to;
     const out = [];
-    for (let i = sales.length - 1; i >= 0 && out.length < max * 4; i--) {
+    for (let i = sales.length - 1; i >= 0; i--) {
       const s = sales[i];
-      if (!s) continue;
+      if (!s || !saleInYmdRange(s, from, to)) continue;
       const folio = normalizeSearchText(s.folio);
       const id = normalizeSearchText(s.id);
       const rid = normalizeSearchText(saleReceiptId(s));
@@ -899,7 +1008,47 @@ function createReadRuntime(dataset) {
       if (b.score !== a.score) return b.score - a.score;
       return (parseSaleTime(b.sale.createdAt) || 0) - (parseSaleTime(a.sale.createdAt) || 0);
     });
-    return out.slice(0, max);
+    return { rows: out.slice(0, max), truncated: out.length > max };
+  }
+
+  function finishedStockHits(query) {
+    const needle = normalizeSearchText(query);
+    if (!needle || needle.length < 2) return [];
+    const tokens = searchTokens(query);
+    const rows = Object.keys(finished).map(function (k) { return finished[k]; });
+    const hits = rows.filter(function (row) {
+      const slug = normalizeSearchText(row.slug).replace(/-/g, ' ');
+      const name = normalizeSearchText(row.name || '');
+      const hay = (slug + ' ' + name).trim();
+      if (slug && (slug === needle || slug.indexOf(needle) >= 0 || needle.indexOf(slug) >= 0)) return true;
+      return textMatchesTokens(hay, tokens, needle);
+    });
+    hits.sort(function (a, b) {
+      const as = normalizeSearchText(a.slug).replace(/-/g, ' ') === needle ? 1 : 0;
+      const bs = normalizeSearchText(b.slug).replace(/-/g, ' ') === needle ? 1 : 0;
+      return bs - as;
+    });
+    return hits.slice(0, 8);
+  }
+
+  function publicFinished(row) {
+    const cities = CITIES.map(function (c) {
+      return { id: c.id, label: c.label, qty: Number(row.byCity && row.byCity[c.id]) || 0 };
+    });
+    return {
+      slug: row.slug,
+      name: row.name || row.slug,
+      unit: row.unit || 'Pza',
+      stock: Number(row.stock) || 0,
+      byCity: {
+        culiacan: Number(row.byCity && row.byCity.culiacan) || 0,
+        mochis: Number(row.byCity && row.byCity.mochis) || 0,
+        mazatlan: Number(row.byCity && row.byCity.mazatlan) || 0
+      },
+      cities: cities,
+      updatedAt: finishedUpdatedAt,
+      note: '0 es cero piezas en esa ciudad, no falta de datos.'
+    };
   }
 
   function execute(name, args) {
@@ -921,7 +1070,12 @@ function createReadRuntime(dataset) {
       return { ok: true, period: a.period, city: a.city, a: a, b: b, delta: { amount: deltaAmount, tickets: deltaTickets, pct: pct } };
     }
     if (name === 'search_sales') {
-      const hits = searchSales(args.query, Math.min(8, Number(args.limit) || 8)).map(function (hit) {
+      const from = parseYmd(args.from);
+      const to = parseYmd(args.to);
+      const hasRange = !!(from || to);
+      const limit = Math.min(25, Math.max(1, Number(args.limit) || (hasRange ? 25 : 8)));
+      const found = searchSales(args.query, limit, { from: from, to: to });
+      const hits = found.rows.map(function (hit) {
         const s = hit.sale;
         const items = (s.items || []).slice(0, 12).map(function (it) {
           const slug = it.product || null;
@@ -943,6 +1097,8 @@ function createReadRuntime(dataset) {
           receiptId: saleReceiptId(s) || null,
           total: Number(s.total) || 0,
           createdAt: s.createdAt,
+          date: saleYmd(s) || null,
+          origin: saleOrigin(s),
           client: saleClientLabel(s, byId),
           clientId: s.clientId || (s.client && s.client.id) || null,
           city: cityLabel(s.city),
@@ -954,7 +1110,18 @@ function createReadRuntime(dataset) {
           open: s.id ? ('[[note:' + s.id + '|Ver nota ' + folio + ']]') : null
         };
       });
-      return { ok: true, query: args.query, results: hits };
+      const multi = hits.some(function (h) { return (h.items || []).length > 1; });
+      return {
+        ok: true,
+        query: args.query,
+        from: from || null,
+        to: to || null,
+        truncated: found.truncated,
+        results: hits,
+        note: multi
+          ? 'total es el importe de toda la nota. El precio de cada producto está en items[].price y items[].lineTotal; no atribuyas total a un solo saco.'
+          : null
+      };
     }
     if (name === 'lookup_client') {
       const needle = String(args.query || '').toLowerCase().trim();
@@ -1027,7 +1194,30 @@ function createReadRuntime(dataset) {
     }
     if (name === 'stock_alerts') {
       const alerts = lowStockMaterials(materials, 12).concat(staleProducts(sales, 8));
-      return { ok: true, alerts: alerts };
+      return {
+        ok: true,
+        alerts: alerts,
+        note: 'Solo materia prima de planta. Para producto terminado usa get_finished_stock.'
+      };
+    }
+    if (name === 'get_finished_stock') {
+      const hits = finishedStockHits(args.query).map(publicFinished);
+      if (!hits.length) {
+        return {
+          ok: true,
+          query: args.query || '',
+          updatedAt: finishedUpdatedAt,
+          results: [],
+          note: 'No está en s35_finished_stock. No inventes 0.'
+        };
+      }
+      return {
+        ok: true,
+        query: args.query,
+        updatedAt: finishedUpdatedAt,
+        results: hits,
+        note: 'byCity.culiacan, byCity.mochis y byCity.mazatlan son piezas. 0 es cero, no falta de datos.'
+      };
     }
     return { ok: false, error: 'Tool desconocida: ' + name };
   }
