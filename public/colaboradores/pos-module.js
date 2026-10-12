@@ -31,7 +31,7 @@
         holder: 'PRODUCTOS S35 S.A. DE C.V.',
         city: 'culiacan',
         opening: 1838.47,
-        closing: 281934.94
+        closing: 233042.01
     };
     const SALE_EDITS_KEY = 's35_sale_edits_v1';
     const CLIENTS_KEY = 's35_pos_clients';
