@@ -68,6 +68,12 @@ const MERGE_FORMULAS_KEY = 's35_plant_formulas_v3';
 /** Catálogo panel: { names, added[] } — unión por slug (no LWW del blob). */
 const MERGE_CATALOG_KEY = 's35_product_catalog_v1';
 
+/** Inventario y PT: fusión por fila, no last-write-wins del documento. */
+const MERGE_STOCK_KEYS = new Set([
+  's35_plant_inventory',
+  's35_finished_stock'
+]);
+
 function isHistoricalImportSale(row) {
   if (!row) return false;
   if (row.user === 'import-historico') return true;
@@ -83,6 +89,27 @@ function itemRecency(row) {
   const stamp = row.editedAt || row.updatedAt;
   if (!stamp || stamp === row.createdAt) return 0;
   return Date.parse(stamp) || 0;
+}
+
+/** Lote: la confirmación es el sello, aunque no traiga editedAt. */
+function lotRecency(row) {
+  if (!row || typeof row !== 'object') return 0;
+  const stamp = row.editedAt || row.updatedAt || row.confirmedAt || row.cancelledAt || row.issuedAt;
+  const t = Date.parse(stamp);
+  return isFinite(t) ? t : 0;
+}
+
+function lotIsConfirmed(row) {
+  const s = String((row && row.status) || '');
+  return s === 'confirmed' || s === 'completed' || s === 'closed';
+}
+
+/** Sello de la fila. El updatedAt del documento NO cuenta: un guardado
+ *  posterior no debe hacer ver nueva toda la lista. */
+function rowStampMs(row) {
+  if (!row || typeof row !== 'object') return 0;
+  const t = Date.parse(row.updatedAt || row.editedAt);
+  return isFinite(t) ? t : 0;
 }
 
 function extractItems(value) {
@@ -108,8 +135,9 @@ function mergeItemLists(a, b, opts) {
       return;
     }
     const prev = byId[id];
-    const tr = itemRecency(row);
-    const tp = itemRecency(prev);
+    const recency = opts.useLotRecency ? lotRecency : itemRecency;
+    const tr = recency(row);
+    const tp = recency(prev);
     if (tr > tp) {
       byId[id] = row;
       return;
@@ -120,6 +148,8 @@ function mergeItemLists(a, b, opts) {
       byId[id] = row;
       return;
     }
+    // Un reenvío del lote todavía "abierto" no desconfirma la producción.
+    if (opts.useLotRecency && lotIsConfirmed(prev) && !lotIsConfirmed(row) && row.status !== 'cancelled') return;
     // Empate de fechas: gana lo que acaba de subir el cliente (si no, la edición se pierde).
     if (opts.preferIncoming && !prev.deleted) byId[id] = row;
   }
@@ -133,7 +163,7 @@ function mergeItemsValue(key, prevValue, nextValue, updatedAt) {
   const merged = mergeItemLists(
     extractItems(prevValue),
     extractItems(nextValue),
-    { dropHistoricalSales: dropHistorical, preferIncoming: true }
+    { dropHistoricalSales: dropHistorical, preferIncoming: true, useLotRecency: key === 's35_production_lots' }
   );
   const base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
     ? nextValue
@@ -141,6 +171,106 @@ function mergeItemsValue(key, prevValue, nextValue, updatedAt) {
   const out = Object.assign({}, base, { items: merged });
   if (updatedAt) out.updatedAt = updatedAt;
   return out;
+}
+
+function mergeKeyedRows(prevRows, nextRows, idOf) {
+  const byId = Object.create(null);
+  const order = [];
+  function consider(row, incoming) {
+    if (!row || typeof row !== 'object') return;
+    const id = idOf(row);
+    if (!id || id === 'updatedAt' || id === 'value') return;
+    if (!byId[id]) {
+      byId[id] = row;
+      order.push(id);
+      return;
+    }
+    const prev = byId[id];
+    if (row.deleted && !prev.deleted && rowStampMs(row) >= rowStampMs(prev)) {
+      byId[id] = row;
+      return;
+    }
+    if (prev.deleted && !row.deleted && rowStampMs(prev) > rowStampMs(row)) return;
+    const tr = rowStampMs(row);
+    const tp = rowStampMs(prev);
+    if (tr > tp) byId[id] = row;
+    else if (tr === tp && tr > 0 && incoming) byId[id] = row;
+  }
+  (prevRows || []).forEach(function (row) { consider(row, false); });
+  (nextRows || []).forEach(function (row) { consider(row, true); });
+  return order.map(function (id) { return byId[id]; });
+}
+
+function mergeInventoryValue(prevValue, nextValue, updatedAt) {
+  const merged = mergeKeyedRows(extractItems(prevValue), extractItems(nextValue), function (row) {
+    return row && row.id != null ? String(row.id) : '';
+  });
+  const base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
+    ? nextValue
+    : ((prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue)) ? prevValue : {});
+  const out = Object.assign({}, base, { items: merged });
+  if (updatedAt) out.updatedAt = updatedAt;
+  return out;
+}
+
+function finishedMapOf(value) {
+  if (!value) return {};
+  let current = value;
+  if (typeof current === 'string') {
+    try { current = JSON.parse(current); } catch (_) { return {}; }
+  }
+  if (current && typeof current === 'object' && !Array.isArray(current) && current.value && !current.items) {
+    current = current.value;
+  }
+  if (Array.isArray(current)) {
+    const map = {};
+    current.forEach(function (row) {
+      if (row && (row.slug || row.id)) map[String(row.slug || row.id)] = row;
+    });
+    return map;
+  }
+  if (Array.isArray(current.items)) {
+    const map = {};
+    current.items.forEach(function (row) {
+      if (row && (row.slug || row.id)) map[String(row.slug || row.id)] = row;
+    });
+    return map;
+  }
+  if (current.items && typeof current.items === 'object') return current.items;
+  if (current && typeof current === 'object') return current;
+  return {};
+}
+
+function mergeFinishedValue(prevValue, nextValue, updatedAt) {
+  function rows(value) {
+    const map = finishedMapOf(value);
+    return Object.keys(map).filter(function (k) { return k !== 'updatedAt' && k !== 'value'; }).map(function (slug) {
+      const row = map[slug];
+      if (!row || typeof row !== 'object') return { slug: slug };
+      return Object.assign({ slug: slug }, row);
+    });
+  }
+  const merged = mergeKeyedRows(rows(prevValue), rows(nextValue), function (row) {
+    return row && (row.slug || row.id) ? String(row.slug || row.id) : '';
+  });
+  const items = {};
+  merged.forEach(function (row) {
+    if (row && row.slug) items[row.slug] = row;
+  });
+  return { items: items, updatedAt: updatedAt || null };
+}
+
+function stockFingerprint(value, key) {
+  if (key === 's35_finished_stock') {
+    const map = finishedMapOf(value);
+    return Object.keys(map).sort().map(function (slug) {
+      const row = map[slug] || {};
+      return slug + ':' + (row.stock || 0) + ':' + (row.updatedAt || '') + ':' + (row.deleted ? 1 : 0);
+    }).join('|');
+  }
+  return extractItems(value).map(function (row) {
+    return (row && row.id) + ':' + (row && row.stock) + ':' + (row && row.updatedAt || '') + ':' + (row && row.deleted ? 1 : 0);
+  }).join('|');
 }
 
 function mergeByIdMaps(prevValue, nextValue, updatedAt) {
@@ -531,6 +661,7 @@ module.exports = async function handler(req, res) {
         const updatedAt = normalizeIso(entry.updatedAt) || new Date().toISOString();
         const prev = byId[key];
         const isMergeKey = MERGE_ITEMS_KEYS.has(key) || MERGE_MAP_KEYS.has(key) ||
+          MERGE_STOCK_KEYS.has(key) ||
           key === MERGE_FORMULAS_KEY || key === MERGE_CATALOG_KEY;
 
         // Colecciones / fórmulas: fusionar siempre (aunque el cliente venga "stale")
@@ -552,6 +683,10 @@ module.exports = async function handler(req, res) {
             valueToStore = mergeItemsValue(key, prev.value, entry.value, updatedAt);
           } else if (MERGE_MAP_KEYS.has(key)) {
             valueToStore = mergeByIdMaps(prev.value, entry.value, updatedAt);
+          } else if (MERGE_STOCK_KEYS.has(key)) {
+            valueToStore = key === 's35_finished_stock'
+              ? mergeFinishedValue(prev.value, entry.value, updatedAt)
+              : mergeInventoryValue(prev.value, entry.value, updatedAt);
           } else if (key === MERGE_FORMULAS_KEY) {
             valueToStore = mergeFormulasValue(prev.value, entry.value, updatedAt);
           } else if (key === MERGE_CATALOG_KEY) {
@@ -566,6 +701,8 @@ module.exports = async function handler(req, res) {
             } else if (MERGE_MAP_KEYS.has(key)) {
               grew = Object.keys((valueToStore && valueToStore.byId) || {}).length >
                 Object.keys((prev.value && prev.value.byId) || {}).length;
+            } else if (MERGE_STOCK_KEYS.has(key)) {
+              grew = stockFingerprint(valueToStore, key) !== stockFingerprint(prev.value, key);
             } else if (key === MERGE_FORMULAS_KEY) {
               grew = formulasDoseCount(valueToStore) > formulasDoseCount(prev.value) ||
                 Object.keys(extractFormulaMap(valueToStore)).length >
@@ -583,6 +720,10 @@ module.exports = async function handler(req, res) {
         } else if (MERGE_ITEMS_KEYS.has(key)) {
           // Primera escritura: igual limpiar imports históricos de ventas.
           valueToStore = mergeItemsValue(key, null, entry.value, updatedAt);
+        } else if (MERGE_STOCK_KEYS.has(key)) {
+          valueToStore = key === 's35_finished_stock'
+            ? mergeFinishedValue(null, entry.value, updatedAt)
+            : mergeInventoryValue(null, entry.value, updatedAt);
         } else if (key === MERGE_FORMULAS_KEY) {
           valueToStore = mergeFormulasValue(null, entry.value, updatedAt);
         } else if (key === MERGE_CATALOG_KEY) {
@@ -624,3 +765,6 @@ module.exports = async function handler(req, res) {
 };
 
 module.exports.ALLOWED_KEYS = ALLOWED_KEYS;
+module.exports.mergeItemsValue = mergeItemsValue;
+module.exports.mergeInventoryValue = mergeInventoryValue;
+module.exports.mergeFinishedValue = mergeFinishedValue;

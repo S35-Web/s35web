@@ -9743,12 +9743,16 @@
         if (c === 'all') return Math.max(0, Number(m.reserved) || 0);
         return Math.max(0, Number(m.reservedByCity[c]) || 0);
     }
+    function touchMaterialRow(m) {
+        if (m) m.updatedAt = new Date().toISOString();
+    }
     function setMaterialStockInCity(m, city, qty) {
         ensureMaterialByCity(m);
         const c = normalizeInvCity(city === 'all' ? activeMaterialsCity() : city);
         if (c === 'all') return;
         m.byCity[c] = Math.max(0, Number(qty) || 0);
         syncMaterialCityTotals(m);
+        touchMaterialRow(m);
     }
     function adjustMaterialStockInCity(m, city, delta) {
         ensureMaterialByCity(m);
@@ -9756,6 +9760,7 @@
         if (c === 'all') return;
         m.byCity[c] = Math.max(0, (Number(m.byCity[c]) || 0) + (Number(delta) || 0));
         syncMaterialCityTotals(m);
+        touchMaterialRow(m);
     }
     function ensureFinishedByCity(row) {
         if (!row) return row;
@@ -9880,6 +9885,7 @@
                 const saved = [];
                 const byId = {};
                 raw.items.map(normalizeItem).forEach(function (m) {
+                    if (m.deleted) return;
                     if (m.id === 'marmolina-estandar') {
                         persistNormalized = true;
                         return;
@@ -9988,6 +9994,7 @@
         if (q > materialFreeStock(mat, cityKey) + 1e-9) return false;
         mat.reservedByCity[cityKey] = materialReservedInCity(mat, cityKey) + q;
         syncMaterialCityTotals(mat);
+        touchMaterialRow(mat);
         return true;
     }
     function releasePlantQty(plantId, qty, city) {
@@ -9998,6 +10005,7 @@
         const cityKey = c === 'all' ? INV_DEFAULT_CITY : c;
         mat.reservedByCity[cityKey] = Math.max(0, materialReservedInCity(mat, cityKey) - Math.max(0, Number(qty) || 0));
         syncMaterialCityTotals(mat);
+        touchMaterialRow(mat);
     }
     function consumePlantQty(plantId, qty, city) {
         const mat = plantById(plantId);
@@ -10009,6 +10017,7 @@
         mat.byCity[cityKey] = Math.max(0, (Number(mat.byCity[cityKey]) || 0) - q);
         mat.reservedByCity[cityKey] = Math.max(0, (Number(mat.reservedByCity[cityKey]) || 0) - q);
         syncMaterialCityTotals(mat);
+        touchMaterialRow(mat);
     }
 
     const FINISHED_KEY = 's35_finished_stock';
@@ -10122,6 +10131,7 @@
             }
             finishedStock[slug].byCity[city] = nextCity;
             syncFinishedCityTotals(finishedStock[slug]);
+            finishedStock[slug].updatedAt = new Date().toISOString();
             changed = true;
         });
         if (changed) saveFinished();
@@ -11928,6 +11938,7 @@
             next.byCity[materialsCityFilter] = stock;
         }
         syncMaterialCityTotals(next);
+        next.updatedAt = new Date().toISOString();
         const idx = inventory.findIndex(function (m) { return m.id === next.id; });
         if (idx >= 0) inventory[idx] = next;
         else inventory.push(next);
@@ -11950,8 +11961,10 @@
             const item = inventory.filter(function (m) { return m.id === id; })[0];
             if (!item) return;
             if (!confirm('¿Eliminar «' + displayName(item) + '» del inventario?')) return;
-            inventory = inventory.filter(function (m) { return m.id !== id; });
+            item.deleted = true;
+            item.updatedAt = new Date().toISOString();
             saveInventory(inventory);
+            inventory = inventory.filter(function (m) { return m.id !== id; });
             updateMaterialKpi();
             renderMatChips();
             renderMaterials();
@@ -16441,6 +16454,7 @@
             return;
         }
         t.issuedAt = new Date().toISOString();
+        t.editedAt = t.issuedAt;
         t.packReserved = packLines.length > 0;
         list.unshift(t);
         saveLotTickets(list);
@@ -17237,6 +17251,7 @@
         adjustFinishedMap(finDelta, confirmCity);
         t.status = 'confirmed';
         t.confirmedAt = new Date().toISOString();
+        t.editedAt = t.confirmedAt;
         t.bagsOut = bagsOut;
         t.city = confirmCity;
         t.producedBy = producedBy;
@@ -17415,6 +17430,7 @@
             saveInventory(inventory);
             t.status = 'cancelled';
             t.cancelledAt = new Date().toISOString();
+            t.editedAt = t.cancelledAt;
             list[idx] = t;
             saveLotTickets(list);
             refreshStockViews();
@@ -17453,6 +17469,7 @@
         saveInventory(inventory);
         t.status = 'cancelled';
         t.cancelledAt = new Date().toISOString();
+        t.editedAt = t.cancelledAt;
         t.voidedFromConfirmed = true;
         t.notes = (t.notes ? t.notes + ' · ' : '') + 'Anulado (producción accidental / corrección)';
         list[idx] = t;

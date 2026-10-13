@@ -169,7 +169,25 @@
         return [];
     }
 
-    function mergeItemLists(a, b, dropHistorical) {
+    function lotRecency(row) {
+        if (!row || typeof row !== 'object') return 0;
+        var stamp = row.editedAt || row.updatedAt || row.confirmedAt || row.cancelledAt || row.issuedAt;
+        var t = Date.parse(stamp);
+        return isFinite(t) ? t : 0;
+    }
+
+    function lotIsConfirmed(row) {
+        var s = String((row && row.status) || '');
+        return s === 'confirmed' || s === 'completed' || s === 'closed';
+    }
+
+    function rowStampMs(row) {
+        if (!row || typeof row !== 'object') return 0;
+        var t = Date.parse(row.updatedAt || row.editedAt);
+        return isFinite(t) ? t : 0;
+    }
+
+    function mergeItemLists(a, b, dropHistorical, useLotRecency) {
         var byId = Object.create(null);
         var order = [];
         function consider(row) {
@@ -183,15 +201,19 @@
                 return;
             }
             var prev = byId[id];
-            var tr = itemRecency(row);
-            var tp = itemRecency(prev);
+            var tr = useLotRecency ? lotRecency(row) : itemRecency(row);
+            var tp = useLotRecency ? lotRecency(prev) : itemRecency(prev);
             if (tr > tp) {
                 byId[id] = row;
                 return;
             }
             if (tr < tp) return;
-            // Empate: tombstone de borrado gana (no resucitar).
-            if (row.deleted && !prev.deleted) byId[id] = row;
+            if (row.deleted && !prev.deleted) {
+                byId[id] = row;
+                return;
+            }
+            if (useLotRecency && lotIsConfirmed(prev) && !lotIsConfirmed(row) && row.status !== 'cancelled') return;
+            if (useLotRecency && lotIsConfirmed(row) && !lotIsConfirmed(prev)) byId[id] = row;
         }
         (a || []).forEach(consider);
         (b || []).forEach(consider);
@@ -202,7 +224,8 @@
         var merged = mergeItemLists(
             extractItems(localVal),
             extractItems(remoteVal),
-            key === 's35_pos_sales'
+            key === 's35_pos_sales',
+            key === 's35_production_lots'
         );
         var base = (localVal && typeof localVal === 'object' && !Array.isArray(localVal))
             ? localVal
@@ -460,6 +483,93 @@
         status.appliedKeys = [];
     }
 
+    function mergeKeyedRows(prevRows, nextRows, idOf) {
+        var byId = Object.create(null);
+        var order = [];
+        function consider(row, incoming) {
+            if (!row || typeof row !== 'object') return;
+            var id = idOf(row);
+            if (!id || id === 'updatedAt' || id === 'value') return;
+            if (!byId[id]) {
+                byId[id] = row;
+                order.push(id);
+                return;
+            }
+            var prev = byId[id];
+            var tr = rowStampMs(row);
+            var tp = rowStampMs(prev);
+            if (row.deleted && !prev.deleted && tr >= tp) {
+                byId[id] = row;
+                return;
+            }
+            if (prev.deleted && !row.deleted && tp > tr) return;
+            if (tr > tp) byId[id] = row;
+            else if (tr === tp && tr > 0 && incoming) byId[id] = row;
+        }
+        (prevRows || []).forEach(function (row) { consider(row, false); });
+        (nextRows || []).forEach(function (row) { consider(row, true); });
+        return order.map(function (id) { return byId[id]; });
+    }
+
+    function mergeInventoryValue(prevValue, nextValue, updatedAt) {
+        var merged = mergeKeyedRows(extractItems(prevValue), extractItems(nextValue), function (row) {
+            return row && row.id != null ? String(row.id) : '';
+        });
+        var base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
+            ? nextValue
+            : ((prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue)) ? prevValue : {});
+        var out = Object.assign({}, base, { items: merged });
+        if (updatedAt) out.updatedAt = updatedAt;
+        return out;
+    }
+
+    function finishedMapOf(value) {
+        if (!value || typeof value !== 'object') return {};
+        var current = value;
+        if (current.value && !current.items) current = current.value;
+        if (current.items && typeof current.items === 'object' && !Array.isArray(current.items)) return current.items;
+        if (Array.isArray(current.items)) {
+            var map = {};
+            current.items.forEach(function (row) {
+                if (row && (row.slug || row.id)) map[String(row.slug || row.id)] = row;
+            });
+            return map;
+        }
+        return current;
+    }
+
+    function mergeFinishedValue(prevValue, nextValue, updatedAt) {
+        function rows(value) {
+            var map = finishedMapOf(value);
+            return Object.keys(map).filter(function (k) { return k !== 'updatedAt' && k !== 'value'; }).map(function (slug) {
+                var row = map[slug];
+                if (!row || typeof row !== 'object') return { slug: slug };
+                return Object.assign({ slug: slug }, row);
+            });
+        }
+        var merged = mergeKeyedRows(rows(prevValue), rows(nextValue), function (row) {
+            return row && (row.slug || row.id) ? String(row.slug || row.id) : '';
+        });
+        var items = {};
+        merged.forEach(function (row) {
+            if (row && row.slug) items[row.slug] = row;
+        });
+        return { items: items, updatedAt: updatedAt || null };
+    }
+
+    function stockFingerprint(value, key) {
+        if (key === 's35_finished_stock') {
+            var map = finishedMapOf(value);
+            return Object.keys(map).sort().map(function (slug) {
+                var row = map[slug] || {};
+                return slug + ':' + (row.stock || 0) + ':' + (row.updatedAt || '');
+            }).join('|');
+        }
+        return extractItems(value).map(function (row) {
+            return (row && row.id) + ':' + (row && row.stock) + ':' + ((row && row.updatedAt) || '');
+        }).join('|');
+    }
+
     /** Fusiona local+remoto para claves de colección; null = usar LWW. */
     function mergeStoreValues(key, localVal, remoteVal, localTs, remoteTs) {
         if (MERGE_ITEMS_KEYS[key]) {
@@ -512,6 +622,24 @@
                 updatedAt: tsF,
                 applyLocal: needApplyF,
                 push: needPushF
+            };
+        }
+        if (key === 's35_plant_inventory' || key === 's35_finished_stock') {
+            var tsS = maxIso(localTs, remoteTs) || new Date().toISOString();
+            var mergedS = key === 's35_finished_stock'
+                ? mergeFinishedValue(remoteVal, localVal, tsS)
+                : mergeInventoryValue(remoteVal, localVal, tsS);
+            var changedRemote = stockFingerprint(remoteVal, key) !== stockFingerprint(mergedS, key);
+            var changedLocal = stockFingerprint(localVal, key) !== stockFingerprint(mergedS, key);
+            if (changedRemote) {
+                tsS = new Date().toISOString();
+                mergedS = Object.assign({}, mergedS, { updatedAt: tsS });
+            }
+            return {
+                value: mergedS,
+                updatedAt: tsS,
+                applyLocal: changedLocal,
+                push: changedRemote
             };
         }
         if (key === MERGE_CATALOG_KEY) {
@@ -725,6 +853,7 @@
                     var remote = res.data.stores && res.data.stores[key];
                     if (!remote || !('value' in remote)) return;
                     if (!MERGE_ITEMS_KEYS[key] && !MERGE_MAP_KEYS[key] &&
+                        key !== 's35_plant_inventory' && key !== 's35_finished_stock' &&
                         key !== MERGE_FORMULAS_KEY && key !== MERGE_CATALOG_KEY) return;
                     var prevAcc = readLocal(key);
                     var toWrite = remote.value;
@@ -739,6 +868,13 @@
                         } else if (MERGE_MAP_KEYS[key]) {
                             toWrite = mergeByIdMaps(prevAcc.value, remote.value, ts);
                             if (mapRecencyFingerprint(toWrite) !== mapRecencyFingerprint(remote.value)) {
+                                pendingKeys[key] = true;
+                            }
+                        } else if (key === 's35_plant_inventory' || key === 's35_finished_stock') {
+                            toWrite = key === 's35_finished_stock'
+                                ? mergeFinishedValue(remote.value, prevAcc.value, ts)
+                                : mergeInventoryValue(remote.value, prevAcc.value, ts);
+                            if (stockFingerprint(toWrite, key) !== stockFingerprint(remote.value, key)) {
                                 pendingKeys[key] = true;
                             }
                         }
