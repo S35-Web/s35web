@@ -15845,6 +15845,11 @@
                 : '<div class="empty">Sin historial aún. Los lotes confirmados o cancelados aparecerán aquí.</div>';
             return;
         }
+        list.sort(function (a, b) {
+            const ta = Date.parse(a.confirmedAt || a.cancelledAt || a.issuedAt || a.editedAt || '') || 0;
+            const tb = Date.parse(b.confirmedAt || b.cancelledAt || b.issuedAt || b.editedAt || '') || 0;
+            return tb - ta;
+        });
         box.innerHTML = list.slice(0, 80).map(lotTicketRowHtml).join('');
     }
     function refreshLotTicketLists() {
@@ -17537,7 +17542,9 @@
             return k === 's35_pos_sales' || k === 's35_sale_edits_v1' || k === 's35_caja_gastos_v1' ||
                 k === 's35_tesoreria_movs_v1' || k === 's35_promo_codes_v1' || k === 's35_pos_prices_v4';
         });
+        const touchLots = all || keySet['s35_production_lots'] || keySet['s35_compra_tickets'];
 
+        if (touchLots && typeof refreshLotTicketLists === 'function') refreshLotTicketLists();
         if (touchPlant && typeof hydrateInventoryFromLocal === 'function') hydrateInventoryFromLocal();
         if (touchFinished) hydrateFinishedFromLocal();
         if (touchFormulas && typeof hydrateFormulasFromLocal === 'function') hydrateFormulasFromLocal();
