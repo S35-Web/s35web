@@ -12,6 +12,7 @@
 const fs = require('fs');
 const path = require('path');
 const { getDb } = require('./mongo');
+const { executeSummary, stripSensitive, capToolResult } = require('./copilot-summaries');
 
 const TZ = 'America/Mazatlan';
 const HIST_FILE = path.join(
@@ -25,7 +26,23 @@ const CATCHUP_FILE = path.join(
 );
 const CATCHUP_URL = 'https://www.s-35.com.mx/colaboradores/data/manual-sales-catchup.json';
 
-const PANEL_KEYS = ['s35_pos_sales', 's35_sale_edits_v1', 's35_plant_inventory', 's35_finished_stock'];
+const PANEL_KEYS = [
+  's35_plant_inventory',
+  's35_plant_families',
+  's35_finished_stock',
+  's35_plant_formulas_v3',
+  's35_production_lots',
+  's35_compra_tickets',
+  's35_pos_prices_v4',
+  's35_pos_sales',
+  's35_caja_gastos_v1',
+  's35_tesoreria_movs_v1',
+  's35_sale_edits_v1',
+  's35_promo_codes_v1',
+  's35_product_families',
+  's35_product_family_overrides',
+  's35_product_catalog_v1'
+];
 
 const CITIES = [
   { id: 'culiacan', label: 'Culiacán', short: 'CLN' },
@@ -212,7 +229,7 @@ function compactClient(c) {
   const name = String(c.name || '').trim();
   if (!id && !name) return null;
   const type = String(c.type || c.kind || 'client').toLowerCase();
-  return {
+  const out = {
     id: id,
     name: name,
     company: String(c.company || '').trim(),
@@ -221,6 +238,11 @@ function compactClient(c) {
     rfc: String(c.rfc || '').trim(),
     type: type === 'distributor' || type === 'distribuidor' ? 'distributor' : 'client'
   };
+  ['creditLimit', 'limite', 'limiteCredito', 'saldo', 'balance'].forEach(function (key) {
+    if (c[key] == null || c[key] === '' || !isFinite(Number(c[key]))) return;
+    out[key] = roundMoney(Number(c[key]));
+  });
+  return out;
 }
 
 function compactMeta(meta) {
@@ -253,6 +275,10 @@ function compactSale(row) {
     paymentMethod: row.paymentMethod || null,
     billing: row.billing || 'sin_facturar',
     items: items,
+    payments: Array.isArray(row.payments) ? row.payments.map(function (p) {
+      if (!p || typeof p !== 'object') return null;
+      return { method: p.method || null, amount: roundMoney(p.amount) };
+    }).filter(Boolean) : null,
     total: Number(row.total) || 0,
     user: row.user || null,
     city: resolveSaleCity(row),
@@ -262,17 +288,128 @@ function compactSale(row) {
   };
 }
 
+function openStore(raw) {
+  if (raw == null || raw === '') return { body: null, updatedAt: null, shape: 'missing', ok: false };
+  let current = raw;
+  const steps = [];
+  if (typeof current === 'string') {
+    steps.push('string');
+    try { current = JSON.parse(current); } catch (_) {
+      return { body: null, updatedAt: null, shape: 'string-invalid', ok: false };
+    }
+  }
+  if (Array.isArray(current)) {
+    return { body: current, updatedAt: null, shape: (steps.length ? steps.join('+') + '+' : '') + 'array', ok: true };
+  }
+  for (let i = 0; i < 2; i++) {
+    if (!current || typeof current !== 'object' || Array.isArray(current)) break;
+    if (current.value == null) break;
+    if (typeof current.value !== 'object' && typeof current.value !== 'string') break;
+    if (current.items || current.byId || current.map || current.names) break;
+    steps.push('value');
+    if (typeof current.value === 'string') {
+      try { current = JSON.parse(current.value); } catch (_) {
+        return { body: null, updatedAt: null, shape: 'value-string-invalid', ok: false };
+      }
+    } else current = current.value;
+  }
+  if (current == null || typeof current !== 'object') {
+    return { body: null, updatedAt: null, shape: 'unrecognized', ok: false };
+  }
+  let kind = 'flat-map';
+  if (Array.isArray(current)) kind = 'array';
+  else if (Array.isArray(current.items)) kind = 'items-array';
+  else if (current.items && typeof current.items === 'object') kind = 'items-map';
+  else if (current.byId && typeof current.byId === 'object') kind = 'byId';
+  else if (current.map && typeof current.map === 'object') kind = 'map';
+  else if (current.names || Array.isArray(current.added)) kind = 'catalog';
+  const updatedAt = current.updatedAt || (raw && typeof raw === 'object' && raw.updatedAt) || null;
+  return {
+    body: current,
+    updatedAt: updatedAt,
+    shape: (steps.length ? steps.join('+') + '+' : '') + kind,
+    ok: true
+  };
+}
+
 function extractItems(value) {
-  if (!value) return [];
-  if (Array.isArray(value)) return value;
-  if (Array.isArray(value.items)) return value.items;
+  const opened = openStore(value);
+  const body = opened.body;
+  if (!body) return [];
+  if (Array.isArray(body)) return body;
+  if (Array.isArray(body.items)) return body.items;
   return [];
 }
 
 function extractEditMap(value) {
-  if (!value || typeof value !== 'object') return {};
-  if (value.byId && typeof value.byId === 'object') return value.byId;
-  return {};
+  const body = openStore(value).body;
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return {};
+  if (body.byId && typeof body.byId === 'object' && !Array.isArray(body.byId)) return body.byId;
+  return body;
+}
+
+function mapBody(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return {};
+  if (body.items && typeof body.items === 'object' && !Array.isArray(body.items)) return body.items;
+  if (body.map && typeof body.map === 'object') return body.map;
+  if (body.byId && typeof body.byId === 'object') return body.byId;
+  return body;
+}
+
+function extractPrices(value) {
+  const body = openStore(value).body;
+  const src = mapBody(body);
+  const out = {};
+  Object.keys(src).forEach(function (key) {
+    if (key === 'updatedAt' || key === 'value' || key === 'items' || key === 'names' || key === 'added') return;
+    const row = src[key];
+    if (typeof row === 'number') {
+      out[key] = { presentationKg: null, tiers: [row, row, row, row, row, row], distributorPrice: null };
+      return;
+    }
+    if (!row || typeof row !== 'object' || Array.isArray(row)) return;
+    const tiers = Array.isArray(row.tiers) ? row.tiers.slice(0, 6).map(function (n) { return roundMoney(Number(n) || 0); }) : [];
+    out[key] = {
+      presentationKg: row.presentationKg != null ? row.presentationKg : null,
+      tiers: tiers,
+      distributorPrice: row.distributorPrice != null && row.distributorPrice !== '' ? roundMoney(Number(row.distributorPrice) || 0) : null
+    };
+  });
+  return out;
+}
+
+function extractFormulas(value) {
+  const body = openStore(value).body;
+  const src = mapBody(body);
+  const out = {};
+  Object.keys(src).forEach(function (key) {
+    if (key === 'updatedAt' || key === 'value') return;
+    if (src[key] && typeof src[key] === 'object' && !Array.isArray(src[key])) out[key] = src[key];
+  });
+  return out;
+}
+
+function extractCatalog(value) {
+  const body = openStore(value).body;
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return { names: {}, added: [] };
+  return {
+    names: body.names && typeof body.names === 'object' ? body.names : {},
+    added: Array.isArray(body.added) ? body.added : []
+  };
+}
+
+function countStore(body) {
+  if (!body) return 0;
+  if (Array.isArray(body)) return body.length;
+  if (Array.isArray(body.items)) return body.items.length;
+  if (body.items && typeof body.items === 'object') return Object.keys(body.items).length;
+  if (body.byId && typeof body.byId === 'object') return Object.keys(body.byId).length;
+  if (body.map && typeof body.map === 'object') return Object.keys(body.map).length;
+  if (body.names && typeof body.names === 'object') return Object.keys(body.names).length;
+  if (typeof body === 'object') {
+    return Object.keys(body).filter(function (k) { return k !== 'updatedAt' && k !== 'value'; }).length;
+  }
+  return 0;
 }
 
 function extractMaterials(value) {
@@ -884,7 +1021,7 @@ function finalizeList(rows, edits) {
 
 function buildDataset(parts) {
   parts = parts || {};
-  const edits = parts.edits || {};
+  const edits = extractEditMap(parts.edits);
   const warnings = (parts.warnings || []).slice();
   const historical = finalizeList(parts.historical || [], edits);
   const liveIn = extractItems(parts.liveSales);
@@ -922,6 +1059,20 @@ function buildDataset(parts) {
     finishedUpdatedAt: finished.updatedAt || storeUpdatedAt(parts.finished),
     materialsUpdatedAt: storeUpdatedAt(parts.materials),
     liveSalesUpdatedAt: storeUpdatedAt(parts.liveSales),
+    updatedAtByKey: parts.updatedAtByKey || {},
+    keyCounts: parts.keyCounts || {},
+    prices: extractPrices(parts.prices),
+    gastos: extractItems(parts.gastos).filter(function (g) { return g && g.id && !g.deleted; }),
+    treasury: extractItems(parts.treasury).filter(function (m) { return m && m.id && !m.deleted; }),
+    lots: extractItems(parts.lots).filter(function (lot) { return lot && (lot.id || lot.code) && !lot.deleted; }),
+    purchases: extractItems(parts.purchases).filter(function (p) { return p && p.id && !p.deleted; }),
+    promos: extractItems(parts.promos).filter(function (p) { return p && (p.id || p.code) && !p.deleted; }),
+    formulas: extractFormulas(parts.formulas),
+    catalog: extractCatalog(parts.catalog),
+    plantFamilies: extractItems(parts.plantFamilies),
+    productFamilies: extractItems(parts.productFamilies),
+    familyOverrides: mapBody(openStore(parts.familyOverrides).body),
+    edits: edits,
     warnings: warnings,
     counts: {
       tickets: sales.length,
@@ -945,9 +1096,16 @@ async function loadReadDataset() {
   }
 
   let stores = {};
+  const docUpdated = {};
   try {
-    const docs = await db.collection('panel_state').find({ _id: { $in: PANEL_KEYS } }).toArray();
-    docs.forEach(function (doc) { stores[doc._id] = doc.value; });
+    const docs = await db.collection('panel_state').find(
+      { _id: { $in: PANEL_KEYS } },
+      { projection: { value: 1, updatedAt: 1 } }
+    ).toArray();
+    docs.forEach(function (doc) {
+      stores[doc._id] = doc.value;
+      docUpdated[doc._id] = doc.updatedAt || null;
+    });
   } catch (err) {
     console.warn('[s35-chat] agent panel_state failed');
     const e = new Error('No se pudo leer el estado del panel.');
@@ -967,23 +1125,60 @@ async function loadReadDataset() {
   const warnings = [];
   if (historical.warning) warnings.push(historical.warning);
 
+  const updatedAtByKey = {};
+  const keyCounts = {};
+  const opened = {};
+  PANEL_KEYS.forEach(function (key) {
+    if (!Object.prototype.hasOwnProperty.call(stores, key) || stores[key] == null) {
+      warnings.push(key + ' no está en la nube');
+      updatedAtByKey[key] = null;
+      keyCounts[key] = 0;
+      return;
+    }
+    const doc = openStore(stores[key]);
+    updatedAtByKey[key] = docUpdated[key] || doc.updatedAt || null;
+    if (!doc.ok) {
+      warnings.push(key + ' forma no reconocida');
+      keyCounts[key] = 0;
+      return;
+    }
+    opened[key] = doc.body;
+    keyCounts[key] = countStore(doc.body);
+  });
+
   const dataset = buildDataset({
     historical: historical.rows,
-    liveSales: stores.s35_pos_sales,
-    edits: extractEditMap(stores.s35_sale_edits_v1),
+    liveSales: opened.s35_pos_sales,
+    edits: extractEditMap(opened.s35_sale_edits_v1),
     clients: clients,
-    materials: stores.s35_plant_inventory,
-    finished: stores.s35_finished_stock,
+    materials: opened.s35_plant_inventory,
+    finished: opened.s35_finished_stock,
+    prices: opened.s35_pos_prices_v4,
+    gastos: opened.s35_caja_gastos_v1,
+    treasury: opened.s35_tesoreria_movs_v1,
+    lots: opened.s35_production_lots,
+    purchases: opened.s35_compra_tickets,
+    promos: opened.s35_promo_codes_v1,
+    formulas: opened.s35_plant_formulas_v3,
+    catalog: opened.s35_product_catalog_v1,
+    plantFamilies: opened.s35_plant_families,
+    productFamilies: opened.s35_product_families,
+    familyOverrides: opened.s35_product_family_overrides,
+    updatedAtByKey: updatedAtByKey,
+    keyCounts: keyCounts,
     warnings: warnings
   });
   const finishedSkus = (dataset.counts && dataset.counts.finishedSkus) || 0;
-  if (!finishedSkus) {
+  if (opened.s35_finished_stock && !finishedSkus) {
     dataset.warnings.push('s35_finished_stock vacío o con forma no reconocida');
-  } else {
+  } else if (finishedSkus) {
     dataset.warnings.push(
       's35_finished_stock forma=' + (dataset.finishedShape || 'empty') + ' skus=' + finishedSkus
     );
   }
+  dataset.keyCounts.s35_finished_stock = finishedSkus;
+  dataset.keyCounts.s35_pos_sales = (dataset.counts && dataset.counts.posTickets) || 0;
+  dataset.keyCounts.s35_plant_inventory = (dataset.counts && dataset.counts.materials) || 0;
   return dataset;
 }
 
@@ -993,6 +1188,15 @@ function createReadRuntime(dataset) {
   const clients = data.clients || [];
   const materials = data.materials || [];
   const finished = data.finished || {};
+  const prices = data.prices || {};
+  const gastos = data.gastos || [];
+  const treasury = data.treasury || [];
+  const lots = data.lots || [];
+  const purchases = data.purchases || [];
+  const promos = data.promos || [];
+  const formulas = data.formulas || {};
+  const catalog = data.catalog || { names: {}, added: [] };
+  const edits = data.edits || {};
   const finishedUpdatedAt = data.finishedUpdatedAt || null;
   const materialsUpdatedAt = data.materialsUpdatedAt || null;
   const liveSalesUpdatedAt = data.liveSalesUpdatedAt || null;
@@ -1148,7 +1352,16 @@ function createReadRuntime(dataset) {
       if (b.score !== a.score) return b.score - a.score;
       return (parseSaleTime(b.sale.createdAt) || 0) - (parseSaleTime(a.sale.createdAt) || 0);
     });
-    return { rows: out.slice(0, max), truncated: out.length > max };
+    const pieces = out.reduce(function (n, hit) {
+      return n + (hit.sale.items || []).reduce(function (q, it) { return q + (Number(it.qty) || 0); }, 0);
+    }, 0);
+    const amount = out.reduce(function (n, hit) { return n + (Number(hit.sale.total) || 0); }, 0);
+    return {
+      rows: out.slice(0, max),
+      truncated: out.length > max,
+      totalRows: out.length,
+      totals: { rows: out.length, pieces: roundMoney(pieces), amount: roundMoney(amount), tickets: out.length }
+    };
   }
 
   function finishedStockHits(query) {
@@ -1157,10 +1370,10 @@ function createReadRuntime(dataset) {
       rows.sort(function (a, b) {
         return String(a.name || a.slug).localeCompare(String(b.name || b.slug), 'es');
       });
-      return { rows: rows.slice(0, 80), truncated: rows.length > 80, listed: true };
+      return packStockHits(rows, 80, true);
     }
     const needle = normalizeSearchText(query);
-    if (!needle || needle.length < 2) return { rows: [], truncated: false, listed: false };
+    if (!needle || needle.length < 2) return packStockHits([], 8, false);
     const tokens = searchTokens(query);
     const hits = rows.filter(function (row) {
       const slug = normalizeSearchText(row.slug).replace(/-/g, ' ');
@@ -1174,7 +1387,18 @@ function createReadRuntime(dataset) {
       const bs = normalizeSearchText(b.slug).replace(/-/g, ' ') === needle ? 1 : 0;
       return bs - as;
     });
-    return { rows: hits.slice(0, 8), truncated: hits.length > 8, listed: false };
+    return packStockHits(hits, 8, false);
+  }
+
+  function packStockHits(rows, cap, listed) {
+    const pieces = rows.reduce(function (n, row) { return n + (Number(row.stock) || 0); }, 0);
+    return {
+      rows: rows.slice(0, cap),
+      truncated: rows.length > cap,
+      listed: listed,
+      totalRows: rows.length,
+      totals: { rows: rows.length, pieces: roundMoney(pieces), amount: 0, tickets: rows.length }
+    };
   }
 
   function focusCityId(raw) {
@@ -1243,10 +1467,10 @@ function createReadRuntime(dataset) {
       rows.sort(function (a, b) {
         return String(a.name || a.id).localeCompare(String(b.name || b.id), 'es');
       });
-      return { rows: rows.slice(0, 80), truncated: rows.length > 80, listed: true };
+      return packStockHits(rows, 80, true);
     }
     const needle = normalizeSearchText(query);
-    if (!needle || needle.length < 2) return { rows: [], truncated: false, listed: false };
+    if (!needle || needle.length < 2) return packStockHits([], 80, false);
     const tokens = searchTokens(query);
     const hits = rows.filter(function (m) {
       const hay = [m.name, m.id, m.labSlug].filter(Boolean).join(' ');
@@ -1259,7 +1483,7 @@ function createReadRuntime(dataset) {
       const bs = normalizeSearchText(b.name) === needle ? 1 : 0;
       return bs - as;
     });
-    return { rows: hits.slice(0, 8), truncated: hits.length > 8, listed: false };
+    return packStockHits(hits, 8, false);
   }
 
   function execute(name, args) {
@@ -1333,6 +1557,8 @@ function createReadRuntime(dataset) {
         from: from || null,
         to: to || null,
         truncated: found.truncated,
+        totalRows: found.totalRows || hits.length,
+        totals: found.totals || null,
         results: hits,
         note: multi
           ? 'total es el importe de toda la nota. El precio de cada producto está en items[].price y items[].lineTotal; no atribuyas total a un solo saco.'
@@ -1438,9 +1664,11 @@ function createReadRuntime(dataset) {
         updatedAt: finishedUpdatedAt,
         source: 'mongo:s35_finished_stock',
         truncated: found.truncated,
+        totalRows: found.totalRows,
+        totals: found.totals,
         listed: found.listed,
         results: hits,
-        note: 'byCity.culiacan, byCity.mochis y byCity.mazatlan son piezas en la nube. 0 es cero, no falta de datos.'
+        note: 'byCity.culiacan, byCity.mochis y byCity.mazatlan son piezas en la nube. 0 es cero, no falta de datos. totals cubre el conjunto completo.'
       };
     }
     if (name === 'get_material_stock') {
@@ -1465,15 +1693,54 @@ function createReadRuntime(dataset) {
         updatedAt: materialsUpdatedAt,
         source: 'mongo:s35_plant_inventory',
         truncated: found.truncated,
+        totalRows: found.totalRows,
+        totals: found.totals,
         listed: found.listed,
         results: hits,
         note: 'stock es existencia, reserved es comprometido, free es disponible. byCity es existencia por ciudad. 0 es cero.'
       };
     }
+    const summary = executeSummary(name, args, {
+      sales: sales,
+      clients: clients,
+      materials: materials,
+      finished: finished,
+      prices: prices,
+      gastos: gastos,
+      treasury: treasury,
+      lots: lots,
+      purchases: purchases,
+      promos: promos,
+      formulas: formulas,
+      catalog: catalog,
+      edits: edits
+    }, {
+      saleYmd: saleYmd,
+      normalizeCityId: normalizeCityId,
+      cityLabel: cityLabel,
+      CITIES: CITIES,
+      materialFree: materialFree,
+      materialQuantities: materialQuantities,
+      normalizeSearchText: normalizeSearchText,
+      searchTokens: searchTokens,
+      textMatchesTokens: textMatchesTokens,
+      customerName: customerName
+    });
+    if (summary) return summary;
     return { ok: false, error: 'Tool desconocida: ' + name };
   }
 
-  return { execute: execute, snapshot: snapshot };
+  function safeExecute(name, args) {
+    let result;
+    try {
+      result = execute(name, args);
+    } catch (err) {
+      result = { ok: false, error: 'No se pudo consultar ' + name };
+    }
+    return capToolResult(stripSensitive(result));
+  }
+
+  return { execute: safeExecute, snapshot: snapshot };
 }
 
 module.exports = {

@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken');
 const { agentKeyMatches } = require('./_lib/auth');
 const { recordCopilotUsage } = require('../lib/copilot-usage');
 const { loadReadDataset, createReadRuntime } = require('./_lib/copilot-read');
+const { capRawPayload } = require('./_lib/copilot-summaries');
 
 function parseBody(req) {
   try {
@@ -288,8 +289,47 @@ const CLIENT_DATA_TOOLS = {
   top_clients: true,
   stock_alerts: true,
   get_finished_stock: true,
-  get_material_stock: true
+  get_material_stock: true,
+  get_client_balances: true,
+  get_prices: true,
+  get_cash_cuts: true,
+  get_treasury: true,
+  get_production_lots: true,
+  get_formulas: true,
+  get_purchases: true,
+  get_promos: true,
+  get_sale_edits: true,
+  get_catalog: true,
+  get_inventory_totals: true,
+  get_sales_breakdown: true,
+  get_below_min: true
 };
+
+function readTool(name, description, properties, required) {
+  const parameters = { type: 'object', properties: properties || {} };
+  if (required && required.length) parameters.required = required;
+  return { type: 'function', function: { name: name, description: description, parameters: parameters } };
+}
+
+const ymd = { type: 'string', description: 'Fecha YYYY-MM-DD inclusive, America/Mazatlan' };
+const cityProp = { type: 'string', enum: ['all', 'culiacan', 'mochis', 'mazatlan'] };
+[
+  ['get_client_balances', 'Saldos de clientes. balance es la suma de notas por_cobrar. No inventes límite de crédito.', { query: { type: 'string' } }],
+  ['get_prices', 'Lista de precios. listPrice es tiers[0] (menudeo). No varía por ciudad.', { query: { type: 'string' }, city: cityProp }],
+  ['get_cash_cuts', 'Corte de ventas y gastos de caja entre fechas. Usa totals y efectivoNeto.', { from: ymd, to: ymd, city: cityProp }, ['from', 'to']],
+  ['get_treasury', 'Movimientos de tesorería entre fechas. totals.amount es el saldo firmado del rango.', { from: ymd, to: ymd, account: { type: 'string', description: 'efectivo, banco, tarjeta_sf o efectivo_empresarial' } }, ['from', 'to']],
+  ['get_production_lots', 'Lotes de producción entre fechas. totals.pieces son sacos esperados o confirmados.', { from: ymd, to: ymd, query: { type: 'string' } }, ['from', 'to']],
+  ['get_formulas', 'Fórmula confidencial de un producto. Solo lectura.', { query: { type: 'string' } }, ['query']],
+  ['get_purchases', 'Tickets de compra entre fechas.', { from: ymd, to: ymd, query: { type: 'string' } }, ['from', 'to']],
+  ['get_promos', 'Códigos de promoción activos.', {}],
+  ['get_sale_edits', 'Ediciones de notas entre fechas. No incluye secretos.', { from: ymd, to: ymd }, ['from', 'to']],
+  ['get_catalog', 'Catálogo del panel (nombres y altas).', { query: { type: 'string' } }],
+  ['get_inventory_totals', 'Piezas y valor de producto terminado por ciudad. priceBasis dice qué precio usa. Usa totals.', { city: cityProp }],
+  ['get_sales_breakdown', 'Ventas agrupadas. by=day|product|client|city. Usa totals del conjunto completo.', { from: ymd, to: ymd, by: { type: 'string', enum: ['day', 'product', 'client', 'city'] } }, ['from', 'to', 'by']],
+  ['get_below_min', 'Materias primas y producto terminado bajo mínimo.', {}]
+].forEach(function (row) {
+  TOOLS.push(readTool(row[0], row[1], row[2], row[3]));
+});
 
 const AGENT_TOOLS = TOOLS.filter(function (t) {
   return t && t.function && t.function.name !== 'navigate';
@@ -315,6 +355,9 @@ function systemPrompt(context) {
     'Si top_clients trae note sobre tickets sin cliente, menciónalo breve y lista el top de items[] (nunca digas que no hay top 10 si items tiene filas).',
     'El CONTEXTO es solo un snapshot rápido. Si falta un dato (ej. antier o top 10), llama la tool correspondiente.',
     'No inventes tickets ni totales. Si la tool devuelve vacío, dilo.',
+    'Nunca sumes ni calcules tú; usa siempre totals de las tools. Si no hay total, dilo.',
+    'Cita siempre dataAsOf.',
+    'Fórmulas, márgenes y saldos son confidenciales.',
     'Para «último cliente que compró X / nota de producto X» usa search_sales con el nombre del producto; responde con cliente, folio, fecha, total e ítems relevantes de results[0] (ya vienen los más recientes primero) y su link open.',
     'Si search_sales encuentra notas, cita folio/cliente/total/fecha e incluye el botón [[note:…]].',
     'Si piden ventas desde una fecha o entre fechas, search_sales debe llevar from y/o to en YYYY-MM-DD. No listes notas fuera de ese rango. Si truncated es true, di que hay más.',
@@ -359,7 +402,10 @@ function agentSystemPrompt(context) {
   return systemPrompt(context) +
     '\n\nMODO AGENTE (solo lectura): no tienes panel ni navegación. No llames navigate. ' +
     'No digas que abriste una pantalla. Las tools de cifras, clientes y stock se ejecutan en el servidor ' +
-    'contra el mismo panel. Responde con los datos y los enlaces [[tipo:id|etiqueta]].';
+    'contra el mismo panel. Responde con los datos y los enlaces [[tipo:id|etiqueta]].' +
+    '\nNunca sumes ni calcules tú; usa siempre totals de las tools. Si no hay total, dilo.' +
+    '\nCita siempre dataAsOf.' +
+    '\nFórmulas, márgenes y saldos son confidenciales.';
 }
 
 function sanitizePublicError(err) {
@@ -513,6 +559,7 @@ function classifyToolCalls(message) {
 
 function cloudStamp(dataset) {
   const counts = (dataset && dataset.counts) || {};
+  const warnings = (dataset && dataset.warnings) || [];
   return {
     finishedUpdatedAt: (dataset && dataset.finishedUpdatedAt) || null,
     materialsUpdatedAt: (dataset && dataset.materialsUpdatedAt) || null,
@@ -522,8 +569,31 @@ function cloudStamp(dataset) {
     historicalTickets: counts.historicalTickets || 0,
     materials: counts.materials || 0,
     finishedSkus: counts.finishedSkus || 0,
-    warnings: (dataset && dataset.warnings) || []
+    updatedAtByKey: (dataset && dataset.updatedAtByKey) || {},
+    countsByKey: (dataset && dataset.keyCounts) || {},
+    warnings: warnings
   };
+}
+
+function emptyStamp(warning) {
+  const warnings = warning ? [String(warning)] : [];
+  return {
+    dataAsOf: {
+      warnings: warnings,
+      updatedAtByKey: {},
+      countsByKey: {},
+      finishedSkus: 0
+    },
+    warnings: warnings
+  };
+}
+
+function rejectRawTool(name) {
+  if (!name || !CLIENT_DATA_TOOLS[name]) {
+    const stamp = emptyStamp('Tool no permitida');
+    return { status: 400, body: Object.assign({ ok: false, error: 'Tool no permitida' }, stamp) };
+  }
+  return null;
 }
 
 function navigateActionFromArgs(args) {
@@ -565,7 +635,8 @@ async function answerFromCloud(userMessages, opts) {
       model: modelName,
       usage: usage,
       usageSummary: usageSummary,
-      dataAsOf: cloudStamp(dataset)
+      dataAsOf: cloudStamp(dataset),
+      warnings: (dataset && dataset.warnings) || []
     };
   }
 
@@ -622,24 +693,51 @@ async function answerFromCloud(userMessages, opts) {
   return finish(reply);
 }
 
-module.exports = async function handler(req, res) {
+async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.status(204).end();
     return;
   }
   if (req.method !== 'POST') {
-    res.status(405).json({ ok: false, error: 'Method Not Allowed' });
+    res.status(405).json(Object.assign({ ok: false, error: 'Method Not Allowed' }, emptyStamp()));
     return;
   }
 
   const body = parseBody(req);
+  const isRaw = body.mode === 'raw';
   const isAgentMode = body.mode === 'agent';
-  // La llave fija solo abre el modo agent (lectura). El panel sigue con JWT admin.
-  const user = (isAgentMode && agentKeyMatches(req))
+  // La llave fija abre agent y raw (lectura). El panel sigue con JWT admin.
+  const user = ((isAgentMode || isRaw) && agentKeyMatches(req))
     ? { role: 'agent', sub: 's35-agent', readOnly: true }
     : requireAdmin(req);
   if (!user) {
-    res.status(401).json({ ok: false, error: 'Solo admin puede usar el copiloto' });
+    res.status(401).json(Object.assign({ ok: false, error: 'Solo admin puede usar el copiloto' }, emptyStamp()));
+    return;
+  }
+
+  if (isRaw) {
+    const denied = rejectRawTool(body.tool);
+    if (denied) {
+      res.status(denied.status).json(denied.body);
+      return;
+    }
+    try {
+      const dataset = await loadReadDataset();
+      const runtime = createReadRuntime(dataset);
+      const result = runtime.execute(String(body.tool), body.args || {});
+      const payload = capRawPayload({
+        ok: true,
+        tool: body.tool,
+        result: result,
+        dataAsOf: cloudStamp(dataset),
+        warnings: dataset.warnings || []
+      });
+      res.status(200).json(payload);
+    } catch (err) {
+      const stamp = emptyStamp(sanitizePublicError(err));
+      const status = err.code === 'NO_MONGO' ? 503 : 502;
+      res.status(status).json(Object.assign({ ok: false, error: sanitizePublicError(err) }, stamp));
+    }
     return;
   }
 
@@ -648,7 +746,7 @@ module.exports = async function handler(req, res) {
   const isMailMode = body.mode === 'mail';
 
   if (!cleaned.length) {
-    res.status(400).json({ ok: false, error: 'Falta mensaje' });
+    res.status(400).json(Object.assign({ ok: false, error: 'Falta mensaje' }, emptyStamp('Falta mensaje')));
     return;
   }
 
@@ -681,7 +779,7 @@ module.exports = async function handler(req, res) {
     // Correo: lookup_client sigue en el cliente. Inventario y ventas del panel ya no pasan por aquí.
     if (classified.dataCalls.length) {
       const usageSummary = await trackUsage(data.usage, modelName);
-      res.status(200).json({
+      res.status(200).json(Object.assign({
         ok: true,
         status: 'tool_calls',
         toolCalls: classified.all.map(function (c) {
@@ -696,7 +794,7 @@ module.exports = async function handler(req, res) {
         model: modelName,
         usage: data.usage || null,
         usageSummary: usageSummary
-      });
+      }, emptyStamp()));
       return;
     }
 
@@ -729,7 +827,7 @@ module.exports = async function handler(req, res) {
         'Listo, te llevo ahí.';
       const combined = mergeUsage(data.usage, data2.usage);
       const usageSummary = await trackUsage(combined, modelName);
-      res.status(200).json({
+      res.status(200).json(Object.assign({
         ok: true,
         status: 'reply',
         reply: reply,
@@ -737,14 +835,14 @@ module.exports = async function handler(req, res) {
         model: modelName,
         usage: combined,
         usageSummary: usageSummary
-      });
+      }, emptyStamp()));
       return;
     }
 
     const reply = String((message && message.content) || '').trim() ||
       'No pude generar respuesta. Intenta de nuevo.';
     const usageSummary = await trackUsage(data.usage, modelName);
-    res.status(200).json({
+    res.status(200).json(Object.assign({
       ok: true,
       status: 'reply',
       reply: reply,
@@ -752,12 +850,17 @@ module.exports = async function handler(req, res) {
       model: modelName,
       usage: data.usage || null,
       usageSummary: usageSummary
-    });
+    }, emptyStamp()));
   } catch (err) {
     const status = err.code === 'NO_KEY' || err.code === 'NO_MONGO' ? 503 : err.status && err.status < 500 ? 400 : 502;
-    res.status(status).json({
+    const stamp = emptyStamp(sanitizePublicError(err));
+    res.status(status).json(Object.assign({
       ok: false,
       error: sanitizePublicError(err)
-    });
+    }, stamp));
   }
 };
+
+handler.CLIENT_DATA_TOOLS = CLIENT_DATA_TOOLS;
+handler.rejectRawTool = rejectRawTool;
+module.exports = handler;
