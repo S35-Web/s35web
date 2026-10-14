@@ -173,10 +173,16 @@ function mergeItemsValue(key, prevValue, nextValue, updatedAt) {
   return out;
 }
 
+/**
+ * Fusión por fila para inventario / PT.
+ * Gana solo un sello de fila ESTRICTAMENTE más nuevo.
+ * En empate (o sin sello) se conserva lo ya guardado — un navegador stale
+ * no puede bajar stock solo por ser “incoming” en el PUT.
+ */
 function mergeKeyedRows(prevRows, nextRows, idOf) {
   const byId = Object.create(null);
   const order = [];
-  function consider(row, incoming) {
+  function consider(row) {
     if (!row || typeof row !== 'object') return;
     const id = idOf(row);
     if (!id || id === 'updatedAt' || id === 'value') return;
@@ -186,19 +192,55 @@ function mergeKeyedRows(prevRows, nextRows, idOf) {
       return;
     }
     const prev = byId[id];
-    if (row.deleted && !prev.deleted && rowStampMs(row) >= rowStampMs(prev)) {
+    const tr = rowStampMs(row);
+    const tp = rowStampMs(prev);
+    if (row.deleted && !prev.deleted && tr >= tp) {
       byId[id] = row;
       return;
     }
-    if (prev.deleted && !row.deleted && rowStampMs(prev) > rowStampMs(row)) return;
-    const tr = rowStampMs(row);
-    const tp = rowStampMs(prev);
+    if (prev.deleted && !row.deleted && tp > tr) return;
     if (tr > tp) byId[id] = row;
-    else if (tr === tp && tr > 0 && incoming) byId[id] = row;
+    // Empate / más viejo: conservar prev (servidor o primer lado).
   }
-  (prevRows || []).forEach(function (row) { consider(row, false); });
-  (nextRows || []).forEach(function (row) { consider(row, true); });
+  (prevRows || []).forEach(consider);
+  (nextRows || []).forEach(consider);
   return order.map(function (id) { return byId[id]; });
+}
+
+/** true si alguna fila del merge tiene sello estrictamente mayor que en prev. */
+function stockMergeAcceptedNewerRows(prevValue, mergedValue, key) {
+  function rowsOf(value) {
+    if (key === 's35_finished_stock') {
+      const map = finishedMapOf(value);
+      return Object.keys(map).filter(function (k) { return k !== 'updatedAt' && k !== 'value'; }).map(function (slug) {
+        const row = map[slug];
+        if (!row || typeof row !== 'object') return { slug: slug };
+        return Object.assign({ slug: slug }, row);
+      });
+    }
+    return extractItems(value);
+  }
+  function idOf(row) {
+    if (key === 's35_finished_stock') {
+      return row && (row.slug || row.id) ? String(row.slug || row.id) : '';
+    }
+    return row && row.id != null ? String(row.id) : '';
+  }
+  const prevBy = Object.create(null);
+  rowsOf(prevValue).forEach(function (row) {
+    const id = idOf(row);
+    if (id) prevBy[id] = row;
+  });
+  const mergedRows = rowsOf(mergedValue);
+  for (let i = 0; i < mergedRows.length; i++) {
+    const row = mergedRows[i];
+    const id = idOf(row);
+    if (!id) continue;
+    const prev = prevBy[id];
+    if (!prev) return true;
+    if (rowStampMs(row) > rowStampMs(prev)) return true;
+  }
+  return false;
 }
 
 function mergeInventoryValue(prevValue, nextValue, updatedAt) {
@@ -702,7 +744,10 @@ module.exports = async function handler(req, res) {
               grew = Object.keys((valueToStore && valueToStore.byId) || {}).length >
                 Object.keys((prev.value && prev.value.byId) || {}).length;
             } else if (MERGE_STOCK_KEYS.has(key)) {
-              grew = stockFingerprint(valueToStore, key) !== stockFingerprint(prev.value, key);
+              // Solo “creció” si alguna fila entró con sello más nuevo (o SKU nuevo).
+              // Un cliente stale no debe subir updatedAt del documento.
+              grew = stockMergeAcceptedNewerRows(prev.value, valueToStore, key);
+              if (!grew) valueToStore = prev.value;
             } else if (key === MERGE_FORMULAS_KEY) {
               grew = formulasDoseCount(valueToStore) > formulasDoseCount(prev.value) ||
                 Object.keys(extractFormulaMap(valueToStore)).length >

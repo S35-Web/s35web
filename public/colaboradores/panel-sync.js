@@ -4,8 +4,12 @@
  * Estrategia: last-write-wins por `updatedAt` en documentos escalares.
  * Colecciones (ventas, gastos, lotes, etc.): unión por id para no perder
  * cambios de otro dispositivo / pestaña.
+ * Inventario / PT: fusión por fila (sku/id); gana solo sello de fila más nuevo.
  * localStorage sigue siendo caché/offline; la nube es fuente de verdad cuando responde.
  * Clientes POS siguen en /api/clients (no se duplican aquí).
+ *
+ * Operativo: al abrir otro navegador, esperar softPull/bootstrap (o recargar).
+ * No trabajar en un panel offline con inventario viejo y luego “reconectar”.
  */
 (function (global) {
     'use strict';
@@ -483,10 +487,11 @@
         status.appliedKeys = [];
     }
 
+    /** Inventario/PT: solo un sello de fila estrictamente más nuevo pisa; empate = conservar prev. */
     function mergeKeyedRows(prevRows, nextRows, idOf) {
         var byId = Object.create(null);
         var order = [];
-        function consider(row, incoming) {
+        function consider(row) {
             if (!row || typeof row !== 'object') return;
             var id = idOf(row);
             if (!id || id === 'updatedAt' || id === 'value') return;
@@ -504,10 +509,9 @@
             }
             if (prev.deleted && !row.deleted && tp > tr) return;
             if (tr > tp) byId[id] = row;
-            else if (tr === tp && tr > 0 && incoming) byId[id] = row;
         }
-        (prevRows || []).forEach(function (row) { consider(row, false); });
-        (nextRows || []).forEach(function (row) { consider(row, true); });
+        (prevRows || []).forEach(consider);
+        (nextRows || []).forEach(consider);
         return order.map(function (id) { return byId[id]; });
     }
 
@@ -798,14 +802,17 @@
             var local = readLocal(key);
             if (!local) return;
             // Si era epoch (sin meta real) y aún no había remoto, subir con now.
+            // Inventario/PT: NO subir a "ahora" — un blob sin marca parecería fresco y
+            // podría empujar cantidades viejas contra Mongo; el servidor fusiona por fila.
             var ts = local.updatedAt;
             if (ts === '1970-01-01T00:00:00.000Z') {
-                ts = new Date().toISOString();
-                touchMeta(key, ts);
-                if (local.value && typeof local.value === 'object' && !Array.isArray(local.value) && local.value.updatedAt) {
-                    // keep wrapper in sync
-                    writeLocal(key, local.value, ts);
-                    local = readLocal(key);
+                if (key !== 's35_finished_stock' && key !== 's35_plant_inventory') {
+                    ts = new Date().toISOString();
+                    touchMeta(key, ts);
+                    if (local.value && typeof local.value === 'object' && !Array.isArray(local.value) && local.value.updatedAt) {
+                        writeLocal(key, local.value, ts);
+                        local = readLocal(key);
+                    }
                 }
             }
             var payload = local.value;
@@ -871,12 +878,9 @@
                                 pendingKeys[key] = true;
                             }
                         } else if (key === 's35_plant_inventory' || key === 's35_finished_stock') {
-                            toWrite = key === 's35_finished_stock'
-                                ? mergeFinishedValue(remote.value, prevAcc.value, ts)
-                                : mergeInventoryValue(remote.value, prevAcc.value, ts);
-                            if (stockFingerprint(toWrite, key) !== stockFingerprint(remote.value, key)) {
-                                pendingKeys[key] = true;
-                            }
+                            // Confiar en el merge del servidor: no re-fusionar con local stale
+                            // ni reencolar push (eso era el bucle que volvía a bajar stock).
+                            toWrite = remote.value;
                         }
                     }
                     writeLocal(key, toWrite, ts);

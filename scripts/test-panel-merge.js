@@ -59,4 +59,82 @@ const finished = mergeFinishedValue(
 );
 assert(finished.items['waxtard-blanco-perla'].stock === 40, 'el PT confirmado no vuelve a 0');
 
+const staleTie = mergeFinishedValue(
+  {
+    items: {
+      'waxtard-blanco-perla': {
+        slug: 'waxtard-blanco-perla',
+        stock: 802,
+        updatedAt: '2026-10-14T04:25:11.282Z',
+        byCity: { culiacan: 802 }
+      }
+    }
+  },
+  {
+    items: {
+      'waxtard-blanco-perla': {
+        slug: 'waxtard-blanco-perla',
+        stock: 40,
+        updatedAt: '2026-10-14T04:25:11.282Z',
+        byCity: { culiacan: 40 }
+      }
+    },
+    updatedAt: '2026-10-14T05:00:00.000Z'
+  },
+  '2026-10-14T05:00:00.000Z'
+);
+assert(staleTie.items['waxtard-blanco-perla'].stock === 802, 'empate de sello: cliente no baja PT');
+
+const staleOlder = mergeFinishedValue(
+  {
+    items: {
+      'waxtard-extra-anclaje': {
+        slug: 'waxtard-extra-anclaje',
+        stock: 11,
+        updatedAt: '2026-10-14T04:25:11.282Z',
+        byCity: { culiacan: 11 }
+      }
+    }
+  },
+  {
+    items: {
+      'waxtard-extra-anclaje': {
+        slug: 'waxtard-extra-anclaje',
+        stock: 0,
+        updatedAt: '2026-10-12T12:00:00.000Z',
+        byCity: { culiacan: 0 }
+      }
+    },
+    updatedAt: '2026-10-12T12:00:00.000Z'
+  },
+  '2026-10-12T12:00:00.000Z'
+);
+assert(staleOlder.items['waxtard-extra-anclaje'].stock === 11, 'sello más viejo no pisa PT');
+
+const saleOk = mergeFinishedValue(
+  {
+    items: {
+      'waxtard-blanco-perla': {
+        slug: 'waxtard-blanco-perla',
+        stock: 802,
+        updatedAt: '2026-10-14T04:25:11.282Z',
+        byCity: { culiacan: 802 }
+      }
+    }
+  },
+  {
+    items: {
+      'waxtard-blanco-perla': {
+        slug: 'waxtard-blanco-perla',
+        stock: 800,
+        updatedAt: '2026-10-14T06:00:00.000Z',
+        byCity: { culiacan: 800 }
+      }
+    },
+    updatedAt: '2026-10-14T06:00:00.000Z'
+  },
+  '2026-10-14T06:00:00.000Z'
+);
+assert(saleOk.items['waxtard-blanco-perla'].stock === 800, 'venta con sello más nuevo sí baja PT');
+
 console.log('ok merge no revierte producción');
