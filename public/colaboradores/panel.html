@@ -3951,6 +3951,7 @@
             background: #ffffff;
             color: #0a0a0a;
             border-bottom-color: #e5e5e5;
+            padding: 10px 16px;
         }
         #saleNoteModal .modal-head strong { color: #0a0a0a; }
         #saleNoteModal .modal-body {
@@ -3959,6 +3960,8 @@
             min-height: 0;
             background: #ffffff;
             color: #0a0a0a;
+            padding: 10px 16px 12px;
+            gap: 6px;
         }
         #saleNoteModal .modal-head-actions {
             display: flex;
@@ -4066,7 +4069,7 @@
             .sale-note-edit label.span-2 { grid-column: auto; }
         }
         .sale-note-doc {
-            padding: 8px 2px 16px;
+            padding: 2px 0 4px;
             color: #0a0a0a;
             background: #ffffff;
             font-family: var(--font);
@@ -4083,8 +4086,8 @@
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 16px;
-            padding-bottom: 16px;
+            gap: 12px;
+            padding-bottom: 10px;
             border-bottom: 1px solid #0a0a0a;
         }
         .snd-logo {
@@ -4097,10 +4100,10 @@
             max-width: 160px;
         }
         .snd-company-sub {
-            margin-top: 8px;
+            margin-top: 4px;
             font-size: 12px;
             color: #525252;
-            line-height: 1.4;
+            line-height: 1.35;
         }
         .snd-doctype {
             font-size: 18px;
@@ -4114,8 +4117,8 @@
         .snd-summary {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 12px 10px;
-            padding: 16px 0;
+            gap: 8px 10px;
+            padding: 10px 0;
             border-bottom: 1px solid #0a0a0a;
         }
         .snd-sum-cell .val {
@@ -4130,8 +4133,8 @@
         .snd-parties {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            padding: 16px 0;
+            gap: 12px;
+            padding: 10px 0;
             border-bottom: 1px solid #0a0a0a;
         }
         .snd-party .name {
@@ -4159,7 +4162,7 @@
             font-weight: 700;
             letter-spacing: .02em;
             color: #0a0a0a;
-            padding: 12px 6px 10px 0;
+            padding: 8px 6px 6px 0;
             border-bottom: 1px solid #0a0a0a;
             background: #ffffff;
         }
@@ -4175,7 +4178,7 @@
             font-variant-numeric: tabular-nums;
         }
         .sale-note-lines td {
-            padding: 12px 6px 12px 0;
+            padding: 7px 6px 7px 0;
             border-bottom: 1px solid #e5e5e5;
             vertical-align: top;
             color: #0a0a0a;
@@ -4196,9 +4199,9 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            gap: 20px;
-            padding-top: 16px;
-            margin-bottom: 8px;
+            gap: 16px;
+            padding-top: 10px;
+            margin-bottom: 0;
         }
         .snd-pay .val {
             font-size: 14px;
@@ -4208,7 +4211,7 @@
         .snd-totals {
             min-width: 160px;
             display: grid;
-            gap: 6px;
+            gap: 4px;
             font-size: 13px;
         }
         .snd-totals .row {
@@ -4221,20 +4224,24 @@
         .snd-totals .row.total {
             font-weight: 700;
             font-size: 15px;
-            padding-top: 8px;
+            padding-top: 6px;
             margin-top: 2px;
             border-top: 1px solid #0a0a0a;
         }
         .sale-note-hint {
             font-size: 12px;
             color: #737373;
-            line-height: 1.45;
-            margin: 0 0 12px;
+            line-height: 1.35;
+            margin: 0 0 8px;
         }
         .sale-note-share-fields {
             display: grid;
             gap: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+        }
+        #saleNoteModal .sale-note-share-fields {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 10px;
         }
         .sale-note-share-fields label {
             display: grid;
@@ -4244,7 +4251,8 @@
         }
         @media (max-width: 480px) {
             .snd-summary { grid-template-columns: 1fr 1fr; }
-            .snd-parties { grid-template-columns: 1fr; gap: 12px; }
+            .snd-parties { grid-template-columns: 1fr; gap: 10px; }
+            #saleNoteModal .sale-note-share-fields { grid-template-columns: 1fr; }
             .snd-doctype { font-size: 14px; }
             .snd-bottom { flex-direction: column; }
             .snd-totals { width: 100%; min-width: 0; }
@@ -4256,9 +4264,11 @@
         }
         .sale-note-actions .btn {
             justify-content: center;
-            height: 40px;
+            height: 36px;
             gap: 8px;
         }
+        #saleNoteModal .sale-note-actions { gap: 6px; }
+        #saleNoteModal .sale-note-actions .btn.danger { margin-top: 0; }
         .sale-note-actions .btn.wa,
         .btn.wa { background: #128c7e; border-color: #128c7e; color: #fff; }
         .sale-note-actions .btn.wa:hover,
