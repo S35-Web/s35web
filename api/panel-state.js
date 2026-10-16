@@ -2,12 +2,14 @@
  * Estado compartido del panel Colaboradores (MongoDB).
  * Un documento por clave localStorage → colección `panel_state`.
  *
- * Conflicto: last-write-wins por `updatedAt` (ISO). Si el cliente envía un
- * updatedAt más antiguo que el remoto, el PUT no pisa ese key (rejected).
+ * Conflicto: last-write-wins por `updatedAt` (ISO) en keys escalares.
+ * Inventario / PT / colecciones: merge por ítem; sello de fila más nuevo gana;
+ * en empate gana el servidor. Cliente stale no baja stock ni borra ventas.
+ * Si el PUT no aporta filas más nuevas, no se bumpea updatedAt del doc.
  *
  * GET  → { ok, stores: { [key]: { value, updatedAt } } }
  * PUT  → body { stores: { [key]: { value, updatedAt } } }
- *        → { ok, accepted[], rejected[], stores }
+ *        → { ok, accepted[], rejected[], stores }  (stores = estado mergeado)
  */
 'use strict';
 
@@ -150,7 +152,8 @@ function mergeItemLists(a, b, opts) {
     }
     // Un reenvío del lote todavía "abierto" no desconfirma la producción.
     if (opts.useLotRecency && lotIsConfirmed(prev) && !lotIsConfirmed(row) && row.status !== 'cancelled') return;
-    // Empate de fechas: gana lo que acaba de subir el cliente (si no, la edición se pierde).
+    // Empate: por defecto gana el lado ya guardado (servidor / prev).
+    // preferIncoming solo si el caller lo pide (p. ej. tests); en PUT real no.
     if (opts.preferIncoming && !prev.deleted) byId[id] = row;
   }
   (a || []).forEach(consider);
@@ -160,10 +163,11 @@ function mergeItemLists(a, b, opts) {
 
 function mergeItemsValue(key, prevValue, nextValue, updatedAt) {
   const dropHistorical = key === 's35_pos_sales';
+  // prev = servidor, next = cliente. Empate → servidor (preferIncoming: false).
   const merged = mergeItemLists(
     extractItems(prevValue),
     extractItems(nextValue),
-    { dropHistoricalSales: dropHistorical, preferIncoming: true, useLotRecency: key === 's35_production_lots' }
+    { dropHistoricalSales: dropHistorical, preferIncoming: false, useLotRecency: key === 's35_production_lots' }
   );
   const base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
     ? nextValue
@@ -739,7 +743,31 @@ module.exports = async function handler(req, res) {
           if (prev.updatedAt && cmpIso(updatedAt, prev.updatedAt) < 0) {
             let grew = false;
             if (MERGE_ITEMS_KEYS.has(key)) {
-              grew = extractItems(valueToStore).length > extractItems(prev.value).length;
+              // Creció si hay id nuevo o alguna fila con sello estrictamente más nuevo.
+              const prevItems = extractItems(prev.value);
+              const mergedItems = extractItems(valueToStore);
+              if (mergedItems.length > prevItems.length) {
+                grew = true;
+              } else {
+                const prevBy = Object.create(null);
+                prevItems.forEach(function (row) {
+                  const id = row && (row.id != null ? String(row.id) : (row.code != null ? String(row.code) : ''));
+                  if (id) prevBy[id] = row;
+                });
+                const recency = key === 's35_production_lots' ? lotRecency : itemRecency;
+                for (let j = 0; j < mergedItems.length; j++) {
+                  const row = mergedItems[j];
+                  const id = row && (row.id != null ? String(row.id) : (row.code != null ? String(row.code) : ''));
+                  if (!id) continue;
+                  const p = prevBy[id];
+                  if (!p || recency(row) > recency(p)) {
+                    grew = true;
+                    break;
+                  }
+                }
+              }
+              // Sin aporte más nuevo: no reescribir ni bump (cliente stale).
+              if (!grew) valueToStore = prev.value;
             } else if (MERGE_MAP_KEYS.has(key)) {
               grew = Object.keys((valueToStore && valueToStore.byId) || {}).length >
                 Object.keys((prev.value && prev.value.byId) || {}).length;

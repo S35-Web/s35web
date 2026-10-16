@@ -58,6 +58,16 @@
     /** Catálogo panel { names, added[] }: unión por slug (altas desde varios dispositivos). */
     var MERGE_CATALOG_KEY = 's35_product_catalog_v1';
 
+    /**
+     * Keys donde Mongo manda: al bootstrap/pull el remoto es base;
+     * tras un PUT aceptado se reemplaza local con la respuesta (sin re-merge stale).
+     */
+    var AUTHORITATIVE_KEYS = {
+        s35_finished_stock: true,
+        s35_plant_inventory: true,
+        s35_pos_sales: true
+    };
+
     var META_KEY = 's35_panel_sync_meta_v1';
     var RELOAD_FLAG = 's35_panel_sync_reloaded';
     var DEBOUNCE_MS = 700;
@@ -578,19 +588,26 @@
     function mergeStoreValues(key, localVal, remoteVal, localTs, remoteTs) {
         if (MERGE_ITEMS_KEYS[key]) {
             var ts = maxIso(localTs, remoteTs) || new Date().toISOString();
-            var merged = mergeItemsValue(key, localVal, remoteVal, ts);
+            // Remoto como base (prev): en empate gana servidor; local solo con sello más nuevo.
+            var merged = mergeItemsValue(key, remoteVal, localVal, ts);
             var localN = extractItems(localVal).length;
             var remoteN = extractItems(remoteVal).length;
             var mergedN = extractItems(merged).length;
-            // Si la unión aportó ítems que faltaban en el "ganador" LWW, forzar push.
-            var needPush = mergedN > remoteN || (mergedN > localN && cmpIso(localTs, remoteTs) <= 0);
+            // Push solo si local aportó ids/sellos que el remoto no tenía.
+            var needPush = mergedN > remoteN ||
+                itemsRecencyFingerprint(extractItems(remoteVal)) !==
+                    itemsRecencyFingerprint(extractItems(merged));
             var needApply = itemsRecencyFingerprint(extractItems(localVal)) !==
                 itemsRecencyFingerprint(extractItems(merged));
             if (needPush && mergedN > Math.max(localN, remoteN)) {
                 ts = new Date().toISOString();
                 merged = Object.assign({}, merged, { updatedAt: ts });
             }
-            return { value: merged, updatedAt: ts, applyLocal: needApply, push: needPush || cmpIso(localTs, remoteTs) > 0 };
+            // Ventas: no empujar solo porque el doc local tenga marca más nueva.
+            var pushSales = AUTHORITATIVE_KEYS[key]
+                ? needPush
+                : (needPush || cmpIso(localTs, remoteTs) > 0);
+            return { value: merged, updatedAt: ts, applyLocal: needApply, push: pushSales };
         }
         if (MERGE_MAP_KEYS[key]) {
             var tsM = maxIso(localTs, remoteTs) || new Date().toISOString();
@@ -862,29 +879,11 @@
                     if (!MERGE_ITEMS_KEYS[key] && !MERGE_MAP_KEYS[key] &&
                         key !== 's35_plant_inventory' && key !== 's35_finished_stock' &&
                         key !== MERGE_FORMULAS_KEY && key !== MERGE_CATALOG_KEY) return;
+                    // Adoptar el merge del servidor tal cual: no re-fusionar con local
+                    // stale ni reencolar push (evita bajar stock / borrar ventas).
                     var prevAcc = readLocal(key);
-                    var toWrite = remote.value;
-                    var ts = remote.updatedAt;
-                    if (prevAcc && prevAcc.value != null) {
-                        if (MERGE_ITEMS_KEYS[key]) {
-                            toWrite = mergeItemsValue(key, prevAcc.value, remote.value, ts);
-                            if (itemsRecencyFingerprint(extractItems(toWrite)) !==
-                                itemsRecencyFingerprint(extractItems(remote.value))) {
-                                pendingKeys[key] = true;
-                            }
-                        } else if (MERGE_MAP_KEYS[key]) {
-                            toWrite = mergeByIdMaps(prevAcc.value, remote.value, ts);
-                            if (mapRecencyFingerprint(toWrite) !== mapRecencyFingerprint(remote.value)) {
-                                pendingKeys[key] = true;
-                            }
-                        } else if (key === 's35_plant_inventory' || key === 's35_finished_stock') {
-                            // Confiar en el merge del servidor: no re-fusionar con local stale
-                            // ni reencolar push (eso era el bucle que volvía a bajar stock).
-                            toWrite = remote.value;
-                        }
-                    }
-                    writeLocal(key, toWrite, ts);
-                    if (!prevAcc || !valuesEqual(prevAcc.value, toWrite)) {
+                    writeLocal(key, remote.value, remote.updatedAt);
+                    if (!prevAcc || !valuesEqual(prevAcc.value, remote.value)) {
                         appliedKeys.push(key);
                     }
                 });
@@ -992,6 +991,17 @@
                         remote.updatedAt
                     );
                     if (merged) {
+                        // Inventario / PT / ventas: si local no aportó nada más nuevo,
+                        // adoptar remoto (o merge = remoto) y no re-pushear stale.
+                        if (AUTHORITATIVE_KEYS[key] && !merged.push) {
+                            if (!valuesEqual(local.value, merged.value)) {
+                                writeLocal(key, merged.value, remote.updatedAt || merged.updatedAt);
+                                applied.push(key);
+                            } else if (cmpIso(remote.updatedAt, local.updatedAt) !== 0) {
+                                writeLocal(key, merged.value, remote.updatedAt || merged.updatedAt);
+                            }
+                            return;
+                        }
                         if (merged.applyLocal) {
                             writeLocal(key, merged.value, merged.updatedAt);
                             applied.push(key);
@@ -1094,6 +1104,15 @@
                     remote.updatedAt
                 );
                 if (merged) {
+                    if (AUTHORITATIVE_KEYS[key] && !merged.push) {
+                        if (!valuesEqual(local.value, merged.value)) {
+                            writeLocal(key, merged.value, remote.updatedAt || merged.updatedAt);
+                            applied.push(key);
+                        } else if (cmpIso(remote.updatedAt || merged.updatedAt, local.updatedAt) !== 0) {
+                            writeLocal(key, merged.value, remote.updatedAt || merged.updatedAt);
+                        }
+                        return;
+                    }
                     if (merged.applyLocal) {
                         if (!valuesEqual(local.value, merged.value)) {
                             writeLocal(key, merged.value, merged.updatedAt);

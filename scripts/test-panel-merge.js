@@ -137,4 +137,117 @@ const saleOk = mergeFinishedValue(
 );
 assert(saleOk.items['waxtard-blanco-perla'].stock === 800, 'venta con sello más nuevo sí baja PT');
 
+// Regresión: navegador stale con Perla=250 no puede bajar servidor Perla=557.
+const perlaServer = mergeFinishedValue(
+  {
+    items: {
+      'waxtard-blanco-perla': {
+        slug: 'waxtard-blanco-perla',
+        stock: 557,
+        updatedAt: '2026-10-16T12:00:00.000Z',
+        byCity: { culiacan: 557 }
+      }
+    },
+    updatedAt: '2026-10-16T12:00:00.000Z'
+  },
+  {
+    items: {
+      'waxtard-blanco-perla': {
+        slug: 'waxtard-blanco-perla',
+        stock: 250,
+        updatedAt: '2026-10-10T08:00:00.000Z',
+        byCity: { culiacan: 250 }
+      }
+    },
+    updatedAt: '2026-10-10T08:00:00.000Z'
+  },
+  '2026-10-10T08:00:00.000Z'
+);
+assert(perlaServer.items['waxtard-blanco-perla'].stock === 557, 'stale Perla=250 no baja servidor 557');
+
+const perlaNoStamp = mergeFinishedValue(
+  {
+    items: {
+      'waxtard-blanco-perla': {
+        slug: 'waxtard-blanco-perla',
+        stock: 557,
+        updatedAt: '2026-10-16T12:00:00.000Z',
+        byCity: { culiacan: 557 }
+      }
+    }
+  },
+  {
+    items: {
+      'waxtard-blanco-perla': {
+        slug: 'waxtard-blanco-perla',
+        stock: 250,
+        byCity: { culiacan: 250 }
+      }
+    },
+    updatedAt: '2026-10-16T18:00:00.000Z'
+  },
+  '2026-10-16T18:00:00.000Z'
+);
+assert(perlaNoStamp.items['waxtard-blanco-perla'].stock === 557, 'cliente sin sello de fila no baja Perla');
+
+// Ventas: cliente viejo sin la venta nueva no la borra (unión por id).
+const salesKeepNew = mergeItemsValue(
+  's35_pos_sales',
+  {
+    items: [
+      { id: 'sale-old', total: 100, createdAt: '2026-10-01T10:00:00.000Z' },
+      { id: 'sale-new', total: 500, createdAt: '2026-10-16T15:00:00.000Z', editedAt: '2026-10-16T15:01:00.000Z' }
+    ],
+    updatedAt: '2026-10-16T15:01:00.000Z'
+  },
+  {
+    items: [
+      { id: 'sale-old', total: 100, createdAt: '2026-10-01T10:00:00.000Z' }
+    ],
+    updatedAt: '2026-10-10T09:00:00.000Z'
+  },
+  '2026-10-10T09:00:00.000Z'
+);
+assert(
+  salesKeepNew.items.some(function (r) { return r.id === 'sale-new' && r.total === 500; }),
+  'cliente stale no borra venta nueva'
+);
+
+// Tombstone viejo no pisa venta más nueva en el servidor.
+const salesNoStaleDelete = mergeItemsValue(
+  's35_pos_sales',
+  {
+    items: [
+      { id: 'sale-keep', total: 300, createdAt: '2026-10-16T12:00:00.000Z', editedAt: '2026-10-16T12:05:00.000Z' }
+    ]
+  },
+  {
+    items: [
+      { id: 'sale-keep', total: 300, deleted: true, editedAt: '2026-10-15T08:00:00.000Z' }
+    ]
+  },
+  '2026-10-15T08:00:00.000Z'
+);
+assert(
+  salesNoStaleDelete.items[0] && !salesNoStaleDelete.items[0].deleted && salesNoStaleDelete.items[0].total === 300,
+  'delete stale no borra venta nueva'
+);
+
+// Empate de recency en venta: gana servidor (prev), no el cliente.
+const salesTieServer = mergeItemsValue(
+  's35_pos_sales',
+  {
+    items: [
+      { id: 'sale-tie', total: 900, note: 'server', editedAt: '2026-10-16T10:00:00.000Z' }
+    ]
+  },
+  {
+    items: [
+      { id: 'sale-tie', total: 100, note: 'client', editedAt: '2026-10-16T10:00:00.000Z' }
+    ]
+  },
+  '2026-10-16T10:00:00.000Z'
+);
+assert(salesTieServer.items[0].total === 900 && salesTieServer.items[0].note === 'server', 'empate ventas: gana servidor');
+
 console.log('ok merge no revierte producción');
