@@ -1,6 +1,6 @@
 {
-  "version": 21,
-  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente | Ricbor notas 63989a/64001a/64002a (culiacan) + 63944a/63990a (mochis) transferencia facturado ya en Banorte; 64032a mochis por cobrar | 2026-09-23 faltantes 64071a ($360 tarj s/fac) + 64072a ($840 tarj fac Dominguez) = $1,200 hueco vs panel viejo | 64100 y 64103 ya facturadas: quitar invoicePending | 2026-10-01 SUCURSAL UNO 64105–64109 (hora −1h): 64105 Mostr efe; 64106 Eduardo Cota tarjeta fac; 64107/09 Mostr tarj perso; 64108 Materiales el Cheke efectivo sin factura | 2026-10-03 SUCURSAL UNO 64119–64122 (hora −1h): 64119 Mostr efe Perla+PSP $475; 64120 Tania Regina Inzunza tarjeta fac Extra Anclaje $335; 64121 Mostr efe Perla $210; 64122 José Miguel Montoya Collantes efe fac 10×Perla $2100 = $3,120 | 2026-10-05 SUCURSAL UNO 64123–64130 (hora −1h): 64123 Inmobiliaria Urbana transfe fac 8×Perla $1680; 64124 Francisco Javier Landeros tarjeta fac 7×Perla $1470; 64125/28 Mostr efe Extra Anclaje $335; 64126 Mostr tarj perso 2×Perla $420; 64127 Mostr tarj perso Extra Anclaje $335; 64129 Mostr efe 4×Perla $840; 64130 Mostr tarj perso Perla+Microconcreto+Darawell $660 = $6,075 | 2026-10-10 SUCURSAL UNO 64159–64163 (hora −1h): Mostr efe 1+1+2+1 Perla; 64163 Enrique Guzman tarjeta fac 3×Perla; Ricbor culiacan 150×Perla @131.74 por cobrar facturado = $21,441 | 2026-10-13 SUCURSAL UNO 64168–64176 (hora −1h): C tarj perso 64168/69/73; F Inmobiliaria Urbana tarj 64170; F Público en general transf 64171; Mostr efe 64172/74/75; F Globalización transf 80×Perla@175 64176 = $20,125 | 2026-10-15 SUCURSAL UNO 64186–64193 (hora −1h): Mostr efe 64186/87/93; C tarj perso 64190/91; F Materiales Madrid transf 100×Perla@175 64192 = $20,865 | 2026-10-15 Ricbor 64188a/64189a (hora ~10:00/10:05 real): 2×150 Perla@131.74 por cobrar facturado = $39,522",
+  "version": 20,
+  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente | Ricbor notas 63989a/64001a/64002a (culiacan) + 63944a/63990a (mochis) transferencia facturado ya en Banorte; 64032a mochis por cobrar | 2026-09-23 faltantes 64071a ($360 tarj s/fac) + 64072a ($840 tarj fac Dominguez) = $1,200 hueco vs panel viejo | 64100 y 64103 ya facturadas: quitar invoicePending | 2026-10-01 SUCURSAL UNO 64105–64109 (hora −1h): 64105 Mostr efe; 64106 Eduardo Cota tarjeta fac; 64107/09 Mostr tarj perso; 64108 Materiales el Cheke efectivo sin factura | 2026-10-03 SUCURSAL UNO 64119–64122 (hora −1h): 64119 Mostr efe Perla+PSP $475; 64120 Tania Regina Inzunza tarjeta fac Extra Anclaje $335; 64121 Mostr efe Perla $210; 64122 José Miguel Montoya Collantes efe fac 10×Perla $2100 = $3,120 | 2026-10-05 SUCURSAL UNO 64123–64130 (hora −1h): 64123 Inmobiliaria Urbana transfe fac 8×Perla $1680; 64124 Francisco Javier Landeros tarjeta fac 7×Perla $1470; 64125/28 Mostr efe Extra Anclaje $335; 64126 Mostr tarj perso 2×Perla $420; 64127 Mostr tarj perso Extra Anclaje $335; 64129 Mostr efe 4×Perla $840; 64130 Mostr tarj perso Perla+Microconcreto+Darawell $660 = $6,075 | 2026-10-10 SUCURSAL UNO 64159–64163 (hora −1h): Mostr efe 1+1+2+1 Perla; 64163 Enrique Guzman tarjeta fac 3×Perla; Ricbor culiacan 150×Perla @131.74 por cobrar facturado = $21,441 | 2026-10-13 SUCURSAL UNO 64168–64176 (hora −1h): C tarj perso 64168/69/73; F Inmobiliaria Urbana tarj 64170; F Público en general transf 64171; Mostr efe 64172/74/75; F Globalización transf 80×Perla@175 64176 = $20,125 | 2026-10-15 SUCURSAL UNO 64186–64193 (hora −1h): Mostr efe 64186/87/93; C tarj perso 64190/91; F Materiales Madrid transf 100×Perla@175 64192 = $20,865",
   "generatedAt": "2026-10-15",
   "items": [
     {
@@ -5518,102 +5518,6 @@
         "issuedAt": "2026-10-15T09:57:00",
         "timeRule": "hora-expedida-minus-1h",
         "branch": "SUCURSAL UNO"
-      },
-      "city": "culiacan"
-    },
-    {
-      "id": "sale-hist-rcpt-64188",
-      "folio": "HIST-R64188",
-      "createdAt": "2026-10-15T10:00:00",
-      "customer": "Construcciones Ricbor",
-      "clientId": "c_50565f9bd6d8",
-      "client": {
-        "id": "c_50565f9bd6d8",
-        "name": "Construcciones Ricbor",
-        "phone": "",
-        "email": "juanellodiaz@me.com, contabilidad@ricbor.com, facturas.cln@modiebo.com.mx, comprasricbor@gmail.com",
-        "company": "",
-        "rfc": "CRI1103157P8",
-        "type": "client"
-      },
-      "paymentMethod": "por_cobrar",
-      "billing": "facturado",
-      "items": [
-        {
-          "product": "waxtard-blanco-perla",
-          "name": "Waxtard Perla Premium S-35® (25KG)",
-          "code": "FT-PR-001",
-          "unit": "Pza",
-          "price": 131.74,
-          "qty": 150,
-          "lineTotal": 19761
-        }
-      ],
-      "total": 19761,
-      "user": "import-historico",
-      "meta": {
-        "source": "old-panel",
-        "kind": "receipt",
-        "receiptId": 64188,
-        "noteSuffix": "a-3",
-        "note": "64188a",
-        "observations": "Construcciones Ricbor · 150 Waxtard blanco perla @ 131.74 · Culiacán · por cobrar",
-        "year": 2026,
-        "month": 10,
-        "day": 15,
-        "city": "culiacan",
-        "issuedAt": "2026-10-15T10:00:00",
-        "timeRule": "hora-aproximada-real",
-        "branch": "SUCURSAL UNO",
-        "corteMark": "F"
-      },
-      "city": "culiacan"
-    },
-    {
-      "id": "sale-hist-rcpt-64189",
-      "folio": "HIST-R64189",
-      "createdAt": "2026-10-15T10:05:00",
-      "customer": "Construcciones Ricbor",
-      "clientId": "c_50565f9bd6d8",
-      "client": {
-        "id": "c_50565f9bd6d8",
-        "name": "Construcciones Ricbor",
-        "phone": "",
-        "email": "juanellodiaz@me.com, contabilidad@ricbor.com, facturas.cln@modiebo.com.mx, comprasricbor@gmail.com",
-        "company": "",
-        "rfc": "CRI1103157P8",
-        "type": "client"
-      },
-      "paymentMethod": "por_cobrar",
-      "billing": "facturado",
-      "items": [
-        {
-          "product": "waxtard-blanco-perla",
-          "name": "Waxtard Perla Premium S-35® (25KG)",
-          "code": "FT-PR-001",
-          "unit": "Pza",
-          "price": 131.74,
-          "qty": 150,
-          "lineTotal": 19761
-        }
-      ],
-      "total": 19761,
-      "user": "import-historico",
-      "meta": {
-        "source": "old-panel",
-        "kind": "receipt",
-        "receiptId": 64189,
-        "noteSuffix": "a-4",
-        "note": "64189a",
-        "observations": "Construcciones Ricbor · 150 Waxtard blanco perla @ 131.74 · Culiacán · por cobrar",
-        "year": 2026,
-        "month": 10,
-        "day": 15,
-        "city": "culiacan",
-        "issuedAt": "2026-10-15T10:05:00",
-        "timeRule": "hora-aproximada-real",
-        "branch": "SUCURSAL UNO",
-        "corteMark": "F"
       },
       "city": "culiacan"
     },
