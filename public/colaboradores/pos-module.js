@@ -851,6 +851,7 @@
             city: sale.city || resolveSaleCity(sale),
             items: sale.items,
             total: sale.total,
+            observations: sale.observations || '',
             note: sale.note || null,
             meta: sale.meta || null,
             editedAt: sale.editedAt,
@@ -950,14 +951,26 @@
         return sale.note;
     }
 
+    function saleObservations(sale) {
+        if (!sale) return '';
+        const direct = String(sale.observations || '').trim();
+        if (direct) return direct;
+        if (sale.meta && sale.meta.observations) {
+            return String(sale.meta.observations).trim();
+        }
+        return '';
+    }
+
     function buildNotePlainText(sale) {
         const lines = (sale.items || []).map(function (it) {
             return '• ' + it.name + ' × ' + it.qty + ' @ ' + money(it.price) + ' = ' + money(it.lineTotal != null ? it.lineTotal : it.qty * it.price);
         });
-        return [
+        const obs = saleObservations(sale);
+        const parts = [
             'S-35 · Nota de venta',
             'Folio: ' + (sale.folio || ''),
             'Fecha: ' + formatSaleDateTime(sale.createdAt),
+            'Sucursal: ' + cityLabel(saleCity(sale)),
             'Cliente: ' + saleClientLabel(sale),
             '',
             'Detalle:',
@@ -965,10 +978,13 @@
             '',
             'Pago: ' + formatSalePayLabel(sale),
             'Facturación: ' + billLabel(sale.billing, sale),
-            'Total: ' + money(sale.total),
-            '',
-            'Gracias por su compra.'
-        ].join('\n');
+            'Total: ' + money(sale.total)
+        ];
+        if (obs) {
+            parts.push('', 'Observaciones: ' + obs);
+        }
+        parts.push('', 'Gracias por su preferencia.');
+        return parts.join('\n');
     }
 
     function saleReceiptId(sale) {
@@ -1036,15 +1052,26 @@
             (sale.folio ? '<span class="sub">Folio POS</span>' : '') + '</span>';
     }
 
+    function noteIssuedParts(iso) {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return { date: '—', time: '' };
+        return {
+            date: d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }),
+            time: d.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit' })
+        };
+    }
+
     function buildNoteHtml(sale) {
         const items = sale.items || [];
-        const rows = items.map(function (it, idx) {
+        const rows = items.map(function (it) {
             const line = it.lineTotal != null ? it.lineTotal : it.qty * it.price;
+            const qtyLabel = (Math.abs((Number(it.qty) || 0) - Math.round(Number(it.qty) || 0)) < 1e-9)
+                ? Math.round(Number(it.qty) || 0).toLocaleString('es-MX')
+                : (Number(it.qty) || 0).toLocaleString('es-MX', { maximumFractionDigits: 3 });
             return '<tr>' +
-                '<td class="num snd-idx">' + (idx + 1) + '</td>' +
                 '<td><span class="line-name">' + esc(it.name) + '</span>' +
                 (it.unit ? '<span class="line-unit">' + esc(it.unit) + '</span>' : '') + '</td>' +
-                '<td class="num">' + esc(String(it.qty)) + '</td>' +
+                '<td class="num">' + esc(qtyLabel) + '</td>' +
                 '<td class="num">' + money(it.price) + '</td>' +
                 '<td class="num">' + money(line) + '</td>' +
                 '</tr>';
@@ -1053,82 +1080,103 @@
         const store = saleStoreName(sale);
         const city = cityLabel(saleCity(sale));
         const seller = saleUserLabel(sale);
+        const obs = saleObservations(sale);
         let client = sale.client || null;
         if (!client && sale.clientId) client = clientById(sale.clientId);
         const addr = clientAddress(client);
+        const rfc = client ? String(client.rfc || client.RFC || '').trim() : '';
+        const phone = client ? String(client.phone || '').trim() : '';
+        const email = client ? String(client.email || '').trim() : '';
         const refLine = saleReceiptId(sale)
             ? 'HIST-R' + saleReceiptId(sale)
             : (sale.meta && sale.meta.kind === 'invoice' && sale.meta.invoiceFolio != null
                 ? 'CFDI-' + sale.meta.invoiceFolio
                 : (sale.folio || ''));
-        const originName = store || city || 'POS';
-        const originSub = [
-            city && store ? city : '',
-            seller ? ('Vendedor: ' + seller) : ''
-        ].filter(Boolean).join(' · ');
+        const issued = noteIssuedParts(sale.createdAt);
+        const docTitle = isPrecompraSale(sale) ? 'Precompra' : 'Nota';
+        const bill = billLabel(sale.billing, sale);
+        const fromLines = [
+            city || '',
+            store && store !== city ? store : '',
+            seller ? ('Vendedor · ' + seller) : ''
+        ].filter(Boolean);
+        const clientLines = [
+            rfc ? ('RFC ' + rfc) : '',
+            addr,
+            phone,
+            email,
+            refLine && refLine !== receiptLabel ? ('Ref. ' + refLine) : ''
+        ].filter(Boolean);
+        function stack(lines) {
+            return lines.map(function (line) {
+                return '<div class="sub">' + esc(line) + '</div>';
+            }).join('');
+        }
+        /* Portada: cuando llegue la foto, apunta NOTE_COVER a /Assets/nota-portada.jpg */
+        const NOTE_COVER = '';
         return '' +
-            '<div class="snd-top">' +
-            '<div class="snd-brand">' +
-            '<div class="snd-logo">' +
-            '<img src="/Assets/s35-logo-compuesto-negro.png" alt="S-35 Construction Tech" width="160" height="18" decoding="async">' +
-            '</div>' +
-            (city || store
-                ? '<div class="snd-company-sub">' + esc([city, store].filter(Boolean).join(' · ')) + '</div>'
+            '<div class="snd-hero' + (NOTE_COVER ? '' : ' is-empty') + '">' +
+            (NOTE_COVER
+                ? '<img src="' + esc(NOTE_COVER) + '" alt="" decoding="async" onerror="this.parentNode.classList.add(\'is-empty\');this.remove()">'
                 : '') +
+            '<span class="snd-hero-mark">Imagen</span>' +
             '</div>' +
-            '<div class="snd-doctype">' + (isPrecompraSale(sale) ? 'PRECOMPRA' : 'NOTA DE VENTA') + '</div>' +
+            '<header class="snd-mast">' +
+            '<div class="snd-logo">' +
+            '<img src="/Assets/s35-logo-compuesto-negro.png" alt="S-35 Construction Tech" width="200" height="22" decoding="async">' +
             '</div>' +
-            '<div class="snd-summary">' +
-            '<div class="snd-sum-cell">' +
-            '<span class="lbl">Total</span>' +
-            '<span class="val">' + money(sale.total) + '</span>' +
-            '</div>' +
-            '<div class="snd-sum-cell">' +
-            '<span class="lbl">Fecha</span>' +
-            '<span class="val">' + esc(formatSaleDateTime(sale.createdAt)) + '</span>' +
-            '</div>' +
-            '<div class="snd-sum-cell">' +
-            '<span class="lbl">Folio</span>' +
-            '<span class="val">' + esc(receiptLabel) + '</span>' +
-            '</div>' +
-            '<div class="snd-sum-cell">' +
-            '<span class="lbl">Facturación</span>' +
-            '<span class="val">' + esc(billLabel(sale.billing, sale)) + '</span>' +
-            '</div>' +
-            '</div>' +
+            '<div class="snd-folio">' + esc(receiptLabel) + '</div>' +
+            '</header>' +
+            '<h1 class="snd-title">' + esc(docTitle) + '</h1>' +
             '<div class="snd-parties">' +
             '<div class="snd-party">' +
-            '<div class="lbl">Cliente</div>' +
-            '<div class="name">' + esc(saleClientLabel(sale)) + '</div>' +
-            (addr ? '<div class="sub">' + esc(addr) + '</div>' : '') +
-            (refLine ? '<div class="sub">Ref. ' + esc(refLine) + '</div>' : '') +
+            '<div class="lbl">De</div>' +
+            '<div class="name">S-35 Construction Tech</div>' +
+            stack(fromLines) +
             '</div>' +
             '<div class="snd-party">' +
-            '<div class="lbl">Origen</div>' +
-            '<div class="name">' + esc(originName) + '</div>' +
-            (originSub ? '<div class="sub">' + esc(originSub) + '</div>' : '') +
+            '<div class="lbl">Para</div>' +
+            '<div class="name">' + esc(saleClientLabel(sale)) + '</div>' +
+            stack(clientLines) +
+            '</div>' +
+            '<div class="snd-party is-end">' +
+            '<div class="lbl">Emitida</div>' +
+            '<div class="name">' + esc(issued.date) + '</div>' +
+            (issued.time ? '<div class="sub">' + esc(issued.time) + '</div>' : '') +
+            '<div class="lbl snd-lbl-gap">Facturación</div>' +
+            '<div class="name">' + esc(bill) + '</div>' +
             '</div>' +
             '</div>' +
             '<table class="sale-note-lines">' +
             '<thead><tr>' +
-            '<th class="num snd-idx">#</th>' +
             '<th>Descripción</th>' +
             '<th class="num">Cant.</th>' +
             '<th class="num">Precio</th>' +
             '<th class="num">Importe</th>' +
             '</tr></thead>' +
-            '<tbody>' + (rows || '<tr><td colspan="5" class="muted">Sin líneas</td></tr>') + '</tbody>' +
+            '<tbody>' + (rows || '<tr><td colspan="4" class="muted">Sin líneas</td></tr>') + '</tbody>' +
             '</table>' +
             '<div class="snd-bottom">' +
+            '<div class="snd-pay-block">' +
             '<div class="snd-pay">' +
-            '<div class="lbl">Método de pago</div>' +
+            '<div class="lbl">Pago</div>' +
             '<div class="val">' + esc(formatSalePayLabel(sale)) + '</div>' +
+            '</div>' +
+            (obs
+                ? ('<div class="snd-obs">' +
+                    '<div class="lbl">Notas</div>' +
+                    '<div class="val">' + esc(obs) + '</div>' +
+                    '</div>')
+                : '') +
             '</div>' +
             '<div class="snd-totals">' +
             '<div class="row"><span>Subtotal</span><span>' + money(sale.total) + '</span></div>' +
             '<div class="row total"><span>Total</span><span>' + money(sale.total) + '</span></div>' +
             '</div>' +
-            '</div>';
+            '</div>' +
+            '<footer class="snd-foot">' +
+            '<span>Gracias por su preferencia.</span>' +
+            '</footer>';
     }
 
     function isAdminRole() {
@@ -1425,6 +1473,7 @@
                 return '<option value="' + esc(c.id) + '"' + (saleCity(sale) === c.id ? ' selected' : '') + '>' + esc(c.label) + '</option>';
             }).join('') +
             '</select></label>' +
+            '<label class="span-2">Observaciones<textarea id="sneObs" rows="2" placeholder="Entrega, obra, referencia…">' + esc(saleObservations(sale)) + '</textarea></label>' +
             '<div class="span-2 sne-pay-split-block">' +
             '<label class="sne-pay-split-check"><input type="checkbox" id="snePaySplit"' + (isSplit ? ' checked' : '') + '> Dividir pago (varios métodos)</label>' +
             '<div class="pay-split-panel" id="snePaySplitPanel"' + (isSplit ? '' : ' hidden') + '>' +
@@ -1604,6 +1653,7 @@
             rfc: client.rfc || '',
             type: normalizeClientType(client.type || client.kind)
         } : null;
+        const observations = ((document.getElementById('sneObs') || {}).value || '').trim();
         return {
             createdAt: createdAt,
             clientId: client ? client.id : null,
@@ -1614,7 +1664,8 @@
             billing: bill,
             city: city,
             items: items,
-            total: Math.round(total * 100) / 100
+            total: Math.round(total * 100) / 100,
+            observations: observations
         };
     }
 
