@@ -7,7 +7,7 @@
     <title>S-35 | Colaboradores</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
@@ -3934,7 +3934,7 @@
 
         /* —— Nota de venta —— */
         #saleNoteModal .modal-card {
-            max-width: 720px;
+            max-width: 880px;
             max-height: calc(100vh - 32px);
             display: flex;
             flex-direction: column;
@@ -4069,211 +4069,244 @@
             .sale-note-edit label.span-2 { grid-column: auto; }
         }
         .sale-note-doc {
-            padding: 20px 24px 16px;
-            color: #171717;
-            background: #ffffff;
-            font-family: var(--font);
-            letter-spacing: -0.011em;
-            border-radius: 16px;
-        }
-        .sale-note-doc .lbl {
-            display: block;
-            font-size: 10px;
-            font-weight: 600;
-            color: #8a8a8a;
-            letter-spacing: .14em;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        .snd-hero {
-            position: relative;
-            height: 148px;
-            margin-bottom: 24px;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #efece8;
-        }
-        .snd-hero img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .snd-hero-mark {
-            display: none;
-            position: absolute;
-            inset: 0;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: .18em;
-            text-transform: uppercase;
-            color: #a3a3a3;
-        }
-        .snd-hero.is-empty .snd-hero-mark { display: flex; }
-        .snd-mast {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 24px;
-        }
-        .snd-logo { line-height: 0; }
-        .snd-logo img {
-            display: block;
-            height: 22px;
-            width: auto;
-            max-width: 210px;
-        }
-        .snd-folio {
-            padding-top: 2px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #404040;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: 0.04em;
-            text-align: right;
-        }
-        .snd-title {
-            margin: 20px 0 32px;
-            font-family: var(--font-display);
-            font-size: 56px;
-            font-weight: 400;
-            letter-spacing: -0.035em;
-            line-height: 0.9;
-            color: #111111;
-        }
-        .snd-parties {
             display: grid;
-            grid-template-columns: 1.05fr 1.25fr 0.85fr;
-            gap: 16px 24px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e7e7e7;
+            grid-template-columns: 200px minmax(0, 1fr);
+            grid-template-rows: minmax(420px, 1fr) auto;
+            column-gap: 28px;
+            min-height: 920px;
+            padding: 36px 36px 28px;
+            color: #141414;
+            background: #ffffff;
+            font-family: Archivo, "Helvetica Neue", sans-serif;
+            letter-spacing: -0.011em;
+            border-radius: 2px;
         }
-        .snd-party.is-end { text-align: right; }
-        .snd-party .name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #171717;
-            line-height: 1.35;
-            letter-spacing: -0.015em;
+        .snd-rail {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            min-width: 0;
         }
-        .snd-party .sub {
-            margin-top: 4px;
+        .snd-logo {
+            display: block;
+            width: 190px;
+            max-width: 100%;
+            height: auto;
+        }
+        .snd-contact,
+        .snd-from {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
             font-size: 12px;
-            color: #737373;
             line-height: 1.45;
         }
-        .snd-lbl-gap { margin-top: 16px; }
+        .snd-from-k { font-weight: 600; }
+        .snd-vert {
+            margin-top: auto;
+            padding: 24px 0;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            align-self: flex-start;
+            font-family: Helvetica, "Helvetica Neue", sans-serif;
+            font-size: 26px;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+            line-height: 1;
+        }
+        .snd-main {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+            height: 100%;
+        }
+        .snd-id {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end;
+            gap: 32px;
+        }
+        .snd-id .k {
+            font-size: 12px;
+            color: #555555;
+            margin-bottom: 4px;
+        }
+        .snd-id .mono,
+        .sale-note-doc .mono {
+            font-family: "IBM Plex Mono", ui-monospace, monospace;
+            font-variant-numeric: tabular-nums;
+        }
+        .snd-id-date .mono { font-size: 15px; font-weight: 500; }
+        .snd-folio {
+            font-family: "IBM Plex Mono", ui-monospace, monospace;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: #c8102e;
+            text-align: right;
+        }
+        .snd-branch {
+            margin-top: 28px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #141414;
+            font-size: 13px;
+        }
+        .snd-branch span { color: #555555; margin-right: 8px; }
+        .snd-who {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 220px;
+            column-gap: 24px;
+        }
+        .snd-client {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .snd-deliver {
+            margin-top: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .snd-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 12px;
+        }
+        .snd-meta > div { display: flex; justify-content: space-between; gap: 12px; }
+        .snd-meta span:first-child { color: #555555; white-space: nowrap; }
+        .snd-meta span:last-child { text-align: right; }
         .sale-note-lines {
             width: 100%;
+            flex: 1 1 auto;
+            height: 0;
+            min-height: 160px;
+            margin-top: 28px;
             border-collapse: collapse;
+            table-layout: fixed;
             font-size: 13px;
-            margin: 0;
-            color: #171717;
+            color: #141414;
         }
         .sale-note-lines th {
             text-align: left;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 600;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-            color: #8a8a8a;
-            padding: 16px 8px 12px 0;
-            border-bottom: 1px solid #e7e7e7;
+            color: #141414;
+            padding: 0 8px 10px;
+            border-bottom: 1px solid #141414;
+            border-left: 1px solid #141414;
             background: transparent;
         }
+        .sale-note-lines th:first-child,
+        .sale-note-lines td:first-child { border-left: none; padding-left: 0; }
+        .sale-note-lines th:nth-child(1) { width: 52px; }
+        .sale-note-lines th:nth-child(2) { width: 64px; }
+        .sale-note-lines th:nth-child(4) { width: 92px; }
+        .sale-note-lines th:nth-child(5) { width: 100px; }
         .sale-note-lines th.num,
-        .sale-note-lines td.num { text-align: right; padding-right: 0; padding-left: 12px; }
+        .sale-note-lines td.num { text-align: right; }
         .sale-note-lines td {
-            padding: 14px 8px 14px 0;
-            border-bottom: 1px solid #efefef;
+            padding: 14px 8px 0;
+            border-left: 1px solid #141414;
+            border-bottom: none;
             vertical-align: top;
-            color: #171717;
-            font-variant-numeric: tabular-nums;
+            color: #141414;
         }
-        .sale-note-lines tbody tr:last-child td { border-bottom: none; }
-        .sale-note-lines .line-name {
-            font-weight: 600;
-            color: #171717;
-            letter-spacing: -0.01em;
+        .sale-note-lines .snd-qty,
+        .sale-note-lines td.num {
+            font-family: "IBM Plex Mono", ui-monospace, monospace;
         }
+        .sale-note-lines .line-amt { font-weight: 600; }
+        .sale-note-lines .line-name { font-weight: 600; }
         .sale-note-lines .line-unit {
             display: block;
-            font-size: 12px;
-            color: #737373;
-            font-weight: 400;
             margin-top: 2px;
+            font-size: 12px;
+            font-weight: 400;
+            color: #555555;
         }
         .sale-note-lines .muted { color: #737373; }
-        .snd-bottom {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 32px;
-            padding-top: 8px;
+        .sale-note-lines .snd-fill td { height: 100%; padding-top: 0; }
+        .snd-sheet-foot {
+            grid-column: 1 / -1;
             margin-top: 8px;
-            border-top: 1px solid #e7e7e7;
-        }
-        .snd-pay-block {
-            flex: 1;
-            min-width: 0;
-            display: grid;
-            gap: 16px;
             padding-top: 16px;
+            border-top: 1px solid #141414;
+            color: #141414;
         }
-        .snd-pay .val,
-        .snd-obs .val {
-            font-size: 14px;
-            font-weight: 600;
-            color: #171717;
-            line-height: 1.4;
+        .snd-foot-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 220px;
+            column-gap: 32px;
         }
-        .snd-obs .val {
-            font-weight: 400;
-            color: #404040;
-            max-width: 36ch;
-            white-space: pre-wrap;
+        .snd-letter { font-size: 12px; line-height: 1.5; }
+        .snd-letter span { color: #555555; }
+        .snd-signs {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 24px;
+            font-size: 12px;
         }
+        .snd-signs .line { height: 32px; border-bottom: 1px solid #141414; margin-bottom: 6px; }
+        .snd-signs .hint { color: #555555; margin-top: 2px; }
         .snd-totals {
-            min-width: 220px;
             display: grid;
             gap: 8px;
             font-size: 13px;
-            padding-top: 16px;
         }
         .snd-totals .row {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            gap: 32px;
-            color: #525252;
-            font-variant-numeric: tabular-nums;
+            gap: 16px;
+            color: #555555;
         }
+        .snd-totals .row .mono { color: #141414; }
         .snd-totals .row.total {
-            font-weight: 600;
-            font-size: 16px;
-            color: #111111;
-            letter-spacing: -0.02em;
-            padding-top: 12px;
             margin-top: 4px;
-            border-top: 1px solid #171717;
+            padding-top: 10px;
+            border-top: 1px solid #141414;
+            color: #141414;
+            font-size: 16px;
+            font-weight: 700;
         }
-        .snd-totals .row.total span:last-child {
-            font-family: var(--font-display);
-            font-size: 28px;
-            font-weight: 400;
-            letter-spacing: -0.03em;
-            font-variant-numeric: tabular-nums;
-        }
-        .snd-foot {
-            margin-top: 32px;
-            padding-top: 0;
-            border-top: none;
+        .snd-totals .row.total .mono { font-size: 22px; font-weight: 600; }
+        .snd-currency {
             font-size: 12px;
-            color: #8a8a8a;
-            letter-spacing: 0;
+            color: #555555;
+            text-align: right;
         }
+        .snd-legal-row {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #141414;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            font-size: 12px;
+            line-height: 1.45;
+            color: #555555;
+        }
+        .snd-legal-row > div:first-child { max-width: 36ch; }
+        .snd-brand-qr {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #141414;
+            text-align: right;
+        }
+        .snd-brand-qr strong,
+        .snd-brand-qr span { display: block; white-space: nowrap; }
+        .snd-brand-qr span {
+            font-family: "IBM Plex Mono", ui-monospace, monospace;
+            font-weight: 400;
+        }
+        .snd-brand-qr img { width: 66px; height: 66px; display: block; }
         .sale-note-edit textarea#sneObs {
             width: 100%;
             min-height: 56px;
@@ -4304,14 +4337,23 @@
             font-size: 12px;
             color: #525252;
         }
-        @media (max-width: 480px) {
-            .snd-parties { grid-template-columns: 1fr; gap: 16px; }
-            .snd-party.is-end { text-align: left; }
+        @media (max-width: 640px) {
+            .sale-note-doc {
+                grid-template-columns: 1fr;
+                min-height: 0;
+                padding: 20px 16px 16px;
+            }
+            .snd-vert {
+                writing-mode: horizontal-tb;
+                transform: none;
+                padding: 16px 0 0;
+                font-size: 22px;
+            }
+            .snd-who,
+            .snd-foot-grid,
+            .snd-signs { grid-template-columns: 1fr; row-gap: 16px; }
+            .snd-legal-row { flex-direction: column; align-items: flex-start; }
             #saleNoteModal .sale-note-share-fields { grid-template-columns: 1fr; }
-            .snd-title { font-size: 40px; margin-bottom: 24px; }
-            .snd-hero { height: 112px; }
-            .snd-bottom { flex-direction: column; }
-            .snd-totals { width: 100%; min-width: 0; }
         }
         .sale-note-actions {
             display: grid;
@@ -4430,11 +4472,8 @@
             .sale-note-doc .muted,
             .lot-ticket-doc .muted,
             .sale-note-doc .lbl,
-            .snd-folio,
             .snd-party .sub,
             .snd-obs .val,
-            .snd-foot,
-            .snd-hero-mark,
             .sale-note-lines .line-unit,
             .lot-ticket-meta .k,
             .lot-ticket-pallet-meta .k,
@@ -4442,9 +4481,7 @@
             .handoff-sub {
                 color: #525252 !important;
             }
-            .snd-parties,
             .sale-note-lines th,
-            .snd-bottom,
             .snd-totals .row.total,
             .lot-ticket-brand,
             .lot-ticket-lines th,
@@ -4455,12 +4492,13 @@
             .lot-ticket-blank-field .line {
                 border-color: #0a0a0a !important;
             }
-            .sale-note-lines td {
-                border-bottom-color: #e7e7e7 !important;
+            #saleNoteDoc .sale-note-lines td,
+            #saleNoteDoc .sale-note-lines th {
+                border-bottom-color: #141414 !important;
+                border-left-color: #141414 !important;
             }
-            .snd-hero,
-            .snd-hero.is-empty {
-                background: #efece8 !important;
+            #saleNoteDoc .snd-folio {
+                color: #c8102e !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -4542,8 +4580,18 @@
             }
             #lotTicketDoc .lot-ticket-screen-only { display: none !important; }
 
-            /* Nota de venta / ticket compra: hoja carta premium */
-            #saleNoteDoc.sale-note-doc,
+            /* Nota de venta: hoja carta */
+            #saleNoteDoc.sale-note-doc {
+                max-width: none;
+                width: 100%;
+                min-height: 250mm;
+                margin: 0;
+                padding: 0 !important;
+                background: #fff !important;
+                color: #141414 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+            }
             #purchaseTicketDoc.lot-ticket-doc {
                 max-width: 186mm;
                 margin: 0 auto;
@@ -4553,45 +4601,18 @@
                 border-radius: 0 !important;
                 box-shadow: none !important;
             }
-            .snd-title,
-            .snd-party .name,
-            .snd-pay .val,
-            .snd-totals .row.total,
             .sale-note-lines .line-name,
             .lot-ticket-brand .mark {
-                color: #111111 !important;
+                color: #141414 !important;
             }
-            .snd-title,
-            .snd-totals .row.total span:last-child {
-                font-family: var(--font-display), Georgia, serif !important;
-            }
-            .snd-logo img {
-                height: 22px !important;
-                max-width: 210px !important;
+            .snd-logo {
+                width: 48mm !important;
+                height: auto !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
-            .snd-hero {
-                height: 42mm !important;
-                margin-bottom: 8mm !important;
-                border-radius: 3mm !important;
-            }
-            .snd-title {
-                font-size: 36pt !important;
-                margin: 6mm 0 8mm !important;
-            }
-            #saleNoteDoc .snd-parties,
-            #saleNoteDoc .sale-note-lines th,
-            #saleNoteDoc .snd-bottom,
-            #saleNoteDoc .sale-note-lines td {
-                border-color: #d4d4d4 !important;
-            }
-            #saleNoteDoc .snd-totals .row.total { border-color: #171717 !important; }
-            .snd-parties { padding-bottom: 5mm !important; }
-            .sale-note-lines th { padding-top: 4mm !important; }
-            .sale-note-lines td { padding-top: 3.5mm !important; padding-bottom: 3.5mm !important; }
-            .snd-totals .row.total span:last-child { font-size: 18pt !important; }
-            .snd-foot { margin-top: 10mm !important; }
+            #saleNoteDoc .snd-totals .row.total { border-color: #141414 !important; }
+            #saleNoteDoc .sale-note-lines td { padding-top: 3mm !important; padding-bottom: 0 !important; }
 
             /* Conteo de inventario — materias primas y producto terminado */
             body.printing-mat-count > .app,

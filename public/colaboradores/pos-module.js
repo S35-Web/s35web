@@ -1052,13 +1052,71 @@
             (sale.folio ? '<span class="sub">Folio POS</span>' : '') + '</span>';
     }
 
-    function noteIssuedParts(iso) {
+    function noteDateDots(iso) {
         const d = new Date(iso);
-        if (isNaN(d.getTime())) return { date: '—', time: '' };
-        return {
-            date: d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }),
-            time: d.toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit' })
-        };
+        if (isNaN(d.getTime())) return '—';
+        const pad = function (n) { return String(n).padStart(2, '0'); };
+        return pad(d.getDate()) + ' · ' + pad(d.getMonth() + 1) + ' · ' + d.getFullYear();
+    }
+
+    function noteFolioLabel(sale) {
+        const rid = saleReceiptId(sale);
+        if (rid && /^\d+$/.test(String(rid))) return 'Nº ' + String(rid).padStart(6, '0');
+        const folio = String((sale && sale.folio) || '').trim();
+        const digits = folio.replace(/\D/g, '');
+        if (digits && digits.length >= 3 && digits.length <= 8) return 'Nº ' + digits.padStart(6, '0');
+        return folio || '—';
+    }
+
+    /** Pesos con centavos: el total impreso es el cobrado, sin sumar IVA encima. */
+    function montoEnLetra(amount) {
+        const centsTotal = Math.round((Number(amount) || 0) * 100);
+        const sign = centsTotal < 0 ? 'menos ' : '';
+        const abs = Math.abs(centsTotal);
+        const pesos = Math.floor(abs / 100);
+        const cents = String(abs % 100).padStart(2, '0');
+        const unidades = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve',
+            'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte'];
+        const decenas = ['', '', 'veinti', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+        const centenas = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
+        function below100(n) {
+            if (n <= 20) return unidades[n];
+            if (n < 30) {
+                const u = n - 20;
+                if (u === 0) return 'veinte';
+                if (u === 1) return 'veintiún';
+                if (u === 2) return 'veintidós';
+                if (u === 3) return 'veintitrés';
+                if (u === 6) return 'veintiséis';
+                return 'veinti' + unidades[u];
+            }
+            const d = Math.floor(n / 10);
+            const u = n % 10;
+            if (!u) return decenas[d];
+            const uno = u === 1 ? 'un' : unidades[u];
+            return decenas[d] + ' y ' + uno;
+        }
+        function below1000(n) {
+            if (n === 0) return '';
+            if (n === 100) return 'cien';
+            const c = Math.floor(n / 100);
+            const r = n % 100;
+            return (c ? centenas[c] : '') + (c && r ? ' ' : '') + (r ? below100(r) : '');
+        }
+        function entero(n) {
+            if (n === 0) return 'cero';
+            const millones = Math.floor(n / 1000000);
+            const miles = Math.floor((n % 1000000) / 1000);
+            const resto = n % 1000;
+            const parts = [];
+            if (millones) parts.push(millones === 1 ? 'un millón' : below1000(millones) + ' millones');
+            if (miles) parts.push(miles === 1 ? 'mil' : below1000(miles) + ' mil');
+            if (resto) parts.push(below1000(resto));
+            return parts.join(' ');
+        }
+        const cuerpo = pesos === 1 ? 'un peso' : entero(pesos) + ' pesos';
+        const frase = sign + cuerpo + ' ' + cents + '/100 M.N.';
+        return frase.charAt(0).toUpperCase() + frase.slice(1);
     }
 
     function buildNoteHtml(sale) {
@@ -1068,114 +1126,121 @@
             const qtyLabel = (Math.abs((Number(it.qty) || 0) - Math.round(Number(it.qty) || 0)) < 1e-9)
                 ? Math.round(Number(it.qty) || 0).toLocaleString('es-MX')
                 : (Number(it.qty) || 0).toLocaleString('es-MX', { maximumFractionDigits: 3 });
+            const rawUnit = String(it.unit || '').trim();
+            const unitMatch = rawUnit.match(/^(.*?)\s+(\d+(?:[.,]\d+)?\s*kg)$/i);
+            const unidad = (unitMatch && unitMatch[1] ? unitMatch[1] : rawUnit) || 'Pza';
+            const detail = unitMatch && unitMatch[1] ? unitMatch[2] : '';
             return '<tr>' +
+                '<td class="snd-qty">' + esc(qtyLabel) + '</td>' +
+                '<td>' + esc(unidad) + '</td>' +
                 '<td><span class="line-name">' + esc(it.name) + '</span>' +
-                (it.unit ? '<span class="line-unit">' + esc(it.unit) + '</span>' : '') + '</td>' +
-                '<td class="num">' + esc(qtyLabel) + '</td>' +
+                (detail ? '<span class="line-unit">' + esc(detail) + '</span>' : '') +
+                '</td>' +
                 '<td class="num">' + money(it.price) + '</td>' +
-                '<td class="num">' + money(line) + '</td>' +
+                '<td class="num line-amt">' + money(line) + '</td>' +
                 '</tr>';
         }).join('');
-        const receiptLabel = saleReceiptLabel(sale);
-        const store = saleStoreName(sale);
         const city = cityLabel(saleCity(sale));
-        const seller = saleUserLabel(sale);
+        const store = saleStoreName(sale);
+        const seller = saleUserLabel(sale) || '—';
         const obs = saleObservations(sale);
         let client = sale.client || null;
         if (!client && sale.clientId) client = clientById(sale.clientId);
         const addr = clientAddress(client);
         const rfc = client ? String(client.rfc || client.RFC || '').trim() : '';
         const phone = client ? String(client.phone || '').trim() : '';
-        const email = client ? String(client.email || '').trim() : '';
-        const refLine = saleReceiptId(sale)
-            ? 'HIST-R' + saleReceiptId(sale)
-            : (sale.meta && sale.meta.kind === 'invoice' && sale.meta.invoiceFolio != null
-                ? 'CFDI-' + sale.meta.invoiceFolio
-                : (sale.folio || ''));
-        const issued = noteIssuedParts(sale.createdAt);
-        const docTitle = isPrecompraSale(sale) ? 'Precompra' : 'Nota';
-        const bill = billLabel(sale.billing, sale);
-        const fromLines = [
-            city || '',
-            store && store !== city ? store : '',
-            seller ? ('Vendedor · ' + seller) : ''
-        ].filter(Boolean);
-        const clientLines = [
+        const branch = store && city && store !== city
+            ? (store + ' · ' + city)
+            : ('Planta S-35 · ' + (city || store || 'Culiacán'));
+        const deliver = addr || branch;
+        const clientBits = [
             rfc ? ('RFC ' + rfc) : '',
-            addr,
-            phone,
-            email,
-            refLine && refLine !== receiptLabel ? ('Ref. ' + refLine) : ''
-        ].filter(Boolean);
-        function stack(lines) {
-            return lines.map(function (line) {
-                return '<div class="sub">' + esc(line) + '</div>';
-            }).join('');
-        }
-        /* Portada: cuando llegue la foto, apunta NOTE_COVER a /Assets/nota-portada.jpg */
-        const NOTE_COVER = '';
+            phone ? ('Tel. ' + phone) : ''
+        ].filter(Boolean).join(' · ');
+        const docTitle = isPrecompraSale(sale) ? 'Precompra' : 'Nota de venta';
+        const total = Number(sale.total) || 0;
+        const condicion = isPendingCollection(sale) ? 'Crédito' : 'Contado';
         return '' +
-            '<div class="snd-hero' + (NOTE_COVER ? '' : ' is-empty') + '">' +
-            (NOTE_COVER
-                ? '<img src="' + esc(NOTE_COVER) + '" alt="" decoding="async" onerror="this.parentNode.classList.add(\'is-empty\');this.remove()">'
-                : '') +
-            '<span class="snd-hero-mark">Imagen</span>' +
+            '<aside class="snd-rail">' +
+            '<img class="snd-logo" src="/Assets/s35-logo-compuesto-negro.png" alt="S-35" width="168" height="24" decoding="async">' +
+            '<div class="snd-contact">' +
+            '<div>s-35.com.mx</div>' +
+            '<div>contacto@s35.com.mx</div>' +
+            '<div>+52 667 168 1538</div>' +
+            '<div>WhatsApp 667 168 1538</div>' +
             '</div>' +
-            '<header class="snd-mast">' +
-            '<div class="snd-logo">' +
-            '<img src="/Assets/s35-logo-compuesto-negro.png" alt="S-35 Construction Tech" width="200" height="22" decoding="async">' +
+            '<div class="snd-from">' +
+            '<div class="snd-from-k">De:</div>' +
+            '<div>Productos S-35</div>' +
+            '<div>Blvd. Emiliano Zapata 2650</div>' +
+            '<div>Ind. Palmito, C.P. 80160</div>' +
+            '<div>Culiacán, Sinaloa</div>' +
+            '<div>RFC PSX180111698</div>' +
             '</div>' +
-            '<div class="snd-folio">' + esc(receiptLabel) + '</div>' +
-            '</header>' +
-            '<h1 class="snd-title">' + esc(docTitle) + '</h1>' +
-            '<div class="snd-parties">' +
-            '<div class="snd-party">' +
-            '<div class="lbl">De</div>' +
-            '<div class="name">S-35 Construction Tech</div>' +
-            stack(fromLines) +
+            '<div class="snd-vert">' + esc(docTitle) + '</div>' +
+            '</aside>' +
+            '<div class="snd-main">' +
+            '<div class="snd-id">' +
+            '<div class="snd-id-date">' +
+            '<div class="k">Fecha</div>' +
+            '<div class="mono">' + esc(noteDateDots(sale.createdAt)) + '</div>' +
             '</div>' +
-            '<div class="snd-party">' +
-            '<div class="lbl">Para</div>' +
-            '<div class="name">' + esc(saleClientLabel(sale)) + '</div>' +
-            stack(clientLines) +
+            '<div class="snd-id-folio">' +
+            '<div class="k">Folio</div>' +
+            '<div class="snd-folio">' + esc(noteFolioLabel(sale)) + '</div>' +
             '</div>' +
-            '<div class="snd-party is-end">' +
-            '<div class="lbl">Emitida</div>' +
-            '<div class="name">' + esc(issued.date) + '</div>' +
-            (issued.time ? '<div class="sub">' + esc(issued.time) + '</div>' : '') +
-            '<div class="lbl snd-lbl-gap">Facturación</div>' +
-            '<div class="name">' + esc(bill) + '</div>' +
+            '</div>' +
+            '<div class="snd-branch"><span>Sucursal:</span> ' + esc(branch) + '</div>' +
+            '<div class="snd-who">' +
+            '<div class="snd-who-client">' +
+            '<div class="snd-client">Cliente: ' + esc(saleClientLabel(sale)) + '</div>' +
+            '<div class="snd-deliver">Entregar en: ' + esc(deliver) +
+            (clientBits ? '<br>' + esc(clientBits) : '') + '</div>' +
+            (obs ? '<div class="snd-deliver">Notas: ' + esc(obs) + '</div>' : '') +
+            '</div>' +
+            '<div class="snd-meta">' +
+            '<div><span>Condición</span><span>' + esc(condicion) + '</span></div>' +
+            '<div><span>Forma de pago</span><span>' + esc(formatSalePayLabel(sale)) + '</span></div>' +
+            '<div><span>Vendedor</span><span>' + esc(seller) + '</span></div>' +
+            '<div><span>Entrega</span><span>' + esc(noteDateDots(sale.createdAt)) + '</span></div>' +
             '</div>' +
             '</div>' +
             '<table class="sale-note-lines">' +
             '<thead><tr>' +
+            '<th>Cant.</th>' +
+            '<th>Unidad</th>' +
             '<th>Descripción</th>' +
-            '<th class="num">Cant.</th>' +
-            '<th class="num">Precio</th>' +
+            '<th class="num">P. unitario</th>' +
             '<th class="num">Importe</th>' +
             '</tr></thead>' +
-            '<tbody>' + (rows || '<tr><td colspan="4" class="muted">Sin líneas</td></tr>') + '</tbody>' +
-            '</table>' +
-            '<div class="snd-bottom">' +
-            '<div class="snd-pay-block">' +
-            '<div class="snd-pay">' +
-            '<div class="lbl">Pago</div>' +
-            '<div class="val">' + esc(formatSalePayLabel(sale)) + '</div>' +
+            '<tbody>' +
+            (rows || '<tr><td colspan="5" class="muted">Sin líneas</td></tr>') +
+            '<tr class="snd-fill"><td></td><td></td><td></td><td></td><td></td></tr>' +
+            '</tbody></table>' +
             '</div>' +
-            (obs
-                ? ('<div class="snd-obs">' +
-                    '<div class="lbl">Notas</div>' +
-                    '<div class="val">' + esc(obs) + '</div>' +
-                    '</div>')
-                : '') +
+            '<footer class="snd-sheet-foot">' +
+            '<div class="snd-foot-grid">' +
+            '<div class="snd-foot-left">' +
+            '<div class="snd-letter"><span>Importe con letra:</span> ' + esc(montoEnLetra(total)) + '</div>' +
+            '<div class="snd-signs">' +
+            '<div><div class="line"></div><div>Recibí de conformidad</div><div class="hint">Nombre y firma del cliente</div></div>' +
+            '<div><div class="line"></div><div>Entregó</div><div class="hint">Nombre y firma</div></div>' +
+            '</div>' +
             '</div>' +
             '<div class="snd-totals">' +
-            '<div class="row"><span>Subtotal</span><span>' + money(sale.total) + '</span></div>' +
-            '<div class="row total"><span>Total</span><span>' + money(sale.total) + '</span></div>' +
+            '<div class="row"><span>Subtotal</span><span class="mono">' + money(total) + '</span></div>' +
+            '<div class="row"><span>IVA 16%</span><span class="mono">' + money(0) + '</span></div>' +
+            '<div class="row total"><span>Total</span><span class="mono">' + money(total) + '</span></div>' +
+            '<div class="snd-currency">Pesos mexicanos (MXN)</div>' +
             '</div>' +
             '</div>' +
-            '<footer class="snd-foot">' +
-            '<span>Gracias por su preferencia.</span>' +
+            '<div class="snd-legal-row">' +
+            '<div>Este documento no es un comprobante fiscal. Si requiere factura (CFDI), solicítela dentro del mes de su compra a contacto@s35.com.mx.</div>' +
+            '<div class="snd-brand-qr">' +
+            '<div><strong>S-35® Technology</strong><span>s35.com.mx</span></div>' +
+            '<img src="/Assets/nota-qr-s35.svg" alt="Código QR a s35.com.mx" width="66" height="66">' +
+            '</div>' +
+            '</div>' +
             '</footer>';
     }
 
