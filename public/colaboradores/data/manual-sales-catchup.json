@@ -1,7 +1,7 @@
 {
-  "version": 25,
-  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente | Ricbor notas 63989a/64001a/64002a (culiacan) + 63944a/63990a (mochis) transferencia facturado ya en Banorte; 64032a mochis por cobrar | 2026-09-23 faltantes 64071a ($360 tarj s/fac) + 64072a ($840 tarj fac Dominguez) = $1,200 hueco vs panel viejo | 64100 y 64103 ya facturadas: quitar invoicePending | 2026-10-01 SUCURSAL UNO 64105–64109 (hora −1h): 64105 Mostr efe; 64106 Eduardo Cota tarjeta fac; 64107/09 Mostr tarj perso; 64108 Materiales el Cheke efectivo sin factura | 2026-10-03 SUCURSAL UNO 64119–64122 (hora −1h): 64119 Mostr efe Perla+PSP $475; 64120 Tania Regina Inzunza tarjeta fac Extra Anclaje $335; 64121 Mostr efe Perla $210; 64122 José Miguel Montoya Collantes efe fac 10×Perla $2100 = $3,120 | 2026-10-05 SUCURSAL UNO 64123–64130 (hora −1h): 64123 Inmobiliaria Urbana transfe fac 8×Perla $1680; 64124 Francisco Javier Landeros tarjeta fac 7×Perla $1470; 64125/28 Mostr efe Extra Anclaje $335; 64126 Mostr tarj perso 2×Perla $420; 64127 Mostr tarj perso Extra Anclaje $335; 64129 Mostr efe 4×Perla $840; 64130 Mostr tarj perso Perla+Microconcreto+Darawell $660 = $6,075 | 2026-10-10 SUCURSAL UNO 64159–64163 (hora −1h): Mostr efe 1+1+2+1 Perla; 64163 Enrique Guzman tarjeta fac 3×Perla; Ricbor culiacan 150×Perla @131.74 por cobrar facturado = $21,441 | 2026-10-13 SUCURSAL UNO 64168–64176 (hora −1h): C tarj perso 64168/69/73; F Inmobiliaria Urbana tarj 64170; F Público en general transf 64171; Mostr efe 64172/74/75; F Globalización transf 80×Perla@175 64176 = $20,125 | 2026-10-15 SUCURSAL UNO 64186–64193 (hora −1h): Mostr efe 64186/87/93; C tarj perso 64190/91; F Materiales Madrid transf 100×Perla@175 64192 = $20,865 | 2026-10-19 SUCURSAL UNO 64218–64223 (hora −1h): 64218 Mostr efe 2×Perla $420; 64219 C tarje perso facturado Perla $210; 64220 F Elvia Patricia Ontiveros Noriega efe Pastablock PRO $160; 64221 Mostr efe Perla $210; 64222 Mostr efe Microconcreto $360; 64223 Mostr efe 2×Microconcreto $720 = $2,080 | 2026-10-17 Ricbor Culiacán 130×Perla @131.74 por cobrar facturado = $17,126.20 | 2026-10-20 SUCURSAL UNO 64224–64236 (hora −1h, sin 64227): F UAS efe 64225; F Cecilio Vega efe 64228; F GMARBO efe 64229; F Inmobiliaria Urbana tarj 64231; F Byrmax transf 64232; resto Mostr efe = $13,783, facturado $7,275 | 2026-10-21 SUCURSAL UNO 64237–64247 (hora −1h, sin 64245/64246): F transf 64237; C tarj perso 64239; F Vama tarj 64241; F Aispuro efe 64242; F GMARBO tarj 64244; F Público transf 64247; Mostr efe 64238/40/43 = $8,060, facturado $5,205 | 2026-10-22 SUCURSAL UNO 64248–64258 (hora −1h): F Taller tarj 64250; F Mirna García Meza transf 64253; F Cecilio Vega efe 64256; C tarj perso 64257; resto Mostr efe = $52,925, facturado $37,205",
-  "generatedAt": "2026-10-22",
+  "version": 26,
+  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente | Ricbor notas 63989a/64001a/64002a (culiacan) + 63944a/63990a (mochis) transferencia facturado ya en Banorte; 64032a mochis por cobrar | 2026-09-23 faltantes 64071a ($360 tarj s/fac) + 64072a ($840 tarj fac Dominguez) = $1,200 hueco vs panel viejo | 64100 y 64103 ya facturadas: quitar invoicePending | 2026-10-01 SUCURSAL UNO 64105–64109 (hora −1h): 64105 Mostr efe; 64106 Eduardo Cota tarjeta fac; 64107/09 Mostr tarj perso; 64108 Materiales el Cheke efectivo sin factura | 2026-10-03 SUCURSAL UNO 64119–64122 (hora −1h): 64119 Mostr efe Perla+PSP $475; 64120 Tania Regina Inzunza tarjeta fac Extra Anclaje $335; 64121 Mostr efe Perla $210; 64122 José Miguel Montoya Collantes efe fac 10×Perla $2100 = $3,120 | 2026-10-05 SUCURSAL UNO 64123–64130 (hora −1h): 64123 Inmobiliaria Urbana transfe fac 8×Perla $1680; 64124 Francisco Javier Landeros tarjeta fac 7×Perla $1470; 64125/28 Mostr efe Extra Anclaje $335; 64126 Mostr tarj perso 2×Perla $420; 64127 Mostr tarj perso Extra Anclaje $335; 64129 Mostr efe 4×Perla $840; 64130 Mostr tarj perso Perla+Microconcreto+Darawell $660 = $6,075 | 2026-10-10 SUCURSAL UNO 64159–64163 (hora −1h): Mostr efe 1+1+2+1 Perla; 64163 Enrique Guzman tarjeta fac 3×Perla; Ricbor culiacan 150×Perla @131.74 por cobrar facturado = $21,441 | 2026-10-13 SUCURSAL UNO 64168–64176 (hora −1h): C tarj perso 64168/69/73; F Inmobiliaria Urbana tarj 64170; F Público en general transf 64171; Mostr efe 64172/74/75; F Globalización transf 80×Perla@175 64176 = $20,125 | 2026-10-15 SUCURSAL UNO 64186–64193 (hora −1h): Mostr efe 64186/87/93; C tarj perso 64190/91; F Materiales Madrid transf 100×Perla@175 64192 = $20,865 | 2026-10-19 SUCURSAL UNO 64218–64223 (hora −1h): 64218 Mostr efe 2×Perla $420; 64219 C tarje perso facturado Perla $210; 64220 F Elvia Patricia Ontiveros Noriega efe Pastablock PRO $160; 64221 Mostr efe Perla $210; 64222 Mostr efe Microconcreto $360; 64223 Mostr efe 2×Microconcreto $720 = $2,080 | 2026-10-17 Ricbor Culiacán 130×Perla @131.74 por cobrar facturado = $17,126.20 | 2026-10-20 SUCURSAL UNO 64224–64236 (hora −1h, sin 64227): F UAS efe 64225; F Cecilio Vega efe 64228; F GMARBO efe 64229; F Inmobiliaria Urbana tarj 64231; F Byrmax transf 64232; resto Mostr efe = $13,783, facturado $7,275 | 2026-10-21 SUCURSAL UNO 64237–64247 (hora −1h, sin 64245/64246): F transf 64237; C tarj perso 64239; F Vama tarj 64241; F Aispuro efe 64242; F GMARBO tarj 64244; F Público transf 64247; Mostr efe 64238/40/43 = $8,060, facturado $5,205 | 2026-10-22 SUCURSAL UNO 64248–64258 (hora −1h): F Taller tarj 64250; F Mirna García Meza transf 64253; F Cecilio Vega efe 64256; C tarj perso 64257; resto Mostr efe = $52,925, facturado $37,205 | 2026-10-23 SUCURSAL UNO 64259–64265 (hora −1h): F Rodrigo Orlando tarj 64259; Mostr efe Materiales Gallegos 64260; F Inmobiliaria Urbana tarj 64261; C tarj perso 64262; F GMARBO tarj 64263; F María Guadalupe Peñuelas efe 64264; C tarj perso 64265 = $6,920, facturado $3,470",
+  "generatedAt": "2026-10-23",
   "items": [
     {
       "id": "sale-cfdi-11667",
@@ -7349,6 +7349,334 @@
         "issuedAt": "2026-10-22T15:36:00",
         "timeRule": "hora-expedida-minus-1h",
         "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64259",
+      "folio": "HIST-R64259",
+      "createdAt": "2026-10-23T08:34:00",
+      "customer": "RODRIGO ORLANDO RODRIGUEZ MARTINEZ",
+      "clientId": "c_e08c40b359f2",
+      "client": {
+        "id": "c_e08c40b359f2",
+        "name": "RODRIGO ORLANDO RODRIGUEZ MARTINEZ",
+        "phone": "",
+        "email": "rodrigo_1_3@live.com.mx",
+        "company": "",
+        "rfc": "ROMR860419KC8",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        },
+        {
+          "product": "pegaxpress-psp",
+          "name": "Adhesivo PSP PRO+ S35®",
+          "code": "FT-AD-004",
+          "unit": "Pza",
+          "price": 265,
+          "qty": 5,
+          "lineTotal": 1325
+        }
+      ],
+      "total": 1535,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64259,
+        "noteSuffix": "a-1",
+        "note": "64259a",
+        "observations": "MOSTR FAC TARJETA RODRIGO ORLANDO",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T09:34:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64260",
+      "folio": "HIST-R64260",
+      "createdAt": "2026-10-23T09:11:00",
+      "customer": "MATERIALES GALLEGOS",
+      "clientId": "c_6b42a2f5d7bc",
+      "client": {
+        "id": "c_6b42a2f5d7bc",
+        "name": "MATERIALES GALLEGOS",
+        "phone": "",
+        "email": "",
+        "company": "",
+        "rfc": "",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 175,
+          "qty": 2,
+          "lineTotal": 350
+        }
+      ],
+      "total": 350,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64260,
+        "noteSuffix": "a-2",
+        "note": "64260a",
+        "observations": "MOSTR EFE MATE GALLEGOS",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T10:11:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64261",
+      "folio": "HIST-R64261",
+      "createdAt": "2026-10-23T10:00:00",
+      "customer": "INMOBILIARIA URBANA SINALOENSE",
+      "clientId": "c_13ee0a8089ae",
+      "client": {
+        "id": "c_13ee0a8089ae",
+        "name": "INMOBILIARIA URBANA SINALOENSE",
+        "phone": "",
+        "email": "INMOBILIARIA_URBANA@HOTMAIL.COM",
+        "company": "",
+        "rfc": "IUS8307069Y8",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "FT-MC-002",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 2,
+          "lineTotal": 720
+        }
+      ],
+      "total": 720,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64261,
+        "noteSuffix": "a-3",
+        "note": "64261a",
+        "observations": "FAC TARJ INMOBILIARI AURBANA",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T11:00:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64262",
+      "folio": "HIST-R64262",
+      "createdAt": "2026-10-23T10:48:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 8,
+          "lineTotal": 2680
+        }
+      ],
+      "total": 2680,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64262,
+        "noteSuffix": "a-4",
+        "note": "64262a",
+        "observations": "Mostr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T11:48:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64263",
+      "folio": "HIST-R64263",
+      "createdAt": "2026-10-23T12:40:00",
+      "customer": "GMARBO",
+      "clientId": "c_2662bf182187",
+      "client": {
+        "id": "c_2662bf182187",
+        "name": "GMARBO",
+        "phone": "",
+        "email": "ing.oscar.am@gmail.com",
+        "company": "",
+        "rfc": "GMA1307051D5",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "cemento-plastico-concreto",
+          "name": "Microconcreto Aparente S-35®",
+          "code": "FT-MC-001",
+          "unit": "Pza",
+          "price": 545,
+          "qty": 1,
+          "lineTotal": 545
+        }
+      ],
+      "total": 545,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64263,
+        "noteSuffix": "a-5",
+        "note": "64263a",
+        "observations": "mostr tarj fac gmarbo",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T13:40:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64264",
+      "folio": "HIST-R64264",
+      "createdAt": "2026-10-23T12:58:00",
+      "customer": "MARIA GUADALUPE PEÑUELAS MEDINA",
+      "clientId": "c_000da65d77e1",
+      "client": {
+        "id": "c_000da65d77e1",
+        "name": "MARIA GUADALUPE PEÑUELAS MEDINA",
+        "phone": "",
+        "email": "mariag_medina8312@gmail.com",
+        "company": "",
+        "rfc": "PEMG8312017W8",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 2,
+          "lineTotal": 670
+        }
+      ],
+      "total": 670,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64264,
+        "noteSuffix": "a-6",
+        "note": "64264a",
+        "observations": "Mostr fac matia guadalupe penuelas efe",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T13:58:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64265",
+      "folio": "HIST-R64265",
+      "createdAt": "2026-10-23T13:45:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 2,
+          "lineTotal": 420
+        }
+      ],
+      "total": 420,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64265,
+        "noteSuffix": "a-7",
+        "note": "64265a",
+        "observations": "Moatr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T14:45:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
       },
       "city": "culiacan"
     }
