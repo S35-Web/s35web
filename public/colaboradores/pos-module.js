@@ -1151,7 +1151,7 @@
         const phone = client ? String(client.phone || '').trim() : '';
         const branch = store && city && store !== city
             ? (store + ' · ' + city)
-            : ('Planta S-35 · ' + (city || store || 'Culiacán'));
+            : ('Planta S-35 - ' + (city || store || 'Culiacán'));
         const deliver = addr || branch;
         const clientBits = [
             rfc ? ('RFC ' + rfc) : '',
@@ -1162,7 +1162,7 @@
         const condicion = isPendingCollection(sale) ? 'Crédito' : 'Contado';
         return '' +
             '<aside class="snd-rail">' +
-            '<img class="snd-logo" src="/Assets/s35-logo-compuesto-negro.png" alt="S-35" width="168" height="24" decoding="async">' +
+            '<img class="snd-logo" src="/Assets/s35-logo-block.png" alt="S-35" width="72" height="24" decoding="async">' +
             '<div class="snd-contact">' +
             '<div>s-35.com.mx</div>' +
             '<div>contacto@s35.com.mx</div>' +
@@ -1173,11 +1173,11 @@
             '<div class="snd-from-k">De:</div>' +
             '<div>Productos S-35</div>' +
             '<div>Blvd. Emiliano Zapata 2650</div>' +
-            '<div>Ind. Palmito, C.P. 80160</div>' +
+            '<div>Ind. Palmito C.P. 80160</div>' +
             '<div>Culiacán, Sinaloa</div>' +
             '<div>RFC PSX180111698</div>' +
             '</div>' +
-            '<div class="snd-vert">' + esc(docTitle) + '</div>' +
+            '<div class="snd-vert-wrap"><div class="snd-vert">' + esc(docTitle) + '</div></div>' +
             '</aside>' +
             '<div class="snd-main">' +
             '<div class="snd-id">' +
@@ -1774,6 +1774,7 @@
             const sale = saleById(activeNoteSaleId);
             if (sale) renderSaleNoteEditForm(sale);
         }
+        requestAnimationFrame(fitSaleNoteToStage);
     }
 
     function saveSaleNoteEdit() {
@@ -1927,10 +1928,75 @@
         const email = (sale.client && sale.client.email) || (sale.note && sale.note.shareEmail) || '';
         if (phoneEl) phoneEl.value = phone;
         if (emailEl) emailEl.value = email;
+        renderSaleNoteSummary(sale);
         syncSaleNoteDeleteVisibility();
         if (!modal) return;
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
+        requestAnimationFrame(fitSaleNoteToStage);
+    }
+
+    var SALE_NOTE_W = 816;
+
+    function saleNoteSummaryRow(label, value, extra) {
+        return '<div class="row' + (extra ? ' ' + extra : '') + '"><dt>' + esc(label) + '</dt><dd>' + esc(value) + '</dd></div>';
+    }
+
+    function renderSaleNoteSummary(sale) {
+        const host = document.getElementById('saleNoteSummary');
+        if (!host || !sale) return;
+        let client = sale.client || null;
+        if (!client && sale.clientId) client = clientById(sale.clientId);
+        const rfc = client ? String(client.rfc || client.RFC || '').trim() : '';
+        const addr = clientAddress(client);
+        const clientRows = [];
+        if (rfc) clientRows.push(saleNoteSummaryRow('RFC', rfc));
+        if (addr) clientRows.push(saleNoteSummaryRow('Dirección', addr, 'stack'));
+        const pieces = (sale.items || []).reduce(function (n, it) {
+            return n + (Number(it.qty) || 0);
+        }, 0);
+        const pieceLabel = (Math.abs(pieces - Math.round(pieces)) < 1e-9)
+            ? Math.round(pieces).toLocaleString('es-MX')
+            : pieces.toLocaleString('es-MX', { maximumFractionDigits: 2 });
+        const generalRows = [
+            saleNoteSummaryRow('Pago', formatSalePayLabel(sale)),
+            saleNoteSummaryRow('Factura', billLabel(sale.billing, sale)),
+            saleNoteSummaryRow('Condición', isPendingCollection(sale) ? 'Crédito' : 'Contado'),
+            saleNoteSummaryRow('Sucursal', cityLabel(saleCity(sale)) || '—'),
+            saleNoteSummaryRow('Piezas', pieceLabel),
+            saleNoteSummaryRow('Total', money(sale.total), 'total')
+        ];
+        host.innerHTML = '' +
+            '<div class="block">' +
+            '<p class="k">Cliente</p>' +
+            '<p class="name">' + esc(saleClientLabel(sale)) + '</p>' +
+            (clientRows.length ? '<dl>' + clientRows.join('') + '</dl>' : '') +
+            '</div>' +
+            '<div class="block">' +
+            '<p class="k">Nota</p>' +
+            '<dl>' + generalRows.join('') + '</dl>' +
+            '</div>';
+    }
+
+    function fitSaleNoteToStage() {
+        var modal = document.getElementById('saleNoteModal');
+        var stage = modal && modal.querySelector('.sale-note-stage');
+        var doc = document.getElementById('saleNoteDoc');
+        if (!doc) return;
+        if (!modal || !stage || doc.hidden || modal.classList.contains('is-editing') || !modal.classList.contains('show')) {
+            doc.style.transform = '';
+            return;
+        }
+        var cs = getComputedStyle(stage);
+        var availW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        var availH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        if (!(availW > 40) || !(availH > 40)) return;
+        var naturalW = doc.offsetWidth || SALE_NOTE_W;
+        var naturalH = doc.offsetHeight;
+        if (!(naturalW > 0) || !(naturalH > 0)) return;
+        var scale = Math.min(availW / naturalW, availH / naturalH);
+        if (!isFinite(scale) || scale <= 0) return;
+        doc.style.transform = 'scale(' + scale + ')';
     }
 
     function closeSaleNoteModal() {
@@ -2013,18 +2079,21 @@
         const phoneEl = document.getElementById('saleNotePhone');
         const raw = phoneEl ? phoneEl.value : '';
         const digits = phoneDigits(raw);
-        if (raw.trim() && !digits) {
-            toast('Revisa el teléfono (10 dígitos o con lada)');
+        if (!digits) {
+            toast(raw.trim() ? 'Revisa el teléfono (10 dígitos o con lada)' : 'Falta el teléfono de WhatsApp');
             if (phoneEl) phoneEl.focus();
             return;
         }
         persistNoteShareContacts(sale);
         const text = encodeURIComponent(buildNotePlainText(sale));
-        const url = digits
-            ? ('https://wa.me/' + digits + '?text=' + text)
-            : ('https://wa.me/?text=' + text);
-        window.open(url, '_blank', 'noopener');
-        toast(digits ? 'Abriendo WhatsApp…' : 'WhatsApp sin número · elige el chat');
+        window.open('https://wa.me/' + digits + '?text=' + text, '_blank', 'noopener');
+        toast('WhatsApp listo · confirma el envío en el chat');
+    }
+
+    function openNoteMailto(to, subject, text) {
+        const href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
+        window.location.href = href;
+        toast('Abriendo el correo · confirma el envío');
     }
 
     function shareNoteEmail() {
@@ -2032,12 +2101,37 @@
         if (!sale) return;
         const emailEl = document.getElementById('saleNoteEmail');
         const to = emailEl ? (emailEl.value || '').trim() : '';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+/.test(to.split(/[,;]/)[0].trim())) {
+            toast('Falta un correo válido');
+            if (emailEl) emailEl.focus();
+            return;
+        }
         persistNoteShareContacts(sale);
-        const subject = encodeURIComponent('Nota de venta ' + (sale.folio || '') + ' · S-35');
-        const body = encodeURIComponent(buildNotePlainText(sale));
-        const href = 'mailto:' + (to || '') + '?subject=' + subject + '&body=' + body;
-        window.location.href = href;
-        toast(to ? 'Abriendo correo…' : 'Correo sin destinatario · completa el para');
+        const subject = 'Nota de venta ' + (saleReceiptLabel(sale) || sale.folio || '') + ' · S-35';
+        const text = buildNotePlainText(sale);
+        const token = localStorage.getItem('s35_admin_token') || '';
+        fetch('/api/sale-note', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({ to: to, subject: subject, text: text })
+        }).then(function (res) {
+            return res.json().then(function (data) {
+                return { ok: res.ok, data: data || {} };
+            }).catch(function () {
+                return { ok: false, data: { fallback: true } };
+            });
+        }).then(function (res) {
+            if (res.ok && res.data && res.data.sent) {
+                toast('Correo enviado a ' + to);
+                return;
+            }
+            openNoteMailto(to, subject, text);
+        }).catch(function () {
+            openNoteMailto(to, subject, text);
+        });
     }
 
     function copyNoteText() {
@@ -10064,6 +10158,16 @@
         const noteDelete = document.getElementById('saleNoteDelete');
         if (noteDelete) noteDelete.addEventListener('click', deleteActiveSaleNote);
         syncSaleNoteDeleteVisibility();
+        var saleNoteStage = saleNoteModal && saleNoteModal.querySelector('.sale-note-stage');
+        if (saleNoteStage && typeof ResizeObserver !== 'undefined') {
+            var saleNoteFitObserver = new ResizeObserver(function () { fitSaleNoteToStage(); });
+            saleNoteFitObserver.observe(saleNoteStage);
+        }
+        window.addEventListener('beforeprint', function () {
+            var doc = document.getElementById('saleNoteDoc');
+            if (doc) doc.style.transform = 'none';
+        });
+        window.addEventListener('afterprint', fitSaleNoteToStage);
 
         const noteEditBtn = document.getElementById('saleNoteEditBtn');
         if (noteEditBtn) {
