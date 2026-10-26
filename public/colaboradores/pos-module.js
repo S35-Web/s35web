@@ -1897,13 +1897,11 @@
         const btn = document.getElementById('saleNoteSave');
         if (btn) btn.disabled = true;
         persistNoteShareContacts(sale);
-        const done = function () {
-            if (btn) btn.disabled = false;
-        };
         const pending = confirmSaleEditInCloud(sale);
+        closeSaleNoteModal();
+        if (btn) btn.disabled = false;
         if (!pending || typeof pending.then !== 'function') {
             toast('Nota guardada en este equipo');
-            done();
             return;
         }
         pending.then(function (res) {
@@ -1915,7 +1913,7 @@
             else if (!res.ok) toast('Nota guardada aquí · no se pudo subir');
         }).catch(function () {
             toast('Nota guardada aquí · no se pudo subir');
-        }).then(done, done);
+        });
     }
 
     function syncSaleNoteDeleteVisibility() {
