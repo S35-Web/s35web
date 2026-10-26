@@ -4445,8 +4445,7 @@
             align-items: stretch;
             grid-template-columns: 1fr;
         }
-        #saleNoteModal .sale-note-actions .btn.danger {
-            grid-column: auto;
+        #saleNoteModal .sale-note-actions #saleNoteSave {
             margin-top: auto;
         }
         .sale-note-share-fields label {
@@ -4525,7 +4524,7 @@
             gap: 8px;
         }
         #saleNoteModal .sale-note-actions { gap: 6px; }
-        #saleNoteModal .sale-note-actions .btn.danger { margin-top: auto; }
+        #saleNoteModal .sale-note-actions #saleNoteSave { margin-top: auto; }
         .sale-note-actions .btn.wa,
         .btn.wa { background: #128c7e; border-color: #128c7e; color: #fff; }
         .sale-note-actions .btn.wa:hover,
@@ -4536,6 +4535,10 @@
         }
         @media (max-width: 420px) {
             .sale-note-actions { grid-template-columns: 1fr; }
+        }
+        @page sale-note-sheet {
+            size: letter;
+            margin: 12mm;
         }
         @media print {
             @page {
@@ -4587,7 +4590,8 @@
             #purchaseTicketModal.show .modal-card {
                 max-width: none !important;
                 max-height: none !important;
-                width: 100% !important;
+                width: auto !important;
+                height: auto !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 border: none !important;
@@ -4595,6 +4599,7 @@
                 border-radius: 0 !important;
                 background: #fff !important;
                 color: #0a0a0a !important;
+                overflow: visible !important;
             }
             #saleNoteModal.show .modal-head,
             #saleNoteModal.show .sale-note-hint,
@@ -4747,20 +4752,51 @@
             }
             #lotTicketDoc .lot-ticket-screen-only { display: none !important; }
 
-            /* Nota de venta: hoja carta */
-            #saleNoteDoc.sale-note-doc {
-                max-width: none;
-                width: 100%;
-                height: auto !important;
-                min-height: 250mm;
-                margin: 0;
+            /* Nota de venta: una carta, dentro del margen de 12mm (191.9 × 255.4 mm). */
+            #saleNoteModal.show #saleNoteDoc.sale-note-doc {
+                page: sale-note-sheet;
+                box-sizing: border-box !important;
+                width: 191.9mm !important;
+                max-width: 191.9mm !important;
+                height: 255.4mm !important;
+                min-height: 0 !important;
+                max-height: 255.4mm !important;
+                margin: 0 !important;
                 padding: 0 !important;
+                column-gap: 8mm !important;
+                grid-template-columns: 34mm minmax(0, 1fr) !important;
+                grid-template-rows: minmax(0, 1fr) auto !important;
                 background: #fff !important;
                 color: #141414 !important;
                 border-radius: 0 !important;
                 box-shadow: none !important;
                 transform: none !important;
                 zoom: 1 !important;
+                overflow: hidden !important;
+                break-after: avoid;
+                page-break-after: avoid;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            #saleNoteModal.show #saleNoteDoc .snd-main {
+                height: 100% !important;
+                min-height: 0 !important;
+            }
+            #saleNoteModal.show #saleNoteDoc .snd-branch {
+                margin-top: 14mm !important;
+            }
+            #saleNoteModal.show #saleNoteDoc .sale-note-lines {
+                flex: 1 1 auto !important;
+                height: auto !important;
+                min-height: 0 !important;
+                margin-top: 6mm !important;
+            }
+            #saleNoteModal.show #saleNoteDoc .snd-who {
+                grid-template-columns: minmax(0, 1fr) 42mm !important;
+            }
+            #saleNoteModal.show #saleNoteDoc .snd-foot-grid {
+                grid-template-columns: minmax(0, 1fr) 52mm !important;
+                column-gap: 8mm !important;
             }
             #purchaseTicketDoc.lot-ticket-doc {
                 max-width: 186mm;
@@ -9377,7 +9413,7 @@
                 <strong id="saleNoteModalTitle">Nota de venta</strong>
                 <div class="modal-head-actions">
                     <button type="button" class="btn" id="saleNoteEditBtn"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
-                    <button id="saleNoteModalClose" class="btn" type="button">Cerrar</button>
+                    <button type="button" class="btn danger" id="saleNoteDelete" hidden><i class="fa-solid fa-trash-can"></i> Eliminar</button>
                 </div>
             </div>
             <div class="modal-body">
@@ -9400,7 +9436,7 @@
                         <button type="button" class="btn" id="saleNoteEmailBtn"><i class="fa-solid fa-envelope"></i> Correo</button>
                         <button type="button" class="btn" id="saleNoteCopy"><i class="fa-solid fa-copy"></i> Copiar</button>
                         <button type="button" class="btn primary" id="saleNotePrint"><i class="fa-solid fa-print"></i> Imprimir</button>
-                        <button type="button" class="btn danger" id="saleNoteDelete" hidden><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+                        <button type="button" class="btn primary" id="saleNoteSave"><i class="fa-solid fa-cloud-arrow-up"></i> Guardar</button>
                     </div>
                 </div>
             </div>
@@ -18007,7 +18043,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20261023-note-send"></script>
+    <script src="/colaboradores/pos-module.js?v=20261026-note-save"></script>
     <script src="/colaboradores/command-palette.js?v=20260926-dinero"></script>
     <script src="/colaboradores/mail-copilot.js?v=20260925-mail-float"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>

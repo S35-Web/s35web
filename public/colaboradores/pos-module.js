@@ -1878,14 +1878,44 @@
                 return res;
             });
         }
-        once().then(function (res) {
-            if (!res || !res.ok || res.empty) return;
+        return once().then(function (res) {
+            if (!res || !res.ok || res.empty) return res || { ok: false };
             if (cloudStoresHaveSaleEdit(res.stores, sale)) {
-                toast('Ticket en la nube · ' + saleReceiptLabel(sale));
+                toast('Nota en la nube · ' + saleReceiptLabel(sale));
+                return res;
+            }
+            toast('Nota guardada aquí · la nube no confirmó el cambio');
+            return res;
+        }).catch(function () {
+            return { ok: false };
+        });
+    }
+
+    function saveActiveSaleNote() {
+        const sale = saleById(activeNoteSaleId);
+        if (!sale) return;
+        const btn = document.getElementById('saleNoteSave');
+        if (btn) btn.disabled = true;
+        persistNoteShareContacts(sale);
+        const done = function () {
+            if (btn) btn.disabled = false;
+        };
+        const pending = confirmSaleEditInCloud(sale);
+        if (!pending || typeof pending.then !== 'function') {
+            toast('Nota guardada en este equipo');
+            done();
+            return;
+        }
+        pending.then(function (res) {
+            if (!res || res.reason === 'no-token' || res.reason === 'no-sync') {
+                toast('Nota guardada en este equipo');
                 return;
             }
-            toast('Ticket guardado aquí · la nube no confirmó el cambio');
-        }).catch(function () {});
+            if (res.empty) toast('Nota guardada · la nube ya la tenía');
+            else if (!res.ok) toast('Nota guardada aquí · no se pudo subir');
+        }).catch(function () {
+            toast('Nota guardada aquí · no se pudo subir');
+        }).then(done, done);
     }
 
     function syncSaleNoteDeleteVisibility() {
@@ -10125,6 +10155,11 @@
         });
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
+            const noteModal = document.getElementById('saleNoteModal');
+            if (noteModal && noteModal.classList.contains('show') && !saleNoteEditing) {
+                closeSaleNoteModal();
+                return;
+            }
             if (genClientPickerOpen &&
                 !(genTicketClientSearch && document.activeElement === genTicketClientSearch)) {
                 closeGenTicketClientPicker();
@@ -10139,8 +10174,6 @@
         const genGastoForm = document.getElementById('genGastoForm');
         if (genGastoForm) genGastoForm.addEventListener('submit', submitGenerateGasto);
 
-        const noteClose = document.getElementById('saleNoteModalClose');
-        if (noteClose) noteClose.addEventListener('click', closeSaleNoteModal);
         const saleNoteModal = document.getElementById('saleNoteModal');
         if (saleNoteModal) {
             saleNoteModal.addEventListener('click', function (e) {
@@ -10157,6 +10190,8 @@
         if (notePrint) notePrint.addEventListener('click', printSaleNote);
         const noteDelete = document.getElementById('saleNoteDelete');
         if (noteDelete) noteDelete.addEventListener('click', deleteActiveSaleNote);
+        const noteSave = document.getElementById('saleNoteSave');
+        if (noteSave) noteSave.addEventListener('click', saveActiveSaleNote);
         syncSaleNoteDeleteVisibility();
         var saleNoteStage = saleNoteModal && saleNoteModal.querySelector('.sale-note-stage');
         if (saleNoteStage && typeof ResizeObserver !== 'undefined') {
