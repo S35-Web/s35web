@@ -235,6 +235,24 @@
         }
     }
 
+    function isPhoneViewport() {
+        try {
+            return window.matchMedia('(max-width: 760px)').matches;
+        } catch (_) {
+            return window.innerWidth <= 760;
+        }
+    }
+
+    function clearInlineGeom(pane) {
+        if (!pane) return;
+        pane.style.left = '';
+        pane.style.top = '';
+        pane.style.right = '';
+        pane.style.bottom = '';
+        pane.style.width = '';
+        pane.style.height = '';
+    }
+
     function loadGeom() {
         try {
             const raw = localStorage.getItem(GEOM_KEY);
@@ -248,7 +266,7 @@
     }
 
     function saveGeom(pane) {
-        if (!pane) return;
+        if (!pane || isPhoneViewport()) return;
         const rect = pane.getBoundingClientRect();
         try {
             localStorage.setItem(GEOM_KEY, JSON.stringify({
@@ -298,15 +316,19 @@
         const pane = el('mailCopilotPane');
         if (!pane) return;
         if (!openState) {
-            const saved = loadGeom();
-            if (saved) applyGeom(pane, saved);
-            else {
-                applyGeom(pane, {
-                    width: Math.min(420, window.innerWidth - 32),
-                    height: Math.min(640, window.innerHeight - 96),
-                    left: window.innerWidth - Math.min(420, window.innerWidth - 32) - 20,
-                    top: window.innerHeight - Math.min(640, window.innerHeight - 96) - 20
-                });
+            if (isPhoneViewport()) {
+                clearInlineGeom(pane);
+            } else {
+                const saved = loadGeom();
+                if (saved) applyGeom(pane, saved);
+                else {
+                    applyGeom(pane, {
+                        width: Math.min(420, window.innerWidth - 32),
+                        height: Math.min(640, window.innerHeight - 96),
+                        left: window.innerWidth - Math.min(420, window.innerWidth - 32) - 20,
+                        top: window.innerHeight - Math.min(640, window.innerHeight - 96) - 20
+                    });
+                }
             }
         }
         pane.hidden = false;
@@ -314,6 +336,9 @@
         pane.classList.add('is-open');
         openState = true;
         syncLaunchUi(true);
+        if (isPhoneViewport()) {
+            try { document.body.classList.add('mail-copilot-sheet-open'); } catch (_) {}
+        }
         const input = el('mailCopilotInput');
         if (input) {
             try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); }
@@ -327,9 +352,11 @@
             pane.classList.remove('is-open');
             pane.hidden = true;
             pane.setAttribute('aria-hidden', 'true');
+            if (isPhoneViewport()) clearInlineGeom(pane);
         }
         openState = false;
         syncLaunchUi(false);
+        try { document.body.classList.remove('mail-copilot-sheet-open'); } catch (_) {}
     }
 
     function toggleFloat() {
@@ -368,6 +395,7 @@
             let origTop = 0;
 
             drag.addEventListener('pointerdown', function (e) {
+                if (isPhoneViewport()) return;
                 if (e.button != null && e.button !== 0) return;
                 if (e.target && e.target.closest && e.target.closest('#mailCopilotClose')) return;
                 dragging = true;
@@ -413,6 +441,7 @@
             let origTop = 0;
 
             resize.addEventListener('pointerdown', function (e) {
+                if (isPhoneViewport()) return;
                 if (e.button != null && e.button !== 0) return;
                 resizing = true;
                 const rect = pane.getBoundingClientRect();
@@ -449,6 +478,10 @@
             window.__s35MailCopilotResizeBound = true;
             window.addEventListener('resize', function () {
                 if (!openState || !pane) return;
+                if (isPhoneViewport()) {
+                    clearInlineGeom(pane);
+                    return;
+                }
                 const rect = pane.getBoundingClientRect();
                 applyGeom(pane, {
                     left: rect.left,
