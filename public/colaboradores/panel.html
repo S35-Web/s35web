@@ -3940,6 +3940,7 @@
         .pos-client-trigger-badge.is-dist {
             background: var(--info-bg); color: var(--info); border-color: transparent;
         }
+        .pos-client-trigger > .fa-user,
         .pos-client-trigger > .fa-magnifying-glass {
             flex-shrink: 0; font-size: 12px; color: var(--muted);
         }
@@ -7555,12 +7556,16 @@
             font-size: 13px;
         }
         #posModeVenta .pos-search .search:focus { border-color: var(--text); }
-        #posModeVenta .pos-pad-tools .chips { max-height: none; }
+        #posModeVenta .pos-pad-tools .chips { max-height: none; gap: 8px; }
         #posModeVenta .pos-pad-tools .chip {
-            height: 26px;
-            padding: 0 10px;
-            font-size: 11px;
+            height: 36px;
+            padding: 0 14px;
+            font-size: 13px;
             background: var(--panel);
+        }
+        #posModeVenta .pos-pad-tools .chip .dot {
+            width: 9px;
+            height: 9px;
         }
         #posModeVenta .pos-pad-tools .chip.active {
             background: var(--text);
@@ -8851,6 +8856,7 @@
                                         <input type="hidden" id="posClientSelect" value="" autocomplete="off">
                                         <button type="button" class="pos-client-trigger is-placeholder" id="posClientTrigger"
                                             aria-labelledby="posClientFieldLabel" aria-haspopup="listbox" aria-expanded="false" aria-controls="posClientPickerList">
+                                            <i class="fa-solid fa-user" aria-hidden="true"></i>
                                             <span class="pos-client-trigger-text">
                                                 <span class="pos-client-trigger-label" id="posClientTriggerLabel">Seleccionar cliente…</span>
                                                 <span class="pos-client-trigger-badge" id="posClientTriggerBadge" hidden></span>
@@ -8892,11 +8898,11 @@
                         <div class="pos-station-main">
                             <div class="pos-pad">
                                 <div class="pos-pad-tools">
+                                    <div class="chips" id="posFamilyChips"></div>
                                     <div class="toolbar pos-search">
                                         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                                         <input id="posProductSearch" class="search" type="search" placeholder="Buscar producto, código o familia…">
                                     </div>
-                                    <div class="chips" id="posFamilyChips"></div>
                                 </div>
                                 <div class="product-grid" id="posProductGrid"></div>
                             </div>
