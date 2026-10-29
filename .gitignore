@@ -27,8 +27,9 @@ s35web-zoom-update.zip
 # Old pages
 oldpage/
 
-# Local live data (dev server)
+# Local live data (dev server) y llave del copiloto (modo agent)
 .data/
+.data/s35-agent-key
 
 # Fotos de productos subidas en local (no versionar)
 public/Assets/productos_thumbs/panel/

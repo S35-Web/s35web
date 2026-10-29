@@ -123,7 +123,9 @@ function productDescription(p) {
   return cut + '…';
 }
 
-const products = catalog.published().map(function (p) {
+// Panel interno: activos (verificados + borradores). El catálogo web público
+// filtra con catalog.published() (solo verified).
+const products = (typeof catalog.active === 'function' ? catalog.active() : catalog.published()).map(function (p) {
   return {
     slug: p.slug,
     name: productDisplayName(p),

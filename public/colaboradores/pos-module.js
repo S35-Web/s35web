@@ -25,13 +25,13 @@
     };
     const TESORERIA_BANK_SEED_URL = '/colaboradores/data/banorte-2026-06-09.json';
     const TESORERIA_BANK_META = {
-        name: 'Banorte',
+        name: 'Banregio',
         account: '112017860014',
         clabe: '058730000001816719',
         holder: 'PRODUCTOS S35 S.A. DE C.V.',
         city: 'culiacan',
         opening: 1838.47,
-        closing: 281934.94
+        closing: 233042.01
     };
     const SALE_EDITS_KEY = 's35_sale_edits_v1';
     const CLIENTS_KEY = 's35_pos_clients';
@@ -564,6 +564,28 @@
     function roundMoney(n) {
         return Math.round((Number(n) || 0) * 100) / 100;
     }
+    /**
+     * Clip (tarjeta sin factura): comisión 3.60% del cobro + IVA 16% sobre esa comisión.
+     * Ej. $1,300 → comisión $46.80 + IVA $7.49 = neto $1,245.71
+     */
+    const CLIP_TARJETA_SF_FEE_RATE = 0.036;
+    const CLIP_TARJETA_SF_FEE_IVA = 0.16;
+    function clipTarjetaSfBreakdown(gross) {
+        const g = roundMoney(gross);
+        const commission = roundMoney(g * CLIP_TARJETA_SF_FEE_RATE);
+        const iva = roundMoney(commission * CLIP_TARJETA_SF_FEE_IVA);
+        const fee = roundMoney(commission + iva);
+        return {
+            gross: g,
+            commission: commission,
+            iva: iva,
+            fee: fee,
+            net: roundMoney(g - fee)
+        };
+    }
+    function clipTarjetaSfNet(gross) {
+        return clipTarjetaSfBreakdown(gross).net;
+    }
     /** Líneas de pago de una venta (compat: 1 método = total completo). */
     function salePaymentLines(sale) {
         const total = roundMoney(sale && sale.total);
@@ -829,6 +851,7 @@
             city: sale.city || resolveSaleCity(sale),
             items: sale.items,
             total: sale.total,
+            observations: sale.observations || '',
             note: sale.note || null,
             meta: sale.meta || null,
             editedAt: sale.editedAt,
@@ -928,14 +951,26 @@
         return sale.note;
     }
 
+    function saleObservations(sale) {
+        if (!sale) return '';
+        const direct = String(sale.observations || '').trim();
+        if (direct) return direct;
+        if (sale.meta && sale.meta.observations) {
+            return String(sale.meta.observations).trim();
+        }
+        return '';
+    }
+
     function buildNotePlainText(sale) {
         const lines = (sale.items || []).map(function (it) {
             return '• ' + it.name + ' × ' + it.qty + ' @ ' + money(it.price) + ' = ' + money(it.lineTotal != null ? it.lineTotal : it.qty * it.price);
         });
-        return [
+        const obs = saleObservations(sale);
+        const parts = [
             'S-35 · Nota de venta',
             'Folio: ' + (sale.folio || ''),
             'Fecha: ' + formatSaleDateTime(sale.createdAt),
+            'Sucursal: ' + cityLabel(saleCity(sale)),
             'Cliente: ' + saleClientLabel(sale),
             '',
             'Detalle:',
@@ -943,10 +978,13 @@
             '',
             'Pago: ' + formatSalePayLabel(sale),
             'Facturación: ' + billLabel(sale.billing, sale),
-            'Total: ' + money(sale.total),
-            '',
-            'Gracias por su compra.'
-        ].join('\n');
+            'Total: ' + money(sale.total)
+        ];
+        if (obs) {
+            parts.push('', 'Observaciones: ' + obs);
+        }
+        parts.push('', 'Gracias por su preferencia.');
+        return parts.join('\n');
     }
 
     function saleReceiptId(sale) {
@@ -1014,99 +1052,196 @@
             (sale.folio ? '<span class="sub">Folio POS</span>' : '') + '</span>';
     }
 
+    function noteDateDots(iso) {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return '—';
+        const pad = function (n) { return String(n).padStart(2, '0'); };
+        return pad(d.getDate()) + ' · ' + pad(d.getMonth() + 1) + ' · ' + d.getFullYear();
+    }
+
+    function noteFolioLabel(sale) {
+        const rid = saleReceiptId(sale);
+        if (rid && /^\d+$/.test(String(rid))) return 'Nº ' + String(rid).padStart(6, '0');
+        const folio = String((sale && sale.folio) || '').trim();
+        const digits = folio.replace(/\D/g, '');
+        if (digits && digits.length >= 3 && digits.length <= 8) return 'Nº ' + digits.padStart(6, '0');
+        return folio || '—';
+    }
+
+    /** Pesos con centavos: el total impreso es el cobrado, sin sumar IVA encima. */
+    function montoEnLetra(amount) {
+        const centsTotal = Math.round((Number(amount) || 0) * 100);
+        const sign = centsTotal < 0 ? 'menos ' : '';
+        const abs = Math.abs(centsTotal);
+        const pesos = Math.floor(abs / 100);
+        const cents = String(abs % 100).padStart(2, '0');
+        const unidades = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve',
+            'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte'];
+        const decenas = ['', '', 'veinti', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+        const centenas = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
+        function below100(n) {
+            if (n <= 20) return unidades[n];
+            if (n < 30) {
+                const u = n - 20;
+                if (u === 0) return 'veinte';
+                if (u === 1) return 'veintiún';
+                if (u === 2) return 'veintidós';
+                if (u === 3) return 'veintitrés';
+                if (u === 6) return 'veintiséis';
+                return 'veinti' + unidades[u];
+            }
+            const d = Math.floor(n / 10);
+            const u = n % 10;
+            if (!u) return decenas[d];
+            const uno = u === 1 ? 'un' : unidades[u];
+            return decenas[d] + ' y ' + uno;
+        }
+        function below1000(n) {
+            if (n === 0) return '';
+            if (n === 100) return 'cien';
+            const c = Math.floor(n / 100);
+            const r = n % 100;
+            return (c ? centenas[c] : '') + (c && r ? ' ' : '') + (r ? below100(r) : '');
+        }
+        function entero(n) {
+            if (n === 0) return 'cero';
+            const millones = Math.floor(n / 1000000);
+            const miles = Math.floor((n % 1000000) / 1000);
+            const resto = n % 1000;
+            const parts = [];
+            if (millones) parts.push(millones === 1 ? 'un millón' : below1000(millones) + ' millones');
+            if (miles) parts.push(miles === 1 ? 'mil' : below1000(miles) + ' mil');
+            if (resto) parts.push(below1000(resto));
+            return parts.join(' ');
+        }
+        const cuerpo = pesos === 1 ? 'un peso' : entero(pesos) + ' pesos';
+        const frase = sign + cuerpo + ' ' + cents + '/100 M.N.';
+        return frase.charAt(0).toUpperCase() + frase.slice(1);
+    }
+
     function buildNoteHtml(sale) {
         const items = sale.items || [];
-        const rows = items.map(function (it, idx) {
+        const rows = items.map(function (it) {
             const line = it.lineTotal != null ? it.lineTotal : it.qty * it.price;
+            const qtyLabel = (Math.abs((Number(it.qty) || 0) - Math.round(Number(it.qty) || 0)) < 1e-9)
+                ? Math.round(Number(it.qty) || 0).toLocaleString('es-MX')
+                : (Number(it.qty) || 0).toLocaleString('es-MX', { maximumFractionDigits: 3 });
+            const rawUnit = String(it.unit || '').trim();
+            const unitMatch = rawUnit.match(/^(.*?)\s+(\d+(?:[.,]\d+)?\s*kg)$/i);
+            const unidad = (unitMatch && unitMatch[1] ? unitMatch[1] : rawUnit) || 'Pza';
+            const detail = unitMatch && unitMatch[1] ? unitMatch[2] : '';
             return '<tr>' +
-                '<td class="num snd-idx">' + (idx + 1) + '</td>' +
+                '<td class="snd-qty">' + esc(qtyLabel) + '</td>' +
+                '<td>' + esc(unidad) + '</td>' +
                 '<td><span class="line-name">' + esc(it.name) + '</span>' +
-                (it.unit ? '<span class="line-unit">' + esc(it.unit) + '</span>' : '') + '</td>' +
-                '<td class="num">' + esc(String(it.qty)) + '</td>' +
+                (detail ? '<span class="line-unit">' + esc(detail) + '</span>' : '') +
+                '</td>' +
                 '<td class="num">' + money(it.price) + '</td>' +
-                '<td class="num">' + money(line) + '</td>' +
+                '<td class="num line-amt">' + money(line) + '</td>' +
                 '</tr>';
         }).join('');
-        const receiptLabel = saleReceiptLabel(sale);
-        const store = saleStoreName(sale);
         const city = cityLabel(saleCity(sale));
-        const seller = saleUserLabel(sale);
+        const store = saleStoreName(sale);
+        const seller = saleUserLabel(sale) || '—';
+        const obs = saleObservations(sale);
         let client = sale.client || null;
         if (!client && sale.clientId) client = clientById(sale.clientId);
         const addr = clientAddress(client);
-        const refLine = saleReceiptId(sale)
-            ? 'HIST-R' + saleReceiptId(sale)
-            : (sale.meta && sale.meta.kind === 'invoice' && sale.meta.invoiceFolio != null
-                ? 'CFDI-' + sale.meta.invoiceFolio
-                : (sale.folio || ''));
-        const originName = store || city || 'POS';
-        const originSub = [
-            city && store ? city : '',
-            seller ? ('Vendedor: ' + seller) : ''
+        const rfc = client ? String(client.rfc || client.RFC || '').trim() : '';
+        const phone = client ? String(client.phone || '').trim() : '';
+        const branch = store && city && store !== city
+            ? (store + ' · ' + city)
+            : ('Planta S-35 - ' + (city || store || 'Culiacán'));
+        const deliver = addr || branch;
+        const clientBits = [
+            rfc ? ('RFC ' + rfc) : '',
+            phone ? ('Tel. ' + phone) : ''
         ].filter(Boolean).join(' · ');
+        const docTitle = isPrecompraSale(sale) ? 'Precompra' : 'Nota de venta';
+        const total = Number(sale.total) || 0;
+        const condicion = isPendingCollection(sale) ? 'Crédito' : 'Contado';
         return '' +
-            '<div class="snd-top">' +
-            '<div class="snd-brand">' +
-            '<div class="snd-logo">' +
-            '<img src="/Assets/s35-logo-compuesto-negro.png" alt="S-35 Construction Tech" width="160" height="18" decoding="async">' +
+            '<aside class="snd-rail">' +
+            '<img class="snd-logo" src="/Assets/s35-logo-block.png" alt="S-35" width="72" height="24" decoding="async">' +
+            '<div class="snd-contact">' +
+            '<div>s-35.com.mx</div>' +
+            '<div>contacto@s35.com.mx</div>' +
+            '<div>+52 667 168 1538</div>' +
+            '<div>WhatsApp 667 168 1538</div>' +
             '</div>' +
-            (city || store
-                ? '<div class="snd-company-sub">' + esc([city, store].filter(Boolean).join(' · ')) + '</div>'
-                : '') +
+            '<div class="snd-from">' +
+            '<div class="snd-from-k">De:</div>' +
+            '<div>Productos S-35</div>' +
+            '<div>Blvd. Emiliano Zapata 2650</div>' +
+            '<div>Ind. Palmito C.P. 80160</div>' +
+            '<div>Culiacán, Sinaloa</div>' +
+            '<div>RFC PSX180111698</div>' +
             '</div>' +
-            '<div class="snd-doctype">' + (isPrecompraSale(sale) ? 'PRECOMPRA' : 'NOTA DE VENTA') + '</div>' +
+            '<div class="snd-vert-wrap"><div class="snd-vert">' + esc(docTitle) + '</div></div>' +
+            '</aside>' +
+            '<div class="snd-main">' +
+            '<div class="snd-id">' +
+            '<div class="snd-id-date">' +
+            '<div class="k">Fecha</div>' +
+            '<div class="mono">' + esc(noteDateDots(sale.createdAt)) + '</div>' +
             '</div>' +
-            '<div class="snd-summary">' +
-            '<div class="snd-sum-cell">' +
-            '<span class="lbl">Total</span>' +
-            '<span class="val">' + money(sale.total) + '</span>' +
-            '</div>' +
-            '<div class="snd-sum-cell">' +
-            '<span class="lbl">Fecha</span>' +
-            '<span class="val">' + esc(formatSaleDateTime(sale.createdAt)) + '</span>' +
-            '</div>' +
-            '<div class="snd-sum-cell">' +
-            '<span class="lbl">Folio</span>' +
-            '<span class="val">' + esc(receiptLabel) + '</span>' +
-            '</div>' +
-            '<div class="snd-sum-cell">' +
-            '<span class="lbl">Facturación</span>' +
-            '<span class="val">' + esc(billLabel(sale.billing, sale)) + '</span>' +
+            '<div class="snd-id-folio">' +
+            '<div class="k">Folio</div>' +
+            '<div class="snd-folio">' + esc(noteFolioLabel(sale)) + '</div>' +
             '</div>' +
             '</div>' +
-            '<div class="snd-parties">' +
-            '<div class="snd-party">' +
-            '<div class="lbl">Cliente</div>' +
-            '<div class="name">' + esc(saleClientLabel(sale)) + '</div>' +
-            (addr ? '<div class="sub">' + esc(addr) + '</div>' : '') +
-            (refLine ? '<div class="sub">Ref. ' + esc(refLine) + '</div>' : '') +
+            '<div class="snd-branch"><span>Sucursal:</span> ' + esc(branch) + '</div>' +
+            '<div class="snd-who">' +
+            '<div class="snd-who-client">' +
+            '<div class="snd-client">Cliente: ' + esc(saleClientLabel(sale)) + '</div>' +
+            '<div class="snd-deliver">Entregar en: ' + esc(deliver) +
+            (clientBits ? '<br>' + esc(clientBits) : '') + '</div>' +
+            (obs ? '<div class="snd-deliver">Notas: ' + esc(obs) + '</div>' : '') +
             '</div>' +
-            '<div class="snd-party">' +
-            '<div class="lbl">Origen</div>' +
-            '<div class="name">' + esc(originName) + '</div>' +
-            (originSub ? '<div class="sub">' + esc(originSub) + '</div>' : '') +
+            '<div class="snd-meta">' +
+            '<div><span>Condición</span><span>' + esc(condicion) + '</span></div>' +
+            '<div><span>Forma de pago</span><span>' + esc(formatSalePayLabel(sale)) + '</span></div>' +
+            '<div><span>Vendedor</span><span>' + esc(seller) + '</span></div>' +
+            '<div><span>Entrega</span><span>' + esc(noteDateDots(sale.createdAt)) + '</span></div>' +
             '</div>' +
             '</div>' +
             '<table class="sale-note-lines">' +
             '<thead><tr>' +
-            '<th class="num snd-idx">#</th>' +
+            '<th>Cant.</th>' +
+            '<th>Unidad</th>' +
             '<th>Descripción</th>' +
-            '<th class="num">Cant.</th>' +
-            '<th class="num">Precio</th>' +
+            '<th class="num">P. unitario</th>' +
             '<th class="num">Importe</th>' +
             '</tr></thead>' +
-            '<tbody>' + (rows || '<tr><td colspan="5" class="muted">Sin líneas</td></tr>') + '</tbody>' +
-            '</table>' +
-            '<div class="snd-bottom">' +
-            '<div class="snd-pay">' +
-            '<div class="lbl">Método de pago</div>' +
-            '<div class="val">' + esc(formatSalePayLabel(sale)) + '</div>' +
+            '<tbody>' +
+            (rows || '<tr><td colspan="5" class="muted">Sin líneas</td></tr>') +
+            '<tr class="snd-fill"><td></td><td></td><td></td><td></td><td></td></tr>' +
+            '</tbody></table>' +
+            '</div>' +
+            '<footer class="snd-sheet-foot">' +
+            '<div class="snd-foot-grid">' +
+            '<div class="snd-foot-left">' +
+            '<div class="snd-letter"><span>Importe con letra:</span> ' + esc(montoEnLetra(total)) + '</div>' +
+            '<div class="snd-signs">' +
+            '<div><div class="line"></div><div>Recibí de conformidad</div><div class="hint">Nombre y firma del cliente</div></div>' +
+            '<div><div class="line"></div><div>Entregó</div><div class="hint">Nombre y firma</div></div>' +
+            '</div>' +
             '</div>' +
             '<div class="snd-totals">' +
-            '<div class="row"><span>Subtotal</span><span>' + money(sale.total) + '</span></div>' +
-            '<div class="row total"><span>Total</span><span>' + money(sale.total) + '</span></div>' +
+            '<div class="row"><span>Subtotal</span><span class="mono">' + money(total) + '</span></div>' +
+            '<div class="row"><span>IVA 16%</span><span class="mono">' + money(0) + '</span></div>' +
+            '<div class="row total"><span>Total</span><span class="mono">' + money(total) + '</span></div>' +
+            '<div class="snd-currency">Pesos mexicanos (MXN)</div>' +
             '</div>' +
-            '</div>';
+            '</div>' +
+            '<div class="snd-legal-row">' +
+            '<div>Este documento no es un comprobante fiscal. Si requiere factura (CFDI), solicítela dentro del mes de su compra a contacto@s35.com.mx.</div>' +
+            '<div class="snd-brand-qr">' +
+            '<div><strong>S-35® Technology</strong><span>s35.com.mx</span></div>' +
+            '<img src="/Assets/nota-qr-s35.svg" alt="Código QR a s35.com.mx" width="66" height="66">' +
+            '</div>' +
+            '</div>' +
+            '</footer>';
     }
 
     function isAdminRole() {
@@ -1403,6 +1538,7 @@
                 return '<option value="' + esc(c.id) + '"' + (saleCity(sale) === c.id ? ' selected' : '') + '>' + esc(c.label) + '</option>';
             }).join('') +
             '</select></label>' +
+            '<label class="span-2">Observaciones<textarea id="sneObs" rows="2" placeholder="Entrega, obra, referencia…">' + esc(saleObservations(sale)) + '</textarea></label>' +
             '<div class="span-2 sne-pay-split-block">' +
             '<label class="sne-pay-split-check"><input type="checkbox" id="snePaySplit"' + (isSplit ? ' checked' : '') + '> Dividir pago (varios métodos)</label>' +
             '<div class="pay-split-panel" id="snePaySplitPanel"' + (isSplit ? '' : ' hidden') + '>' +
@@ -1582,6 +1718,7 @@
             rfc: client.rfc || '',
             type: normalizeClientType(client.type || client.kind)
         } : null;
+        const observations = ((document.getElementById('sneObs') || {}).value || '').trim();
         return {
             createdAt: createdAt,
             clientId: client ? client.id : null,
@@ -1592,7 +1729,8 @@
             billing: bill,
             city: city,
             items: items,
-            total: Math.round(total * 100) / 100
+            total: Math.round(total * 100) / 100,
+            observations: observations
         };
     }
 
@@ -1636,6 +1774,7 @@
             const sale = saleById(activeNoteSaleId);
             if (sale) renderSaleNoteEditForm(sale);
         }
+        requestAnimationFrame(fitSaleNoteToStage);
     }
 
     function saveSaleNoteEdit() {
@@ -1739,14 +1878,42 @@
                 return res;
             });
         }
-        once().then(function (res) {
-            if (!res || !res.ok || res.empty) return;
+        return once().then(function (res) {
+            if (!res || !res.ok || res.empty) return res || { ok: false };
             if (cloudStoresHaveSaleEdit(res.stores, sale)) {
-                toast('Ticket en la nube · ' + saleReceiptLabel(sale));
+                toast('Nota en la nube · ' + saleReceiptLabel(sale));
+                return res;
+            }
+            toast('Nota guardada aquí · la nube no confirmó el cambio');
+            return res;
+        }).catch(function () {
+            return { ok: false };
+        });
+    }
+
+    function saveActiveSaleNote() {
+        const sale = saleById(activeNoteSaleId);
+        if (!sale) return;
+        const btn = document.getElementById('saleNoteSave');
+        if (btn) btn.disabled = true;
+        persistNoteShareContacts(sale);
+        const pending = confirmSaleEditInCloud(sale);
+        closeSaleNoteModal();
+        if (btn) btn.disabled = false;
+        if (!pending || typeof pending.then !== 'function') {
+            toast('Nota guardada en este equipo');
+            return;
+        }
+        pending.then(function (res) {
+            if (!res || res.reason === 'no-token' || res.reason === 'no-sync') {
+                toast('Nota guardada en este equipo');
                 return;
             }
-            toast('Ticket guardado aquí · la nube no confirmó el cambio');
-        }).catch(function () {});
+            if (res.empty) toast('Nota guardada · la nube ya la tenía');
+            else if (!res.ok) toast('Nota guardada aquí · no se pudo subir');
+        }).catch(function () {
+            toast('Nota guardada aquí · no se pudo subir');
+        });
     }
 
     function syncSaleNoteDeleteVisibility() {
@@ -1789,10 +1956,75 @@
         const email = (sale.client && sale.client.email) || (sale.note && sale.note.shareEmail) || '';
         if (phoneEl) phoneEl.value = phone;
         if (emailEl) emailEl.value = email;
+        renderSaleNoteSummary(sale);
         syncSaleNoteDeleteVisibility();
         if (!modal) return;
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
+        requestAnimationFrame(fitSaleNoteToStage);
+    }
+
+    var SALE_NOTE_W = 816;
+
+    function saleNoteSummaryRow(label, value, extra) {
+        return '<div class="row' + (extra ? ' ' + extra : '') + '"><dt>' + esc(label) + '</dt><dd>' + esc(value) + '</dd></div>';
+    }
+
+    function renderSaleNoteSummary(sale) {
+        const host = document.getElementById('saleNoteSummary');
+        if (!host || !sale) return;
+        let client = sale.client || null;
+        if (!client && sale.clientId) client = clientById(sale.clientId);
+        const rfc = client ? String(client.rfc || client.RFC || '').trim() : '';
+        const addr = clientAddress(client);
+        const clientRows = [];
+        if (rfc) clientRows.push(saleNoteSummaryRow('RFC', rfc));
+        if (addr) clientRows.push(saleNoteSummaryRow('Dirección', addr, 'stack'));
+        const pieces = (sale.items || []).reduce(function (n, it) {
+            return n + (Number(it.qty) || 0);
+        }, 0);
+        const pieceLabel = (Math.abs(pieces - Math.round(pieces)) < 1e-9)
+            ? Math.round(pieces).toLocaleString('es-MX')
+            : pieces.toLocaleString('es-MX', { maximumFractionDigits: 2 });
+        const generalRows = [
+            saleNoteSummaryRow('Pago', formatSalePayLabel(sale)),
+            saleNoteSummaryRow('Factura', billLabel(sale.billing, sale)),
+            saleNoteSummaryRow('Condición', isPendingCollection(sale) ? 'Crédito' : 'Contado'),
+            saleNoteSummaryRow('Sucursal', cityLabel(saleCity(sale)) || '—'),
+            saleNoteSummaryRow('Piezas', pieceLabel),
+            saleNoteSummaryRow('Total', money(sale.total), 'total')
+        ];
+        host.innerHTML = '' +
+            '<div class="block">' +
+            '<p class="k">Cliente</p>' +
+            '<p class="name">' + esc(saleClientLabel(sale)) + '</p>' +
+            (clientRows.length ? '<dl>' + clientRows.join('') + '</dl>' : '') +
+            '</div>' +
+            '<div class="block">' +
+            '<p class="k">Nota</p>' +
+            '<dl>' + generalRows.join('') + '</dl>' +
+            '</div>';
+    }
+
+    function fitSaleNoteToStage() {
+        var modal = document.getElementById('saleNoteModal');
+        var stage = modal && modal.querySelector('.sale-note-stage');
+        var doc = document.getElementById('saleNoteDoc');
+        if (!doc) return;
+        if (!modal || !stage || doc.hidden || modal.classList.contains('is-editing') || !modal.classList.contains('show')) {
+            doc.style.transform = '';
+            return;
+        }
+        var cs = getComputedStyle(stage);
+        var availW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        var availH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        if (!(availW > 40) || !(availH > 40)) return;
+        var naturalW = doc.offsetWidth || SALE_NOTE_W;
+        var naturalH = doc.offsetHeight;
+        if (!(naturalW > 0) || !(naturalH > 0)) return;
+        var scale = Math.min(availW / naturalW, availH / naturalH);
+        if (!isFinite(scale) || scale <= 0) return;
+        doc.style.transform = 'scale(' + scale + ')';
     }
 
     function closeSaleNoteModal() {
@@ -1875,18 +2107,21 @@
         const phoneEl = document.getElementById('saleNotePhone');
         const raw = phoneEl ? phoneEl.value : '';
         const digits = phoneDigits(raw);
-        if (raw.trim() && !digits) {
-            toast('Revisa el teléfono (10 dígitos o con lada)');
+        if (!digits) {
+            toast(raw.trim() ? 'Revisa el teléfono (10 dígitos o con lada)' : 'Falta el teléfono de WhatsApp');
             if (phoneEl) phoneEl.focus();
             return;
         }
         persistNoteShareContacts(sale);
         const text = encodeURIComponent(buildNotePlainText(sale));
-        const url = digits
-            ? ('https://wa.me/' + digits + '?text=' + text)
-            : ('https://wa.me/?text=' + text);
-        window.open(url, '_blank', 'noopener');
-        toast(digits ? 'Abriendo WhatsApp…' : 'WhatsApp sin número · elige el chat');
+        window.open('https://wa.me/' + digits + '?text=' + text, '_blank', 'noopener');
+        toast('WhatsApp listo · confirma el envío en el chat');
+    }
+
+    function openNoteMailto(to, subject, text) {
+        const href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(text);
+        window.location.href = href;
+        toast('Abriendo el correo · confirma el envío');
     }
 
     function shareNoteEmail() {
@@ -1894,12 +2129,37 @@
         if (!sale) return;
         const emailEl = document.getElementById('saleNoteEmail');
         const to = emailEl ? (emailEl.value || '').trim() : '';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+/.test(to.split(/[,;]/)[0].trim())) {
+            toast('Falta un correo válido');
+            if (emailEl) emailEl.focus();
+            return;
+        }
         persistNoteShareContacts(sale);
-        const subject = encodeURIComponent('Nota de venta ' + (sale.folio || '') + ' · S-35');
-        const body = encodeURIComponent(buildNotePlainText(sale));
-        const href = 'mailto:' + (to || '') + '?subject=' + subject + '&body=' + body;
-        window.location.href = href;
-        toast(to ? 'Abriendo correo…' : 'Correo sin destinatario · completa el para');
+        const subject = 'Nota de venta ' + (saleReceiptLabel(sale) || sale.folio || '') + ' · S-35';
+        const text = buildNotePlainText(sale);
+        const token = localStorage.getItem('s35_admin_token') || '';
+        fetch('/api/sale-note', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({ to: to, subject: subject, text: text })
+        }).then(function (res) {
+            return res.json().then(function (data) {
+                return { ok: res.ok, data: data || {} };
+            }).catch(function () {
+                return { ok: false, data: { fallback: true } };
+            });
+        }).then(function (res) {
+            if (res.ok && res.data && res.data.sent) {
+                toast('Correo enviado a ' + to);
+                return;
+            }
+            openNoteMailto(to, subject, text);
+        }).catch(function () {
+            openNoteMailto(to, subject, text);
+        });
     }
 
     function copyNoteText() {
@@ -3851,7 +4111,31 @@
         return loadTesoreriaMovsRaw().some(function (m) { return m && m.id === id; });
     }
     function upsertTesoreriaSeed(mov) {
-        if (!mov || !mov.id || tesoreriaHasId(mov.id)) return false;
+        if (!mov || !mov.id) return false;
+        const idx = tesoreriaMovs.findIndex(function (m) { return m && m.id === mov.id; });
+        if (idx >= 0) {
+            const prev = tesoreriaMovs[idx];
+            // Re-sincroniza montos del seed Banregio/Banorte si el JSON se corrigió (p. ej. centavos SPEI).
+            if (prev && prev.source === 'banorte-csv' && mov.source === 'banorte-csv') {
+                const nextAmount = roundMoney(mov.amount);
+                const nextSaldo = mov.bankSaldo != null ? roundMoney(mov.bankSaldo) : prev.bankSaldo;
+                if (roundMoney(prev.amount) !== nextAmount ||
+                    (prev.bankSaldo != null && nextSaldo != null && roundMoney(prev.bankSaldo) !== nextSaldo)) {
+                    tesoreriaMovs[idx] = Object.assign({}, prev, {
+                        amount: nextAmount,
+                        bankSaldo: nextSaldo,
+                        type: mov.type || prev.type,
+                        note: mov.note != null ? mov.note : prev.note,
+                        reference: mov.reference != null ? mov.reference : prev.reference,
+                        fecha: mov.fecha || prev.fecha,
+                        createdAt: mov.createdAt || prev.createdAt
+                    });
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (tesoreriaHasId(mov.id)) return false;
         tesoreriaMovs.push(mov);
         return true;
     }
@@ -3929,14 +4213,16 @@
             if (upsertTesoreriaSeed(mov)) added = true;
         });
         if (data && Array.isArray(data.items)) {
-            const bank = data.bank || TESORERIA_BANK_META;
+            const bank = Object.assign({}, TESORERIA_BANK_META, data.bank || {});
+            // El CSV histórico puede venir etiquetado Banorte; el banco operativo es Banregio.
+            bank.name = TESORERIA_BANK_META.name;
             if (upsertTesoreriaSeed({
                 id: 'banorte-saldo-inicial',
                 createdAt: '2026-06-01T06:00:00.000Z',
                 account: 'banco',
                 type: 'apertura',
                 amount: roundMoney(bank.opening != null ? bank.opening : TESORERIA_BANK_META.opening),
-                note: 'Saldo inicial Banorte',
+                note: 'Saldo inicial ' + TESORERIA_BANK_META.name,
                 reference: bank.account || TESORERIA_BANK_META.account,
                 bankSaldo: roundMoney(bank.opening != null ? bank.opening : TESORERIA_BANK_META.opening),
                 fecha: '01/06/2026',
@@ -3981,7 +4267,10 @@
         });
         const buckets = {};
         TESORERIA_ACCOUNTS.forEach(function (acc) {
-            buckets[acc.id] = { tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0, tarjetaFact: 0, tarjetaSf: 0, extracto: 0 };
+            buckets[acc.id] = {
+                tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0,
+                tarjetaFact: 0, tarjetaSf: 0, tarjetaSfGross: 0, clipFees: 0, extracto: 0
+            };
         });
         const statement = filterTesoreriaMovsByCity(tesoreriaMovs, city).filter(isPostOpeningBankStatement);
         const depositPool = {};
@@ -4037,13 +4326,18 @@
                 const account = tesoreriaAccountOfPayment(p.method, billing);
                 if (!account) return;
                 if (account === 'banco' && statementAlreadyReceived(sale, p.amount)) return;
-                buckets[account].tickets = roundMoney(buckets[account].tickets + p.amount);
+                // Tarjeta s/factura (Clip): abona el neto tras comisión 3.60% + IVA 16% sobre comisión.
+                const credit = account === 'tarjeta_sf' ? clipTarjetaSfNet(p.amount) : p.amount;
+                buckets[account].tickets = roundMoney(buckets[account].tickets + credit);
                 if (p.method === 'transferencia') {
                     buckets[account].transfer = roundMoney(buckets[account].transfer + p.amount);
                 } else if (p.method === 'tarjeta' && billing === 'facturado') {
                     buckets[account].tarjetaFact = roundMoney(buckets[account].tarjetaFact + p.amount);
                 } else if (p.method === 'tarjeta') {
-                    buckets[account].tarjetaSf = roundMoney(buckets[account].tarjetaSf + p.amount);
+                    const clip = clipTarjetaSfBreakdown(p.amount);
+                    buckets[account].tarjetaSf = roundMoney(buckets[account].tarjetaSf + clip.net);
+                    buckets[account].tarjetaSfGross = roundMoney(buckets[account].tarjetaSfGross + clip.gross);
+                    buckets[account].clipFees = roundMoney(buckets[account].clipFees + clip.fee);
                 }
             });
         });
@@ -4062,6 +4356,90 @@
             );
         });
         return buckets;
+    }
+    /** YYYY-MM del movimiento Banregio/Banorte (fecha DD/MM/YYYY o iso). */
+    function banorteCsvMonthKey(mov) {
+        if (!mov) return '';
+        const fecha = String(mov.fecha || '');
+        const m = fecha.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (m) return m[3] + '-' + m[2];
+        const iso = String(mov.createdAt || mov.iso || '');
+        if (/^\d{4}-\d{2}/.test(iso)) return iso.slice(0, 7);
+        const day = tesoreriaDayKey(mov.createdAt || mov.iso);
+        return day ? day.slice(0, 7) : '';
+    }
+    function banorteCsvSortKey(mov) {
+        const id = String((mov && mov.id) || '');
+        const n = parseInt(id.replace(/\D+/g, ''), 10);
+        const iso = String((mov && (mov.createdAt || mov.iso)) || '');
+        return (iso || '9999') + '|' + (isFinite(n) ? ('000000' + n).slice(-6) : id);
+    }
+    /**
+     * Líneas visibles de la card banco: resumen del extracto CSV del mes
+     * (saldo inicio / cargos / depósitos). No altera computeDineroAccounts.
+     */
+    function computeBancoMesCsvSummary(cityFilter) {
+        const city = cityFilter == null ? dineroCityFilter : cityFilter;
+        const list = filterTesoreriaMovsByCity(tesoreriaMovs, city).filter(function (m) {
+            if (!m || m.deleted || m.account !== 'banco') return false;
+            if (m.type === 'apertura') return false;
+            return m.source === 'banorte-csv' || m.type === 'banco_csv' || !!m.ledgerOnly;
+        });
+        let month = '';
+        list.forEach(function (m) {
+            const ym = banorteCsvMonthKey(m);
+            if (ym && ym > month) month = ym;
+        });
+        if (!month) {
+            try {
+                month = new Intl.DateTimeFormat('en-CA', {
+                    timeZone: 'America/Mazatlan',
+                    year: 'numeric',
+                    month: '2-digit'
+                }).format(new Date()).slice(0, 7);
+            } catch (_) {
+                const d = new Date();
+                month = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+            }
+        }
+        const monthMovs = list.filter(function (m) {
+            return banorteCsvMonthKey(m) === month;
+        }).slice().sort(function (a, b) {
+            return banorteCsvSortKey(a).localeCompare(banorteCsvSortKey(b));
+        });
+        let cargos = 0;
+        let depositos = 0;
+        monthMovs.forEach(function (m) {
+            const amt = roundMoney(m.amount);
+            if (m.type === 'retiro' || m.type === 'gasto') cargos = roundMoney(cargos + amt);
+            else depositos = roundMoney(depositos + amt);
+        });
+        let inicio = 0;
+        if (monthMovs.length) {
+            const first = monthMovs[0];
+            if (first.bankSaldo != null) {
+                inicio = roundMoney(roundMoney(first.bankSaldo) - tesoreriaSignedAmount(first));
+            } else {
+                const prevYm = (function (ym) {
+                    const y = Number(ym.slice(0, 4));
+                    const mo = Number(ym.slice(5, 7));
+                    if (mo <= 1) return (y - 1) + '-12';
+                    return y + '-' + String(mo - 1).padStart(2, '0');
+                })(month);
+                let prevLast = null;
+                list.forEach(function (m) {
+                    if (banorteCsvMonthKey(m) !== prevYm || m.bankSaldo == null) return;
+                    if (!prevLast || banorteCsvSortKey(m) > banorteCsvSortKey(prevLast)) prevLast = m;
+                });
+                if (prevLast) inicio = roundMoney(prevLast.bankSaldo);
+            }
+        }
+        return {
+            month: month,
+            inicio: inicio,
+            cargos: cargos,
+            depositos: depositos
+        };
     }
     function currentUserSnapshot() {
         let soldBy = { id: 'admin', username: 'admin', name: 'Admin', role: 'admin' };
@@ -5674,8 +6052,9 @@
                 '<div class="pc-body">' +
                 '<div class="fam">' + (fam ? familyDot(fam) : '') + esc(fam || PRODUCT_UNCATEGORIZED_LABEL) + '</div>' +
                 '<div class="name">' + esc(r.name) + '</div>' +
+                '<div class="pc-price">' + money(live) + '</div>' +
                 '<div class="meta">' +
-                '<span class="unit">Inventario: <strong>' + stock + '</strong></span>' +
+                '<span class="unit">' + stock + ' Unidades</span>' +
                 '</div>' +
                 priceNote +
                 '<div class="muted product-code">' +
@@ -5784,13 +6163,11 @@
                     ? ('Distribuidor · ' + units + ' u pagadas · precio fijo distribuidores')
                     : 'Cliente distribuidor: se aplica el precio distribuidores de cada producto';
             } else {
-                tierHint.textContent = units
-                    ? ('Volumen ticket: ' + units + ' u · escalón «' + tierLabelForQty(units) + '»')
-                    : 'Volumen de compra: el escalón depende de las unidades totales del ticket';
+                tierHint.textContent = units + ' Piezas';
             }
         }
         if (!cart.length) {
-            body.innerHTML = '<div class="empty">Agrega productos del catálogo.</div>';
+            body.innerHTML = '<div class="empty"><span class="empty-title">Ticket vacío</span><span class="empty-sub">Toca un producto para sumarlo.</span></div>';
             if (btn) btn.disabled = true;
         } else {
             body.innerHTML = cart.map(function (it, idx) {
@@ -5856,9 +6233,9 @@
                         'data-qty="' + idx + '" value="' + esc(String(it.qty)) + '" ' +
                         'aria-label="Cantidad" title="Escribe la cantidad">' +
                         '<button type="button" class="qty-btn" data-inc="' + idx + '" aria-label="Más">+</button>' +
-                        '<button type="button" class="btn ghost" data-dup-line="' + idx + '" style="margin-left:auto;height:28px;padding:0 8px" title="Duplicar línea (mismo producto, otro precio)">' +
-                        '<i class="fa-solid fa-clone" aria-hidden="true"></i> Duplicar</button>' +
-                        '<button type="button" class="btn ghost danger" data-rm="' + idx + '" style="height:28px;padding:0 8px">Quitar</button>' +
+                        '<button type="button" class="btn ghost ci-dup" data-dup-line="' + idx + '" title="Duplicar línea (mismo producto, otro precio)">' +
+                        '<i class="fa-solid fa-clone" aria-hidden="true"></i></button>' +
+                        '<button type="button" class="btn ghost danger ci-rm" data-rm="' + idx + '" aria-label="Quitar">Quitar</button>' +
                         '</div>');
                 return '<div class="' + itemClass + '" data-product="' + esc(it.product) + '">' +
                     thumbHtml +
@@ -6254,7 +6631,14 @@
                 };
             }
             if (name === 'search_sales') {
-                const hits = searchSales(args.query, args.limit || 8).map(function (s) {
+                const from = String(args.from || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+                const to = String(args.to || '').trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+                const fromYmd = from ? (from[1] + '-' + from[2] + '-' + from[3]) : '';
+                const toYmd = to ? (to[1] + '-' + to[2] + '-' + to[3]) : '';
+                const hasRange = !!(fromYmd || toYmd);
+                const limit = Math.min(25, Math.max(1, Number(args.limit) || (hasRange ? 25 : 8)));
+                const found = searchSales(args.query, limit, { from: fromYmd, to: toYmd });
+                const hits = found.rows.map(function (s) {
                     const items = (s.items || []).slice(0, 12).map(function (it) {
                         const slug = it.product || null;
                         const label = it.name || it.product || 'Producto';
@@ -6275,6 +6659,8 @@
                         receiptId: saleReceiptId(s) || null,
                         total: Number(s.total) || 0,
                         createdAt: s.createdAt,
+                        date: saleYmdMazatlan(s.createdAt) || null,
+                        origin: saleOriginLabel(s),
                         client: saleClientLabel(s),
                         clientId: s.clientId || (s.client && s.client.id) || null,
                         city: cityLabel(saleCity(s)),
@@ -6286,7 +6672,18 @@
                         open: s.id ? ('[[note:' + s.id + '|Ver nota ' + folio + ']]') : null
                     };
                 });
-                return { ok: true, query: args.query, results: hits };
+                const multi = hits.some(function (h) { return (h.items || []).length > 1; });
+                return {
+                    ok: true,
+                    query: args.query,
+                    from: fromYmd || null,
+                    to: toYmd || null,
+                    truncated: found.truncated,
+                    results: hits,
+                    note: multi
+                        ? 'total es el importe de toda la nota. El precio de cada producto está en items[].price y items[].lineTotal; no atribuyas total a un solo saco.'
+                        : null
+                };
             }
             if (name === 'lookup_client') {
                 const needle = String(args.query || '').toLowerCase().trim();
@@ -6356,6 +6753,53 @@
                             '). El top lista solo clientes identificados.')
                         : null,
                     meta: ranked.meta
+                };
+            }
+            if (name === 'get_finished_stock') {
+                let map = {};
+                if (window.S35PanelAPI && typeof window.S35PanelAPI.getFinishedStockMap === 'function') {
+                    map = window.S35PanelAPI.getFinishedStockMap() || {};
+                } else {
+                    try {
+                        const raw = JSON.parse(localStorage.getItem(FINISHED_KEY) || 'null');
+                        map = (raw && raw.items) ? raw.items : (raw || {});
+                    } catch (_) { map = {}; }
+                }
+                const needle = normalizeSearchText(args.query);
+                if (!needle || needle.length < 2) return { ok: false, error: 'query corta' };
+                const tokens = searchTokens(args.query);
+                const hits = Object.keys(map).filter(function (slug) {
+                    const row = map[slug] || {};
+                    const slugN = normalizeSearchText(String(slug).replace(/-/g, ' '));
+                    const hay = normalizeSearchText(slugN + ' ' + (row.name || ''));
+                    if (slugN && (slugN === needle || slugN.indexOf(needle) >= 0 || needle.indexOf(slugN) >= 0)) return true;
+                    return textMatchesTokens(hay, tokens, needle);
+                }).slice(0, 8).map(function (slug) {
+                    const row = map[slug] || {};
+                    const byCity = { culiacan: 0, mochis: 0, mazatlan: 0 };
+                    if (row.byCity && typeof row.byCity === 'object') {
+                        byCity.culiacan = Math.max(0, Number(row.byCity.culiacan) || 0);
+                        byCity.mochis = Math.max(0, Number(row.byCity.mochis) || 0);
+                        byCity.mazatlan = Math.max(0, Number(row.byCity.mazatlan) || 0);
+                    } else {
+                        byCity.culiacan = Math.max(0, Number(row.stock) || 0);
+                    }
+                    return {
+                        slug: slug,
+                        unit: row.unit || 'Pza',
+                        stock: byCity.culiacan + byCity.mochis + byCity.mazatlan,
+                        byCity: byCity,
+                        note: '0 es cero piezas en esa ciudad, no falta de datos.'
+                    };
+                });
+                if (!hits.length) {
+                    return { ok: true, query: args.query || '', results: [], note: 'No está en s35_finished_stock. No inventes 0.' };
+                }
+                return {
+                    ok: true,
+                    query: args.query,
+                    results: hits,
+                    note: 'byCity.culiacan, byCity.mochis y byCity.mazatlan son piezas. 0 es cero, no falta de datos.'
                 };
             }
             if (name === 'stock_alerts') {
@@ -6458,16 +6902,54 @@
         return true;
     }
 
-    function searchSales(query, limit) {
+    function saleYmdMazatlan(raw) {
+        const s = String(raw || '').trim();
+        if (!s) return '';
+        if (!/[zZ]$/.test(s) && !/[+-]\d{2}:?\d{2}$/.test(s)) {
+            const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            return m ? (m[1] + '-' + m[2] + '-' + m[3]) : '';
+        }
+        const t = Date.parse(s);
+        if (!isFinite(t)) return '';
+        const parts = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'America/Mazatlan',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).formatToParts(new Date(t));
+        const get = function (type) {
+            const row = parts.filter(function (p) { return p.type === type; })[0];
+            return row && row.value;
+        };
+        const y = get('year');
+        const m = get('month');
+        const d = get('day');
+        return (y && m && d) ? (y + '-' + m + '-' + d) : '';
+    }
+    function saleOriginLabel(sale) {
+        if (!sale) return 'viva';
+        if (isHistoricalImportSale(sale)) return 'historico';
+        if (String(sale.folio || '').indexOf('HIST-') === 0) return 'historico';
+        if (String(sale.id || '').indexOf('sale-hist-') === 0) return 'historico';
+        return 'viva';
+    }
+    function searchSales(query, limit, range) {
         const needle = normalizeSearchText(query);
-        if (!needle || needle.length < 2) return [];
+        if (!needle || needle.length < 2) return { rows: [], truncated: false };
         const tokens = searchTokens(query);
-        const max = limit || 8;
+        const from = range && range.from;
+        const to = range && range.to;
+        const hasRange = !!(from || to);
+        const max = Math.min(25, Math.max(1, Number(limit) || (hasRange ? 25 : 8)));
         const all = salesForAnalytics();
         const out = [];
-        for (let i = all.length - 1; i >= 0 && out.length < max * 4; i--) {
+        for (let i = all.length - 1; i >= 0 && (hasRange || out.length < max * 4); i--) {
             const s = all[i];
             if (!s) continue;
+            if (hasRange) {
+                const ymd = saleYmdMazatlan(s.createdAt);
+                if (!ymd || (from && ymd < from) || (to && ymd > to)) continue;
+            }
             const folio = normalizeSearchText(s.folio);
             const id = normalizeSearchText(s.id);
             const rid = normalizeSearchText(saleReceiptId(s));
@@ -6528,7 +7010,7 @@
             if (b._score !== a._score) return b._score - a._score;
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
-        return out.slice(0, max);
+        return { rows: out.slice(0, max), truncated: out.length > max };
     }
 
     function openCortesPeriod(period) {
@@ -7849,6 +8331,12 @@
         setDineroCardTotal('dineroEfectivoTotal', acc.efectivo.total);
         setDineroCardTotal('dineroBancoTotal', acc.banco.total);
         setDineroCardTotal('dineroTarjetaSfTotal', acc.tarjeta_sf.total);
+        const bancoSub = document.getElementById('dineroBancoSub') ||
+            document.querySelector('#dineroCardBanco .panel-sub');
+        if (bancoSub) {
+            bancoSub.textContent = TESORERIA_BANK_META.name + ' · ' +
+                TESORERIA_BANK_META.account + ' · ' + cityLabel(TESORERIA_BANK_META.city || 'culiacan');
+        }
         const efLines = document.getElementById('dineroEfectivoLines');
         if (efLines) {
             efLines.innerHTML = dineroLinesHtml([
@@ -7860,24 +8348,29 @@
         }
         const bankLines = document.getElementById('dineroBancoLines');
         if (bankLines) {
-            const bankRows = [
-                { label: 'Saldo Banorte', amount: acc.banco.apertura },
-                { label: 'Estado de cuenta posterior', amount: acc.banco.extracto, out: acc.banco.extracto < 0 },
-                { label: 'Transferencias posteriores', amount: acc.banco.transfer },
-                { label: 'Tarjeta facturada posterior', amount: acc.banco.tarjetaFact },
-                { label: 'Ajustes', amount: acc.banco.ajustes, out: acc.banco.ajustes < 0 }
-            ];
-            bankLines.innerHTML = dineroLinesHtml(bankRows.filter(function (row) {
-                return row.label !== 'Estado de cuenta posterior' || row.amount;
-            }));
+            // Visible: resumen del CSV Banregio del mes. Interno (apertura/extracto/matching) sigue en computeDineroAccounts.
+            const mesCsv = computeBancoMesCsvSummary(dineroCityFilter);
+            bankLines.innerHTML = dineroLinesHtml([
+                { label: 'Saldo inicio de mes', amount: mesCsv.inicio },
+                { label: 'Cargos del mes', amount: mesCsv.cargos, out: true },
+                { label: 'Depósitos del mes', amount: mesCsv.depositos }
+            ]);
         }
         const cardLines = document.getElementById('dineroTarjetaSfLines');
         if (cardLines) {
-            cardLines.innerHTML = dineroLinesHtml([
+            const clipRows = [
                 { label: 'Saldo de apertura', amount: acc.tarjeta_sf.apertura },
-                { label: 'Tickets posteriores', amount: acc.tarjeta_sf.tarjetaSf },
+                { label: 'Tickets brutos', amount: acc.tarjeta_sf.tarjetaSfGross },
+                { label: 'Comisión Clip 3.6% + IVA', amount: acc.tarjeta_sf.clipFees, out: true },
+                { label: 'Tickets netos', amount: acc.tarjeta_sf.tarjetaSf },
                 { label: 'Ajustes', amount: acc.tarjeta_sf.ajustes, out: acc.tarjeta_sf.ajustes < 0 }
-            ]);
+            ];
+            cardLines.innerHTML = dineroLinesHtml(clipRows.filter(function (row) {
+                if (row.label === 'Tickets brutos' || row.label === 'Comisión Clip 3.6% + IVA') {
+                    return !!acc.tarjeta_sf.clipFees;
+                }
+                return true;
+            }));
         }
         const emp = acc.efectivo_empresarial;
         setDineroCardTotal('dineroEmpresarialTotal', emp ? emp.total : 0);
@@ -7978,6 +8471,9 @@
             salePaymentLines(sale).forEach(function (p, idx) {
                 const account = tesoreriaAccountOfPayment(p.method, billing);
                 if (!account) return;
+                const isClipSf = account === 'tarjeta_sf';
+                const clip = isClipSf ? clipTarjetaSfBreakdown(p.amount) : null;
+                const credited = clip ? clip.net : roundMoney(p.amount);
                 rows.push({
                     id: (sale.id || 'sale') + '-' + p.method + '-' + idx,
                     createdAt: sale.createdAt,
@@ -7986,11 +8482,12 @@
                     type: 'venta',
                     source: 'pos',
                     note: folio + ' · ' + client + ' · ' + payLabel(p.method) +
-                        (billing === 'facturado' ? ' facturado' : ' s/factura'),
+                        (billing === 'facturado' ? ' facturado' : ' s/factura') +
+                        (clip ? ' · neto Clip (' + money(clip.gross) + ' − ' + money(clip.fee) + ')' : ''),
                     reference: sale.folio || '',
-                    amount: roundMoney(p.amount),
-                    signed: roundMoney(p.amount),
-                    ingreso: roundMoney(p.amount),
+                    amount: credited,
+                    signed: credited,
+                    ingreso: credited,
                     gasto: 0,
                     city: saleCity(sale),
                     locked: true,
@@ -8309,13 +8806,32 @@
             multiCity ? null : cityColor(cortesCityFilter)
         );
 
-        const payKeys = payMethodKeys();
-        const payRows = payKeys.map(function (k) {
+        // Desglose por método; tarjeta se parte por billing (igual que tesorería).
+        const payRows = [];
+        payMethodKeys().forEach(function (k) {
+            if (k === 'tarjeta') {
+                [
+                    { bill: 'facturado', key: 'facturado_tarjeta', label: 'Tarjeta facturada' },
+                    { bill: 'sin_facturar', key: 'sin_facturar_tarjeta', label: 'Tarjeta sin facturar' }
+                ].forEach(function (row) {
+                    const amount = list.reduce(function (n, s) {
+                        const bill = s.billing || 'sin_facturar';
+                        if (bill !== row.bill) return n;
+                        return n + amountPaidByMethod(s, 'tarjeta');
+                    }, 0);
+                    if (amount > 0) {
+                        payRows.push({ key: row.key, label: row.label, amount: amount });
+                    }
+                });
+                return;
+            }
             const amount = list.reduce(function (n, s) {
                 return n + amountPaidByMethod(s, k);
             }, 0);
-            return { key: k, label: payLabel(k), amount: amount };
-        }).filter(function (r) { return r.amount > 0; });
+            if (amount > 0) {
+                payRows.push({ key: k, label: payLabel(k), amount: amount });
+            }
+        });
         const efectivoCobrado = list.reduce(function (n, s) {
             return n + amountPaidByMethod(s, 'efectivo');
         }, 0);
@@ -9699,6 +10215,11 @@
         });
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
+            const noteModal = document.getElementById('saleNoteModal');
+            if (noteModal && noteModal.classList.contains('show') && !saleNoteEditing) {
+                closeSaleNoteModal();
+                return;
+            }
             if (genClientPickerOpen &&
                 !(genTicketClientSearch && document.activeElement === genTicketClientSearch)) {
                 closeGenTicketClientPicker();
@@ -9713,8 +10234,6 @@
         const genGastoForm = document.getElementById('genGastoForm');
         if (genGastoForm) genGastoForm.addEventListener('submit', submitGenerateGasto);
 
-        const noteClose = document.getElementById('saleNoteModalClose');
-        if (noteClose) noteClose.addEventListener('click', closeSaleNoteModal);
         const saleNoteModal = document.getElementById('saleNoteModal');
         if (saleNoteModal) {
             saleNoteModal.addEventListener('click', function (e) {
@@ -9731,7 +10250,19 @@
         if (notePrint) notePrint.addEventListener('click', printSaleNote);
         const noteDelete = document.getElementById('saleNoteDelete');
         if (noteDelete) noteDelete.addEventListener('click', deleteActiveSaleNote);
+        const noteSave = document.getElementById('saleNoteSave');
+        if (noteSave) noteSave.addEventListener('click', saveActiveSaleNote);
         syncSaleNoteDeleteVisibility();
+        var saleNoteStage = saleNoteModal && saleNoteModal.querySelector('.sale-note-stage');
+        if (saleNoteStage && typeof ResizeObserver !== 'undefined') {
+            var saleNoteFitObserver = new ResizeObserver(function () { fitSaleNoteToStage(); });
+            saleNoteFitObserver.observe(saleNoteStage);
+        }
+        window.addEventListener('beforeprint', function () {
+            var doc = document.getElementById('saleNoteDoc');
+            if (doc) doc.style.transform = 'none';
+        });
+        window.addEventListener('afterprint', fitSaleNoteToStage);
 
         const noteEditBtn = document.getElementById('saleNoteEditBtn');
         if (noteEditBtn) {

@@ -1,6 +1,12 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "functions": {
+    "api/s35-chat.js": {
+      "maxDuration": 60,
+      "includeFiles": "public/colaboradores/data/{historical-sales-import.json,manual-sales-catchup.json}"
+    }
+  },
   "rewrites": [
     { "source": "/qr/:code", "destination": "/api/qr?code=:code" },
     { "source": "/laboratorio/:path*", "destination": "/materialab/:path*" }

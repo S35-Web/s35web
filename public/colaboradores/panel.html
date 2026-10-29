@@ -7,7 +7,7 @@
     <title>S-35 | Colaboradores</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         :root {
@@ -64,11 +64,12 @@
             --info-bg: rgba(96,165,250,.1);
             --shadow-modal: 0 24px 64px rgba(0,0,0,.55);
         }
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; touch-action: manipulation; }
         html, body {
             margin: 0;
             height: 100%;
             overflow-x: clip;
+            touch-action: manipulation;
         }
         body {
             font-family: var(--font);
@@ -117,6 +118,8 @@
             text-decoration: none;
             border-radius: var(--radius-sm);
             box-sizing: border-box;
+            pointer-events: none;
+            user-select: none;
         }
         .sidebar-logo img {
             height: 12px;
@@ -1140,26 +1143,92 @@
             padding-top: 12px;
             padding-bottom: 12px;
         }
+        /* Folder tabs: inactive sheets sit behind the POS frame; active is selected black */
+        .pos-workspace {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
         .pos-mode-bar {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
+            align-items: flex-end;
+            gap: 0;
             flex: 0 0 auto;
-            margin-bottom: 10px;
+            margin: 0;
+            padding: 0 12px;
+            min-height: 0;
+            position: relative;
+            /* No z-index here: buttons must stack against .pos-mode-panel */
         }
         .pos-mode-bar .seg-control {
+            display: inline-flex;
+            flex-wrap: nowrap;
+            align-items: flex-end;
             width: fit-content;
             max-width: 100%;
+            margin: 0 0 -1px;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            overflow: visible;
+            background: transparent;
+            gap: 3px;
+        }
+        .pos-mode-bar .seg-control button {
+            position: relative;
+            height: auto;
+            min-height: 0;
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            background: color-mix(in srgb, var(--bg-soft) 68%, var(--border));
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.2;
+            white-space: nowrap;
+            /* Same size always; tuck under frame via z-index only */
+            transform: none;
+            z-index: 1;
+        }
+        .pos-mode-bar .seg-control button:last-child { border-right: 1px solid var(--border); }
+        .pos-mode-bar .seg-control button:hover:not(.active) {
+            color: var(--text);
+            background: color-mix(in srgb, var(--bg-soft) 50%, var(--panel));
+        }
+        .pos-mode-bar .seg-control button.active {
+            background: #0a0a0a;
+            color: #fafafa;
+            border-color: #0a0a0a;
+            font-weight: 500;
+            /* Solo color: sin padding/transform/scale extra */
+            z-index: 3;
+        }
+        .pos-mode-bar .seg-control button:focus-visible {
+            outline: 2px solid var(--text);
+            outline-offset: 2px;
         }
         .pos-mode-panel {
             flex: 1;
             min-height: 0;
             display: flex;
             flex-direction: column;
+            position: relative;
+            /* Covers inactive tab feet so they read as behind the frame */
+            z-index: 2;
         }
         .pos-mode-panel[hidden] {
             display: none !important;
+        }
+        .pos-workspace .pos-station,
+        .pos-workspace .pos-gastos {
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+        .pos-workspace .pos-gastos {
+            border-radius: 12px;
         }
         .pos-gastos {
             display: grid;
@@ -1351,9 +1420,9 @@
         .pos-station-top {
             display: grid;
             grid-template-columns: auto minmax(0, 1fr) auto;
-            gap: 16px 24px;
-            align-items: end;
-            padding: 16px 20px 18px;
+            gap: 8px 10px;
+            align-items: center;
+            padding: 8px 12px;
             border-bottom: 1px solid var(--border);
             background: color-mix(in srgb, var(--bg-soft) 55%, var(--panel));
             position: relative;
@@ -1366,21 +1435,30 @@
             letter-spacing: -0.03em;
             align-self: center;
             line-height: 1;
-            padding-bottom: 2px;
         }
         .pos-station-fields {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
-            gap: 12px 16px;
-            align-items: end;
+            grid-template-columns: minmax(0, 1fr) minmax(120px, 148px);
+            gap: 8px;
+            align-items: center;
             min-width: 0;
         }
         .pos-field {
             display: grid;
-            gap: 7px;
+            gap: 0;
             min-width: 0;
         }
-        .pos-station-top .field-label,
+        .pos-station-top .field-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
         .pos-station-pay .field-label {
             margin: 0;
             line-height: 1;
@@ -1393,31 +1471,40 @@
         .pos-select,
         .pos-station-top .btn,
         .pos-pad-tools .search {
-            height: 44px;
+            height: 34px;
         }
         .pos-station-top .pos-client-trigger {
-            padding: 0 14px;
+            padding: 0 12px;
             border-width: 1.5px;
             background: var(--panel);
         }
         .pos-station-top .pos-client-trigger-label {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
         }
         .pos-station-top .pos-select {
-            padding: 0 32px 0 12px;
-            font-size: 14px;
+            padding: 0 28px 0 10px;
+            font-size: 13px;
             font-weight: 500;
             border-width: 1.5px;
             background-color: var(--panel);
         }
         .pos-station-top .btn {
-            padding: 0 14px;
+            padding: 0 12px;
             font-size: 13px;
             font-weight: 550;
             border-width: 1.5px;
             background: var(--panel);
         }
+        .pos-station-top .pos-promo-btn {
+            width: 34px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .pos-station-top .pos-promo-btn .pos-promo-btn-text { display: none; }
         .pos-select {
             width: 100%;
             border: 1px solid var(--border);
@@ -1439,7 +1526,7 @@
             align-items: center;
             gap: 8px;
             justify-content: flex-end;
-            align-self: end;
+            align-self: center;
         }
         .pos-kpi-inline { display: none; }
         .pos-station-main {
@@ -1604,7 +1691,7 @@
             font-weight: 600;
             letter-spacing: -0.01em;
         }
-        .pos-station-pay .pay-split-check { margin-top: 4px; }
+        .pos-station-pay .pay-split-check { margin-top: 0; }
         .pos-station-pay .seg.seg-pay label {
             font-size: 12.5px;
             font-weight: 550;
@@ -3346,6 +3433,10 @@
                 align-items: stretch;
                 padding: 0 10px;
                 gap: 4px;
+                min-height: 0;
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                -webkit-overflow-scrolling: touch;
             }
             .sidebar.open .nav a {
                 display: flex;
@@ -3974,7 +4065,9 @@
 
         /* —— Nota de venta —— */
         #saleNoteModal .modal-card {
-            max-width: 540px;
+            width: min(1240px, calc(100vw - 24px));
+            max-width: min(1240px, calc(100vw - 24px));
+            height: calc(100vh - 32px);
             max-height: calc(100vh - 32px);
             display: flex;
             flex-direction: column;
@@ -3985,20 +4078,58 @@
             border-color: #e5e5e5;
         }
         #saleNoteModal.is-editing .modal-card {
-            max-width: min(720px, calc(100vw - 24px));
+            width: min(860px, calc(100vw - 24px));
+            max-width: min(860px, calc(100vw - 24px));
         }
         #saleNoteModal .modal-head {
             background: #ffffff;
             color: #0a0a0a;
             border-bottom-color: #e5e5e5;
+            padding: 10px 16px;
         }
         #saleNoteModal .modal-head strong { color: #0a0a0a; }
         #saleNoteModal .modal-body {
-            overflow: auto;
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            overflow: hidden;
             flex: 1;
             min-height: 0;
-            background: #ffffff;
+            background: #e8e8e8;
             color: #0a0a0a;
+            padding: 0;
+            gap: 0;
+        }
+        #saleNoteModal .sale-note-stage {
+            flex: 1 1 auto;
+            min-width: 0;
+            min-height: 0;
+            overflow: hidden;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #saleNoteModal.is-editing .sale-note-stage {
+            display: block;
+            overflow: auto;
+        }
+        #saleNoteModal #saleNoteShareBlock {
+            flex: 0 0 248px;
+            width: 248px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0;
+            overflow: auto;
+            background: #ffffff;
+            border-left: 1px solid #e5e5e5;
+            padding: 16px 14px;
+        }
+        #saleNoteModal #saleNoteShareBlock[hidden],
+        #saleNoteModal #saleNoteDoc[hidden],
+        #saleNoteModal #saleNoteEdit[hidden] {
+            display: none !important;
         }
         #saleNoteModal .modal-head-actions {
             display: flex;
@@ -4106,175 +4237,347 @@
             .sale-note-edit label.span-2 { grid-column: auto; }
         }
         .sale-note-doc {
-            padding: 8px 2px 16px;
-            color: #0a0a0a;
+            display: grid;
+            grid-template-columns: 168px minmax(0, 1fr);
+            grid-template-rows: minmax(0, 1fr) auto;
+            column-gap: 36px;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 816px;
+            min-height: 1056px;
+            margin: 0 auto;
+            padding: 48px 48px 36px;
+            color: #141414;
             background: #ffffff;
-            font-family: var(--font);
+            font-family: Archivo, "Helvetica Neue", sans-serif;
+            letter-spacing: 0;
+            border-radius: 0;
         }
-        .sale-note-doc .lbl {
-            display: block;
-            font-size: 11px;
-            font-weight: 500;
-            color: #525252;
-            letter-spacing: .02em;
-            margin-bottom: 4px;
-        }
-        .snd-top {
+        .snd-rail {
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #0a0a0a;
+            flex-direction: column;
+            min-height: 0;
+            min-width: 0;
         }
         .snd-logo {
-            line-height: 0;
-        }
-        .snd-logo img {
             display: block;
-            height: 18px;
-            width: auto;
-            max-width: 160px;
+            width: 72px;
+            height: auto;
+            aspect-ratio: 221 / 74;
+            object-fit: contain;
+            object-position: left center;
         }
-        .snd-company-sub {
-            margin-top: 8px;
+        .snd-contact,
+        .snd-from {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
             font-size: 12px;
-            color: #525252;
-            line-height: 1.4;
+            line-height: 1.45;
         }
-        .snd-doctype {
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: .06em;
-            text-transform: uppercase;
-            color: #0a0a0a;
-            white-space: nowrap;
-            padding-top: 4px;
+        .snd-contact { margin-top: 28px; }
+        .snd-from { margin-top: 24px; }
+        .snd-from-k { font-weight: 600; }
+        .snd-vert-wrap {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            min-height: 120px;
         }
-        .snd-summary {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 12px 10px;
-            padding: 16px 0;
-            border-bottom: 1px solid #0a0a0a;
+        .snd-vert {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-family: Helvetica, "Helvetica Neue", sans-serif;
+            font-size: 28px;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+            line-height: 1;
         }
-        .snd-sum-cell .val {
-            display: block;
-            font-size: 14px;
-            font-weight: 700;
-            color: #0a0a0a;
-            line-height: 1.25;
+        .snd-main {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+            height: 100%;
+        }
+        .snd-id {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end;
+            gap: 40px;
+        }
+        .snd-id .k {
+            font-size: 12px;
+            color: #555555;
+            margin-bottom: 4px;
+        }
+        .snd-id .mono,
+        .sale-note-doc .mono {
+            font-family: "IBM Plex Mono", ui-monospace, monospace;
             font-variant-numeric: tabular-nums;
-            word-break: break-word;
         }
-        .snd-parties {
+        .snd-id-date .mono { font-size: 15px; font-weight: 500; }
+        .snd-folio {
+            font-family: "IBM Plex Mono", ui-monospace, monospace;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: #c8102e;
+            text-align: right;
+        }
+        .snd-branch {
+            margin-top: 132px;
+            display: flex;
+            gap: 12px;
+            align-items: baseline;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #141414;
+            font-size: 13px;
+        }
+        .snd-branch span { color: #555555; }
+        .snd-who {
+            margin-top: 16px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            padding: 16px 0;
-            border-bottom: 1px solid #0a0a0a;
+            grid-template-columns: minmax(0, 1fr) 200px;
+            column-gap: 32px;
         }
-        .snd-party .name {
-            font-size: 14px;
+        .snd-who-client {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .snd-client {
+            font-size: 17px;
             font-weight: 700;
-            color: #0a0a0a;
             line-height: 1.3;
         }
-        .snd-party .sub {
-            margin-top: 4px;
+        .snd-deliver {
+            margin-top: 0;
             font-size: 12px;
-            color: #525252;
-            line-height: 1.4;
+            line-height: 1.5;
         }
+        .snd-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 12px;
+        }
+        .snd-meta > div { display: flex; justify-content: space-between; gap: 12px; }
+        .snd-meta span:first-child { color: #555555; white-space: nowrap; }
+        .snd-meta span:last-child { text-align: right; }
         .sale-note-lines {
             width: 100%;
+            flex: 1 1 auto;
+            height: 0;
+            min-height: 220px;
+            margin-top: 40px;
             border-collapse: collapse;
+            table-layout: fixed;
             font-size: 13px;
-            margin: 0 0 4px;
-            color: #0a0a0a;
+            color: #141414;
         }
         .sale-note-lines th {
             text-align: left;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .02em;
-            color: #0a0a0a;
-            padding: 12px 6px 10px 0;
-            border-bottom: 1px solid #0a0a0a;
-            background: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            color: #141414;
+            padding: 0 8px 10px;
+            border-bottom: 1px solid #141414;
+            border-left: 1px solid #141414;
+            background: transparent;
         }
+        .sale-note-lines th:first-child,
+        .sale-note-lines td:first-child { border-left: none; padding-left: 0; }
+        .sale-note-lines th:nth-child(1) { width: 52px; }
+        .sale-note-lines th:nth-child(2) { width: 64px; }
+        .sale-note-lines th:nth-child(4) { width: 92px; }
+        .sale-note-lines th:nth-child(5) { width: 100px; }
         .sale-note-lines th.num,
-        .sale-note-lines td.num { text-align: right; padding-right: 0; padding-left: 8px; }
-        .sale-note-lines th.snd-idx,
-        .sale-note-lines td.snd-idx {
-            width: 28px;
-            text-align: left;
-            padding-left: 0;
-            padding-right: 6px;
-            color: #525252;
-            font-variant-numeric: tabular-nums;
-        }
+        .sale-note-lines td.num { text-align: right; }
         .sale-note-lines td {
-            padding: 12px 6px 12px 0;
-            border-bottom: 1px solid #e5e5e5;
+            padding: 16px 8px 0;
+            border-left: 1px solid #141414;
+            border-bottom: none;
             vertical-align: top;
-            color: #0a0a0a;
+            color: #141414;
         }
-        .sale-note-lines tbody tr:last-child td {
-            border-bottom: 1px solid #0a0a0a;
+        .sale-note-lines .snd-qty,
+        .sale-note-lines td.num {
+            font-family: "IBM Plex Mono", ui-monospace, monospace;
         }
-        .sale-note-lines .line-name { font-weight: 600; color: #0a0a0a; }
+        .sale-note-lines .line-amt { font-weight: 600; }
+        .sale-note-lines .line-name { font-weight: 600; }
         .sale-note-lines .line-unit {
             display: block;
-            font-size: 11px;
-            color: #525252;
-            font-weight: 400;
             margin-top: 2px;
+            font-size: 12px;
+            font-weight: 400;
+            color: #555555;
         }
-        .sale-note-lines .muted { color: #525252; }
-        .snd-bottom {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 20px;
+        .sale-note-lines .muted { color: #737373; }
+        .sale-note-lines .snd-fill td { height: 100%; padding-top: 0; }
+        .snd-sheet-foot {
+            grid-column: 1 / -1;
+            margin-top: 8px;
             padding-top: 16px;
-            margin-bottom: 8px;
+            border-top: 1px solid #141414;
+            color: #141414;
         }
-        .snd-pay .val {
-            font-size: 14px;
-            font-weight: 700;
-            color: #0a0a0a;
-        }
-        .snd-totals {
-            min-width: 160px;
+        .snd-foot-grid {
             display: grid;
-            gap: 6px;
+            grid-template-columns: minmax(0, 1fr) 236px;
+            column-gap: 40px;
+        }
+        .snd-letter { font-size: 12px; line-height: 1.5; }
+        .snd-letter span { color: #555555; }
+        .snd-signs {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 32px;
+            font-size: 12px;
+        }
+        .snd-signs .line { height: 34px; border-bottom: 1px solid #141414; margin-bottom: 6px; }
+        .snd-signs .hint { color: #555555; margin-top: 2px; }
+        .snd-totals {
+            display: grid;
+            gap: 8px;
             font-size: 13px;
         }
         .snd-totals .row {
             display: flex;
             justify-content: space-between;
-            gap: 24px;
-            color: #0a0a0a;
-            font-variant-numeric: tabular-nums;
+            align-items: baseline;
+            gap: 16px;
+            color: #555555;
         }
+        .snd-totals .row .mono { color: #141414; }
         .snd-totals .row.total {
+            margin-top: 4px;
+            padding-top: 10px;
+            border-top: 1px solid #141414;
+            color: #141414;
+            font-size: 16px;
             font-weight: 700;
-            font-size: 15px;
-            padding-top: 8px;
-            margin-top: 2px;
-            border-top: 1px solid #0a0a0a;
+        }
+        .snd-totals .row.total .mono { font-size: 22px; font-weight: 600; }
+        .snd-currency {
+            font-size: 12px;
+            color: #555555;
+            text-align: right;
+        }
+        .snd-legal-row {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #141414;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            font-size: 12px;
+            line-height: 1.45;
+            color: #555555;
+        }
+        .snd-legal-row > div:first-child { max-width: 265px; }
+        .snd-brand-qr {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #141414;
+            text-align: right;
+        }
+        .snd-brand-qr strong,
+        .snd-brand-qr span { display: block; white-space: nowrap; }
+        .snd-brand-qr span {
+            font-family: "IBM Plex Mono", ui-monospace, monospace;
+            font-weight: 400;
+        }
+        .snd-brand-qr img { width: 66px; height: 66px; display: block; }
+        .sale-note-edit textarea#sneObs {
+            width: 100%;
+            min-height: 56px;
+            resize: vertical;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 10px;
+            background: var(--panel);
         }
         .sale-note-hint {
             font-size: 12px;
             color: #737373;
-            line-height: 1.45;
-            margin: 0 0 12px;
+            line-height: 1.35;
+            margin: 0 0 8px;
+        }
+        .sale-note-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .sale-note-summary .block { min-width: 0; }
+        .sale-note-summary .k {
+            margin: 0;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #737373;
+        }
+        .sale-note-summary .name {
+            margin: 4px 0 0;
+            font-size: 15px;
+            font-weight: 650;
+            line-height: 1.25;
+            color: #141414;
+        }
+        .sale-note-summary dl {
+            margin: 6px 0 0;
+            display: grid;
+            gap: 5px;
+        }
+        .sale-note-summary .row {
+            display: grid;
+            grid-template-columns: 68px minmax(0, 1fr);
+            gap: 8px;
+            align-items: baseline;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+        .sale-note-summary dt { color: #737373; }
+        .sale-note-summary dd {
+            margin: 0;
+            color: #141414;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+        .sale-note-summary .row.stack {
+            grid-template-columns: 1fr;
+            gap: 2px;
+        }
+        .sale-note-summary .row.stack dd { text-align: left; }
+        .sale-note-summary .row.total dd {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            font-size: 14px;
         }
         .sale-note-share-fields {
             display: grid;
             gap: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+        }
+        #saleNoteModal .sale-note-share-fields {
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-bottom: 0;
+        }
+        #saleNoteModal .sale-note-actions {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            align-items: stretch;
+            grid-template-columns: 1fr;
+        }
+        #saleNoteModal .sale-note-actions #saleNoteSave {
+            margin-top: auto;
         }
         .sale-note-share-fields label {
             display: grid;
@@ -4282,12 +4585,64 @@
             font-size: 12px;
             color: #525252;
         }
-        @media (max-width: 480px) {
-            .snd-summary { grid-template-columns: 1fr 1fr; }
-            .snd-parties { grid-template-columns: 1fr; gap: 12px; }
-            .snd-doctype { font-size: 14px; }
-            .snd-bottom { flex-direction: column; }
-            .snd-totals { width: 100%; min-width: 0; }
+        @media (max-width: 640px) {
+            .sale-note-doc {
+                grid-template-columns: 1fr;
+                min-height: 0;
+                padding: 20px 16px 16px;
+            }
+            .snd-vert {
+                writing-mode: horizontal-tb;
+                transform: none;
+                padding: 16px 0 0;
+                font-size: 22px;
+            }
+            .snd-who,
+            .snd-foot-grid,
+            .snd-signs { grid-template-columns: 1fr; row-gap: 16px; }
+            .snd-legal-row { flex-direction: column; align-items: flex-start; }
+        }
+        /* La vista previa conserva la hoja carta y el JS la escala al hueco. */
+        #saleNoteModal .sale-note-stage .sale-note-doc {
+            display: grid;
+            grid-template-columns: 168px minmax(0, 1fr);
+            grid-template-rows: minmax(0, 1fr) auto;
+            column-gap: 36px;
+            box-sizing: border-box;
+            width: 816px;
+            max-width: none;
+            min-height: 1056px;
+            margin: 0;
+            padding: 48px 48px 36px;
+            flex: 0 0 auto;
+            transform-origin: center center;
+        }
+        #saleNoteModal .snd-vert {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            padding: 0;
+            font-size: 28px;
+        }
+        #saleNoteModal .snd-who { grid-template-columns: minmax(0, 1fr) 200px; row-gap: 0; }
+        #saleNoteModal .snd-foot-grid { grid-template-columns: minmax(0, 1fr) 236px; row-gap: 0; }
+        #saleNoteModal .snd-signs { grid-template-columns: 1fr 1fr; row-gap: 0; }
+        #saleNoteModal .snd-legal-row { flex-direction: row; align-items: center; }
+        @media (max-width: 980px) {
+            #saleNoteModal .modal-card,
+            #saleNoteModal.is-editing .modal-card {
+                width: calc(100vw - 16px);
+                max-width: calc(100vw - 16px);
+                height: calc(100vh - 16px);
+                max-height: calc(100vh - 16px);
+            }
+            #saleNoteModal .modal-body { flex-direction: column; }
+            #saleNoteModal #saleNoteShareBlock {
+                flex: 0 0 auto;
+                width: auto;
+                max-height: 46vh;
+                border-left: none;
+                border-top: 1px solid #e5e5e5;
+            }
         }
         .sale-note-actions {
             display: grid;
@@ -4296,9 +4651,11 @@
         }
         .sale-note-actions .btn {
             justify-content: center;
-            height: 40px;
+            height: 36px;
             gap: 8px;
         }
+        #saleNoteModal .sale-note-actions { gap: 6px; }
+        #saleNoteModal .sale-note-actions #saleNoteSave { margin-top: auto; }
         .sale-note-actions .btn.wa,
         .btn.wa { background: #128c7e; border-color: #128c7e; color: #fff; }
         .sale-note-actions .btn.wa:hover,
@@ -4309,6 +4666,10 @@
         }
         @media (max-width: 420px) {
             .sale-note-actions { grid-template-columns: 1fr; }
+        }
+        @page sale-note-sheet {
+            size: letter;
+            margin: 12mm;
         }
         @media print {
             @page {
@@ -4360,7 +4721,8 @@
             #purchaseTicketModal.show .modal-card {
                 max-width: none !important;
                 max-height: none !important;
-                width: 100% !important;
+                width: auto !important;
+                height: auto !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 border: none !important;
@@ -4368,6 +4730,7 @@
                 border-radius: 0 !important;
                 background: #fff !important;
                 color: #0a0a0a !important;
+                overflow: visible !important;
             }
             #saleNoteModal.show .modal-head,
             #saleNoteModal.show .sale-note-hint,
@@ -4388,9 +4751,17 @@
             #saleNoteModal.show .modal-body,
             #lotTicketModal.show .modal-body,
             #purchaseTicketModal.show .modal-body {
+                display: block !important;
+                height: auto !important;
                 padding: 0 !important;
                 overflow: visible !important;
                 background: #fff !important;
+            }
+            #saleNoteModal.show .sale-note-stage {
+                display: block !important;
+                overflow: visible !important;
+                height: auto !important;
+                padding: 0 !important;
             }
 
             .sale-note-doc,
@@ -4404,22 +4775,16 @@
             .sale-note-doc .muted,
             .lot-ticket-doc .muted,
             .sale-note-doc .lbl,
-            .snd-company-sub,
             .snd-party .sub,
+            .snd-obs .val,
             .sale-note-lines .line-unit,
-            .sale-note-lines th.snd-idx,
-            .sale-note-lines td.snd-idx,
             .lot-ticket-meta .k,
             .lot-ticket-pallet-meta .k,
             .lot-ticket-blank-field .lbl,
             .handoff-sub {
                 color: #525252 !important;
             }
-            .snd-top,
-            .snd-summary,
-            .snd-parties,
             .sale-note-lines th,
-            .sale-note-lines tbody tr:last-child td,
             .snd-totals .row.total,
             .lot-ticket-brand,
             .lot-ticket-lines th,
@@ -4430,11 +4795,15 @@
             .lot-ticket-blank-field .line {
                 border-color: #0a0a0a !important;
             }
-            .sale-note-lines td {
-                border-bottom-color: #e5e5e5 !important;
+            #saleNoteDoc .sale-note-lines td,
+            #saleNoteDoc .sale-note-lines th {
+                border-bottom-color: #141414 !important;
+                border-left-color: #141414 !important;
             }
-            .sale-note-lines tbody tr:last-child td {
-                border-bottom-color: #0a0a0a !important;
+            #saleNoteDoc .snd-folio {
+                color: #c8102e !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
             .lot-ticket-sheet {
                 border: 1px solid #0a0a0a !important;
@@ -4514,28 +4883,75 @@
             }
             #lotTicketDoc .lot-ticket-screen-only { display: none !important; }
 
-            /* Nota de venta / ticket compra: hoja carta limpia */
-            #saleNoteDoc.sale-note-doc,
+            /* Nota de venta: una carta, dentro del margen de 12mm (191.9 × 255.4 mm). */
+            #saleNoteModal.show #saleNoteDoc.sale-note-doc {
+                page: sale-note-sheet;
+                box-sizing: border-box !important;
+                width: 191.9mm !important;
+                max-width: 191.9mm !important;
+                height: 255.4mm !important;
+                min-height: 0 !important;
+                max-height: 255.4mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                column-gap: 8mm !important;
+                grid-template-columns: 34mm minmax(0, 1fr) !important;
+                grid-template-rows: minmax(0, 1fr) auto !important;
+                background: #fff !important;
+                color: #141414 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                transform: none !important;
+                zoom: 1 !important;
+                overflow: hidden !important;
+                break-after: avoid;
+                page-break-after: avoid;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            #saleNoteModal.show #saleNoteDoc .snd-main {
+                height: 100% !important;
+                min-height: 0 !important;
+            }
+            #saleNoteModal.show #saleNoteDoc .snd-branch {
+                margin-top: 14mm !important;
+            }
+            #saleNoteModal.show #saleNoteDoc .sale-note-lines {
+                flex: 1 1 auto !important;
+                height: auto !important;
+                min-height: 0 !important;
+                margin-top: 6mm !important;
+            }
+            #saleNoteModal.show #saleNoteDoc .snd-who {
+                grid-template-columns: minmax(0, 1fr) 42mm !important;
+            }
+            #saleNoteModal.show #saleNoteDoc .snd-foot-grid {
+                grid-template-columns: minmax(0, 1fr) 52mm !important;
+                column-gap: 8mm !important;
+            }
             #purchaseTicketDoc.lot-ticket-doc {
                 max-width: 186mm;
                 margin: 0 auto;
                 padding: 0;
                 background: #fff !important;
-                color: #0a0a0a !important;
+                color: #171717 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
             }
-            .snd-doctype,
-            .snd-party .name,
-            .snd-sum-cell .val,
-            .snd-pay .val,
-            .snd-totals .row,
             .sale-note-lines .line-name,
             .lot-ticket-brand .mark {
-                color: #0a0a0a !important;
+                color: #141414 !important;
             }
-            .snd-logo img {
+            #saleNoteDoc .snd-logo {
+                width: 72px !important;
+                height: auto !important;
+                aspect-ratio: 221 / 74;
+                object-fit: contain !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+            #saleNoteDoc .snd-totals .row.total { border-color: #141414 !important; }
+            #saleNoteDoc .sale-note-lines td { padding-top: 3mm !important; padding-bottom: 0 !important; }
 
             /* Conteo de inventario — materias primas y producto terminado */
             body.printing-mat-count > .app,
@@ -7067,17 +7483,379 @@
             .pos-pad .product-grid { max-height: 260px; }
             .pos-station-top {
                 grid-template-columns: 1fr auto;
-                align-items: start;
+                align-items: center;
             }
             .pos-station-title { grid-column: 1; }
-            .pos-station-actions { grid-column: 2; align-self: start; }
+            .pos-station-actions { grid-column: 2; align-self: center; }
             .pos-station-fields {
                 grid-column: 1 / -1;
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(110px, 132px);
             }
             .pos-station-pay { grid-template-columns: 1fr; }
             .pos-pay-checkout { width: 100%; }
             #posCheckoutBtn { flex: 1; }
+        }
+
+        /* —— Venta: catálogo + ticket integrado (Square / Fresha) —— */
+        #posModeVenta .pos-station {
+            grid-template-rows: auto minmax(0, 1fr);
+            border-radius: 12px 12px 16px 16px;
+        }
+        #posModeVenta .pos-station-top {
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            padding: 6px 12px;
+            gap: 8px;
+            background: var(--panel);
+        }
+        #posModeVenta .pos-station-title { display: none; }
+        #posModeVenta .pos-station-fields {
+            grid-template-columns: minmax(0, 1fr) minmax(118px, 140px);
+            gap: 8px;
+        }
+        #posModeVenta .pos-station-top .pos-client-trigger,
+        #posModeVenta .pos-select,
+        #posModeVenta .pos-station-top .btn {
+            height: 32px;
+            border-radius: 10px;
+        }
+        #posModeVenta .pos-station-top .pos-promo-btn {
+            width: 32px;
+        }
+        #posModeVenta .pos-station-main {
+            grid-template-columns: minmax(0, 1fr) minmax(300px, 332px);
+        }
+        #posModeVenta .pos-pad { background: var(--bg-soft); }
+        #posModeVenta .pos-pad-tools {
+            padding: 8px 12px 6px;
+            gap: 6px;
+            background: var(--bg-soft);
+            border-bottom: none;
+        }
+        #posModeVenta .pos-search {
+            position: relative;
+            display: block;
+        }
+        #posModeVenta .pos-search i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 13px;
+            pointer-events: none;
+        }
+        #posModeVenta .pos-search .search {
+            width: 100%;
+            height: 34px;
+            padding: 0 12px 0 34px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            font-size: 13px;
+        }
+        #posModeVenta .pos-search .search:focus { border-color: var(--text); }
+        #posModeVenta .pos-pad-tools .chips { max-height: none; }
+        #posModeVenta .pos-pad-tools .chip {
+            height: 26px;
+            padding: 0 10px;
+            font-size: 11px;
+            background: var(--panel);
+        }
+        #posModeVenta .pos-pad-tools .chip.active {
+            background: var(--text);
+            color: var(--primary-fg);
+            border-color: var(--text);
+        }
+        #posModeVenta .pos-pad .product-grid {
+            padding: 2px 12px 12px;
+            gap: 8px;
+            grid-template-columns: repeat(auto-fill, minmax(188px, 1fr));
+        }
+        #posModeVenta .product-card {
+            grid-template-columns: 48px minmax(0, 1fr);
+            gap: 0 10px;
+            padding: 7px 10px 7px 7px;
+            border-radius: 12px;
+            background: var(--panel);
+            border-color: transparent;
+            box-shadow: 0 0 0 1px var(--border);
+            min-height: 0;
+        }
+        #posModeVenta .product-card:hover {
+            background: var(--panel);
+            box-shadow: 0 0 0 1px var(--text);
+        }
+        #posModeVenta .product-card .thumb {
+            width: 48px;
+            height: 48px;
+            max-height: 48px;
+            border-radius: 8px;
+            background: var(--bg-soft);
+        }
+        #posModeVenta .product-card .thumb img {
+            max-width: 44px;
+            max-height: 44px;
+        }
+        #posModeVenta .product-card .pc-body { gap: 0; }
+        #posModeVenta .product-card .name {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        #posModeVenta .product-card .pc-price {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+        }
+        #posModeVenta .product-card .unit {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        #posModeVenta .product-card .fam { display: none; }
+        #posModeVenta .pos-ticket {
+            background: var(--panel);
+        }
+        #posModeVenta .pos-ticket-head {
+            min-height: 44px;
+            padding: 8px 12px;
+        }
+        #posModeVenta .pos-ticket-head h3 {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            text-transform: none;
+            color: var(--text);
+        }
+        #posModeVenta .pos-cart-body {
+            background: var(--panel);
+            padding: 4px 12px 12px;
+        }
+        #posModeVenta .pos-cart-body .empty {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-height: 0;
+            padding: 28px 16px;
+            color: var(--muted);
+        }
+        #posModeVenta .pos-cart-body .empty::before {
+            content: "\f07a";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 16px;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: var(--bg-soft);
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        #posModeVenta .pos-cart-body .empty-title {
+            color: var(--text);
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        #posModeVenta .pos-cart-body .empty-sub { font-size: 13px; }
+        #posModeVenta .cart-item {
+            grid-template-columns: 52px minmax(0, 1fr) auto;
+            gap: 2px 12px;
+            padding: 12px 4px;
+            align-items: center;
+        }
+        #posModeVenta .cart-item .ci-thumb {
+            width: 52px;
+            min-height: 52px;
+            height: 52px;
+            margin: 0;
+            border-radius: 10px;
+            background: var(--bg-soft);
+            grid-row: 1 / span 3;
+            align-self: center;
+        }
+        #posModeVenta .cart-item .ci-name {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        #posModeVenta .cart-item .ci-line {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        #posModeVenta .qty-row { gap: 8px; }
+        #posModeVenta .qty-btn,
+        #posModeVenta .qty-input {
+            height: 32px;
+            background: var(--bg-soft);
+            border-color: transparent;
+        }
+        #posModeVenta .qty-btn { width: 32px; border-radius: 8px; }
+        #posModeVenta .qty-input { border-radius: 8px; }
+        #posModeVenta .qty-row .ci-dup,
+        #posModeVenta .qty-row .ci-rm {
+            height: 32px;
+            padding: 0 8px;
+            border-radius: 8px;
+        }
+        #posModeVenta .qty-row .ci-dup { margin-left: auto; }
+        #posModeVenta .pos-station-pay {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            grid-template-columns: none;
+            align-items: stretch;
+            padding: 8px 10px 10px;
+            border-top: 1px solid var(--border);
+            background: var(--panel);
+            flex-shrink: 0;
+        }
+        #posModeVenta .pos-pay-block,
+        #posModeVenta .pos-bill-block { gap: 8px; }
+        #posModeVenta #posPaySeg {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+            border: none;
+            overflow: visible;
+            background: transparent;
+        }
+        #posModeVenta #posPaySeg label {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-height: 48px;
+            padding: 6px 2px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-soft);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+            text-align: center;
+        }
+        #posModeVenta #posPaySeg label i { font-size: 13px; }
+        #posModeVenta #posPaySeg input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #posModeVenta #posPaySeg label:has(input:checked) {
+            background: var(--text);
+            color: var(--primary-fg);
+            border-color: var(--text);
+        }
+        #posModeVenta .pos-pay-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        #posModeVenta .pay-split-check,
+        #posModeVenta .pos-precompra-check {
+            position: relative;
+            display: grid;
+            place-items: center;
+            margin: 0;
+            min-height: 32px;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-soft);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--muted);
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: background .12s, border-color .12s, color .12s;
+        }
+        #posModeVenta .pay-split-check input,
+        #posModeVenta .pos-precompra-check input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #posModeVenta .pay-split-check:has(input:checked),
+        #posModeVenta .pos-precompra-check:has(input:checked) {
+            background: var(--text);
+            color: var(--primary-fg);
+            border-color: var(--text);
+        }
+        #posModeVenta .pay-split-check:focus-within,
+        #posModeVenta .pos-precompra-check:focus-within {
+            outline: 2px solid color-mix(in srgb, var(--text) 28%, transparent);
+            outline-offset: 1px;
+        }
+        #posModeVenta .pay-split-check:hover:not(:has(input:checked)),
+        #posModeVenta .pos-precompra-check:hover:not(:has(input:checked)) {
+            border-color: color-mix(in srgb, var(--text) 28%, var(--border));
+            color: var(--text);
+        }
+        #posModeVenta .pos-bill-block .seg {
+            gap: 8px;
+            border: none;
+            overflow: visible;
+            background: transparent;
+        }
+        #posModeVenta .pos-bill-block .seg label {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-soft);
+            min-height: 32px;
+            padding: 6px 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        #posModeVenta .pos-bill-block .seg label:has(input:checked) {
+            background: var(--text);
+            color: var(--primary-fg);
+            border-color: var(--text);
+        }
+        #posModeVenta .pos-pay-checkout {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            align-items: center;
+            gap: 16px;
+            padding-top: 4px;
+        }
+        #posModeVenta .pos-station-pay .cart-total {
+            justify-items: start;
+            text-align: left;
+            min-width: 0;
+        }
+        #posModeVenta .pos-station-pay .cart-total .amount {
+            font-size: 22px;
+        }
+        #posModeVenta #posCheckoutBtn {
+            width: 100%;
+            height: 40px;
+            min-width: 0;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        #posModeVenta #posCheckoutBtn:disabled {
+            opacity: 0.38;
+        }
+        @media (max-width: 1100px) {
+            #posModeVenta .pos-station-main {
+                grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+            }
+            #posModeVenta #posPaySeg { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 900px) {
+            #posModeVenta .pos-station-main { grid-template-columns: 1fr; }
+            #posModeVenta .pos-pad .product-grid { max-height: 320px; }
+            #posModeVenta .pos-station-pay { max-height: none; }
+            #posModeVenta .pos-pay-checkout { grid-template-columns: 1fr; }
         }
 
         /* —— iPhone / móvil Fases 2–4 (≤760 / ≤480) —— */
@@ -7711,9 +8489,9 @@
     <div class="app">
         <button type="button" class="sidebar-scrim" id="sidebarScrim" aria-label="Cerrar menú" tabindex="-1"></button>
         <aside class="sidebar" id="sidebar">
-            <a class="sidebar-logo" href="/" title="S-35" aria-label="Sitio S-35">
-                <img src="/Assets/Logotipo Principal.png" alt="S-35">
-            </a>
+            <div class="sidebar-logo" title="S-35" aria-hidden="true">
+                <img src="/Assets/Logotipo Principal.png" alt="">
+            </div>
             <nav class="nav">
                 <a href="#dashboard" data-section="dashboard" class="active" title="Copiloto S35" aria-label="Copiloto S35">
                     <span class="nav-copilot-orb" aria-hidden="true"></span>
@@ -8054,7 +8832,8 @@
 
 
                 <section id="venta" class="section">
-                    <div class="pos-mode-bar">
+                    <div class="pos-workspace">
+                    <div class="pos-mode-bar" aria-label="Modo de caja">
                         <div class="seg-control" id="posModeTabs" role="tablist" aria-label="Modo de caja">
                             <button type="button" role="tab" data-pos-mode="venta" class="active" aria-selected="true">Venta</button>
                             <button type="button" role="tab" data-pos-mode="gastos" aria-selected="false">Gastos de caja</button>
@@ -8067,11 +8846,11 @@
                             <h1 class="pos-station-title" id="posStationTitle">Venta</h1>
                             <div class="pos-station-fields">
                                 <div class="pos-field pos-field-client">
-                                    <span class="field-label">Cliente</span>
+                                    <span class="field-label" id="posClientFieldLabel">Cliente</span>
                                     <div class="pos-client-picker" id="posClientPicker">
                                         <input type="hidden" id="posClientSelect" value="" autocomplete="off">
                                         <button type="button" class="pos-client-trigger is-placeholder" id="posClientTrigger"
-                                            aria-haspopup="listbox" aria-expanded="false" aria-controls="posClientPickerList">
+                                            aria-labelledby="posClientFieldLabel" aria-haspopup="listbox" aria-expanded="false" aria-controls="posClientPickerList">
                                             <span class="pos-client-trigger-text">
                                                 <span class="pos-client-trigger-label" id="posClientTriggerLabel">Seleccionar cliente…</span>
                                                 <span class="pos-client-trigger-badge" id="posClientTriggerBadge" hidden></span>
@@ -8103,8 +8882,9 @@
                                     <span class="val" id="posKpiToday">$0</span>
                                     <span class="hint" id="posKpiTodayHint">0 ventas</span>
                                 </span>
-                                <button type="button" class="btn" id="posPromoBtn" title="Aplicar código de promoción">
-                                    <i class="fa-solid fa-percent" aria-hidden="true"></i> Código
+                                <button type="button" class="btn pos-promo-btn" id="posPromoBtn" title="Aplicar código de promoción" aria-label="Código de promoción">
+                                    <i class="fa-solid fa-percent" aria-hidden="true"></i>
+                                    <span class="pos-promo-btn-text">Código</span>
                                 </button>
                             </div>
                         </header>
@@ -8112,8 +8892,9 @@
                         <div class="pos-station-main">
                             <div class="pos-pad">
                                 <div class="pos-pad-tools">
-                                    <div class="toolbar">
-                                        <input id="posProductSearch" class="search" type="search" placeholder="Buscar producto…">
+                                    <div class="toolbar pos-search">
+                                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                        <input id="posProductSearch" class="search" type="search" placeholder="Buscar producto, código o familia…">
                                     </div>
                                     <div class="chips" id="posFamilyChips"></div>
                                 </div>
@@ -8123,7 +8904,7 @@
                                 <div class="pos-ticket-head pos-cart-head">
                                     <div class="pos-ticket-head-text">
                                         <h3>Ticket</h3>
-                                        <p class="pos-cart-tier" id="posCartTierHint">Escalón por unidades</p>
+                                        <p class="pos-cart-tier" id="posCartTierHint">0 Piezas</p>
                                     </div>
                                     <button type="button" class="btn ghost" id="posClearCartBtn">Vaciar</button>
                                 </div>
@@ -8135,49 +8916,50 @@
                                     <button type="button" class="btn" id="posPrecompraBannerBtn">Surtir</button>
                                 </div>
                                 <div class="pos-cart-body" id="posCartBody">
-                                    <div class="empty">Toca un producto para agregarlo al ticket.</div>
+                                    <div class="empty"><span class="empty-title">Ticket vacío</span><span class="empty-sub">Toca un producto para sumarlo.</span></div>
                                 </div>
+                                <footer class="pos-station-pay">
+                                    <div class="pos-pay-block">
+                                        <div class="field-label">Pago</div>
+                                        <div class="seg seg-pay" id="posPaySeg">
+                                            <label><input type="radio" name="payMethod" value="efectivo" checked><i class="fa-solid fa-money-bill-wave" aria-hidden="true"></i><span>Efectivo</span></label>
+                                            <label><input type="radio" name="payMethod" value="tarjeta"><i class="fa-solid fa-credit-card" aria-hidden="true"></i><span>Tarjeta</span></label>
+                                            <label><input type="radio" name="payMethod" value="transferencia"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Transfer.</span></label>
+                                            <label id="posPayPorCobrarLabel"><input type="radio" name="payMethod" value="por_cobrar"><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i><span>Por cobrar</span></label>
+                                        </div>
+                                        <div class="pos-pay-options">
+                                            <label class="pay-split-check"><input type="checkbox" id="posPaySplit"><span>Dividir pago</span></label>
+                                            <label class="pos-precompra-check" title="Anticipo de mercancía: el dinero entra ya; el inventario baja al surtir">
+                                                <input type="checkbox" id="posPrecompraMode">
+                                                <span>Precompra</span>
+                                            </label>
+                                        </div>
+                                        <div class="pay-split-panel" id="posPaySplitPanel" hidden>
+                                            <div class="pay-split-rows" id="posPaySplitRows"></div>
+                                            <button type="button" class="btn" id="posPaySplitAdd"><i class="fa-solid fa-plus"></i> Método</button>
+                                            <div class="pay-split-summary">
+                                                <span>Asignado <strong id="posPaySplitSum">$0.00</strong></span>
+                                                <span>Restante <strong id="posPaySplitRemain">$0.00</strong></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="pos-bill-block">
+                                        <div class="field-label">Facturación</div>
+                                        <div class="seg two">
+                                            <label><input type="radio" name="billing" value="sin_facturar" checked> Sin factura</label>
+                                            <label><input type="radio" name="billing" value="facturado"> Facturado</label>
+                                        </div>
+                                    </div>
+                                    <div class="pos-pay-checkout">
+                                        <div class="cart-total">
+                                            <span class="label">Total</span>
+                                            <span class="amount" id="posCartTotal">$0.00</span>
+                                        </div>
+                                        <button type="button" class="btn primary" id="posCheckoutBtn" disabled>Cobrar</button>
+                                    </div>
+                                </footer>
                             </div>
                         </div>
-
-                        <footer class="pos-station-pay">
-                            <div class="pos-pay-block">
-                                <div class="field-label">Pago</div>
-                                <div class="seg seg-pay" id="posPaySeg">
-                                    <label><input type="radio" name="payMethod" value="efectivo" checked> Efectivo</label>
-                                    <label><input type="radio" name="payMethod" value="tarjeta"> Tarjeta</label>
-                                    <label><input type="radio" name="payMethod" value="transferencia"> Transfer.</label>
-                                    <label id="posPayPorCobrarLabel"><input type="radio" name="payMethod" value="por_cobrar"> Por cobrar</label>
-                                </div>
-                                <label class="pay-split-check"><input type="checkbox" id="posPaySplit"> Dividir pago</label>
-                                <div class="pay-split-panel" id="posPaySplitPanel" hidden>
-                                    <div class="pay-split-rows" id="posPaySplitRows"></div>
-                                    <button type="button" class="btn" id="posPaySplitAdd"><i class="fa-solid fa-plus"></i> Método</button>
-                                    <div class="pay-split-summary">
-                                        <span>Asignado <strong id="posPaySplitSum">$0.00</strong></span>
-                                        <span>Restante <strong id="posPaySplitRemain">$0.00</strong></span>
-                                    </div>
-                                </div>
-                                <label class="pos-precompra-check" title="Anticipo de mercancía: el dinero entra ya; el inventario baja al surtir">
-                                    <input type="checkbox" id="posPrecompraMode">
-                                    Precompra (anticipo de unidades)
-                                </label>
-                            </div>
-                            <div class="pos-bill-block">
-                                <div class="field-label">Facturación</div>
-                                <div class="seg two">
-                                    <label><input type="radio" name="billing" value="sin_facturar" checked> Sin factura</label>
-                                    <label><input type="radio" name="billing" value="facturado"> Facturado</label>
-                                </div>
-                            </div>
-                            <div class="pos-pay-checkout">
-                                <div class="cart-total">
-                                    <span class="label">Total</span>
-                                    <span class="amount" id="posCartTotal">$0.00</span>
-                                </div>
-                                <button type="button" class="btn primary" id="posCheckoutBtn" disabled>Cobrar</button>
-                            </div>
-                        </footer>
                     </div>
                     </div>
 
@@ -8226,6 +9008,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                     </div>
 
                     <button type="button" id="posPromoCartBtn" hidden aria-hidden="true" tabindex="-1"></button>
@@ -8785,7 +9568,7 @@
                         </article>
                         <article class="dinero-card" id="dineroCardBanco">
                             <h3>Transferencias y tarjetas facturadas</h3>
-                            <p class="panel-sub">Banorte · 112017860014 · Culiacán</p>
+                            <p class="panel-sub" id="dineroBancoSub">Banregio · 112017860014 · Culiacán</p>
                             <div class="val" id="dineroBancoTotal">$0.00</div>
                             <div class="dinero-lines" id="dineroBancoLines"></div>
                         </article>
@@ -9388,14 +10171,16 @@
                 <strong id="saleNoteModalTitle">Nota de venta</strong>
                 <div class="modal-head-actions">
                     <button type="button" class="btn" id="saleNoteEditBtn"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
-                    <button id="saleNoteModalClose" class="btn" type="button">Cerrar</button>
+                    <button type="button" class="btn danger" id="saleNoteDelete" hidden><i class="fa-solid fa-trash-can"></i> Eliminar</button>
                 </div>
             </div>
             <div class="modal-body">
-                <div id="saleNoteDoc" class="sale-note-doc"></div>
-                <div id="saleNoteEdit" class="sale-note-edit" hidden></div>
+                <div class="sale-note-stage">
+                    <div id="saleNoteDoc" class="sale-note-doc"></div>
+                    <div id="saleNoteEdit" class="sale-note-edit" hidden></div>
+                </div>
                 <div id="saleNoteShareBlock">
-                    <p class="sale-note-hint">Se abre WhatsApp o el correo de este dispositivo. No hay envío automático desde el servidor.</p>
+                    <div id="saleNoteSummary" class="sale-note-summary"></div>
                     <div class="sale-note-share-fields">
                         <label>Teléfono WhatsApp
                             <input id="saleNotePhone" class="customer-input" type="tel" inputmode="tel" placeholder="Ej. 6671234567" autocomplete="off">
@@ -9405,11 +10190,11 @@
                         </label>
                     </div>
                     <div class="sale-note-actions">
-                        <button type="button" class="btn wa" id="saleNoteWhatsApp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+                        <button type="button" class="btn" id="saleNoteWhatsApp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
                         <button type="button" class="btn" id="saleNoteEmailBtn"><i class="fa-solid fa-envelope"></i> Correo</button>
                         <button type="button" class="btn" id="saleNoteCopy"><i class="fa-solid fa-copy"></i> Copiar</button>
-                        <button type="button" class="btn primary" id="saleNotePrint"><i class="fa-solid fa-print"></i> Imprimir</button>
-                        <button type="button" class="btn danger" id="saleNoteDelete" hidden><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+                        <button type="button" class="btn" id="saleNotePrint"><i class="fa-solid fa-print"></i> Imprimir</button>
+                        <button type="button" class="btn primary" id="saleNoteSave"><i class="fa-solid fa-cloud-arrow-up"></i> Guardar</button>
                     </div>
                 </div>
             </div>
@@ -10057,12 +10842,16 @@
         if (c === 'all') return Math.max(0, Number(m.reserved) || 0);
         return Math.max(0, Number(m.reservedByCity[c]) || 0);
     }
+    function touchMaterialRow(m) {
+        if (m) m.updatedAt = new Date().toISOString();
+    }
     function setMaterialStockInCity(m, city, qty) {
         ensureMaterialByCity(m);
         const c = normalizeInvCity(city === 'all' ? activeMaterialsCity() : city);
         if (c === 'all') return;
         m.byCity[c] = Math.max(0, Number(qty) || 0);
         syncMaterialCityTotals(m);
+        touchMaterialRow(m);
     }
     function adjustMaterialStockInCity(m, city, delta) {
         ensureMaterialByCity(m);
@@ -10070,6 +10859,7 @@
         if (c === 'all') return;
         m.byCity[c] = Math.max(0, (Number(m.byCity[c]) || 0) + (Number(delta) || 0));
         syncMaterialCityTotals(m);
+        touchMaterialRow(m);
     }
     function ensureFinishedByCity(row) {
         if (!row) return row;
@@ -10194,6 +10984,7 @@
                 const saved = [];
                 const byId = {};
                 raw.items.map(normalizeItem).forEach(function (m) {
+                    if (m.deleted) return;
                     if (m.id === 'marmolina-estandar') {
                         persistNormalized = true;
                         return;
@@ -10302,6 +11093,7 @@
         if (q > materialFreeStock(mat, cityKey) + 1e-9) return false;
         mat.reservedByCity[cityKey] = materialReservedInCity(mat, cityKey) + q;
         syncMaterialCityTotals(mat);
+        touchMaterialRow(mat);
         return true;
     }
     function releasePlantQty(plantId, qty, city) {
@@ -10312,6 +11104,7 @@
         const cityKey = c === 'all' ? INV_DEFAULT_CITY : c;
         mat.reservedByCity[cityKey] = Math.max(0, materialReservedInCity(mat, cityKey) - Math.max(0, Number(qty) || 0));
         syncMaterialCityTotals(mat);
+        touchMaterialRow(mat);
     }
     function consumePlantQty(plantId, qty, city) {
         const mat = plantById(plantId);
@@ -10323,9 +11116,38 @@
         mat.byCity[cityKey] = Math.max(0, (Number(mat.byCity[cityKey]) || 0) - q);
         mat.reservedByCity[cityKey] = Math.max(0, (Number(mat.reservedByCity[cityKey]) || 0) - q);
         syncMaterialCityTotals(mat);
+        touchMaterialRow(mat);
     }
 
     const FINISHED_KEY = 's35_finished_stock';
+    function finishedStockItems(raw) {
+        let current = raw;
+        if (typeof current === 'string') {
+            try { current = JSON.parse(current); } catch (_) { return null; }
+        }
+        for (let i = 0; i < 2; i++) {
+            if (current && typeof current === 'object' && !Array.isArray(current) &&
+                current.value != null &&
+                (typeof current.value === 'object' || typeof current.value === 'string') &&
+                !current.items) {
+                if (typeof current.value === 'string') {
+                    try { current = JSON.parse(current.value); } catch (_) { return null; }
+                } else current = current.value;
+            } else break;
+        }
+        if (!current || typeof current !== 'object') return null;
+        if (Array.isArray(current.items)) {
+            const map = {};
+            current.items.forEach(function (row) {
+                if (!row || typeof row !== 'object') return;
+                const key = row.slug || row.id || row.productSlug;
+                if (key) map[String(key)] = row;
+            });
+            return map;
+        }
+        if (current.items && typeof current.items === 'object') return current.items;
+        return current;
+    }
     function loadFinished() {
         const seed = {};
         function ensure(slug) {
@@ -10336,10 +11158,12 @@
         (data.recipes || []).forEach(function (r) { ensure(r.product || r.slug); });
         try {
             const raw = JSON.parse(localStorage.getItem(FINISHED_KEY) || 'null');
-            const items = raw && raw.items ? raw.items : raw;
-            if (items && typeof items === 'object') {
+            const items = finishedStockItems(raw);
+            if (items && typeof items === 'object' && !Array.isArray(items)) {
                 Object.keys(items).forEach(function (slug) {
-                    const row = items[slug];
+                    if (slug === 'updatedAt') return;
+                    let row = items[slug];
+                    if (typeof row === 'number') row = { stock: row };
                     if (!row || typeof row !== 'object') return;
                     ensure(slug);
                     seed[slug].stock = Number(row.stock) || 0;
@@ -10406,6 +11230,7 @@
             }
             finishedStock[slug].byCity[city] = nextCity;
             syncFinishedCityTotals(finishedStock[slug]);
+            finishedStock[slug].updatedAt = new Date().toISOString();
             changed = true;
         });
         if (changed) saveFinished();
@@ -10443,6 +11268,18 @@
     const sidebar = document.getElementById('sidebar');
     const sidebarScrim = document.getElementById('sidebarScrim');
     const menuBtn = document.getElementById('menuBtn');
+    function syncMenuBtnIcon() {
+        if (!menuBtn) return;
+        const open = !!(sidebar && sidebar.classList.contains('open'));
+        const icon = menuBtn.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fa-bars', !open);
+            icon.classList.toggle('fa-xmark', open);
+        }
+        menuBtn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Menú');
+        menuBtn.setAttribute('title', open ? 'Cerrar' : 'Menú');
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
     function setDrawerOpen(open) {
         const next = !!open;
         if (sidebar) sidebar.classList.toggle('open', next);
@@ -10451,13 +11288,14 @@
             sidebarScrim.setAttribute('aria-hidden', next ? 'false' : 'true');
         }
         document.body.classList.toggle('drawer-open', next);
-        if (menuBtn) menuBtn.setAttribute('aria-expanded', next ? 'true' : 'false');
+        syncMenuBtnIcon();
     }
     function closeDrawer() { setDrawerOpen(false); }
     if (menuBtn) {
         menuBtn.addEventListener('click', function () {
             setDrawerOpen(!(sidebar && sidebar.classList.contains('open')));
         });
+        syncMenuBtnIcon();
     }
     if (sidebarScrim) {
         sidebarScrim.addEventListener('click', closeDrawer);
@@ -12217,6 +13055,7 @@
             next.byCity[materialsCityFilter] = stock;
         }
         syncMaterialCityTotals(next);
+        next.updatedAt = new Date().toISOString();
         const idx = inventory.findIndex(function (m) { return m.id === next.id; });
         if (idx >= 0) inventory[idx] = next;
         else inventory.push(next);
@@ -12239,8 +13078,10 @@
             const item = inventory.filter(function (m) { return m.id === id; })[0];
             if (!item) return;
             if (!confirm('¿Eliminar «' + displayName(item) + '» del inventario?')) return;
-            inventory = inventory.filter(function (m) { return m.id !== id; });
+            item.deleted = true;
+            item.updatedAt = new Date().toISOString();
             saveInventory(inventory);
+            inventory = inventory.filter(function (m) { return m.id !== id; });
             updateMaterialKpi();
             renderMatChips();
             renderMaterials();
@@ -16121,6 +16962,11 @@
                 : '<div class="empty">Sin historial aún. Los lotes confirmados o cancelados aparecerán aquí.</div>';
             return;
         }
+        list.sort(function (a, b) {
+            const ta = Date.parse(a.confirmedAt || a.cancelledAt || a.issuedAt || a.editedAt || '') || 0;
+            const tb = Date.parse(b.confirmedAt || b.cancelledAt || b.issuedAt || b.editedAt || '') || 0;
+            return tb - ta;
+        });
         box.innerHTML = list.slice(0, 80).map(lotTicketRowHtml).join('');
     }
     function refreshLotTicketLists() {
@@ -16730,6 +17576,7 @@
             return;
         }
         t.issuedAt = new Date().toISOString();
+        t.editedAt = t.issuedAt;
         t.packReserved = packLines.length > 0;
         list.unshift(t);
         saveLotTickets(list);
@@ -17526,6 +18373,7 @@
         adjustFinishedMap(finDelta, confirmCity);
         t.status = 'confirmed';
         t.confirmedAt = new Date().toISOString();
+        t.editedAt = t.confirmedAt;
         t.bagsOut = bagsOut;
         t.city = confirmCity;
         t.producedBy = producedBy;
@@ -17704,6 +18552,7 @@
             saveInventory(inventory);
             t.status = 'cancelled';
             t.cancelledAt = new Date().toISOString();
+            t.editedAt = t.cancelledAt;
             list[idx] = t;
             saveLotTickets(list);
             refreshStockViews();
@@ -17742,6 +18591,7 @@
         saveInventory(inventory);
         t.status = 'cancelled';
         t.cancelledAt = new Date().toISOString();
+        t.editedAt = t.cancelledAt;
         t.voidedFromConfirmed = true;
         t.notes = (t.notes ? t.notes + ' · ' : '') + 'Anulado (producción accidental / corrección)';
         list[idx] = t;
@@ -17809,7 +18659,9 @@
             return k === 's35_pos_sales' || k === 's35_sale_edits_v1' || k === 's35_caja_gastos_v1' ||
                 k === 's35_tesoreria_movs_v1' || k === 's35_promo_codes_v1' || k === 's35_pos_prices_v4';
         });
+        const touchLots = all || keySet['s35_production_lots'] || keySet['s35_compra_tickets'];
 
+        if (touchLots && typeof refreshLotTicketLists === 'function') refreshLotTicketLists();
         if (touchPlant && typeof hydrateInventoryFromLocal === 'function') hydrateInventoryFromLocal();
         if (touchFinished) hydrateFinishedFromLocal();
         if (touchFormulas && typeof hydrateFormulasFromLocal === 'function') hydrateFormulasFromLocal();
@@ -17981,9 +18833,9 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20261006-iphone-f2f4"></script>
-    <script src="/colaboradores/command-palette.js?v=20261006-iphone-f2f4"></script>
-    <script src="/colaboradores/mail-copilot.js?v=20261006-iphone-f2f4"></script>
+    <script src="/colaboradores/pos-module.js?v=20261029-iphone-f2f4"></script>
+    <script src="/colaboradores/command-palette.js?v=20261029-iphone-f2f4"></script>
+    <script src="/colaboradores/mail-copilot.js?v=20261029-iphone-f2f4"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>
 </body>
 </html>

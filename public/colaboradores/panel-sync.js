@@ -4,8 +4,12 @@
  * Estrategia: last-write-wins por `updatedAt` en documentos escalares.
  * Colecciones (ventas, gastos, lotes, etc.): unión por id para no perder
  * cambios de otro dispositivo / pestaña.
+ * Inventario / PT: fusión por fila (sku/id); gana solo sello de fila más nuevo.
  * localStorage sigue siendo caché/offline; la nube es fuente de verdad cuando responde.
  * Clientes POS siguen en /api/clients (no se duplican aquí).
+ *
+ * Operativo: al abrir otro navegador, esperar softPull/bootstrap (o recargar).
+ * No trabajar en un panel offline con inventario viejo y luego “reconectar”.
  */
 (function (global) {
     'use strict';
@@ -53,6 +57,16 @@
 
     /** Catálogo panel { names, added[] }: unión por slug (altas desde varios dispositivos). */
     var MERGE_CATALOG_KEY = 's35_product_catalog_v1';
+
+    /**
+     * Keys donde Mongo manda: al bootstrap/pull el remoto es base;
+     * tras un PUT aceptado se reemplaza local con la respuesta (sin re-merge stale).
+     */
+    var AUTHORITATIVE_KEYS = {
+        s35_finished_stock: true,
+        s35_plant_inventory: true,
+        s35_pos_sales: true
+    };
 
     var META_KEY = 's35_panel_sync_meta_v1';
     var RELOAD_FLAG = 's35_panel_sync_reloaded';
@@ -169,7 +183,25 @@
         return [];
     }
 
-    function mergeItemLists(a, b, dropHistorical) {
+    function lotRecency(row) {
+        if (!row || typeof row !== 'object') return 0;
+        var stamp = row.editedAt || row.updatedAt || row.confirmedAt || row.cancelledAt || row.issuedAt;
+        var t = Date.parse(stamp);
+        return isFinite(t) ? t : 0;
+    }
+
+    function lotIsConfirmed(row) {
+        var s = String((row && row.status) || '');
+        return s === 'confirmed' || s === 'completed' || s === 'closed';
+    }
+
+    function rowStampMs(row) {
+        if (!row || typeof row !== 'object') return 0;
+        var t = Date.parse(row.updatedAt || row.editedAt);
+        return isFinite(t) ? t : 0;
+    }
+
+    function mergeItemLists(a, b, dropHistorical, useLotRecency) {
         var byId = Object.create(null);
         var order = [];
         function consider(row) {
@@ -183,15 +215,19 @@
                 return;
             }
             var prev = byId[id];
-            var tr = itemRecency(row);
-            var tp = itemRecency(prev);
+            var tr = useLotRecency ? lotRecency(row) : itemRecency(row);
+            var tp = useLotRecency ? lotRecency(prev) : itemRecency(prev);
             if (tr > tp) {
                 byId[id] = row;
                 return;
             }
             if (tr < tp) return;
-            // Empate: tombstone de borrado gana (no resucitar).
-            if (row.deleted && !prev.deleted) byId[id] = row;
+            if (row.deleted && !prev.deleted) {
+                byId[id] = row;
+                return;
+            }
+            if (useLotRecency && lotIsConfirmed(prev) && !lotIsConfirmed(row) && row.status !== 'cancelled') return;
+            if (useLotRecency && lotIsConfirmed(row) && !lotIsConfirmed(prev)) byId[id] = row;
         }
         (a || []).forEach(consider);
         (b || []).forEach(consider);
@@ -202,7 +238,8 @@
         var merged = mergeItemLists(
             extractItems(localVal),
             extractItems(remoteVal),
-            key === 's35_pos_sales'
+            key === 's35_pos_sales',
+            key === 's35_production_lots'
         );
         var base = (localVal && typeof localVal === 'object' && !Array.isArray(localVal))
             ? localVal
@@ -460,23 +497,117 @@
         status.appliedKeys = [];
     }
 
+    /** Inventario/PT: solo un sello de fila estrictamente más nuevo pisa; empate = conservar prev. */
+    function mergeKeyedRows(prevRows, nextRows, idOf) {
+        var byId = Object.create(null);
+        var order = [];
+        function consider(row) {
+            if (!row || typeof row !== 'object') return;
+            var id = idOf(row);
+            if (!id || id === 'updatedAt' || id === 'value') return;
+            if (!byId[id]) {
+                byId[id] = row;
+                order.push(id);
+                return;
+            }
+            var prev = byId[id];
+            var tr = rowStampMs(row);
+            var tp = rowStampMs(prev);
+            if (row.deleted && !prev.deleted && tr >= tp) {
+                byId[id] = row;
+                return;
+            }
+            if (prev.deleted && !row.deleted && tp > tr) return;
+            if (tr > tp) byId[id] = row;
+        }
+        (prevRows || []).forEach(consider);
+        (nextRows || []).forEach(consider);
+        return order.map(function (id) { return byId[id]; });
+    }
+
+    function mergeInventoryValue(prevValue, nextValue, updatedAt) {
+        var merged = mergeKeyedRows(extractItems(prevValue), extractItems(nextValue), function (row) {
+            return row && row.id != null ? String(row.id) : '';
+        });
+        var base = (nextValue && typeof nextValue === 'object' && !Array.isArray(nextValue))
+            ? nextValue
+            : ((prevValue && typeof prevValue === 'object' && !Array.isArray(prevValue)) ? prevValue : {});
+        var out = Object.assign({}, base, { items: merged });
+        if (updatedAt) out.updatedAt = updatedAt;
+        return out;
+    }
+
+    function finishedMapOf(value) {
+        if (!value || typeof value !== 'object') return {};
+        var current = value;
+        if (current.value && !current.items) current = current.value;
+        if (current.items && typeof current.items === 'object' && !Array.isArray(current.items)) return current.items;
+        if (Array.isArray(current.items)) {
+            var map = {};
+            current.items.forEach(function (row) {
+                if (row && (row.slug || row.id)) map[String(row.slug || row.id)] = row;
+            });
+            return map;
+        }
+        return current;
+    }
+
+    function mergeFinishedValue(prevValue, nextValue, updatedAt) {
+        function rows(value) {
+            var map = finishedMapOf(value);
+            return Object.keys(map).filter(function (k) { return k !== 'updatedAt' && k !== 'value'; }).map(function (slug) {
+                var row = map[slug];
+                if (!row || typeof row !== 'object') return { slug: slug };
+                return Object.assign({ slug: slug }, row);
+            });
+        }
+        var merged = mergeKeyedRows(rows(prevValue), rows(nextValue), function (row) {
+            return row && (row.slug || row.id) ? String(row.slug || row.id) : '';
+        });
+        var items = {};
+        merged.forEach(function (row) {
+            if (row && row.slug) items[row.slug] = row;
+        });
+        return { items: items, updatedAt: updatedAt || null };
+    }
+
+    function stockFingerprint(value, key) {
+        if (key === 's35_finished_stock') {
+            var map = finishedMapOf(value);
+            return Object.keys(map).sort().map(function (slug) {
+                var row = map[slug] || {};
+                return slug + ':' + (row.stock || 0) + ':' + (row.updatedAt || '');
+            }).join('|');
+        }
+        return extractItems(value).map(function (row) {
+            return (row && row.id) + ':' + (row && row.stock) + ':' + ((row && row.updatedAt) || '');
+        }).join('|');
+    }
+
     /** Fusiona local+remoto para claves de colección; null = usar LWW. */
     function mergeStoreValues(key, localVal, remoteVal, localTs, remoteTs) {
         if (MERGE_ITEMS_KEYS[key]) {
             var ts = maxIso(localTs, remoteTs) || new Date().toISOString();
-            var merged = mergeItemsValue(key, localVal, remoteVal, ts);
+            // Remoto como base (prev): en empate gana servidor; local solo con sello más nuevo.
+            var merged = mergeItemsValue(key, remoteVal, localVal, ts);
             var localN = extractItems(localVal).length;
             var remoteN = extractItems(remoteVal).length;
             var mergedN = extractItems(merged).length;
-            // Si la unión aportó ítems que faltaban en el "ganador" LWW, forzar push.
-            var needPush = mergedN > remoteN || (mergedN > localN && cmpIso(localTs, remoteTs) <= 0);
+            // Push solo si local aportó ids/sellos que el remoto no tenía.
+            var needPush = mergedN > remoteN ||
+                itemsRecencyFingerprint(extractItems(remoteVal)) !==
+                    itemsRecencyFingerprint(extractItems(merged));
             var needApply = itemsRecencyFingerprint(extractItems(localVal)) !==
                 itemsRecencyFingerprint(extractItems(merged));
             if (needPush && mergedN > Math.max(localN, remoteN)) {
                 ts = new Date().toISOString();
                 merged = Object.assign({}, merged, { updatedAt: ts });
             }
-            return { value: merged, updatedAt: ts, applyLocal: needApply, push: needPush || cmpIso(localTs, remoteTs) > 0 };
+            // Ventas: no empujar solo porque el doc local tenga marca más nueva.
+            var pushSales = AUTHORITATIVE_KEYS[key]
+                ? needPush
+                : (needPush || cmpIso(localTs, remoteTs) > 0);
+            return { value: merged, updatedAt: ts, applyLocal: needApply, push: pushSales };
         }
         if (MERGE_MAP_KEYS[key]) {
             var tsM = maxIso(localTs, remoteTs) || new Date().toISOString();
@@ -514,6 +645,24 @@
                 push: needPushF
             };
         }
+        if (key === 's35_plant_inventory' || key === 's35_finished_stock') {
+            var tsS = maxIso(localTs, remoteTs) || new Date().toISOString();
+            var mergedS = key === 's35_finished_stock'
+                ? mergeFinishedValue(remoteVal, localVal, tsS)
+                : mergeInventoryValue(remoteVal, localVal, tsS);
+            var changedRemote = stockFingerprint(remoteVal, key) !== stockFingerprint(mergedS, key);
+            var changedLocal = stockFingerprint(localVal, key) !== stockFingerprint(mergedS, key);
+            if (changedRemote) {
+                tsS = new Date().toISOString();
+                mergedS = Object.assign({}, mergedS, { updatedAt: tsS });
+            }
+            return {
+                value: mergedS,
+                updatedAt: tsS,
+                applyLocal: changedLocal,
+                push: changedRemote
+            };
+        }
         if (key === MERGE_CATALOG_KEY) {
             var tsC = maxIso(localTs, remoteTs) || new Date().toISOString();
             var mergedC = mergeProductCatalogValue(localVal, remoteVal, tsC);
@@ -533,6 +682,47 @@
             };
         }
         return null;
+    }
+
+    /**
+     * Producto terminado se sube como { items: { slug: { stock, minStock, unit, byCity } }, updatedAt }.
+     * Si localStorage trae un string JSON o value.value, se desenvuelve antes del PUT.
+     */
+    function canonicalFinishedStock(value) {
+        var current = value;
+        if (typeof current === 'string') {
+            try { current = JSON.parse(current); } catch (_) { return null; }
+        }
+        for (var i = 0; i < 2; i++) {
+            if (current && typeof current === 'object' && !Array.isArray(current) &&
+                current.value != null &&
+                (typeof current.value === 'object' || typeof current.value === 'string') &&
+                !current.items) {
+                if (typeof current.value === 'string') {
+                    try { current = JSON.parse(current.value); } catch (_) { return null; }
+                } else current = current.value;
+            } else break;
+        }
+        if (!current || typeof current !== 'object' || Array.isArray(current)) return null;
+        var updatedAt = current.updatedAt || null;
+        var items = null;
+        if (current.items && typeof current.items === 'object' && !Array.isArray(current.items)) {
+            items = current.items;
+        } else if (Array.isArray(current.items)) {
+            items = {};
+            current.items.forEach(function (row) {
+                if (!row || typeof row !== 'object') return;
+                var key = row.slug || row.id || row.productSlug;
+                if (key) items[String(key)] = row;
+            });
+        } else {
+            items = {};
+            Object.keys(current).forEach(function (key) {
+                if (key === 'updatedAt') return;
+                items[key] = current[key];
+            });
+        }
+        return { items: items, updatedAt: updatedAt };
     }
 
     /** Lee valor + updatedAt desde localStorage (soporta wrapper, arrays planos y strings). */
@@ -629,17 +819,25 @@
             var local = readLocal(key);
             if (!local) return;
             // Si era epoch (sin meta real) y aún no había remoto, subir con now.
+            // Inventario/PT: NO subir a "ahora" — un blob sin marca parecería fresco y
+            // podría empujar cantidades viejas contra Mongo; el servidor fusiona por fila.
             var ts = local.updatedAt;
             if (ts === '1970-01-01T00:00:00.000Z') {
-                ts = new Date().toISOString();
-                touchMeta(key, ts);
-                if (local.value && typeof local.value === 'object' && !Array.isArray(local.value) && local.value.updatedAt) {
-                    // keep wrapper in sync
-                    writeLocal(key, local.value, ts);
-                    local = readLocal(key);
+                if (key !== 's35_finished_stock' && key !== 's35_plant_inventory') {
+                    ts = new Date().toISOString();
+                    touchMeta(key, ts);
+                    if (local.value && typeof local.value === 'object' && !Array.isArray(local.value) && local.value.updatedAt) {
+                        writeLocal(key, local.value, ts);
+                        local = readLocal(key);
+                    }
                 }
             }
-            stores[key] = { value: local.value, updatedAt: ts };
+            var payload = local.value;
+            if (key === 's35_finished_stock') {
+                var canon = canonicalFinishedStock(local.value);
+                if (canon) payload = canon;
+            }
+            stores[key] = { value: payload, updatedAt: ts };
         });
         if (!Object.keys(stores).length) return Promise.resolve({ ok: true, empty: true });
 
@@ -679,26 +877,13 @@
                     var remote = res.data.stores && res.data.stores[key];
                     if (!remote || !('value' in remote)) return;
                     if (!MERGE_ITEMS_KEYS[key] && !MERGE_MAP_KEYS[key] &&
+                        key !== 's35_plant_inventory' && key !== 's35_finished_stock' &&
                         key !== MERGE_FORMULAS_KEY && key !== MERGE_CATALOG_KEY) return;
+                    // Adoptar el merge del servidor tal cual: no re-fusionar con local
+                    // stale ni reencolar push (evita bajar stock / borrar ventas).
                     var prevAcc = readLocal(key);
-                    var toWrite = remote.value;
-                    var ts = remote.updatedAt;
-                    if (prevAcc && prevAcc.value != null) {
-                        if (MERGE_ITEMS_KEYS[key]) {
-                            toWrite = mergeItemsValue(key, prevAcc.value, remote.value, ts);
-                            if (itemsRecencyFingerprint(extractItems(toWrite)) !==
-                                itemsRecencyFingerprint(extractItems(remote.value))) {
-                                pendingKeys[key] = true;
-                            }
-                        } else if (MERGE_MAP_KEYS[key]) {
-                            toWrite = mergeByIdMaps(prevAcc.value, remote.value, ts);
-                            if (mapRecencyFingerprint(toWrite) !== mapRecencyFingerprint(remote.value)) {
-                                pendingKeys[key] = true;
-                            }
-                        }
-                    }
-                    writeLocal(key, toWrite, ts);
-                    if (!prevAcc || !valuesEqual(prevAcc.value, toWrite)) {
+                    writeLocal(key, remote.value, remote.updatedAt);
+                    if (!prevAcc || !valuesEqual(prevAcc.value, remote.value)) {
                         appliedKeys.push(key);
                     }
                 });
@@ -806,6 +991,17 @@
                         remote.updatedAt
                     );
                     if (merged) {
+                        // Inventario / PT / ventas: si local no aportó nada más nuevo,
+                        // adoptar remoto (o merge = remoto) y no re-pushear stale.
+                        if (AUTHORITATIVE_KEYS[key] && !merged.push) {
+                            if (!valuesEqual(local.value, merged.value)) {
+                                writeLocal(key, merged.value, remote.updatedAt || merged.updatedAt);
+                                applied.push(key);
+                            } else if (cmpIso(remote.updatedAt, local.updatedAt) !== 0) {
+                                writeLocal(key, merged.value, remote.updatedAt || merged.updatedAt);
+                            }
+                            return;
+                        }
                         if (merged.applyLocal) {
                             writeLocal(key, merged.value, merged.updatedAt);
                             applied.push(key);
@@ -908,6 +1104,15 @@
                     remote.updatedAt
                 );
                 if (merged) {
+                    if (AUTHORITATIVE_KEYS[key] && !merged.push) {
+                        if (!valuesEqual(local.value, merged.value)) {
+                            writeLocal(key, merged.value, remote.updatedAt || merged.updatedAt);
+                            applied.push(key);
+                        } else if (cmpIso(remote.updatedAt || merged.updatedAt, local.updatedAt) !== 0) {
+                            writeLocal(key, merged.value, remote.updatedAt || merged.updatedAt);
+                        }
+                        return;
+                    }
                     if (merged.applyLocal) {
                         if (!valuesEqual(local.value, merged.value)) {
                             writeLocal(key, merged.value, merged.updatedAt);

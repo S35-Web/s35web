@@ -1,7 +1,7 @@
 {
-  "version": 17,
-  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente | Ricbor notas 63989a/64001a/64002a (culiacan) + 63944a/63990a (mochis) transferencia facturado ya en Banorte; 64032a mochis por cobrar | 2026-09-23 faltantes 64071a ($360 tarj s/fac) + 64072a ($840 tarj fac Dominguez) = $1,200 hueco vs panel viejo | 64100 y 64103 ya facturadas: quitar invoicePending | 2026-10-01 SUCURSAL UNO 64105–64109 (hora −1h): 64105 Mostr efe; 64106 Eduardo Cota tarjeta fac; 64107/09 Mostr tarj perso; 64108 Materiales el Cheke efectivo sin factura | 2026-10-03 SUCURSAL UNO 64119–64122 (hora −1h): 64119 Mostr efe Perla+PSP $475; 64120 Tania Regina Inzunza tarjeta fac Extra Anclaje $335; 64121 Mostr efe Perla $210; 64122 José Miguel Montoya Collantes efe fac 10×Perla $2100 = $3,120 | 2026-10-05 SUCURSAL UNO 64123–64130 (hora −1h): 64123 Inmobiliaria Urbana transfe fac 8×Perla $1680; 64124 Francisco Javier Landeros tarjeta fac 7×Perla $1470; 64125/28 Mostr efe Extra Anclaje $335; 64126 Mostr tarj perso 2×Perla $420; 64127 Mostr tarj perso Extra Anclaje $335; 64129 Mostr efe 4×Perla $840; 64130 Mostr tarj perso Perla+Microconcreto+Darawell $660 = $6,075",
-  "generatedAt": "2026-10-05",
+  "version": 27,
+  "note": "Catch-up: notas panel (hora corte −1h) + CFDI Ricbor. 64063 = tarjeta. city: CFDI→mochis, notas panel→culiacan. | Ocean CFDI-12276 venta sintética Mazatlán | IWA 6 CFDIs ventas sintéticas Mazatlán | 2026-09-23 notas 64067–64070 (hora −1h): 64067 CIOCA tarjeta facturado; 64068/64069 Mostrador efectivo; 64070 Mostrador mixto tarjeta 1120 + efectivo 1000 | 2026-09-24 notas 64073–64078 SUCURSAL UNO (hora −1h): 64073 Rodrigo Orlando efectivo facturado; 64074/76/77/78 Mostrador efectivo; 64075 Mostrador tarjeta sin factura | 2026-09-28 a 30 SUCURSAL UNO notas 64092-64104 (hora -1h): 64093/94/95 facturadas; 64100 y 64103 facturado pendiente | Ricbor notas 63989a/64001a/64002a (culiacan) + 63944a/63990a (mochis) transferencia facturado ya en Banorte; 64032a mochis por cobrar | 2026-09-23 faltantes 64071a ($360 tarj s/fac) + 64072a ($840 tarj fac Dominguez) = $1,200 hueco vs panel viejo | 64100 y 64103 ya facturadas: quitar invoicePending | 2026-10-01 SUCURSAL UNO 64105–64109 (hora −1h): 64105 Mostr efe; 64106 Eduardo Cota tarjeta fac; 64107/09 Mostr tarj perso; 64108 Materiales el Cheke efectivo sin factura | 2026-10-03 SUCURSAL UNO 64119–64122 (hora −1h): 64119 Mostr efe Perla+PSP $475; 64120 Tania Regina Inzunza tarjeta fac Extra Anclaje $335; 64121 Mostr efe Perla $210; 64122 José Miguel Montoya Collantes efe fac 10×Perla $2100 = $3,120 | 2026-10-05 SUCURSAL UNO 64123–64130 (hora −1h): 64123 Inmobiliaria Urbana transfe fac 8×Perla $1680; 64124 Francisco Javier Landeros tarjeta fac 7×Perla $1470; 64125/28 Mostr efe Extra Anclaje $335; 64126 Mostr tarj perso 2×Perla $420; 64127 Mostr tarj perso Extra Anclaje $335; 64129 Mostr efe 4×Perla $840; 64130 Mostr tarj perso Perla+Microconcreto+Darawell $660 = $6,075 | 2026-10-10 SUCURSAL UNO 64159–64163 (hora −1h): Mostr efe 1+1+2+1 Perla; 64163 Enrique Guzman tarjeta fac 3×Perla; Ricbor culiacan 150×Perla @131.74 por cobrar facturado = $21,441 | 2026-10-13 SUCURSAL UNO 64168–64176 (hora −1h): C tarj perso 64168/69/73; F Inmobiliaria Urbana tarj 64170; F Público en general transf 64171; Mostr efe 64172/74/75; F Globalización transf 80×Perla@175 64176 = $20,125 | 2026-10-15 SUCURSAL UNO 64186–64193 (hora −1h): Mostr efe 64186/87/93; C tarj perso 64190/91; F Materiales Madrid transf 100×Perla@175 64192 = $20,865 | 2026-10-19 SUCURSAL UNO 64218–64223 (hora −1h): 64218 Mostr efe 2×Perla $420; 64219 C tarje perso facturado Perla $210; 64220 F Elvia Patricia Ontiveros Noriega efe Pastablock PRO $160; 64221 Mostr efe Perla $210; 64222 Mostr efe Microconcreto $360; 64223 Mostr efe 2×Microconcreto $720 = $2,080 | 2026-10-17 Ricbor Culiacán 130×Perla @131.74 por cobrar facturado = $17,126.20 | 2026-10-20 SUCURSAL UNO 64224–64236 (hora −1h, sin 64227): F UAS efe 64225; F Cecilio Vega efe 64228; F GMARBO efe 64229; F Inmobiliaria Urbana tarj 64231; F Byrmax transf 64232; resto Mostr efe = $13,783, facturado $7,275 | 2026-10-21 SUCURSAL UNO 64237–64247 (hora −1h, sin 64245/64246): F transf 64237; C tarj perso 64239; F Vama tarj 64241; F Aispuro efe 64242; F GMARBO tarj 64244; F Público transf 64247; Mostr efe 64238/40/43 = $8,060, facturado $5,205 | 2026-10-22 SUCURSAL UNO 64248–64258 (hora −1h): F Taller tarj 64250; F Mirna García Meza transf 64253; F Cecilio Vega efe 64256; C tarj perso 64257; resto Mostr efe = $52,925, facturado $37,205 | 2026-10-23 SUCURSAL UNO 64259–64265 (hora −1h): F Rodrigo Orlando tarj 64259; Mostr efe Materiales Gallegos 64260; F Inmobiliaria Urbana tarj 64261; C tarj perso 64262; F GMARBO tarj 64263; F María Guadalupe Peñuelas efe 64264; C tarj perso 64265 = $6,920, facturado $3,470 | 2026-10-24 SUCURSAL UNO 64266–64271 (hora −1h): F AGREMAT transf 64266; C tarj perso 64267/64270/64271; Mostr efe 64268/64269 = $37,420, facturado $35,000",
+  "generatedAt": "2026-10-24",
   "items": [
     {
       "id": "sale-cfdi-11667",
@@ -25,7 +25,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 140.0,
+          "qty": 140,
           "lineTotal": 16223.19
         }
       ],
@@ -67,7 +67,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 140.0,
+          "qty": 140,
           "lineTotal": 16223.19
         }
       ],
@@ -109,7 +109,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 85.0,
+          "qty": 85,
           "lineTotal": 9849.8
         }
       ],
@@ -151,11 +151,11 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 225.0,
-          "lineTotal": 26073.0
+          "qty": 225,
+          "lineTotal": 26073
         }
       ],
-      "total": 26073.0,
+      "total": 26073,
       "user": "import-historico",
       "meta": {
         "source": "cfdi-import",
@@ -193,11 +193,11 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 225.0,
-          "lineTotal": 26073.0
+          "qty": 225,
+          "lineTotal": 26073
         }
       ],
-      "total": 26073.0,
+      "total": 26073,
       "user": "import-historico",
       "meta": {
         "source": "cfdi-import",
@@ -235,7 +235,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 430.0,
+          "qty": 430,
           "lineTotal": 49828.4
         }
       ],
@@ -277,7 +277,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 430.0,
+          "qty": 430,
           "lineTotal": 49828.4
         }
       ],
@@ -319,7 +319,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 430.0,
+          "qty": 430,
           "lineTotal": 49828.4
         }
       ],
@@ -361,7 +361,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 430.0,
+          "qty": 430,
           "lineTotal": 49828.4
         }
       ],
@@ -403,7 +403,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 270.0,
+          "qty": 270,
           "lineTotal": 31287.6
         }
       ],
@@ -445,7 +445,7 @@
           "code": "",
           "unit": "Pza",
           "price": 210.01,
-          "qty": 3.0,
+          "qty": 3,
           "lineTotal": 630.01
         }
       ],
@@ -487,7 +487,7 @@
           "code": "",
           "unit": "Pza",
           "price": 197.8,
-          "qty": 426.0,
+          "qty": 426,
           "lineTotal": 84262.78
         },
         {
@@ -496,7 +496,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 57.0,
+          "qty": 57,
           "lineTotal": 10513.08
         },
         {
@@ -505,7 +505,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 960.0,
+          "qty": 960,
           "lineTotal": 111244.74
         },
         {
@@ -514,7 +514,7 @@
           "code": "",
           "unit": "Pza",
           "price": 197.8,
-          "qty": 318.0,
+          "qty": 318,
           "lineTotal": 62900.39
         },
         {
@@ -523,7 +523,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 42.0,
+          "qty": 42,
           "lineTotal": 7746.48
         },
         {
@@ -532,7 +532,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 720.0,
+          "qty": 720,
           "lineTotal": 83433.56
         }
       ],
@@ -574,7 +574,7 @@
           "code": "",
           "unit": "Pza",
           "price": 197.8,
-          "qty": 426.0,
+          "qty": 426,
           "lineTotal": 84262.78
         },
         {
@@ -583,7 +583,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 57.0,
+          "qty": 57,
           "lineTotal": 10513.08
         },
         {
@@ -592,7 +592,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 960.0,
+          "qty": 960,
           "lineTotal": 111244.74
         },
         {
@@ -601,7 +601,7 @@
           "code": "",
           "unit": "Pza",
           "price": 197.8,
-          "qty": 318.0,
+          "qty": 318,
           "lineTotal": 62900.39
         },
         {
@@ -610,7 +610,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 42.0,
+          "qty": 42,
           "lineTotal": 7746.48
         },
         {
@@ -619,7 +619,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 720.0,
+          "qty": 720,
           "lineTotal": 83433.56
         }
       ],
@@ -661,7 +661,7 @@
           "code": "",
           "unit": "Pza",
           "price": 197.8,
-          "qty": 426.0,
+          "qty": 426,
           "lineTotal": 84262.78
         },
         {
@@ -670,7 +670,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 57.0,
+          "qty": 57,
           "lineTotal": 10513.08
         },
         {
@@ -679,7 +679,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 960.0,
+          "qty": 960,
           "lineTotal": 111244.74
         },
         {
@@ -688,7 +688,7 @@
           "code": "",
           "unit": "Pza",
           "price": 197.8,
-          "qty": 318.0,
+          "qty": 318,
           "lineTotal": 62900.39
         },
         {
@@ -697,7 +697,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 42.0,
+          "qty": 42,
           "lineTotal": 7746.48
         },
         {
@@ -706,7 +706,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 720.0,
+          "qty": 720,
           "lineTotal": 83433.56
         }
       ],
@@ -748,7 +748,7 @@
           "code": "",
           "unit": "Pza",
           "price": 197.8,
-          "qty": 280.0,
+          "qty": 280,
           "lineTotal": 55383.99
         },
         {
@@ -757,7 +757,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 280.0,
+          "qty": 280,
           "lineTotal": 51643.2
         },
         {
@@ -766,7 +766,7 @@
           "code": "",
           "unit": "Pza",
           "price": 115.88,
-          "qty": 1060.0,
+          "qty": 1060,
           "lineTotal": 122839.16
         },
         {
@@ -775,7 +775,7 @@
           "code": "",
           "unit": "Pza",
           "price": 161.4,
-          "qty": 70.0,
+          "qty": 70,
           "lineTotal": 11297.99
         }
       ],
@@ -817,7 +817,7 @@
           "code": "",
           "unit": "Pza",
           "price": 197.8,
-          "qty": 1777.0,
+          "qty": 1777,
           "lineTotal": 351490.6
         }
       ],
@@ -859,11 +859,11 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 600.0,
-          "lineTotal": 110664.0
+          "qty": 600,
+          "lineTotal": 110664
         }
       ],
-      "total": 110664.0,
+      "total": 110664,
       "user": "import-historico",
       "meta": {
         "source": "cfdi-import",
@@ -871,7 +871,7 @@
         "invoiceFolio": 12141,
         "formaPago": "03",
         "metodoPago": "PUE",
-        "subTotal": 95400.0,
+        "subTotal": 95400,
         "year": 2025,
         "month": 12,
         "day": 30,
@@ -901,11 +901,11 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 900.0,
-          "lineTotal": 165996.0
+          "qty": 900,
+          "lineTotal": 165996
         }
       ],
-      "total": 165996.0,
+      "total": 165996,
       "user": "import-historico",
       "meta": {
         "source": "cfdi-import",
@@ -913,7 +913,7 @@
         "invoiceFolio": 12143,
         "formaPago": "03",
         "metodoPago": "PUE",
-        "subTotal": 143100.0,
+        "subTotal": 143100,
         "year": 2025,
         "month": 12,
         "day": 30,
@@ -943,11 +943,11 @@
           "code": "",
           "unit": "Pza",
           "price": 197.8,
-          "qty": 1500.0,
-          "lineTotal": 296700.0
+          "qty": 1500,
+          "lineTotal": 296700
         }
       ],
-      "total": 296700.0,
+      "total": 296700,
       "user": "import-historico",
       "meta": {
         "source": "cfdi-import",
@@ -985,7 +985,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 1857.0,
+          "qty": 1857,
           "lineTotal": 342505.08
         }
       ],
@@ -997,7 +997,7 @@
         "invoiceFolio": 12142,
         "formaPago": "03",
         "metodoPago": "PUE",
-        "subTotal": 295263.0,
+        "subTotal": 295263,
         "year": 2025,
         "month": 12,
         "day": 30,
@@ -1027,7 +1027,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 305.0,
+          "qty": 305,
           "lineTotal": 56254.2
         }
       ],
@@ -1039,7 +1039,7 @@
         "invoiceFolio": 12140,
         "formaPago": "03",
         "metodoPago": "PUE",
-        "subTotal": 48495.0,
+        "subTotal": 48495,
         "year": 2025,
         "month": 12,
         "day": 30,
@@ -1071,7 +1071,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.45,
-          "qty": 1074.0,
+          "qty": 1074,
           "lineTotal": 198099.71
         }
       ],
@@ -1098,8 +1098,8 @@
           "receptor": "CONSTRUCCIONES RICBOR",
           "total": 198099.71,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1128,11 +1128,11 @@
           "code": "",
           "unit": "Pza",
           "price": 184.5,
-          "qty": 1084.0,
-          "lineTotal": 200000.0
+          "qty": 1084,
+          "lineTotal": 200000
         }
       ],
-      "total": 200000.0,
+      "total": 200000,
       "user": "import-historico",
       "meta": {
         "source": "cfdi-import",
@@ -1153,10 +1153,10 @@
           "fecha": "2026-01-30 11:39:01",
           "rfc": "CRI1103157P8",
           "receptor": "CONSTRUCCIONES RICBOR",
-          "total": 200000.0,
+          "total": 200000,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1185,7 +1185,7 @@
           "code": "",
           "unit": "Pza",
           "price": 197.84,
-          "qty": 712.0,
+          "qty": 712,
           "lineTotal": 140858.6
         }
       ],
@@ -1212,8 +1212,8 @@
           "receptor": "CONSTRUCCIONES RICBOR",
           "total": 140858.6,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1242,7 +1242,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.5,
-          "qty": 813.0,
+          "qty": 813,
           "lineTotal": 150000.01
         }
       ],
@@ -1269,8 +1269,8 @@
           "receptor": "CONSTRUCCIONES RICBOR",
           "total": 150000.01,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1299,7 +1299,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.61,
-          "qty": 1300.0,
+          "qty": 1300,
           "lineTotal": 240000.01
         }
       ],
@@ -1326,8 +1326,8 @@
           "receptor": "CONSTRUCCIONES RICBOR",
           "total": 240000.01,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1356,7 +1356,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.65,
-          "qty": 3663.0,
+          "qty": 3663,
           "lineTotal": 676368.77
         }
       ],
@@ -1383,8 +1383,8 @@
           "receptor": "CONSTRUCCIONES RICBOR",
           "total": 676368.77,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1413,8 +1413,8 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 700.0,
-          "lineTotal": 129108.0
+          "qty": 700,
+          "lineTotal": 129108
         },
         {
           "product": "waxtard-blanco-perla",
@@ -1422,7 +1422,7 @@
           "code": "",
           "unit": "Pza",
           "price": 197.8,
-          "qty": 700.0,
+          "qty": 700,
           "lineTotal": 138460.04
         }
       ],
@@ -1449,8 +1449,8 @@
           "receptor": "CONSTRUCCIONES RICBOR",
           "total": 267568.04,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1479,7 +1479,7 @@
           "code": "",
           "unit": "Pza",
           "price": 184.44,
-          "qty": 365.0,
+          "qty": 365,
           "lineTotal": 67320.6
         },
         {
@@ -1488,7 +1488,7 @@
           "code": "",
           "unit": "Pza",
           "price": 197.8,
-          "qty": 873.0,
+          "qty": 873,
           "lineTotal": 172679.46
         }
       ],
@@ -1515,8 +1515,8 @@
           "receptor": "CONSTRUCCIONES RICBOR",
           "total": 240000.06,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1545,11 +1545,11 @@
           "code": "",
           "unit": "Pza",
           "price": 131.74,
-          "qty": 2031.0,
-          "lineTotal": 267568.0
+          "qty": 2031,
+          "lineTotal": 267568
         }
       ],
-      "total": 267568.0,
+      "total": 267568,
       "user": "import-historico",
       "meta": {
         "source": "cfdi-import",
@@ -1570,10 +1570,10 @@
           "fecha": "2026-07-24 13:36:30",
           "rfc": "CRI1103157P8",
           "receptor": "CONSTRUCCIONES RICBOR",
-          "total": 267568.0,
+          "total": 267568,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1602,11 +1602,11 @@
           "code": "",
           "unit": "Pza",
           "price": 131.74,
-          "qty": 800.0,
-          "lineTotal": 105392.0
+          "qty": 800,
+          "lineTotal": 105392
         }
       ],
-      "total": 105392.0,
+      "total": 105392,
       "user": "import-historico",
       "meta": {
         "source": "cfdi-import",
@@ -1627,10 +1627,10 @@
           "fecha": "2026-07-24 13:49:29",
           "rfc": "CRI1103157P8",
           "receptor": "CONSTRUCCIONES RICBOR",
-          "total": 105392.0,
+          "total": 105392,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1659,11 +1659,11 @@
           "code": "",
           "unit": "Pza",
           "price": 131.74,
-          "qty": 800.0,
-          "lineTotal": 105392.0
+          "qty": 800,
+          "lineTotal": 105392
         }
       ],
-      "total": 105392.0,
+      "total": 105392,
       "user": "import-historico",
       "meta": {
         "source": "cfdi-import",
@@ -1684,10 +1684,10 @@
           "fecha": "2026-07-24 14:01:53",
           "rfc": "CRI1103157P8",
           "receptor": "CONSTRUCCIONES RICBOR",
-          "total": 105392.0,
+          "total": 105392,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1716,7 +1716,7 @@
           "code": "",
           "unit": "Pza",
           "price": 131.74,
-          "qty": 900.0,
+          "qty": 900,
           "lineTotal": 118565.99
         }
       ],
@@ -1743,8 +1743,8 @@
           "receptor": "CONSTRUCCIONES RICBOR",
           "total": 118565.99,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1773,11 +1773,11 @@
           "code": "",
           "unit": "Pza",
           "price": 131.74,
-          "qty": 800.0,
-          "lineTotal": 105392.0
+          "qty": 800,
+          "lineTotal": 105392
         }
       ],
-      "total": 105392.0,
+      "total": 105392,
       "user": "import-historico",
       "meta": {
         "source": "cfdi-import",
@@ -1798,10 +1798,10 @@
           "fecha": "2026-08-06 12:45:58",
           "rfc": "CRI1103157P8",
           "receptor": "CONSTRUCCIONES RICBOR",
-          "total": 105392.0,
+          "total": 105392,
           "matchedAt": "2026-09-22T19:00:30",
-          "matchDeltaDays": 0.0,
-          "matchMoneyDiff": 0.0
+          "matchDeltaDays": 0,
+          "matchMoneyDiff": 0
         }
       },
       "city": "mochis"
@@ -1952,10 +1952,10 @@
           "fecha": "2026-09-21 14:38:49",
           "rfc": "DORJ710303M42",
           "receptor": "JESUS RAMON DOMINGUEZ RAMIREZ",
-          "total": 1050.0,
+          "total": 1050,
           "matchedAt": "2026-09-22T19:00:30",
           "matchDeltaDays": 0.0723,
-          "matchMoneyDiff": 0.0
+          "matchMoneyDiff": 0
         }
       },
       "city": "culiacan",
@@ -2083,10 +2083,10 @@
           "fecha": "2026-09-22 12:47:31",
           "rfc": "LOM100225SF1",
           "receptor": "LOMATSA",
-          "total": 8750.0,
+          "total": 8750,
           "matchedAt": "2026-09-22T19:00:30",
           "matchDeltaDays": 0.1031,
-          "matchMoneyDiff": 0.0
+          "matchMoneyDiff": 0
         }
       },
       "clientId": "c_3693ed2a37b3",
@@ -2195,10 +2195,10 @@
           "fecha": "2026-09-22 14:50:01",
           "rfc": "DORJ710303M42",
           "receptor": "JESUS RAMON DOMINGUEZ RAMIREZ",
-          "total": 1050.0,
+          "total": 1050,
           "matchedAt": "2026-09-22T19:00:30",
           "matchDeltaDays": 0.0549,
-          "matchMoneyDiff": 0.0
+          "matchMoneyDiff": 0
         }
       },
       "clientId": "c_7e1a9b8a586e",
@@ -2269,7 +2269,7 @@
           "unit": "Pza",
           "price": 200,
           "qty": 10,
-          "lineTotal": 2000.0
+          "lineTotal": 2000
         },
         {
           "product": "adhesivo-darawell",
@@ -2278,7 +2278,7 @@
           "unit": "Pza",
           "price": 275,
           "qty": 6,
-          "lineTotal": 1650.0
+          "lineTotal": 1650
         },
         {
           "product": "adhesivo-darawell",
@@ -2341,18 +2341,18 @@
           "name": "microconcreto-blanco-pulido",
           "code": "",
           "unit": "Pza",
-          "price": 200.0,
+          "price": 200,
           "qty": 368,
-          "lineTotal": 73600.0
+          "lineTotal": 73600
         },
         {
           "product": "adhesivo-darawell",
           "name": "adhesivo-darawell",
           "code": "",
           "unit": "Pza",
-          "price": 275.0,
+          "price": 275,
           "qty": 219,
-          "lineTotal": 60225.0
+          "lineTotal": 60225
         },
         {
           "product": "adhesivo-darawell",
@@ -2414,18 +2414,18 @@
           "name": "microconcreto-blanco-pulido",
           "code": "",
           "unit": "Pza",
-          "price": 200.0,
+          "price": 200,
           "qty": 137,
-          "lineTotal": 27400.0
+          "lineTotal": 27400
         },
         {
           "product": "adhesivo-darawell",
           "name": "adhesivo-darawell",
           "code": "",
           "unit": "Pza",
-          "price": 275.0,
+          "price": 275,
           "qty": 82,
-          "lineTotal": 22550.0
+          "lineTotal": 22550
         },
         {
           "product": "adhesivo-darawell",
@@ -2487,30 +2487,30 @@
           "name": "microconcreto-blanco-pulido",
           "code": "",
           "unit": "Pza",
-          "price": 200.0,
+          "price": 200,
           "qty": 281,
-          "lineTotal": 56200.0
+          "lineTotal": 56200
         },
         {
           "product": "adhesivo-darawell",
           "name": "adhesivo-darawell",
           "code": "",
           "unit": "Pza",
-          "price": 275.0,
+          "price": 275,
           "qty": 167,
-          "lineTotal": 45925.0
+          "lineTotal": 45925
         },
         {
           "product": "adhesivo-darawell",
           "name": "adhesivo-darawell",
           "code": "",
           "unit": "Pza",
-          "price": 254.0,
+          "price": 254,
           "qty": 1,
-          "lineTotal": 254.0
+          "lineTotal": 254
         }
       ],
-      "total": 102379.0,
+      "total": 102379,
       "user": "import-historico",
       "city": "mazatlan",
       "meta": {
@@ -2531,7 +2531,7 @@
           "fecha": "2026-05-13 14:39:34",
           "rfc": "IHO220218TH1",
           "receptor": "IWA HOTELS",
-          "total": 102379.0,
+          "total": 102379,
           "matchType": "venta_sintetica_mismo_monto",
           "siblingSaleIds": [],
           "matchedAt": "2026-09-22T19:44:29",
@@ -2562,7 +2562,7 @@
           "unit": "Pza",
           "price": 200,
           "qty": 280,
-          "lineTotal": 56000.0
+          "lineTotal": 56000
         },
         {
           "product": "adhesivo-darawell",
@@ -2571,10 +2571,10 @@
           "unit": "Pza",
           "price": 275,
           "qty": 160,
-          "lineTotal": 44000.0
+          "lineTotal": 44000
         }
       ],
-      "total": 100000.0,
+      "total": 100000,
       "user": "import-historico",
       "city": "mazatlan",
       "meta": {
@@ -2595,7 +2595,7 @@
           "fecha": "2026-05-20 15:11:12",
           "rfc": "IHO220218TH1",
           "receptor": "IWA HOTELS",
-          "total": 100000.0,
+          "total": 100000,
           "matchType": "venta_sintetica_mismo_monto",
           "siblingSaleIds": [],
           "matchedAt": "2026-09-22T19:44:29",
@@ -2626,7 +2626,7 @@
           "unit": "Pza",
           "price": 200,
           "qty": 280,
-          "lineTotal": 56000.0
+          "lineTotal": 56000
         },
         {
           "product": "adhesivo-darawell",
@@ -2635,10 +2635,10 @@
           "unit": "Pza",
           "price": 275,
           "qty": 160,
-          "lineTotal": 44000.0
+          "lineTotal": 44000
         }
       ],
-      "total": 100000.0,
+      "total": 100000,
       "user": "import-historico",
       "city": "mazatlan",
       "meta": {
@@ -2659,7 +2659,7 @@
           "fecha": "2026-07-10 12:33:31",
           "rfc": "IHO220218TH1",
           "receptor": "IWA HOTELS",
-          "total": 100000.0,
+          "total": 100000,
           "matchType": "venta_sintetica_mismo_monto",
           "siblingSaleIds": [],
           "matchedAt": "2026-09-22T19:44:29",
@@ -2690,7 +2690,7 @@
           "unit": "Pza",
           "price": 200,
           "qty": 280,
-          "lineTotal": 56000.0
+          "lineTotal": 56000
         },
         {
           "product": "adhesivo-darawell",
@@ -2699,10 +2699,10 @@
           "unit": "Pza",
           "price": 275,
           "qty": 160,
-          "lineTotal": 44000.0
+          "lineTotal": 44000
         }
       ],
-      "total": 100000.0,
+      "total": 100000,
       "user": "import-historico",
       "city": "mazatlan",
       "meta": {
@@ -2723,7 +2723,7 @@
           "fecha": "2026-07-10 12:33:40",
           "rfc": "IHO220218TH1",
           "receptor": "IWA HOTELS",
-          "total": 100000.0,
+          "total": 100000,
           "matchType": "venta_sintetica_mismo_monto",
           "siblingSaleIds": [],
           "matchedAt": "2026-09-22T19:44:29",
@@ -3823,10 +3823,10 @@
           "unit": "Pza",
           "price": 131.74,
           "qty": 150,
-          "lineTotal": 19761.0
+          "lineTotal": 19761
         }
       ],
-      "total": 19761.0,
+      "total": 19761,
       "user": "import-historico",
       "meta": {
         "source": "old-panel",
@@ -3872,10 +3872,10 @@
           "unit": "Pza",
           "price": 131.74,
           "qty": 150,
-          "lineTotal": 19761.0
+          "lineTotal": 19761
         }
       ],
-      "total": 19761.0,
+      "total": 19761,
       "user": "import-historico",
       "meta": {
         "source": "old-panel",
@@ -3921,10 +3921,10 @@
           "unit": "Pza",
           "price": 131.74,
           "qty": 150,
-          "lineTotal": 19761.0
+          "lineTotal": 19761
         }
       ],
-      "total": 19761.0,
+      "total": 19761,
       "user": "import-historico",
       "meta": {
         "source": "old-panel",
@@ -3970,10 +3970,10 @@
           "unit": "Pza",
           "price": 131.74,
           "qty": 800,
-          "lineTotal": 105392.0
+          "lineTotal": 105392
         }
       ],
-      "total": 105392.0,
+      "total": 105392,
       "user": "import-historico",
       "meta": {
         "source": "old-panel",
@@ -4019,10 +4019,10 @@
           "unit": "Pza",
           "price": 131.74,
           "qty": 800,
-          "lineTotal": 105392.0
+          "lineTotal": 105392
         }
       ],
-      "total": 105392.0,
+      "total": 105392,
       "user": "import-historico",
       "meta": {
         "source": "old-panel",
@@ -4068,10 +4068,10 @@
           "unit": "Pza",
           "price": 131.74,
           "qty": 800,
-          "lineTotal": 105392.0
+          "lineTotal": 105392
         }
       ],
-      "total": 105392.0,
+      "total": 105392,
       "user": "import-historico",
       "meta": {
         "source": "old-panel",
@@ -4817,6 +4817,3112 @@
         "issuedAt": "2026-10-05T13:37:00",
         "timeRule": "hora-expedida-minus-1h",
         "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64159",
+      "folio": "HIST-R64159",
+      "createdAt": "2026-10-10T09:00:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64159,
+        "noteSuffix": "a-2",
+        "note": "64159a-2",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 10,
+        "city": "culiacan",
+        "issuedAt": "2026-10-10T10:00:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64160",
+      "folio": "HIST-R64160",
+      "createdAt": "2026-10-10T09:30:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64160,
+        "noteSuffix": "a-3",
+        "note": "64160a-3",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 10,
+        "city": "culiacan",
+        "issuedAt": "2026-10-10T10:30:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64161",
+      "folio": "HIST-R64161",
+      "createdAt": "2026-10-10T10:00:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 2,
+          "lineTotal": 420
+        }
+      ],
+      "total": 420,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64161,
+        "noteSuffix": "a-4",
+        "note": "64161a-4",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 10,
+        "city": "culiacan",
+        "issuedAt": "2026-10-10T11:00:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64162",
+      "folio": "HIST-R64162",
+      "createdAt": "2026-10-10T11:00:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64162,
+        "noteSuffix": "a-5",
+        "note": "64162a-5",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 10,
+        "city": "culiacan",
+        "issuedAt": "2026-10-10T12:00:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64163",
+      "folio": "HIST-R64163",
+      "createdAt": "2026-10-10T12:00:00",
+      "customer": "Enrique Guzman Rodriguez",
+      "clientId": "cli-muisr2gs",
+      "client": {
+        "id": "cli-muisr2gs",
+        "name": "Enrique Guzman Rodriguez",
+        "phone": "",
+        "email": "",
+        "company": "",
+        "rfc": "",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 3,
+          "lineTotal": 630
+        }
+      ],
+      "total": 630,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64163,
+        "noteSuffix": "a-6",
+        "note": "64163a-6",
+        "observations": "Mostr fac tarjeta Enrique Guzman Rodriguez",
+        "year": 2026,
+        "month": 10,
+        "day": 10,
+        "city": "culiacan",
+        "issuedAt": "2026-10-10T13:00:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-ricbor-20261010",
+      "folio": "HIST-RICBOR-20261010",
+      "createdAt": "2026-10-10T14:00:00",
+      "customer": "Construcciones Ricbor",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "Construcciones Ricbor",
+        "phone": "",
+        "email": "juanellodiaz@me.com, contabilidad@ricbor.com, facturas.cln@modiebo.com.mx, comprasricbor@gmail.com",
+        "company": "",
+        "rfc": "CRI1103157P8",
+        "type": "client"
+      },
+      "paymentMethod": "por_cobrar",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 150,
+          "lineTotal": 19761
+        }
+      ],
+      "total": 19761,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": "ricbor-20261010",
+        "noteSuffix": "a",
+        "note": "Ricbor 2026-10-10",
+        "observations": "Construcciones Ricbor · 150 Waxtard blanco perla @ 131.74 · Culiacán",
+        "year": 2026,
+        "month": 10,
+        "day": 10,
+        "city": "culiacan",
+        "issuedAt": "2026-10-10T15:00:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64168",
+      "folio": "HIST-R64168",
+      "createdAt": "2026-10-13T08:26:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 4,
+          "lineTotal": 840
+        }
+      ],
+      "total": 840,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64168,
+        "noteSuffix": "a-1",
+        "note": "64168a",
+        "observations": "Mostr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 13,
+        "city": "culiacan",
+        "issuedAt": "2026-10-13T09:26:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64169",
+      "folio": "HIST-R64169",
+      "createdAt": "2026-10-13T08:29:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64169,
+        "noteSuffix": "a-2",
+        "note": "64169a",
+        "observations": "Mostr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 13,
+        "city": "culiacan",
+        "issuedAt": "2026-10-13T09:29:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64170",
+      "folio": "HIST-R64170",
+      "createdAt": "2026-10-13T08:49:00",
+      "customer": "INMOBILIARIA URBANA SINALOENSE",
+      "clientId": "c_13ee0a8089ae",
+      "client": {
+        "id": "c_13ee0a8089ae",
+        "name": "INMOBILIARIA URBANA SINALOENSE",
+        "phone": "",
+        "email": "INMOBILIARIA_URBANA@HOTMAIL.COM",
+        "company": "",
+        "rfc": "IUS8307069Y8",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 8,
+          "lineTotal": 1680
+        }
+      ],
+      "total": 1680,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64170,
+        "noteSuffix": "a-3",
+        "note": "64170a",
+        "observations": "Mostr tarj fac inmobiliaria urbana",
+        "year": 2026,
+        "month": 10,
+        "day": 13,
+        "city": "culiacan",
+        "issuedAt": "2026-10-13T09:49:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64171",
+      "folio": "HIST-R64171",
+      "createdAt": "2026-10-13T09:19:00",
+      "customer": "Público en general",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 2,
+          "lineTotal": 420
+        }
+      ],
+      "total": 420,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64171,
+        "noteSuffix": "a-4",
+        "note": "64171a",
+        "observations": "MOSTR FAC TRANSF PUBLICO EN GENERAL",
+        "year": 2026,
+        "month": 10,
+        "day": 13,
+        "city": "culiacan",
+        "issuedAt": "2026-10-13T10:19:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64172",
+      "folio": "HIST-R64172",
+      "createdAt": "2026-10-13T10:17:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 2,
+          "lineTotal": 420
+        }
+      ],
+      "total": 420,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64172,
+        "noteSuffix": "a-5",
+        "note": "64172a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 13,
+        "city": "culiacan",
+        "issuedAt": "2026-10-13T11:17:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64173",
+      "folio": "HIST-R64173",
+      "createdAt": "2026-10-13T11:20:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 3,
+          "lineTotal": 1005
+        }
+      ],
+      "total": 1005,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64173,
+        "noteSuffix": "a-6",
+        "note": "64173a",
+        "observations": "Mostr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 13,
+        "city": "culiacan",
+        "issuedAt": "2026-10-13T12:20:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64174",
+      "folio": "HIST-R64174",
+      "createdAt": "2026-10-13T13:14:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64174,
+        "noteSuffix": "a-7",
+        "note": "64174a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 13,
+        "city": "culiacan",
+        "issuedAt": "2026-10-13T14:14:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64175",
+      "folio": "HIST-R64175",
+      "createdAt": "2026-10-13T14:24:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 4,
+          "lineTotal": 1340
+        }
+      ],
+      "total": 1340,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64175,
+        "noteSuffix": "a-8",
+        "note": "64175a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 13,
+        "city": "culiacan",
+        "issuedAt": "2026-10-13T15:24:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64176",
+      "folio": "HIST-R64176",
+      "createdAt": "2026-10-13T14:54:00",
+      "customer": "GLOBALIZACION DE MATERIALES",
+      "clientId": "c_26d3e7360181",
+      "client": {
+        "id": "c_26d3e7360181",
+        "name": "GLOBALIZACION DE MATERIALES",
+        "phone": "",
+        "email": "carvajalsanalona@gmail.com",
+        "company": "",
+        "rfc": "GMA0712068L8",
+        "type": "client"
+      },
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 175,
+          "qty": 80,
+          "lineTotal": 14000
+        }
+      ],
+      "total": 14000,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64176,
+        "noteSuffix": "a-9",
+        "note": "64176a",
+        "observations": "Fac transferi Globalizacion de materiales",
+        "year": 2026,
+        "month": 10,
+        "day": 13,
+        "city": "culiacan",
+        "issuedAt": "2026-10-13T15:54:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64186",
+      "folio": "HIST-R64186",
+      "createdAt": "2026-10-15T08:03:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 5,
+          "lineTotal": 1050
+        }
+      ],
+      "total": 1050,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64186,
+        "noteSuffix": "a-1",
+        "note": "64186a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 15,
+        "city": "culiacan",
+        "issuedAt": "2026-10-15T09:03:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64187",
+      "folio": "HIST-R64187",
+      "createdAt": "2026-10-15T08:57:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 1,
+          "lineTotal": 360
+        }
+      ],
+      "total": 360,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64187,
+        "noteSuffix": "a-2",
+        "note": "64187a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 15,
+        "city": "culiacan",
+        "issuedAt": "2026-10-15T09:57:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64190",
+      "folio": "HIST-R64190",
+      "createdAt": "2026-10-15T12:33:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 1,
+          "lineTotal": 360
+        }
+      ],
+      "total": 360,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64190,
+        "noteSuffix": "a-5",
+        "note": "64190a",
+        "observations": "Mostr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 15,
+        "city": "culiacan",
+        "issuedAt": "2026-10-15T13:33:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64191",
+      "folio": "HIST-R64191",
+      "createdAt": "2026-10-15T14:17:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 1,
+          "lineTotal": 335
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 545,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64191,
+        "noteSuffix": "a-6",
+        "note": "64191a",
+        "observations": "MOSTR TARJ PERSON",
+        "year": 2026,
+        "month": 10,
+        "day": 15,
+        "city": "culiacan",
+        "issuedAt": "2026-10-15T15:17:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64192",
+      "folio": "HIST-R64192",
+      "createdAt": "2026-10-15T15:11:00",
+      "customer": "Materiales Madrid",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 175,
+          "qty": 100,
+          "lineTotal": 17500
+        }
+      ],
+      "total": 17500,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64192,
+        "noteSuffix": "a-7",
+        "note": "64192a",
+        "observations": "MATERIALES MADRID FAC TRANSFERENCIA",
+        "year": 2026,
+        "month": 10,
+        "day": 15,
+        "city": "culiacan",
+        "issuedAt": "2026-10-15T16:11:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64193",
+      "folio": "HIST-R64193",
+      "createdAt": "2026-10-15T15:58:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 5,
+          "lineTotal": 1050
+        }
+      ],
+      "total": 1050,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64193,
+        "noteSuffix": "a-8",
+        "note": "64193a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 15,
+        "city": "culiacan",
+        "issuedAt": "2026-10-15T16:58:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-ricbor-20261017",
+      "folio": "HIST-RICBOR-20261017",
+      "createdAt": "2026-10-17T14:00:00",
+      "customer": "Construcciones Ricbor",
+      "clientId": "c_50565f9bd6d8",
+      "client": {
+        "id": "c_50565f9bd6d8",
+        "name": "Construcciones Ricbor",
+        "phone": "",
+        "email": "juanellodiaz@me.com, contabilidad@ricbor.com, facturas.cln@modiebo.com.mx, comprasricbor@gmail.com",
+        "company": "",
+        "rfc": "CRI1103157P8",
+        "type": "client"
+      },
+      "paymentMethod": "por_cobrar",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 131.74,
+          "qty": 130,
+          "lineTotal": 17126.2
+        }
+      ],
+      "total": 17126.2,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": "ricbor-20261017",
+        "noteSuffix": "a",
+        "note": "Ricbor 2026-10-17",
+        "observations": "Construcciones Ricbor · 130 Waxtard blanco perla @ 131.74 · Culiacán · por cobrar",
+        "year": 2026,
+        "month": 10,
+        "day": 17,
+        "city": "culiacan",
+        "issuedAt": "2026-10-17T15:00:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64218",
+      "folio": "HIST-R64218",
+      "createdAt": "2026-10-19T07:58:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 2,
+          "lineTotal": 420
+        }
+      ],
+      "total": 420,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64218,
+        "noteSuffix": "a-2",
+        "note": "64218a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 19,
+        "city": "culiacan",
+        "issuedAt": "2026-10-19T08:58:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64219",
+      "folio": "HIST-R64219",
+      "createdAt": "2026-10-19T08:25:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64219,
+        "noteSuffix": "a-3",
+        "note": "64219a",
+        "observations": "Mostr tarje perso",
+        "year": 2026,
+        "month": 10,
+        "day": 19,
+        "city": "culiacan",
+        "issuedAt": "2026-10-19T09:25:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64220",
+      "folio": "HIST-R64220",
+      "createdAt": "2026-10-19T09:27:00",
+      "customer": "ELVIA PATRICIA ONTIVEROS NORIEGA",
+      "clientId": "c_ebf221b96abb",
+      "client": {
+        "id": "c_ebf221b96abb",
+        "name": "ELVIA PATRICIA ONTIVEROS NORIEGA",
+        "phone": "",
+        "email": "",
+        "company": "",
+        "rfc": "OINE690209577",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock PRO S-35®",
+          "code": "FT-PR-006",
+          "unit": "Pza",
+          "price": 160,
+          "qty": 1,
+          "lineTotal": 160
+        }
+      ],
+      "total": 160,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64220,
+        "noteSuffix": "a-4",
+        "note": "64220a",
+        "observations": "Mostr fac ontiveros notiega elvia patri Chi a efe m",
+        "year": 2026,
+        "month": 10,
+        "day": 19,
+        "city": "culiacan",
+        "issuedAt": "2026-10-19T10:27:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64221",
+      "folio": "HIST-R64221",
+      "createdAt": "2026-10-19T11:28:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64221,
+        "noteSuffix": "a-5",
+        "note": "64221a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 19,
+        "city": "culiacan",
+        "issuedAt": "2026-10-19T12:28:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64222",
+      "folio": "HIST-R64222",
+      "createdAt": "2026-10-19T14:37:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "FT-MC-002",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 1,
+          "lineTotal": 360
+        }
+      ],
+      "total": 360,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64222,
+        "noteSuffix": "a-6",
+        "note": "64222a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 19,
+        "city": "culiacan",
+        "issuedAt": "2026-10-19T15:37:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64223",
+      "folio": "HIST-R64223",
+      "createdAt": "2026-10-19T15:38:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "FT-MC-002",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 2,
+          "lineTotal": 720
+        }
+      ],
+      "total": 720,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64223,
+        "noteSuffix": "a-7",
+        "note": "64223a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 19,
+        "city": "culiacan",
+        "issuedAt": "2026-10-19T16:38:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64224",
+      "folio": "HIST-R64224",
+      "createdAt": "2026-10-20T08:09:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 2,
+          "lineTotal": 420
+        }
+      ],
+      "total": 420,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64224,
+        "noteSuffix": "a-1",
+        "note": "64224a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T09:09:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64225",
+      "folio": "HIST-R64225",
+      "createdAt": "2026-10-20T08:12:00",
+      "customer": "UNIVERSIDAD AUTONOMA DE SINALOA",
+      "clientId": "c_32380bd565b1",
+      "client": {
+        "id": "c_32380bd565b1",
+        "name": "UNIVERSIDAD AUTONOMA DE SINALOA",
+        "phone": "",
+        "email": "medicinauas8@gmail.com",
+        "company": "",
+        "rfc": "UAS651204MZ9",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 4,
+          "lineTotal": 840
+        }
+      ],
+      "total": 840,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64225,
+        "noteSuffix": "a-2",
+        "note": "64225a",
+        "observations": "Mostr fac efe yuniversidd autonoma",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T09:12:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64226",
+      "folio": "HIST-R64226",
+      "createdAt": "2026-10-20T08:48:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 3,
+          "lineTotal": 630
+        }
+      ],
+      "total": 630,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64226,
+        "noteSuffix": "a-3",
+        "note": "64226a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T09:48:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64228",
+      "folio": "HIST-R64228",
+      "createdAt": "2026-10-20T09:30:00",
+      "customer": "LUIS CECILIO VEGA DIAZ",
+      "clientId": "c_a6eed6f36957",
+      "client": {
+        "id": "c_a6eed6f36957",
+        "name": "LUIS CECILIO VEGA DIAZ",
+        "phone": "",
+        "email": "vega_servicios@hotmail.com",
+        "company": "",
+        "rfc": "VEDL531122DC0",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock PRO S-35®",
+          "code": "FT-PR-006",
+          "unit": "Pza",
+          "price": 160,
+          "qty": 3,
+          "lineTotal": 480
+        }
+      ],
+      "total": 480,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64228,
+        "noteSuffix": "a-5",
+        "note": "64228a",
+        "observations": "Fac efe luis cecilio vega",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T10:30:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64229",
+      "folio": "HIST-R64229",
+      "createdAt": "2026-10-20T09:34:00",
+      "customer": "GMARBO",
+      "clientId": "c_2662bf182187",
+      "client": {
+        "id": "c_2662bf182187",
+        "name": "GMARBO",
+        "phone": "",
+        "email": "ing.oscar.am@gmail.com",
+        "company": "",
+        "rfc": "GMA1307051D5",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "cemento-plastico-concreto",
+          "name": "Microconcreto Aparente S-35®",
+          "code": "FT-MC-001",
+          "unit": "Pza",
+          "price": 545,
+          "qty": 2,
+          "lineTotal": 1090
+        },
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 175,
+          "qty": 4,
+          "lineTotal": 700
+        },
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "FT-MC-002",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 1,
+          "lineTotal": 360
+        }
+      ],
+      "total": 2150,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64229,
+        "noteSuffix": "a-6",
+        "note": "64229a",
+        "observations": "Mosf fac gmarbo materiales sataya",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T10:34:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64230",
+      "folio": "HIST-R64230",
+      "createdAt": "2026-10-20T09:32:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 6,
+          "lineTotal": 1260
+        }
+      ],
+      "total": 1260,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64230,
+        "noteSuffix": "a-7",
+        "note": "64230a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T10:32:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64231",
+      "folio": "HIST-R64231",
+      "createdAt": "2026-10-20T10:35:00",
+      "customer": "INMOBILIARIA URBANA SINALOENSE",
+      "clientId": "c_13ee0a8089ae",
+      "client": {
+        "id": "c_13ee0a8089ae",
+        "name": "INMOBILIARIA URBANA SINALOENSE",
+        "phone": "",
+        "email": "INMOBILIARIA_URBANA@HOTMAIL.COM",
+        "company": "",
+        "rfc": "IUS8307069Y8",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "FT-MC-002",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 3,
+          "lineTotal": 1080
+        }
+      ],
+      "total": 1080,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64231,
+        "noteSuffix": "a-8",
+        "note": "64231a",
+        "observations": "mostr fac tarjeta inmobiliaria urbana",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T11:35:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64232",
+      "folio": "HIST-R64232",
+      "createdAt": "2026-10-20T10:52:00",
+      "customer": "Byrmax",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "cemento-plastico-concreto",
+          "name": "Microconcreto Aparente S-35®",
+          "code": "FT-MC-001",
+          "unit": "Pza",
+          "price": 545,
+          "qty": 5,
+          "lineTotal": 2725
+        }
+      ],
+      "total": 2725,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64232,
+        "noteSuffix": "a-9",
+        "note": "64232a",
+        "observations": "Mostr fac trabsfe byrmax",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T11:52:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64233",
+      "folio": "HIST-R64233",
+      "createdAt": "2026-10-20T12:35:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 1,
+          "lineTotal": 335
+        }
+      ],
+      "total": 335,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64233,
+        "noteSuffix": "a-10",
+        "note": "64233a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T13:35:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64234",
+      "folio": "HIST-R64234",
+      "createdAt": "2026-10-20T13:43:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "FT-MC-002",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 3,
+          "lineTotal": 1080
+        }
+      ],
+      "total": 1080,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64234,
+        "noteSuffix": "a-11",
+        "note": "64234a",
+        "observations": "Mostr efec",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T14:43:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64235",
+      "folio": "HIST-R64235",
+      "createdAt": "2026-10-20T13:48:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 1,
+          "lineTotal": 335
+        }
+      ],
+      "total": 335,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64235,
+        "noteSuffix": "a-12",
+        "note": "64235a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T14:48:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64236",
+      "folio": "HIST-R64236",
+      "createdAt": "2026-10-20T14:44:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 204,
+          "qty": 12,
+          "lineTotal": 2448
+        }
+      ],
+      "total": 2448,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64236,
+        "noteSuffix": "a-13",
+        "note": "64236a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 20,
+        "city": "culiacan",
+        "issuedAt": "2026-10-20T15:44:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64237",
+      "folio": "HIST-R64237",
+      "createdAt": "2026-10-21T08:03:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 2,
+          "lineTotal": 670
+        }
+      ],
+      "total": 670,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64237,
+        "noteSuffix": "a-1",
+        "note": "64237a",
+        "observations": "Mostr transf",
+        "year": 2026,
+        "month": 10,
+        "day": 21,
+        "city": "culiacan",
+        "issuedAt": "2026-10-21T09:03:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64238",
+      "folio": "HIST-R64238",
+      "createdAt": "2026-10-21T10:09:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64238,
+        "noteSuffix": "a-2",
+        "note": "64238a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 21,
+        "city": "culiacan",
+        "issuedAt": "2026-10-21T11:09:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64239",
+      "folio": "HIST-R64239",
+      "createdAt": "2026-10-21T10:14:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 10,
+          "lineTotal": 2100
+        }
+      ],
+      "total": 2100,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64239,
+        "noteSuffix": "a-3",
+        "note": "64239a",
+        "observations": "Moatr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 21,
+        "city": "culiacan",
+        "issuedAt": "2026-10-21T11:14:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64240",
+      "folio": "HIST-R64240",
+      "createdAt": "2026-10-21T10:32:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64240,
+        "noteSuffix": "a-4",
+        "note": "64240a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 21,
+        "city": "culiacan",
+        "issuedAt": "2026-10-21T11:32:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64241",
+      "folio": "HIST-R64241",
+      "createdAt": "2026-10-21T10:49:00",
+      "customer": "Vama",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock PRO S-35®",
+          "code": "FT-PR-006",
+          "unit": "Pza",
+          "price": 160,
+          "qty": 1,
+          "lineTotal": 160
+        }
+      ],
+      "total": 160,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64241,
+        "noteSuffix": "a-5",
+        "note": "64241a",
+        "observations": "Mostr fac vama tarjeta",
+        "year": 2026,
+        "month": 10,
+        "day": 21,
+        "city": "culiacan",
+        "issuedAt": "2026-10-21T11:49:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64242",
+      "folio": "HIST-R64242",
+      "createdAt": "2026-10-21T10:51:00",
+      "customer": "FRANCISCO JAVIER AISPURO FELIX",
+      "clientId": "c_67e9471dde06",
+      "client": {
+        "id": "c_67e9471dde06",
+        "name": "FRANCISCO JAVIER AISPURO FELIX",
+        "phone": "",
+        "email": "IMPRESORESJAZMIN@HOTMAIL.COM",
+        "company": "",
+        "rfc": "AIFF720112J76",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 4,
+          "lineTotal": 1340
+        }
+      ],
+      "total": 1340,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64242,
+        "noteSuffix": "a-6",
+        "note": "64242a",
+        "observations": "Mostr fac efe francisco javier aispuro",
+        "year": 2026,
+        "month": 10,
+        "day": 21,
+        "city": "culiacan",
+        "issuedAt": "2026-10-21T11:51:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64243",
+      "folio": "HIST-R64243",
+      "createdAt": "2026-10-21T13:06:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 1,
+          "lineTotal": 335
+        }
+      ],
+      "total": 335,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64243,
+        "noteSuffix": "a-7",
+        "note": "64243a",
+        "observations": "Moatr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 21,
+        "city": "culiacan",
+        "issuedAt": "2026-10-21T14:06:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64244",
+      "folio": "HIST-R64244",
+      "createdAt": "2026-10-21T13:09:00",
+      "customer": "GMARBO",
+      "clientId": "c_2662bf182187",
+      "client": {
+        "id": "c_2662bf182187",
+        "name": "GMARBO",
+        "phone": "",
+        "email": "ing.oscar.am@gmail.com",
+        "company": "",
+        "rfc": "GMA1307051D5",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 175,
+          "qty": 6,
+          "lineTotal": 1050
+        },
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "FT-MC-002",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 4,
+          "lineTotal": 1440
+        }
+      ],
+      "total": 2490,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64244,
+        "noteSuffix": "a-8",
+        "note": "64244a",
+        "observations": "Mostr g marbo fac tarjeta de credito",
+        "year": 2026,
+        "month": 10,
+        "day": 21,
+        "city": "culiacan",
+        "issuedAt": "2026-10-21T14:09:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64247",
+      "folio": "HIST-R64247",
+      "createdAt": "2026-10-21T15:34:00",
+      "customer": "Público en general",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "cemento-plastico-concreto",
+          "name": "Microconcreto Aparente S-35®",
+          "code": "FT-MC-001",
+          "unit": "Pza",
+          "price": 545,
+          "qty": 1,
+          "lineTotal": 545
+        }
+      ],
+      "total": 545,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64247,
+        "noteSuffix": "a-11",
+        "note": "64247a",
+        "observations": "MOSTR FAC TRANSFE PUBLICO",
+        "year": 2026,
+        "month": 10,
+        "day": 21,
+        "city": "culiacan",
+        "issuedAt": "2026-10-21T16:34:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64248",
+      "folio": "HIST-R64248",
+      "createdAt": "2026-10-22T08:13:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "cemento-plastico-concreto",
+          "name": "Microconcreto Aparente S-35®",
+          "code": "FT-MC-001",
+          "unit": "Pza",
+          "price": 545,
+          "qty": 1,
+          "lineTotal": 545
+        }
+      ],
+      "total": 545,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64248,
+        "noteSuffix": "a-1",
+        "note": "64248a",
+        "observations": "Mostra efe",
+        "year": 2026,
+        "month": 10,
+        "day": 22,
+        "city": "culiacan",
+        "issuedAt": "2026-10-22T09:13:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64249",
+      "folio": "HIST-R64249",
+      "createdAt": "2026-10-22T08:34:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 2,
+          "lineTotal": 420
+        }
+      ],
+      "total": 420,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64249,
+        "noteSuffix": "a-2",
+        "note": "64249a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 22,
+        "city": "culiacan",
+        "issuedAt": "2026-10-22T09:34:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64250",
+      "folio": "HIST-R64250",
+      "createdAt": "2026-10-22T08:48:00",
+      "customer": "Taller de servicios y reparaciones",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "FT-MC-002",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 10,
+          "lineTotal": 3600
+        }
+      ],
+      "total": 3600,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64250,
+        "noteSuffix": "a-3",
+        "note": "64250a",
+        "observations": "Mostr fact tarjeta taller de servicios y reparaciones",
+        "year": 2026,
+        "month": 10,
+        "day": 22,
+        "city": "culiacan",
+        "issuedAt": "2026-10-22T09:48:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64251",
+      "folio": "HIST-R64251",
+      "createdAt": "2026-10-22T09:20:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 3,
+          "lineTotal": 630
+        }
+      ],
+      "total": 630,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64251,
+        "noteSuffix": "a-4",
+        "note": "64251a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 22,
+        "city": "culiacan",
+        "issuedAt": "2026-10-22T10:20:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64252",
+      "folio": "HIST-R64252",
+      "createdAt": "2026-10-22T09:49:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "pegaxpress-psp",
+          "name": "Adhesivo PSP PRO+ S35®",
+          "code": "FT-AD-004",
+          "unit": "Pza",
+          "price": 265,
+          "qty": 2,
+          "lineTotal": 530
+        }
+      ],
+      "total": 530,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64252,
+        "noteSuffix": "a-5",
+        "note": "64252a",
+        "observations": "Mosyr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 22,
+        "city": "culiacan",
+        "issuedAt": "2026-10-22T10:49:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64253",
+      "folio": "HIST-R64253",
+      "createdAt": "2026-10-22T10:51:00",
+      "customer": "MIRNA GARCIA MEZA",
+      "clientId": "c_65004ab340f8",
+      "client": {
+        "id": "c_65004ab340f8",
+        "name": "MIRNA GARCIA MEZA",
+        "phone": "6728547022",
+        "email": "gonzalo_urquiza9@hotmail.com",
+        "company": "PISOS Y COMPLEMENTOS",
+        "rfc": "GAMM770123RT8",
+        "type": "client"
+      },
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 175,
+          "qty": 150,
+          "lineTotal": 26250
+        },
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "FT-MC-002",
+          "unit": "Pza",
+          "price": 275,
+          "qty": 15,
+          "lineTotal": 4125
+        },
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 275,
+          "qty": 10,
+          "lineTotal": 2750
+        }
+      ],
+      "total": 33125,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64253,
+        "noteSuffix": "a-6",
+        "note": "64253a",
+        "observations": "fac mirna garcia pisos y complementos navolato transf",
+        "year": 2026,
+        "month": 10,
+        "day": 22,
+        "city": "culiacan",
+        "issuedAt": "2026-10-22T11:51:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64254",
+      "folio": "HIST-R64254",
+      "createdAt": "2026-10-22T10:56:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 33,
+          "lineTotal": 11055
+        }
+      ],
+      "total": 11055,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64254,
+        "noteSuffix": "a-7",
+        "note": "64254a",
+        "observations": "Moatr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 22,
+        "city": "culiacan",
+        "issuedAt": "2026-10-22T11:56:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64255",
+      "folio": "HIST-R64255",
+      "createdAt": "2026-10-22T10:58:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "adhesivo-heavy-duty",
+          "name": "Adhesivo Heavy Duty",
+          "code": "FT-PR-009",
+          "unit": "Pza",
+          "price": 160,
+          "qty": 2,
+          "lineTotal": 320
+        }
+      ],
+      "total": 320,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64255,
+        "noteSuffix": "a-8",
+        "note": "64255a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 22,
+        "city": "culiacan",
+        "issuedAt": "2026-10-22T11:58:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64256",
+      "folio": "HIST-R64256",
+      "createdAt": "2026-10-22T13:40:00",
+      "customer": "LUIS CECILIO VEGA DIAZ",
+      "clientId": "c_a6eed6f36957",
+      "client": {
+        "id": "c_a6eed6f36957",
+        "name": "LUIS CECILIO VEGA DIAZ",
+        "phone": "",
+        "email": "vega_servicios@hotmail.com",
+        "company": "",
+        "rfc": "VEDL531122DC0",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "pegaxpress-block",
+          "name": "Pastablock PRO S-35®",
+          "code": "FT-PR-006",
+          "unit": "Pza",
+          "price": 160,
+          "qty": 3,
+          "lineTotal": 480
+        }
+      ],
+      "total": 480,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64256,
+        "noteSuffix": "a-9",
+        "note": "64256a",
+        "observations": "MOSTR FAC UIS CECILIO VEGA EFE",
+        "year": 2026,
+        "month": 10,
+        "day": 22,
+        "city": "culiacan",
+        "issuedAt": "2026-10-22T14:40:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64257",
+      "folio": "HIST-R64257",
+      "createdAt": "2026-10-22T14:30:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 5,
+          "lineTotal": 1675
+        }
+      ],
+      "total": 1675,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64257,
+        "noteSuffix": "a-10",
+        "note": "64257a",
+        "observations": "Mostr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 22,
+        "city": "culiacan",
+        "issuedAt": "2026-10-22T15:30:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64258",
+      "folio": "HIST-R64258",
+      "createdAt": "2026-10-22T14:36:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "cemento-plastico-concreto",
+          "name": "Microconcreto Aparente S-35®",
+          "code": "FT-MC-001",
+          "unit": "Pza",
+          "price": 545,
+          "qty": 1,
+          "lineTotal": 545
+        }
+      ],
+      "total": 545,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64258,
+        "noteSuffix": "a-11",
+        "note": "64258a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 22,
+        "city": "culiacan",
+        "issuedAt": "2026-10-22T15:36:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64259",
+      "folio": "HIST-R64259",
+      "createdAt": "2026-10-23T08:34:00",
+      "customer": "RODRIGO ORLANDO RODRIGUEZ MARTINEZ",
+      "clientId": "c_e08c40b359f2",
+      "client": {
+        "id": "c_e08c40b359f2",
+        "name": "RODRIGO ORLANDO RODRIGUEZ MARTINEZ",
+        "phone": "",
+        "email": "rodrigo_1_3@live.com.mx",
+        "company": "",
+        "rfc": "ROMR860419KC8",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        },
+        {
+          "product": "pegaxpress-psp",
+          "name": "Adhesivo PSP PRO+ S35®",
+          "code": "FT-AD-004",
+          "unit": "Pza",
+          "price": 265,
+          "qty": 5,
+          "lineTotal": 1325
+        }
+      ],
+      "total": 1535,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64259,
+        "noteSuffix": "a-1",
+        "note": "64259a",
+        "observations": "MOSTR FAC TARJETA RODRIGO ORLANDO",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T09:34:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64260",
+      "folio": "HIST-R64260",
+      "createdAt": "2026-10-23T09:11:00",
+      "customer": "MATERIALES GALLEGOS",
+      "clientId": "c_6b42a2f5d7bc",
+      "client": {
+        "id": "c_6b42a2f5d7bc",
+        "name": "MATERIALES GALLEGOS",
+        "phone": "",
+        "email": "",
+        "company": "",
+        "rfc": "",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 175,
+          "qty": 2,
+          "lineTotal": 350
+        }
+      ],
+      "total": 350,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64260,
+        "noteSuffix": "a-2",
+        "note": "64260a",
+        "observations": "MOSTR EFE MATE GALLEGOS",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T10:11:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64261",
+      "folio": "HIST-R64261",
+      "createdAt": "2026-10-23T10:00:00",
+      "customer": "INMOBILIARIA URBANA SINALOENSE",
+      "clientId": "c_13ee0a8089ae",
+      "client": {
+        "id": "c_13ee0a8089ae",
+        "name": "INMOBILIARIA URBANA SINALOENSE",
+        "phone": "",
+        "email": "INMOBILIARIA_URBANA@HOTMAIL.COM",
+        "company": "",
+        "rfc": "IUS8307069Y8",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "microconcreto-blanco-pulido",
+          "name": "Microconcreto Blanco S-35® (25KG)",
+          "code": "FT-MC-002",
+          "unit": "Pza",
+          "price": 360,
+          "qty": 2,
+          "lineTotal": 720
+        }
+      ],
+      "total": 720,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64261,
+        "noteSuffix": "a-3",
+        "note": "64261a",
+        "observations": "FAC TARJ INMOBILIARI AURBANA",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T11:00:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64262",
+      "folio": "HIST-R64262",
+      "createdAt": "2026-10-23T10:48:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 8,
+          "lineTotal": 2680
+        }
+      ],
+      "total": 2680,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64262,
+        "noteSuffix": "a-4",
+        "note": "64262a",
+        "observations": "Mostr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T11:48:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64263",
+      "folio": "HIST-R64263",
+      "createdAt": "2026-10-23T12:40:00",
+      "customer": "GMARBO",
+      "clientId": "c_2662bf182187",
+      "client": {
+        "id": "c_2662bf182187",
+        "name": "GMARBO",
+        "phone": "",
+        "email": "ing.oscar.am@gmail.com",
+        "company": "",
+        "rfc": "GMA1307051D5",
+        "type": "client"
+      },
+      "paymentMethod": "tarjeta",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "cemento-plastico-concreto",
+          "name": "Microconcreto Aparente S-35®",
+          "code": "FT-MC-001",
+          "unit": "Pza",
+          "price": 545,
+          "qty": 1,
+          "lineTotal": 545
+        }
+      ],
+      "total": 545,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64263,
+        "noteSuffix": "a-5",
+        "note": "64263a",
+        "observations": "mostr tarj fac gmarbo",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T13:40:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64264",
+      "folio": "HIST-R64264",
+      "createdAt": "2026-10-23T12:58:00",
+      "customer": "MARIA GUADALUPE PEÑUELAS MEDINA",
+      "clientId": "c_000da65d77e1",
+      "client": {
+        "id": "c_000da65d77e1",
+        "name": "MARIA GUADALUPE PEÑUELAS MEDINA",
+        "phone": "",
+        "email": "mariag_medina8312@gmail.com",
+        "company": "",
+        "rfc": "PEMG8312017W8",
+        "type": "client"
+      },
+      "paymentMethod": "efectivo",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-extra-anclaje",
+          "name": "Waxtard Extra Anclaje S-35®",
+          "code": "FT-PR-004",
+          "unit": "Pza",
+          "price": 335,
+          "qty": 2,
+          "lineTotal": 670
+        }
+      ],
+      "total": 670,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64264,
+        "noteSuffix": "a-6",
+        "note": "64264a",
+        "observations": "Mostr fac matia guadalupe penuelas efe",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T13:58:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64265",
+      "folio": "HIST-R64265",
+      "createdAt": "2026-10-23T13:45:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 2,
+          "lineTotal": 420
+        }
+      ],
+      "total": 420,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64265,
+        "noteSuffix": "a-7",
+        "note": "64265a",
+        "observations": "Moatr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 23,
+        "city": "culiacan",
+        "issuedAt": "2026-10-23T14:45:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64266",
+      "folio": "HIST-R64266",
+      "createdAt": "2026-10-24T08:03:00",
+      "customer": "AGREMAT",
+      "clientId": "c_5e0fead8fdb6",
+      "client": {
+        "id": "c_5e0fead8fdb6",
+        "name": "AGREMAT",
+        "phone": "",
+        "email": "Compras.carvajal@hotmail.com",
+        "company": "",
+        "rfc": "AGR021212LGA",
+        "type": "client"
+      },
+      "paymentMethod": "transferencia",
+      "billing": "facturado",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 175,
+          "qty": 200,
+          "lineTotal": 35000
+        }
+      ],
+      "total": 35000,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64266,
+        "noteSuffix": "a-1",
+        "note": "64266a",
+        "observations": "agremat fac transfe",
+        "year": 2026,
+        "month": 10,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-10-24T09:03:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "F"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64267",
+      "folio": "HIST-R64267",
+      "createdAt": "2026-10-24T08:14:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64267,
+        "noteSuffix": "a-2",
+        "note": "64267a",
+        "observations": "Mostr tarj pers",
+        "year": 2026,
+        "month": 10,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-10-24T09:14:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64268",
+      "folio": "HIST-R64268",
+      "createdAt": "2026-10-24T09:16:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 3,
+          "lineTotal": 630
+        }
+      ],
+      "total": 630,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64268,
+        "noteSuffix": "a-3",
+        "note": "64268a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-10-24T10:16:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64269",
+      "folio": "HIST-R64269",
+      "createdAt": "2026-10-24T11:14:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "efectivo",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 4,
+          "lineTotal": 840
+        }
+      ],
+      "total": 840,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64269,
+        "noteSuffix": "a-4",
+        "note": "64269a",
+        "observations": "Mostr efe",
+        "year": 2026,
+        "month": 10,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-10-24T12:14:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64270",
+      "folio": "HIST-R64270",
+      "createdAt": "2026-10-24T12:19:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "pegaxpress-psp",
+          "name": "Adhesivo PSP PRO+ S35®",
+          "code": "FT-AD-004",
+          "unit": "Pza",
+          "price": 265,
+          "qty": 2,
+          "lineTotal": 530
+        }
+      ],
+      "total": 530,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64270,
+        "noteSuffix": "a-5",
+        "note": "64270a",
+        "observations": "Mostr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-10-24T13:19:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
+      },
+      "city": "culiacan"
+    },
+    {
+      "id": "sale-hist-rcpt-64271",
+      "folio": "HIST-R64271",
+      "createdAt": "2026-10-24T12:25:00",
+      "customer": "Mostrador",
+      "clientId": null,
+      "client": null,
+      "paymentMethod": "tarjeta",
+      "billing": "sin_facturar",
+      "items": [
+        {
+          "product": "waxtard-blanco-perla",
+          "name": "Waxtard Perla Premium S-35® (25KG)",
+          "code": "FT-PR-001",
+          "unit": "Pza",
+          "price": 210,
+          "qty": 1,
+          "lineTotal": 210
+        }
+      ],
+      "total": 210,
+      "user": "import-historico",
+      "meta": {
+        "source": "old-panel",
+        "kind": "receipt",
+        "receiptId": 64271,
+        "noteSuffix": "a-6",
+        "note": "64271a",
+        "observations": "Mostr tarj perso",
+        "year": 2026,
+        "month": 10,
+        "day": 24,
+        "city": "culiacan",
+        "issuedAt": "2026-10-24T13:25:00",
+        "timeRule": "hora-expedida-minus-1h",
+        "branch": "SUCURSAL UNO",
+        "corteMark": "C"
       },
       "city": "culiacan"
     }

@@ -78,7 +78,14 @@ const server = http.createServer((req, res) => {
     }
 
     const parsedUrl = url.parse(req.url, true);
-    const pathname = parsedUrl.pathname;
+    // url.parse deja %20/%C3%A1 etc. sin decodificar; sin esto fallan
+    // /Assets/Logotipo Principal.png y /Assets/Diseno de Sacos 2026/*.png
+    let pathname = parsedUrl.pathname || '/';
+    try {
+        pathname = decodeURIComponent(pathname);
+    } catch (_) {
+        /* pathname mal formado: se usa tal cual */
+    }
 
     console.log(`${req.method} ${pathname}`);
 
