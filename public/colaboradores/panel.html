@@ -6251,9 +6251,31 @@
             flex-wrap: wrap;
             margin-bottom: 12px;
         }
-        .materials-movements-block:not(.is-open) .materials-movements-tabs {
+        .materials-movements-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .materials-movements-block:not(.is-open) .materials-movements-tools {
             display: none;
         }
+        .mp-supplier-meta {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px;
+            line-height: 1.35;
+        }
+        .mp-suppliers-empty {
+            display: grid;
+            gap: 12px;
+            justify-items: center;
+            text-align: center;
+            padding: 28px 16px;
+            color: var(--muted);
+        }
+        .mp-suppliers-empty .btn { min-height: 40px; }
         .materials-movements-list {
             min-height: 72px;
         }
@@ -8511,11 +8533,19 @@
                 align-items: stretch;
                 gap: 10px;
             }
+            .materials-movements-tools {
+                width: 100%;
+            }
             .materials-movements-tabs {
                 width: 100%;
+                flex: 1 1 auto;
             }
             .materials-movements-tabs button {
                 flex: 1;
+                min-height: 44px;
+            }
+            #mpSupplierOpenBtn {
+                width: 100%;
                 min-height: 44px;
             }
             #materialsCatalogCard .toolbar {
@@ -9099,9 +9129,14 @@
                                     <span class="page-sub" id="mpReceiptsSub">Historial de entradas y proveedores</span>
                                 </span>
                             </button>
-                            <div class="seg-control materials-movements-tabs" id="mpDeskTabs" role="tablist" aria-label="Entradas o proveedores">
-                                <button type="button" data-mp-desk="entradas" class="active" aria-selected="true">Entradas</button>
-                                <button type="button" data-mp-desk="proveedores" aria-selected="false">Proveedores</button>
+                            <div class="materials-movements-tools">
+                                <div class="seg-control materials-movements-tabs" id="mpDeskTabs" role="tablist" aria-label="Entradas o proveedores">
+                                    <button type="button" data-mp-desk="entradas" class="active" aria-selected="true">Entradas</button>
+                                    <button type="button" data-mp-desk="proveedores" aria-selected="false">Proveedores</button>
+                                </div>
+                                <button type="button" class="btn primary" id="mpSupplierOpenBtn" hidden>
+                                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Proveedor
+                                </button>
                             </div>
                         </div>
                         <div id="materialsMovementsBody" hidden>
@@ -10826,6 +10861,34 @@
                 <div class="modal-actions">
                     <button type="button" class="btn" id="mpPayCancel">Cancelar</button>
                     <button type="submit" class="btn primary">Descontar y abonar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="mpSupplierModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="mpSupplierTitle" style="max-width:440px">
+            <div class="modal-head">
+                <strong id="mpSupplierTitle">Alta de proveedor</strong>
+                <button type="button" class="btn" id="mpSupplierClose">Cerrar</button>
+            </div>
+            <form id="mpSupplierForm" class="modal-body">
+                <div class="form-grid">
+                    <label>Nombre
+                        <input id="mpSupplierFormName" type="text" required autocomplete="organization" maxlength="120" placeholder="Razón social o nombre comercial">
+                    </label>
+                    <label>Teléfono
+                        <input id="mpSupplierFormPhone" type="tel" inputmode="tel" autocomplete="tel" maxlength="40" placeholder="Ej. 667 123 4567">
+                    </label>
+                    <label>Correo
+                        <input id="mpSupplierFormEmail" type="email" inputmode="email" autocomplete="email" maxlength="120" placeholder="compras@proveedor.com">
+                    </label>
+                    <label>Nota
+                        <input id="mpSupplierFormNote" type="text" maxlength="160" placeholder="Contacto, RFC, condiciones…">
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="mpSupplierCancel">Cancelar</button>
+                    <button type="submit" class="btn primary" id="mpSupplierSave">Guardar proveedor</button>
                 </div>
             </form>
         </div>
@@ -13668,15 +13731,34 @@
             return mpNormName(s.name).toLowerCase() === key;
         })[0] || null;
     }
-    function mpEnsureSupplier(name) {
+    function mpEnsureSupplier(name, extras) {
         const clean = mpNormName(name);
         if (!clean) return null;
         const found = mpFindSupplierByName(clean);
-        if (found) return found;
+        if (found) {
+            if (extras && typeof extras === 'object') {
+                let touched = false;
+                ['phone', 'email', 'note'].forEach(function (key) {
+                    const next = mpNormName(extras[key] || '');
+                    if (!next || found[key]) return;
+                    found[key] = next;
+                    touched = true;
+                });
+                if (touched) {
+                    found.updatedAt = mpStamp();
+                    found.editedAt = found.updatedAt;
+                    saveMpCollection(MP_SUPPLIERS_KEY, mpSuppliers);
+                }
+            }
+            return found;
+        }
         const now = mpStamp();
         const supplier = {
             id: mpId('prov'),
             name: clean,
+            phone: mpNormName((extras && extras.phone) || ''),
+            email: mpNormName((extras && extras.email) || ''),
+            note: mpNormName((extras && extras.note) || ''),
             createdAt: now,
             updatedAt: now,
             editedAt: now
@@ -13684,6 +13766,72 @@
         mpSuppliers.push(supplier);
         saveMpCollection(MP_SUPPLIERS_KEY, mpSuppliers);
         return supplier;
+    }
+    function openMpSupplierModal() {
+        const modal = document.getElementById('mpSupplierModal');
+        const nameEl = document.getElementById('mpSupplierFormName');
+        const phoneEl = document.getElementById('mpSupplierFormPhone');
+        const emailEl = document.getElementById('mpSupplierFormEmail');
+        const noteEl = document.getElementById('mpSupplierFormNote');
+        if (nameEl) nameEl.value = '';
+        if (phoneEl) phoneEl.value = '';
+        if (emailEl) emailEl.value = '';
+        if (noteEl) noteEl.value = '';
+        if (modal) {
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+        setTimeout(function () {
+            if (nameEl) nameEl.focus();
+        }, 30);
+    }
+    function closeMpSupplierModal() {
+        const modal = document.getElementById('mpSupplierModal');
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+    function submitMpSupplier(ev) {
+        if (ev) ev.preventDefault();
+        const name = mpNormName((document.getElementById('mpSupplierFormName') || {}).value);
+        if (!name) {
+            panelToast('Escribe el nombre del proveedor', 'err');
+            return;
+        }
+        const phone = mpNormName((document.getElementById('mpSupplierFormPhone') || {}).value);
+        const email = mpNormName((document.getElementById('mpSupplierFormEmail') || {}).value);
+        const note = mpNormName((document.getElementById('mpSupplierFormNote') || {}).value);
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            panelToast('Revisa el correo del proveedor', 'err');
+            return;
+        }
+        const existing = mpFindSupplierByName(name);
+        if (existing) {
+            panelToast('«' + existing.name + '» ya está dado de alta', 'err');
+            if (document.getElementById('mpSupplierFormName')) {
+                document.getElementById('mpSupplierFormName').focus();
+            }
+            return;
+        }
+        const supplier = mpEnsureSupplier(name, { phone: phone, email: email, note: note });
+        if (!supplier) {
+            panelToast('No se pudo guardar el proveedor', 'err');
+            return;
+        }
+        mpOpenSupplier = supplier.id;
+        mpDeskTab = 'proveedores';
+        const movBlock = document.getElementById('materialsMovementsBlock');
+        const movBody = document.getElementById('materialsMovementsBody');
+        const movToggle = document.getElementById('materialsMovementsToggle');
+        if (movBlock && movBody && movToggle) {
+            movBlock.classList.add('is-open');
+            movBody.hidden = false;
+            movToggle.setAttribute('aria-expanded', 'true');
+        }
+        mpFillSupplierList();
+        renderMpDesk();
+        closeMpSupplierModal();
+        panelToast('Proveedor «' + supplier.name + '» listo', 'ok');
     }
     function mpReceiptLive(row) {
         return !!(row && row.status !== 'cancelled' && !row.deleted);
@@ -14125,6 +14273,7 @@
         const entriesHost = document.getElementById('mpReceiptsList');
         const suppliersHost = document.getElementById('mpSuppliersList');
         const tabs = document.getElementById('mpDeskTabs');
+        const supplierBtn = document.getElementById('mpSupplierOpenBtn');
         if (!entriesHost || !suppliersHost) return;
         if (tabs) {
             tabs.querySelectorAll('[data-mp-desk]').forEach(function (btn) {
@@ -14145,6 +14294,7 @@
                 cityNote + ' · por pagar ' + moneyMx(owed);
         }
         const showEntries = mpDeskTab !== 'proveedores';
+        if (supplierBtn) supplierBtn.hidden = showEntries;
         entriesHost.hidden = !showEntries;
         suppliersHost.hidden = showEntries;
         if (showEntries) {
@@ -14223,9 +14373,17 @@
                 const balText = balance > 0
                     ? ('Por pagar ' + moneyMx(balance))
                     : (balance < 0 ? ('A favor ' + moneyMx(-balance)) : 'Al corriente');
+                const contactBits = [];
+                if (s.phone) contactBits.push(s.phone);
+                if (s.email) contactBits.push(s.email);
+                if (s.note) contactBits.push(s.note);
+                const contactHtml = contactBits.length
+                    ? '<div class="mp-supplier-meta">' + esc(contactBits.join(' · ')) + '</div>'
+                    : '';
                 return '<article class="mp-desk-row">' +
                     '<div class="mp-desk-main">' +
                     '<button type="button" data-mp-open-supplier="' + esc(s.id) + '" style="background:none;border:0;padding:0;font:inherit;font-weight:600;cursor:pointer;text-align:left">' + esc(s.name) + '</button>' +
+                    contactHtml +
                     '<div class="' + balClass + '">' + esc(balText) + '</div>' +
                     rel +
                     '</div>' +
@@ -14233,7 +14391,11 @@
                     '<div class="mp-desk-actions"><button type="button" class="btn primary" data-mp-pay="' + esc(s.id) + '">Abonar</button></div>' +
                     '</div></article>';
             }).join('')
-            : '<div class="empty">Los proveedores aparecen al registrar la primera entrada.</div>';
+            : '<div class="mp-suppliers-empty">' +
+                '<div>Todavía no hay proveedores.</div>' +
+                '<button type="button" class="btn primary" data-mp-open-supplier-form>' +
+                '<i class="fa-solid fa-plus" aria-hidden="true"></i> Alta de proveedor</button>' +
+                '</div>';
     }
     document.getElementById('mpReceiptOpenBtn').addEventListener('click', openMpReceiptModal);
     document.getElementById('mpReceiptClose').addEventListener('click', closeMpReceiptModal);
@@ -14288,6 +14450,11 @@
             cancelMpReceipt(cancelReceipt.getAttribute('data-mp-cancel-receipt'));
             return;
         }
+        const openForm = e.target.closest('[data-mp-open-supplier-form]');
+        if (openForm) {
+            openMpSupplierModal();
+            return;
+        }
         const pay = e.target.closest('[data-mp-pay]');
         if (pay) {
             openMpPayModal(pay.getAttribute('data-mp-pay'));
@@ -14303,6 +14470,22 @@
         const cancelPay = e.target.closest('[data-mp-cancel-payment]');
         if (cancelPay) cancelMpPayment(cancelPay.getAttribute('data-mp-cancel-payment'));
     });
+    (function bindMpSupplierModal() {
+        const openBtn = document.getElementById('mpSupplierOpenBtn');
+        const modal = document.getElementById('mpSupplierModal');
+        const form = document.getElementById('mpSupplierForm');
+        const closeBtn = document.getElementById('mpSupplierClose');
+        const cancelBtn = document.getElementById('mpSupplierCancel');
+        if (openBtn) openBtn.addEventListener('click', openMpSupplierModal);
+        if (closeBtn) closeBtn.addEventListener('click', closeMpSupplierModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeMpSupplierModal);
+        if (modal) {
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) closeMpSupplierModal();
+            });
+        }
+        if (form) form.addEventListener('submit', submitMpSupplier);
+    })();
     (function bindMaterialsMovementsToggle() {
         const movBlock = document.getElementById('materialsMovementsBlock');
         const movToggle = document.getElementById('materialsMovementsToggle');
