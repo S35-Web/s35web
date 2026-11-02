@@ -32,7 +32,10 @@ const ALLOWED_KEYS = [
   's35_promo_codes_v1',
   's35_product_families',
   's35_product_family_overrides',
-  's35_product_catalog_v1'
+  's35_product_catalog_v1',
+  's35_mp_suppliers_v1',
+  's35_mp_receipts_v1',
+  's35_mp_supplier_payments_v1'
   // Flags locales no van a la nube (evita timestamps ISO como "costos").
 ];
 
@@ -58,7 +61,10 @@ const MERGE_ITEMS_KEYS = new Set([
   's35_tesoreria_movs_v1',
   's35_production_lots',
   's35_compra_tickets',
-  's35_promo_codes_v1'
+  's35_promo_codes_v1',
+  's35_mp_suppliers_v1',
+  's35_mp_receipts_v1',
+  's35_mp_supplier_payments_v1'
 ]);
 
 const MERGE_MAP_KEYS = new Set([

@@ -6212,10 +6212,6 @@
             color: var(--muted);
         }
         #materialsInventoryCard .products-inventory-head { align-items: center; }
-        #materialsInventoryCard .materials-inv-sort {
-            margin-bottom: 0;
-            flex-shrink: 0;
-        }
         .materials-inv-family {
             grid-column: 1 / -1;
             margin: 12px 0 2px;
@@ -6246,6 +6242,265 @@
             .mat-kpis .kpi { border-bottom: 1px solid var(--border); }
             .mat-kpis .kpi:nth-child(2n) { border-right: none; }
             .mat-kpis .kpi:nth-last-child(-n+2) { border-bottom: none; }
+        }
+        .materials-movements-block .pd-sales-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .materials-movements-block:not(.is-open) .materials-movements-tabs {
+            display: none;
+        }
+        .materials-movements-list {
+            min-height: 72px;
+        }
+        .materials-movements-list .empty {
+            padding: 28px 12px;
+            text-align: center;
+            color: var(--muted);
+        }
+        .mp-desk-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            align-items: flex-start;
+        }
+        .mp-desk-row:last-child { border-bottom: none; }
+        .mp-desk-main { min-width: 0; }
+        .mp-desk-title { font-weight: 600; }
+        .mp-desk-meta { color: var(--muted, #6b6b6b); font-size: 12px; margin-top: 2px; line-height: 1.4; }
+        .mp-desk-side { text-align: right; flex: none; }
+        .mp-desk-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; flex-wrap: wrap; }
+        .mp-pay-credito { color: #b45309; }
+        .mp-pay-ok { color: #2f7d32; }
+        .mp-rel { margin: 0 0 8px 12px; padding-left: 12px; border-left: 2px solid var(--border); }
+        #mpReceiptModal .modal-card {
+            max-width: 680px;
+            width: min(680px, calc(100vw - 24px));
+        }
+        #mpReceiptModal .modal-body.mp-receipt-form {
+            gap: 18px;
+        }
+        .mp-receipt-section {
+            display: grid;
+            gap: 12px;
+        }
+        .mp-receipt-section .pd-section-label {
+            margin: 0;
+        }
+        .mp-receipt-meta-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) 132px 140px 168px;
+            gap: 12px;
+            align-items: end;
+        }
+        .mp-receipt-meta-grid > label,
+        .mp-receipt-pay-block > label,
+        .mp-receipt-note > label {
+            display: grid;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .mp-receipt-meta-grid input,
+        .mp-receipt-meta-grid select,
+        .mp-receipt-pay-block select,
+        .mp-receipt-note input,
+        .mp-line select,
+        .mp-line input {
+            height: 36px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            padding: 0 10px;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .mp-receipt-meta-grid input:focus,
+        .mp-receipt-meta-grid select:focus,
+        .mp-receipt-pay-block select:focus,
+        .mp-receipt-note input:focus,
+        .mp-line select:focus,
+        .mp-line input:focus {
+            border-color: var(--border-strong);
+        }
+        .mp-receipt-meta-grid .seg-control {
+            width: 100%;
+            margin: 0;
+        }
+        .mp-receipt-meta-grid .seg-control button {
+            flex: 1;
+        }
+        .mp-receipt-pay-block {
+            display: grid;
+            gap: 6px;
+        }
+        .mp-receipt-pay-block .page-sub,
+        .mp-receipt-pay-block .muted {
+            margin: 0;
+            font-size: 12px;
+        }
+        .mp-receipt-lines {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+            padding: 12px 14px 10px;
+        }
+        .mp-lines-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 10px;
+        }
+        .mp-lines-head .pd-section-label { margin: 0; }
+        .mp-lines-cols {
+            display: grid;
+            grid-template-columns: minmax(0, 1.8fr) 88px 108px 96px 36px;
+            gap: 8px;
+            padding: 0 0 6px;
+            margin-bottom: 4px;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            letter-spacing: .03em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .mp-lines-cols span:nth-child(2),
+        .mp-lines-cols span:nth-child(3),
+        .mp-lines-cols span:nth-child(4) {
+            text-align: right;
+        }
+        .mp-line {
+            display: grid;
+            grid-template-columns: minmax(0, 1.8fr) 88px 108px 96px 36px;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .mp-line:last-child { border-bottom: none; }
+        .mp-line input[data-mp-field="qty"],
+        .mp-line input[data-mp-field="unitCost"] {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .mp-line-total {
+            text-align: right;
+            font-size: 13px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            color: var(--text);
+            white-space: nowrap;
+        }
+        .mp-line-total.is-empty { color: var(--muted); font-weight: 500; }
+        .mp-line .icon-action {
+            width: 36px;
+            height: 36px;
+            justify-self: end;
+        }
+        .mp-receipt-note { margin: 0; }
+        #mpReceiptModal .modal-actions {
+            align-items: center;
+            margin-top: 2px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .mp-receipt-total {
+            margin-right: auto;
+            display: grid;
+            gap: 2px;
+        }
+        .mp-receipt-total .label {
+            font-size: 11px;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .mp-receipt-total .val {
+            font-size: 20px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            line-height: 1.1;
+        }
+        @media (max-width: 720px) {
+            .mp-receipt-meta-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .mp-receipt-meta-grid > label:first-child,
+            .mp-receipt-meta-grid > label:last-child {
+                grid-column: 1 / -1;
+            }
+            .mp-lines-cols { display: none; }
+            .mp-line {
+                grid-template-columns: 1fr 1fr auto;
+                gap: 8px;
+                align-items: center;
+                padding: 10px 0;
+            }
+            .mp-line select { grid-column: 1 / -1; }
+            .mp-line-total {
+                display: none;
+            }
+            .mp-line .icon-action {
+                justify-self: end;
+            }
+            #mpReceiptModal .modal-body.mp-receipt-form {
+                padding: 16px 16px 0;
+                gap: 16px;
+            }
+            #mpReceiptModal .modal-actions {
+                flex-wrap: wrap;
+                gap: 8px;
+                position: sticky;
+                bottom: 0;
+                margin: 0 -16px;
+                padding: 12px 16px max(14px, var(--sab));
+                background: var(--panel);
+                border-top: 1px solid var(--border);
+                box-shadow: 0 -8px 20px rgba(10, 10, 10, 0.04);
+                z-index: 2;
+            }
+            #mpReceiptModal .mp-receipt-total {
+                flex: 1 1 100%;
+                margin-right: 0;
+                margin-bottom: 2px;
+            }
+            #mpReceiptModal .modal-actions .btn {
+                min-height: 44px;
+            }
+            #mpReceiptModal #mpReceiptCancel {
+                flex: 1 1 calc(42% - 4px);
+            }
+            #mpReceiptModal #mpReceiptSave {
+                flex: 1 1 calc(58% - 4px);
+            }
+            .mp-receipt-lines {
+                padding: 12px;
+            }
+            .mp-lines-head .btn {
+                min-height: 40px;
+            }
+        }
+        @media (max-width: 420px) {
+            .mp-receipt-meta-grid {
+                grid-template-columns: 1fr;
+            }
+            .mp-receipt-meta-grid > label:first-child,
+            .mp-receipt-meta-grid > label:last-child {
+                grid-column: auto;
+            }
+            #mpReceiptModal #mpReceiptCancel,
+            #mpReceiptModal #mpReceiptSave {
+                flex: 1 1 100%;
+            }
         }
         .materials-inventory-chart .products-inventory-track {
             position: relative;
@@ -8182,7 +8437,8 @@
                 height: 44px;
             }
             .products-print-btn { width: 44px; }
-            #productsAddInventoryBtn {
+            #productsAddInventoryBtn,
+            #mpReceiptOpenBtn {
                 min-height: 44px;
                 flex: 1 1 auto;
             }
@@ -8197,6 +8453,84 @@
                 -webkit-box-orient: vertical;
                 overflow: hidden;
                 text-overflow: ellipsis;
+            }
+            /* Materias primas: filas legibles en móvil (nombre no se aplasta) */
+            #materials .page-head {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #materials .page-head-actions,
+            #materials .cortes-city-menu {
+                width: 100%;
+            }
+            #materialsCitySelect {
+                width: 100%;
+                min-height: 44px;
+            }
+            .materials-inventory-chart .products-inventory-row {
+                grid-template-columns: minmax(0, 1fr) auto;
+                grid-template-areas:
+                    "name qty"
+                    "track track";
+                gap: 8px 12px;
+                padding: 10px 8px;
+                align-items: start;
+            }
+            .materials-inventory-chart .products-inventory-name {
+                grid-area: name;
+                align-items: flex-start;
+            }
+            .materials-inventory-chart .products-inventory-name .products-inventory-label {
+                white-space: normal;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                font-size: 13px;
+                line-height: 1.25;
+            }
+            .materials-inventory-chart .products-inventory-track {
+                grid-area: track;
+                height: 10px;
+                align-self: stretch;
+            }
+            .materials-inventory-chart .products-inventory-qty {
+                grid-area: qty;
+                text-align: right;
+                font-size: 12px;
+                line-height: 1.25;
+                white-space: normal;
+                max-width: 42vw;
+            }
+            .materials-inventory-chart .mat-inv-value {
+                display: block;
+                margin-top: 1px;
+            }
+            .materials-movements-block .pd-sales-head {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .materials-movements-tabs {
+                width: 100%;
+            }
+            .materials-movements-tabs button {
+                flex: 1;
+                min-height: 44px;
+            }
+            #materialsCatalogCard .toolbar {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            #materialsCatalogCard .toolbar .search {
+                flex: 1 1 100%;
+                min-width: 0;
+                min-height: 44px;
+            }
+            #matFamiliesBtn,
+            #matAddBtn {
+                min-height: 44px;
+                flex: 1 1 auto;
             }
             .pd-tabs.seg-control,
             #pdTabs {
@@ -8450,17 +8784,30 @@
                 width: 48px;
                 min-height: 48px;
             }
-            .mat-kpis,
             .kpis.kpis-4,
             .products-kpis {
                 grid-template-columns: 1fr;
             }
-            .mat-kpis .kpi,
+            .mat-kpis {
+                grid-template-columns: 1fr 1fr;
+            }
+            .mat-kpis .kpi {
+                border-right: 1px solid var(--border);
+                border-bottom: 1px solid var(--border);
+                min-height: 64px;
+                padding: 10px 12px;
+            }
+            .mat-kpis .kpi:nth-child(2n) { border-right: none; }
+            .mat-kpis .kpi:nth-last-child(-n+1) { border-bottom: none; }
+            .mat-kpis .kpi:nth-child(5) {
+                grid-column: 1 / -1;
+                border-right: none;
+                border-bottom: none;
+            }
             .products-kpis .kpi {
                 border-right: none !important;
                 border-bottom: 1px solid var(--border);
             }
-            .mat-kpis .kpi:last-child,
             .products-kpis .kpi:last-child {
                 border-bottom: none;
             }
@@ -8685,7 +9032,7 @@
                     <div class="page-head" style="margin-bottom:12px">
                         <div>
                             <h1 class="page-title">Materias primas</h1>
-                            <p class="page-sub">Inventario de planta por ciudad. Los cambios se guardan en este navegador.</p>
+                            <p class="page-sub">Inventario por ciudad · entradas pagadas o a crédito del proveedor.</p>
                         </div>
                         <div class="page-head-actions">
                             <div class="seg-control cortes-city-menu" id="materialsCityMenu">
@@ -8727,18 +9074,46 @@
                                 <p class="page-sub" id="materialsInventorySub">Materia prima</p>
                             </div>
                             <div class="products-inventory-actions">
-                                <div class="seg-control materials-inv-sort" id="materialsInventorySort" role="group" aria-label="Orden del inventario">
-                                    <button type="button" data-mat-inv-sort="az" class="active" aria-pressed="true">A–Z</button>
-                                    <button type="button" data-mat-inv-sort="fam" aria-pressed="false">Familia</button>
+                                <div class="products-inventory-btns">
+                                    <button type="button" class="btn products-print-btn" id="matPrintBtn" title="Reporte de conteo para llenar a mano" aria-label="Imprimir reporte de conteo">
+                                        <i class="fa-solid fa-print" aria-hidden="true"></i>
+                                    </button>
+                                    <button type="button" class="btn products-sort-btn" id="materialsInventorySortBtn" data-sort="az" title="Orden alfabético A-Z. Cambiar a familias" aria-label="Orden alfabético activo. Cambiar a orden por familias">
+                                        <i class="fa-solid fa-arrow-down-a-z" aria-hidden="true"></i>
+                                        <span class="products-sort-label">A-Z</span>
+                                    </button>
+                                    <button type="button" class="btn primary" id="mpReceiptOpenBtn">
+                                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Entrada
+                                    </button>
                                 </div>
                             </div>
                         </div>
                         <div class="products-inventory-chart materials-inventory-chart" id="materialsInventoryChart" role="group" aria-label="Inventario de todas las materias primas"></div>
                     </div>
+                    <div class="pd-sales-block products-movements-block materials-movements-block" id="materialsMovementsBlock">
+                        <div class="pd-sales-head">
+                            <button type="button" class="products-movements-toggle" id="materialsMovementsToggle" aria-expanded="false" aria-controls="materialsMovementsBody">
+                                <i class="fa-solid fa-chevron-right products-movements-chevron" aria-hidden="true"></i>
+                                <span class="products-movements-toggle-copy">
+                                    <span class="pd-section-label">Movimientos</span>
+                                    <span class="page-sub" id="mpReceiptsSub">Historial de entradas y proveedores</span>
+                                </span>
+                            </button>
+                            <div class="seg-control materials-movements-tabs" id="mpDeskTabs" role="tablist" aria-label="Entradas o proveedores">
+                                <button type="button" data-mp-desk="entradas" class="active" aria-selected="true">Entradas</button>
+                                <button type="button" data-mp-desk="proveedores" aria-selected="false">Proveedores</button>
+                            </div>
+                        </div>
+                        <div id="materialsMovementsBody" hidden>
+                            <div class="materials-movements-list" id="mpReceiptsCard">
+                                <div id="mpReceiptsList"></div>
+                                <div id="mpSuppliersList" hidden></div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="card products-catalog-card" id="materialsCatalogCard">
                         <div class="toolbar">
                             <input id="matSearch" class="search" type="search" placeholder="Buscar materia prima">
-                            <button id="matPrintBtn" class="btn" type="button" title="Reporte de conteo para llenar a mano"><i class="fa-solid fa-print"></i> Imprimir</button>
                             <button id="matFamiliesBtn" class="btn" type="button"><i class="fa-solid fa-tags"></i> Familias</button>
                             <button id="matAddBtn" class="btn primary" type="button"><i class="fa-solid fa-plus"></i> Alta</button>
                             <button type="button" class="products-catalog-toggle" id="materialsCatalogToggle" aria-expanded="false" aria-controls="materialsCatalogTable" aria-label="Mostrar materias primas" title="Mostrar materias primas">
@@ -10345,6 +10720,116 @@
     <div id="matCountPrintDoc" class="mat-count-print" aria-hidden="true"></div>
     <div id="ptCountPrintDoc" class="mat-count-print pt-count-print" aria-hidden="true"></div>
 
+    <div id="mpReceiptModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="mpReceiptTitle">
+            <div class="modal-head">
+                <strong id="mpReceiptTitle">Entrada de materia prima</strong>
+                <button type="button" class="btn" id="mpReceiptClose">Cerrar</button>
+            </div>
+            <form id="mpReceiptForm" class="modal-body mp-receipt-form">
+                <div class="mp-receipt-section">
+                    <p class="pd-section-label">Datos de la entrada</p>
+                    <div class="mp-receipt-meta-grid">
+                        <label>Proveedor
+                            <input id="mpSupplierName" type="text" required autocomplete="off" list="mpSupplierList" placeholder="Nombre del proveedor">
+                            <datalist id="mpSupplierList"></datalist>
+                        </label>
+                        <label>Fecha
+                            <input id="mpReceiptDate" type="date" required>
+                        </label>
+                        <label>Ciudad
+                            <select id="mpReceiptCity" required>
+                                <option value="culiacan">Culiacán</option>
+                                <option value="mochis">Los Mochis</option>
+                                <option value="mazatlan">Mazatlán</option>
+                            </select>
+                        </label>
+                        <label>Pago
+                            <div class="seg-control" id="mpPayMode" role="group" aria-label="Forma de pago">
+                                <button type="button" data-mp-pay="contado" class="active" aria-pressed="true">Contado</button>
+                                <button type="button" data-mp-pay="credito" aria-pressed="false">Crédito</button>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="mp-receipt-pay-block">
+                        <label id="mpAccountWrap">Cuenta
+                            <select id="mpAccount">
+                                <option value="efectivo">Efectivo</option>
+                                <option value="banco">Transferencias y tarjetas facturadas</option>
+                                <option value="tarjeta_sf">Tarjeta sin factura</option>
+                                <option value="efectivo_empresarial">Efectivo empresarial</option>
+                            </select>
+                        </label>
+                        <p class="page-sub" id="mpPayHint">Al guardar se descuenta este total de la cuenta.</p>
+                    </div>
+                </div>
+                <div class="mp-receipt-section mp-receipt-lines">
+                    <div class="mp-lines-head">
+                        <p class="pd-section-label">Materiales</p>
+                        <button type="button" class="btn" id="mpAddLine"><i class="fa-solid fa-plus" aria-hidden="true"></i> Línea</button>
+                    </div>
+                    <div class="mp-lines-cols" aria-hidden="true">
+                        <span>Materia prima</span>
+                        <span>Cant.</span>
+                        <span>Costo unit.</span>
+                        <span>Total</span>
+                        <span></span>
+                    </div>
+                    <div id="mpLines"></div>
+                </div>
+                <label class="mp-receipt-note">Nota
+                    <input id="mpReceiptNote" type="text" maxlength="160" placeholder="Factura, remisión, lote del proveedor">
+                </label>
+                <div class="modal-actions">
+                    <div class="mp-receipt-total">
+                        <span class="label">Total</span>
+                        <span class="val" id="mpReceiptTotal">$0.00</span>
+                    </div>
+                    <button type="button" class="btn" id="mpReceiptCancel">Cancelar</button>
+                    <button type="submit" class="btn primary" id="mpReceiptSave">Registrar entrada</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="mpPayModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="mpPayTitle" style="max-width:440px">
+            <div class="modal-head">
+                <strong id="mpPayTitle">Abonar a proveedor</strong>
+                <button type="button" class="btn" id="mpPayClose">Cerrar</button>
+            </div>
+            <form id="mpPayForm" class="modal-body">
+                <input type="hidden" id="mpPaySupplierId" value="">
+                <p class="muted" id="mpPaySupplierLabel" style="margin:0 0 12px"></p>
+                <div class="form-grid">
+                    <label>Monto
+                        <input id="mpPayAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required>
+                    </label>
+                    <label>Cuenta
+                        <select id="mpPayAccount" required>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="banco">Transferencias y tarjetas facturadas</option>
+                            <option value="tarjeta_sf">Tarjeta sin factura</option>
+                            <option value="efectivo_empresarial">Efectivo empresarial</option>
+                        </select>
+                    </label>
+                    <label>Ciudad
+                        <select id="mpPayCity" required>
+                            <option value="culiacan">Culiacán</option>
+                            <option value="mochis">Los Mochis</option>
+                            <option value="mazatlan">Mazatlán</option>
+                        </select>
+                    </label>
+                    <label>Nota
+                        <input id="mpPayNote" type="text" maxlength="160" placeholder="Transferencia, efectivo en planta">
+                    </label>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="mpPayCancel">Cancelar</button>
+                    <button type="submit" class="btn primary">Descontar y abonar</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <div id="plantModal" class="modal-backdrop" aria-hidden="true">
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="plantModalTitle" style="max-width:480px">
             <div class="modal-head">
@@ -10462,7 +10947,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="/colaboradores-data.js"></script>
     <script src="/colaboradores/roles.js?v=20260926-dinero"></script>
-    <script src="/colaboradores/panel-sync.js?v=20260926-saleedit3"></script>
+    <script src="/colaboradores/panel-sync.js?v=20261102-mp-entradas"></script>
     <script>
     const LOGIN_URL = '/colaboradores';
     function getToken() { return localStorage.getItem('s35_admin_token'); }
@@ -12488,6 +12973,7 @@
         updateDashExtras();
         renderMaterialsInventoryChart();
         syncInventoryCityMenus();
+        if (mpDeskReady) renderMpDesk();
     }
     const MAT_BAR_COLORS = ['#2f7d32', '#5a5a5a', '#1a1a1a', '#e65100', '#7b1fa2', '#c41626', '#1565c0', '#00838f'];
     function matFamilyColor(id) {
@@ -12561,13 +13047,27 @@
         }).join('');
     }
     function syncMaterialsInventorySort() {
-        const bar = document.getElementById('materialsInventorySort');
-        if (!bar) return;
-        bar.querySelectorAll('[data-mat-inv-sort]').forEach(function (btn) {
-            const on = btn.getAttribute('data-mat-inv-sort') === materialsInventorySort;
-            btn.classList.toggle('active', on);
-            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-        });
+        const btn = document.getElementById('materialsInventorySortBtn');
+        if (!btn) return;
+        const isFam = materialsInventorySort === 'fam';
+        btn.setAttribute('data-sort', isFam ? 'fam' : 'az');
+        const icon = btn.querySelector('i');
+        const label = btn.querySelector('.products-sort-label');
+        if (icon) {
+            icon.className = isFam
+                ? 'fa-solid fa-layer-group'
+                : 'fa-solid fa-arrow-down-a-z';
+        }
+        if (label) label.textContent = isFam ? 'Familia' : 'A-Z';
+        btn.title = isFam
+            ? 'Orden por familias. Cambiar a A-Z'
+            : 'Orden alfabético A-Z. Cambiar a familias';
+        btn.setAttribute(
+            'aria-label',
+            isFam
+                ? 'Orden por familias activo. Cambiar a orden alfabético'
+                : 'Orden alfabético activo. Cambiar a orden por familias'
+        );
     }
     function renderMaterialsInventoryChart() {
         const host = document.getElementById('materialsInventoryChart');
@@ -12843,15 +13343,11 @@
         });
         setMaterialsCatalogOpen(true);
     });
-    const materialsInventorySortBar = document.getElementById('materialsInventorySort');
-    if (materialsInventorySortBar) {
-        materialsInventorySortBar.addEventListener('click', function (e) {
-            const btn = e.target.closest('[data-mat-inv-sort]');
-            if (!btn) return;
-            const mode = btn.getAttribute('data-mat-inv-sort') === 'fam' ? 'fam' : 'az';
-            if (mode === materialsInventorySort) return;
-            materialsInventorySort = mode;
-            try { localStorage.setItem(MAT_INV_SORT_KEY, mode); } catch (_) {}
+    const materialsInventorySortBtn = document.getElementById('materialsInventorySortBtn');
+    if (materialsInventorySortBtn) {
+        materialsInventorySortBtn.addEventListener('click', function () {
+            materialsInventorySort = materialsInventorySort === 'fam' ? 'az' : 'fam';
+            try { localStorage.setItem(MAT_INV_SORT_KEY, materialsInventorySort); } catch (_) {}
             renderMaterialsInventoryChart();
         });
     }
@@ -13094,6 +13590,750 @@
         }
     });
     renderMaterials();
+
+    var mpDeskReady = false;
+    const MP_SUPPLIERS_KEY = 's35_mp_suppliers_v1';
+    const MP_RECEIPTS_KEY = 's35_mp_receipts_v1';
+    const MP_PAYMENTS_KEY = 's35_mp_supplier_payments_v1';
+    const MP_ACCOUNTS = {
+        efectivo: 'Efectivo',
+        banco: 'Transferencias y tarjetas facturadas',
+        tarjeta_sf: 'Tarjeta sin factura',
+        efectivo_empresarial: 'Efectivo empresarial'
+    };
+    let mpDeskTab = 'entradas';
+    let mpPayMode = 'contado';
+    let mpOpenSupplier = '';
+    let mpSaving = false;
+    function loadMpCollection(key) {
+        try {
+            const raw = JSON.parse(localStorage.getItem(key) || 'null');
+            if (raw && Array.isArray(raw.items)) {
+                return raw.items.filter(function (row) { return row && row.id; });
+            }
+        } catch (_) {}
+        return [];
+    }
+    function saveMpCollection(key, items) {
+        localStorage.setItem(key, JSON.stringify({
+            items: items,
+            updatedAt: new Date().toISOString()
+        }));
+    }
+    let mpSuppliers = loadMpCollection(MP_SUPPLIERS_KEY);
+    let mpReceipts = loadMpCollection(MP_RECEIPTS_KEY);
+    let mpPayments = loadMpCollection(MP_PAYMENTS_KEY);
+    function hydrateMpDeskFromLocal() {
+        mpSuppliers = loadMpCollection(MP_SUPPLIERS_KEY);
+        mpReceipts = loadMpCollection(MP_RECEIPTS_KEY);
+        mpPayments = loadMpCollection(MP_PAYMENTS_KEY);
+        renderMpDesk();
+    }
+    function mpRoundMoney(n) {
+        return Math.round((Number(n) || 0) * 100) / 100;
+    }
+    function mpRoundCost(n) {
+        return Math.round((Number(n) || 0) * 10000) / 10000;
+    }
+    function mpStamp() {
+        return new Date().toISOString();
+    }
+    function mpId(prefix) {
+        return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
+    }
+    function mpTodayValue() {
+        const d = new Date();
+        return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    }
+    function mpDateToIso(dateStr) {
+        const d = new Date(String(dateStr || '') + 'T12:00:00');
+        return isNaN(d.getTime()) ? mpStamp() : d.toISOString();
+    }
+    function mpFormatDate(iso) {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return '—';
+        return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+    function mpNormName(name) {
+        return String(name || '').trim().replace(/\s+/g, ' ');
+    }
+    function mpActiveSuppliers() {
+        return mpSuppliers.filter(function (s) { return s && !s.deleted && mpNormName(s.name); });
+    }
+    function mpFindSupplierByName(name) {
+        const key = mpNormName(name).toLowerCase();
+        return mpActiveSuppliers().filter(function (s) {
+            return mpNormName(s.name).toLowerCase() === key;
+        })[0] || null;
+    }
+    function mpEnsureSupplier(name) {
+        const clean = mpNormName(name);
+        if (!clean) return null;
+        const found = mpFindSupplierByName(clean);
+        if (found) return found;
+        const now = mpStamp();
+        const supplier = {
+            id: mpId('prov'),
+            name: clean,
+            createdAt: now,
+            updatedAt: now,
+            editedAt: now
+        };
+        mpSuppliers.push(supplier);
+        saveMpCollection(MP_SUPPLIERS_KEY, mpSuppliers);
+        return supplier;
+    }
+    function mpReceiptLive(row) {
+        return !!(row && row.status !== 'cancelled' && !row.deleted);
+    }
+    function mpSupplierBalance(id) {
+        let n = 0;
+        mpReceipts.forEach(function (row) {
+            if (!mpReceiptLive(row) || row.supplierId !== id || row.payMode !== 'credito') return;
+            n += Number(row.total) || 0;
+        });
+        mpPayments.forEach(function (row) {
+            if (!row || row.status === 'cancelled' || row.deleted || row.supplierId !== id) return;
+            n -= Number(row.amount) || 0;
+        });
+        return mpRoundMoney(n);
+    }
+    function mpOwedTotal() {
+        return mpRoundMoney(mpActiveSuppliers().reduce(function (n, s) {
+            return n + Math.max(0, mpSupplierBalance(s.id));
+        }, 0));
+    }
+    function mpNextFolio(iso) {
+        const d = new Date(iso || Date.now());
+        const prefix = 'MP-' + String(d.getFullYear()).slice(2) +
+            String(d.getMonth() + 1).padStart(2, '0') +
+            String(d.getDate()).padStart(2, '0') + '-';
+        let n = 0;
+        mpReceipts.forEach(function (row) {
+            const folio = String(row && row.folio || '');
+            if (folio.indexOf(prefix) !== 0) return;
+            const k = Number(folio.slice(prefix.length));
+            if (k > n) n = k;
+        });
+        return prefix + String(n + 1).padStart(2, '0');
+    }
+    function mpMaterialOptions(selected) {
+        return inventory.slice().sort(cmpMatName).map(function (m) {
+            const on = m.id === selected ? ' selected' : '';
+            return '<option value="' + esc(m.id) + '"' + on + '>' + esc(displayName(m)) + '</option>';
+        }).join('');
+    }
+    function mpReadLines() {
+        const host = document.getElementById('mpLines');
+        if (!host) return [];
+        return Array.prototype.map.call(host.querySelectorAll('[data-mp-line]'), function (row) {
+            const matEl = row.querySelector('[data-mp-field="materialId"]');
+            const qtyEl = row.querySelector('[data-mp-field="qty"]');
+            const costEl = row.querySelector('[data-mp-field="unitCost"]');
+            return {
+                materialId: matEl ? matEl.value : '',
+                qty: qtyEl ? qtyEl.value : '',
+                unitCost: costEl ? costEl.value : ''
+            };
+        });
+    }
+    function mpRenderLines(lines) {
+        const host = document.getElementById('mpLines');
+        if (!host) return;
+        const rows = (lines && lines.length) ? lines : [{ materialId: '', qty: '', unitCost: '' }];
+        host.innerHTML = rows.map(function (line, idx) {
+            const qty = Number(line.qty) || 0;
+            const cost = Number(line.unitCost) || 0;
+            const hasTotal = qty > 0;
+            const lineTotal = hasTotal ? moneyMx(mpRoundMoney(qty * cost)) : '';
+            return '<div class="mp-line" data-mp-line="' + idx + '">' +
+                '<select data-mp-field="materialId" aria-label="Materia prima">' +
+                '<option value="">Elegir</option>' + mpMaterialOptions(line.materialId) +
+                '</select>' +
+                '<input data-mp-field="qty" type="number" min="0" step="any" inputmode="decimal" value="' +
+                esc(line.qty) + '" aria-label="Cantidad" placeholder="0">' +
+                '<input data-mp-field="unitCost" type="number" min="0" step="0.01" inputmode="decimal" value="' +
+                esc(line.unitCost) + '" aria-label="Costo unitario" placeholder="0.00">' +
+                '<div class="mp-line-total' + (hasTotal ? '' : ' is-empty') + '" data-mp-line-total>' + esc(lineTotal) + '</div>' +
+                '<button type="button" class="icon-action" data-mp-remove aria-label="Quitar línea" title="Quitar línea"' +
+                (rows.length < 2 ? ' disabled' : '') + '><i class="fa-solid fa-xmark"></i></button>' +
+                '</div>';
+        }).join('');
+        mpRefreshTotal();
+    }
+    function mpRefreshTotal() {
+        const totalEl = document.getElementById('mpReceiptTotal');
+        let total = 0;
+        mpReadLines().forEach(function (line) {
+            const qty = Number(line.qty) || 0;
+            const cost = Number(line.unitCost) || 0;
+            if (qty > 0 && cost > 0) total += qty * cost;
+        });
+        if (totalEl) totalEl.textContent = moneyMx(mpRoundMoney(total));
+        document.querySelectorAll('#mpLines [data-mp-line]').forEach(function (row) {
+            const qty = Number((row.querySelector('[data-mp-field="qty"]') || {}).value) || 0;
+            const cost = Number((row.querySelector('[data-mp-field="unitCost"]') || {}).value) || 0;
+            const label = row.querySelector('[data-mp-line-total]');
+            if (!label) return;
+            const hasTotal = qty > 0;
+            label.textContent = hasTotal ? moneyMx(mpRoundMoney(qty * cost)) : '';
+            label.classList.toggle('is-empty', !hasTotal);
+        });
+        return mpRoundMoney(total);
+    }
+    function mpSyncPayMode() {
+        const contado = mpPayMode !== 'credito';
+        const wrap = document.getElementById('mpAccountWrap');
+        const hint = document.getElementById('mpPayHint');
+        if (wrap) wrap.hidden = !contado;
+        if (hint) {
+            hint.textContent = contado
+                ? 'Al guardar se descuenta este total de la cuenta.'
+                : 'Queda en la cuenta del proveedor. No se mueve dinero hasta que abones.';
+        }
+        document.querySelectorAll('#mpPayMode [data-mp-pay]').forEach(function (btn) {
+            const on = btn.getAttribute('data-mp-pay') === (contado ? 'contado' : 'credito');
+            btn.classList.toggle('active', on);
+            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+    }
+    function mpFillSupplierList() {
+        const list = document.getElementById('mpSupplierList');
+        if (!list) return;
+        list.innerHTML = mpActiveSuppliers()
+            .slice()
+            .sort(function (a, b) { return mpNormName(a.name).localeCompare(mpNormName(b.name), 'es'); })
+            .map(function (s) { return '<option value="' + esc(s.name) + '"></option>'; })
+            .join('');
+    }
+    function openMpReceiptModal() {
+        mpPayMode = 'contado';
+        mpSyncPayMode();
+        mpFillSupplierList();
+        const nameEl = document.getElementById('mpSupplierName');
+        const dateEl = document.getElementById('mpReceiptDate');
+        const cityEl = document.getElementById('mpReceiptCity');
+        const noteEl = document.getElementById('mpReceiptNote');
+        if (nameEl) nameEl.value = '';
+        if (dateEl) dateEl.value = mpTodayValue();
+        if (cityEl) cityEl.value = materialsCityFilter !== 'all' ? materialsCityFilter : INV_DEFAULT_CITY;
+        if (noteEl) noteEl.value = '';
+        mpRenderLines([{ materialId: '', qty: '', unitCost: '' }]);
+        const modal = document.getElementById('mpReceiptModal');
+        if (!modal) return;
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        if (nameEl) nameEl.focus();
+    }
+    function closeMpReceiptModal() {
+        const modal = document.getElementById('mpReceiptModal');
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+    function mpApplyStock(materialId, city, qty, unitCost) {
+        const mat = inventory.filter(function (m) { return m.id === materialId; })[0];
+        if (!mat) return null;
+        ensureMaterialByCity(mat);
+        const add = Math.max(0, Number(qty) || 0);
+        const cost = Math.max(0, Number(unitCost) || 0);
+        const oldQty = Math.max(0, Number(mat.stock) || 0);
+        const oldCost = Math.max(0, Number(mat.unitCost) || 0);
+        mat.byCity[city] = (Number(mat.byCity[city]) || 0) + add;
+        syncMaterialCityTotals(mat);
+        if (cost > 0) {
+            mat.unitCost = (oldCost > 0 && oldQty > 0)
+                ? mpRoundCost((oldQty * oldCost + add * cost) / (oldQty + add))
+                : mpRoundCost(cost);
+        }
+        mat.updatedAt = mpStamp();
+        return mat;
+    }
+    function mpReverseStock(materialId, city, qty) {
+        const mat = inventory.filter(function (m) { return m.id === materialId; })[0];
+        if (!mat) return 0;
+        ensureMaterialByCity(mat);
+        const sub = Math.max(0, Number(qty) || 0);
+        const before = Number(mat.byCity[city]) || 0;
+        const next = Math.max(0, before - sub);
+        mat.byCity[city] = next;
+        syncMaterialCityTotals(mat);
+        mat.updatedAt = mpStamp();
+        return mpRoundCost(sub - (before - next));
+    }
+    function mpRecordAccountOut(payload) {
+        const api = window.S35PosModule;
+        if (!api || typeof api.recordAccountOut !== 'function') return null;
+        return api.recordAccountOut(payload);
+    }
+    function submitMpReceipt(ev) {
+        if (ev) ev.preventDefault();
+        if (mpSaving) return;
+        const supplierName = mpNormName((document.getElementById('mpSupplierName') || {}).value);
+        if (!supplierName) {
+            panelToast('Escribe el proveedor', 'err');
+            return;
+        }
+        const city = normalizeInvCity((document.getElementById('mpReceiptCity') || {}).value);
+        const createdAt = mpDateToIso((document.getElementById('mpReceiptDate') || {}).value);
+        const note = String((document.getElementById('mpReceiptNote') || {}).value || '').trim();
+        const parsed = [];
+        const seen = {};
+        let invalid = '';
+        mpReadLines().forEach(function (line) {
+            const qty = Number(line.qty) || 0;
+            const unitCost = Math.max(0, Number(line.unitCost) || 0);
+            if (!line.materialId && !(qty > 0)) return;
+            const mat = inventory.filter(function (m) { return m.id === line.materialId; })[0];
+            if (!mat) {
+                invalid = 'Elige la materia prima de cada línea';
+                return;
+            }
+            if (!(qty > 0)) {
+                invalid = 'La cantidad de «' + mat.name + '» tiene que ser mayor a 0';
+                return;
+            }
+            if (seen[mat.id]) {
+                invalid = '«' + mat.name + '» está repetida. Junta la cantidad en una línea';
+                return;
+            }
+            seen[mat.id] = true;
+            parsed.push({
+                materialId: mat.id,
+                name: mat.name,
+                unit: mat.unit || '',
+                qty: qty,
+                unitCost: mpRoundCost(unitCost),
+                lineTotal: mpRoundMoney(qty * unitCost)
+            });
+        });
+        if (invalid) {
+            panelToast(invalid, 'err');
+            return;
+        }
+        if (!parsed.length) {
+            panelToast('Agrega al menos un material', 'err');
+            return;
+        }
+        const total = mpRoundMoney(parsed.reduce(function (n, line) { return n + line.lineTotal; }, 0));
+        const contado = mpPayMode !== 'credito';
+        const account = (document.getElementById('mpAccount') || {}).value;
+        if (contado && total > 0 && !MP_ACCOUNTS[account]) {
+            panelToast('Elige la cuenta', 'err');
+            return;
+        }
+        const now = mpStamp();
+        const folio = mpNextFolio(createdAt);
+        let mov = null;
+        if (contado && total > 0) {
+            const summary = parsed.map(function (line) { return line.name; }).join(', ');
+            mov = mpRecordAccountOut({
+                account: account,
+                amount: total,
+                city: city,
+                note: ('Entrada ' + folio + ' · ' + supplierName + ' · ' + summary).slice(0, 160),
+                reference: folio,
+                source: 'compra-mp',
+                locked: true
+            });
+            if (!mov) {
+                panelToast('No se pudo descontar la cuenta. Recarga el panel e inténtalo de nuevo.', 'err');
+                return;
+            }
+        }
+        mpSaving = true;
+        const supplier = mpEnsureSupplier(supplierName);
+        parsed.forEach(function (line) {
+            mpApplyStock(line.materialId, city, line.qty, line.unitCost);
+        });
+        saveInventory(inventory);
+        mpReceipts.unshift({
+            id: mpId('mpr'),
+            folio: folio,
+            createdAt: createdAt,
+            updatedAt: now,
+            editedAt: now,
+            supplierId: supplier.id,
+            supplierName: supplier.name,
+            city: city,
+            payMode: contado ? 'contado' : 'credito',
+            account: contado ? account : '',
+            total: total,
+            lines: parsed,
+            note: note,
+            tesoreriaMovId: mov ? mov.id : '',
+            status: 'posted',
+            userName: panelUserName
+        });
+        saveMpCollection(MP_RECEIPTS_KEY, mpReceipts);
+        mpSaving = false;
+        mpDeskTab = 'entradas';
+        updateMaterialKpi();
+        renderMaterials();
+        closeMpReceiptModal();
+        const payLabel = contado
+            ? (total > 0 ? ('descuento de ' + (MP_ACCOUNTS[account] || 'la cuenta')) : 'sin movimiento de dinero')
+            : 'queda a crédito';
+        panelToast(folio + ' · ' + supplier.name + ' · ' + payLabel, 'ok');
+    }
+    function cancelMpReceipt(id) {
+        const receipt = mpReceipts.filter(function (row) { return row.id === id; })[0];
+        if (!receipt || !mpReceiptLive(receipt)) return;
+        const label = receipt.folio + ' · ' + (receipt.supplierName || 'proveedor');
+        const moneyNote = receipt.payMode === 'contado' && receipt.tesoreriaMovId
+            ? '\nTambién se revierte el descuento de la cuenta.'
+            : (receipt.payMode === 'credito' ? '\nDeja de sumar en lo que se le debe al proveedor.' : '');
+        if (!confirm('¿Anular ' + label + '?\nSe resta la cantidad del inventario de ' + invCityLabel(receipt.city) + '.' + moneyNote)) return;
+        if (receipt.tesoreriaMovId) {
+            const api = window.S35PosModule;
+            const ok = api && typeof api.voidAccountOut === 'function' &&
+                api.voidAccountOut(receipt.tesoreriaMovId);
+            if (!ok) {
+                panelToast('No se pudo revertir el dinero de la cuenta. La entrada sigue activa.', 'err');
+                return;
+            }
+        }
+        let short = 0;
+        (receipt.lines || []).forEach(function (line) {
+            short += mpReverseStock(line.materialId, receipt.city, line.qty);
+        });
+        saveInventory(inventory);
+        const now = mpStamp();
+        receipt.status = 'cancelled';
+        receipt.cancelledAt = now;
+        receipt.updatedAt = now;
+        receipt.editedAt = now;
+        saveMpCollection(MP_RECEIPTS_KEY, mpReceipts);
+        updateMaterialKpi();
+        renderMaterials();
+        panelToast(short > 0
+            ? (receipt.folio + ' anulada. Parte del material ya no estaba en existencia.')
+            : (receipt.folio + ' anulada'), short > 0 ? 'err' : 'ok');
+    }
+    function openMpPayModal(supplierId) {
+        const supplier = mpActiveSuppliers().filter(function (s) { return s.id === supplierId; })[0];
+        if (!supplier) return;
+        const balance = mpSupplierBalance(supplier.id);
+        document.getElementById('mpPaySupplierId').value = supplier.id;
+        document.getElementById('mpPaySupplierLabel').textContent = supplier.name + ' · por pagar ' + moneyMx(balance);
+        document.getElementById('mpPayAmount').value = balance > 0 ? balance.toFixed(2) : '';
+        document.getElementById('mpPayCity').value = materialsCityFilter !== 'all' ? materialsCityFilter : INV_DEFAULT_CITY;
+        document.getElementById('mpPayNote').value = '';
+        const modal = document.getElementById('mpPayModal');
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        document.getElementById('mpPayAmount').focus();
+    }
+    function closeMpPayModal() {
+        const modal = document.getElementById('mpPayModal');
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+    function submitMpPayment(ev) {
+        if (ev) ev.preventDefault();
+        if (mpSaving) return;
+        const supplierId = (document.getElementById('mpPaySupplierId') || {}).value;
+        const supplier = mpActiveSuppliers().filter(function (s) { return s.id === supplierId; })[0];
+        if (!supplier) return;
+        const amount = mpRoundMoney((document.getElementById('mpPayAmount') || {}).value);
+        const account = (document.getElementById('mpPayAccount') || {}).value;
+        const city = normalizeInvCity((document.getElementById('mpPayCity') || {}).value);
+        const note = String((document.getElementById('mpPayNote') || {}).value || '').trim();
+        if (!(amount > 0)) {
+            panelToast('El monto tiene que ser mayor a 0', 'err');
+            return;
+        }
+        if (!MP_ACCOUNTS[account]) {
+            panelToast('Elige la cuenta', 'err');
+            return;
+        }
+        const mov = mpRecordAccountOut({
+            account: account,
+            amount: amount,
+            city: city,
+            note: ('Pago a proveedor · ' + supplier.name + (note ? ' · ' + note : '')).slice(0, 160),
+            reference: supplier.name,
+            source: 'pago-proveedor',
+            locked: true
+        });
+        if (!mov) {
+            panelToast('No se pudo descontar la cuenta. Recarga el panel e inténtalo de nuevo.', 'err');
+            return;
+        }
+        const now = mpStamp();
+        mpPayments.unshift({
+            id: mpId('mpp'),
+            createdAt: now,
+            updatedAt: now,
+            editedAt: now,
+            supplierId: supplier.id,
+            supplierName: supplier.name,
+            amount: amount,
+            account: account,
+            city: city,
+            note: note,
+            tesoreriaMovId: mov.id,
+            status: 'posted',
+            userName: panelUserName
+        });
+        saveMpCollection(MP_PAYMENTS_KEY, mpPayments);
+        mpOpenSupplier = supplier.id;
+        mpDeskTab = 'proveedores';
+        renderMpDesk();
+        closeMpPayModal();
+        panelToast('Abono a ' + supplier.name + ' · ' + moneyMx(amount) + ' de ' + MP_ACCOUNTS[account], 'ok');
+    }
+    function cancelMpPayment(id) {
+        const payment = mpPayments.filter(function (row) { return row.id === id; })[0];
+        if (!payment || payment.status === 'cancelled' || payment.deleted) return;
+        if (!confirm('¿Anular el abono de ' + moneyMx(payment.amount) + ' a ' + (payment.supplierName || 'proveedor') + '?\nSe regresa el dinero a la cuenta.')) return;
+        if (payment.tesoreriaMovId) {
+            const api = window.S35PosModule;
+            const ok = api && typeof api.voidAccountOut === 'function' &&
+                api.voidAccountOut(payment.tesoreriaMovId);
+            if (!ok) {
+                panelToast('No se pudo regresar el dinero a la cuenta.', 'err');
+                return;
+            }
+        }
+        const now = mpStamp();
+        payment.status = 'cancelled';
+        payment.cancelledAt = now;
+        payment.updatedAt = now;
+        payment.editedAt = now;
+        saveMpCollection(MP_PAYMENTS_KEY, mpPayments);
+        renderMpDesk();
+        panelToast('Abono anulado', 'ok');
+    }
+    function mpLineSummary(receipt) {
+        return (receipt.lines || []).map(function (line) {
+            const unit = line.unit ? (' ' + line.unit) : '';
+            return line.name + ' ' + line.qty + unit;
+        }).join(' · ');
+    }
+    function mpPayPhrase(receipt) {
+        if (!mpReceiptLive(receipt)) return 'Anulada';
+        if (receipt.payMode === 'credito') return 'Crédito';
+        if (!(receipt.total > 0)) return 'Sin cargo';
+        return 'Contado · ' + (MP_ACCOUNTS[receipt.account] || 'cuenta');
+    }
+    function renderMpDesk() {
+        const sub = document.getElementById('mpReceiptsSub');
+        const entriesHost = document.getElementById('mpReceiptsList');
+        const suppliersHost = document.getElementById('mpSuppliersList');
+        const tabs = document.getElementById('mpDeskTabs');
+        if (!entriesHost || !suppliersHost) return;
+        if (tabs) {
+            tabs.querySelectorAll('[data-mp-desk]').forEach(function (btn) {
+                const on = btn.getAttribute('data-mp-desk') === mpDeskTab;
+                btn.classList.toggle('active', on);
+                btn.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+        }
+        const owed = mpOwedTotal();
+        const city = materialsCityFilter;
+        const visibleReceipts = mpReceipts.filter(function (row) {
+            return !row.deleted && (city === 'all' || row.city === city);
+        });
+        if (sub) {
+            const cityNote = city === 'all' ? '' : (' · ' + invCityLabel(city));
+            sub.textContent = visibleReceipts.length +
+                (visibleReceipts.length === 1 ? ' entrada' : ' entradas') +
+                cityNote + ' · por pagar ' + moneyMx(owed);
+        }
+        const showEntries = mpDeskTab !== 'proveedores';
+        entriesHost.hidden = !showEntries;
+        suppliersHost.hidden = showEntries;
+        if (showEntries) {
+            entriesHost.innerHTML = visibleReceipts.length
+                ? visibleReceipts.map(function (row) {
+                    const live = mpReceiptLive(row);
+                    const payClass = !live ? 'mp-desk-meta' : (row.payMode === 'credito' ? 'mp-pay-credito' : 'mp-pay-ok');
+                    return '<article class="mp-desk-row">' +
+                        '<div class="mp-desk-main">' +
+                        '<div class="mp-desk-title">' + esc(row.supplierName || 'Sin proveedor') + '</div>' +
+                        '<div class="mp-desk-meta">' + esc(row.folio || '') + ' · ' + esc(mpFormatDate(row.createdAt)) +
+                        ' · ' + esc(invCityLabel(row.city)) + '</div>' +
+                        '<div class="mp-desk-meta">' + esc(mpLineSummary(row) || 'Sin materiales') +
+                        (row.note ? (' · ' + esc(row.note)) : '') + '</div>' +
+                        '</div>' +
+                        '<div class="mp-desk-side">' +
+                        '<div>' + moneyMx(row.total || 0) + '</div>' +
+                        '<div class="' + payClass + '">' + esc(mpPayPhrase(row)) + '</div>' +
+                        (live
+                            ? '<div class="mp-desk-actions"><button type="button" class="btn" data-mp-cancel-receipt="' + esc(row.id) + '">Anular</button></div>'
+                            : '') +
+                        '</div></article>';
+                }).join('')
+                : '<div class="empty">Sin entradas' + (city === 'all' ? '' : (' en ' + esc(invCityLabel(city)))) + '.</div>';
+            return;
+        }
+        const suppliers = mpActiveSuppliers().slice().sort(function (a, b) {
+            const diff = mpSupplierBalance(b.id) - mpSupplierBalance(a.id);
+            if (diff) return diff;
+            return mpNormName(a.name).localeCompare(mpNormName(b.name), 'es');
+        });
+        suppliersHost.innerHTML = suppliers.length
+            ? suppliers.map(function (s) {
+                const balance = mpSupplierBalance(s.id);
+                const open = mpOpenSupplier === s.id;
+                const events = [];
+                mpReceipts.forEach(function (row) {
+                    if (row.deleted || row.supplierId !== s.id) return;
+                    events.push({
+                        at: row.createdAt,
+                        label: (row.folio || 'Entrada') + ' · ' + mpPayPhrase(row) + ' · ' + mpLineSummary(row),
+                        amount: row.total || 0,
+                        kind: 'receipt'
+                    });
+                });
+                mpPayments.forEach(function (row) {
+                    if (row.deleted || row.supplierId !== s.id) return;
+                    events.push({
+                        at: row.createdAt,
+                        id: row.id,
+                        label: (row.status === 'cancelled' ? 'Abono anulado' : 'Abono') +
+                            ' · ' + (MP_ACCOUNTS[row.account] || 'cuenta') +
+                            (row.note ? ' · ' + row.note : ''),
+                        amount: -(Number(row.amount) || 0),
+                        kind: row.status === 'cancelled' ? 'void' : 'payment'
+                    });
+                });
+                events.sort(function (a, b) { return Date.parse(b.at || 0) - Date.parse(a.at || 0); });
+                const rel = open
+                    ? '<div class="mp-rel">' + (events.length
+                        ? events.map(function (ev) {
+                            return '<div class="mp-desk-row">' +
+                                '<div class="mp-desk-main"><div>' + esc(ev.label) + '</div>' +
+                                '<div class="mp-desk-meta">' + esc(mpFormatDate(ev.at)) + '</div></div>' +
+                                '<div class="mp-desk-side">' +
+                                '<div>' + moneyMx(Math.abs(ev.amount)) + '</div>' +
+                                (ev.kind === 'payment'
+                                    ? '<div class="mp-desk-actions"><button type="button" class="btn" data-mp-cancel-payment="' + esc(ev.id) + '">Anular</button></div>'
+                                    : '') +
+                                '</div></div>';
+                        }).join('')
+                        : '<div class="empty">Sin movimientos con este proveedor.</div>') +
+                    '</div>'
+                    : '';
+                const balClass = balance > 0 ? 'mp-pay-credito' : 'mp-pay-ok';
+                const balText = balance > 0
+                    ? ('Por pagar ' + moneyMx(balance))
+                    : (balance < 0 ? ('A favor ' + moneyMx(-balance)) : 'Al corriente');
+                return '<article class="mp-desk-row">' +
+                    '<div class="mp-desk-main">' +
+                    '<button type="button" data-mp-open-supplier="' + esc(s.id) + '" style="background:none;border:0;padding:0;font:inherit;font-weight:600;cursor:pointer;text-align:left">' + esc(s.name) + '</button>' +
+                    '<div class="' + balClass + '">' + esc(balText) + '</div>' +
+                    rel +
+                    '</div>' +
+                    '<div class="mp-desk-side">' +
+                    '<div class="mp-desk-actions"><button type="button" class="btn primary" data-mp-pay="' + esc(s.id) + '">Abonar</button></div>' +
+                    '</div></article>';
+            }).join('')
+            : '<div class="empty">Los proveedores aparecen al registrar la primera entrada.</div>';
+    }
+    document.getElementById('mpReceiptOpenBtn').addEventListener('click', openMpReceiptModal);
+    document.getElementById('mpReceiptClose').addEventListener('click', closeMpReceiptModal);
+    document.getElementById('mpReceiptCancel').addEventListener('click', closeMpReceiptModal);
+    document.getElementById('mpReceiptModal').addEventListener('click', function (e) {
+        if (e.target === this) closeMpReceiptModal();
+    });
+    document.getElementById('mpPayMode').addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-mp-pay]');
+        if (!btn) return;
+        mpPayMode = btn.getAttribute('data-mp-pay') === 'credito' ? 'credito' : 'contado';
+        mpSyncPayMode();
+    });
+    document.getElementById('mpAddLine').addEventListener('click', function () {
+        const lines = mpReadLines();
+        lines.push({ materialId: '', qty: '', unitCost: '' });
+        mpRenderLines(lines);
+    });
+    document.getElementById('mpLines').addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-mp-remove]');
+        if (!btn || btn.disabled) return;
+        const row = btn.closest('[data-mp-line]');
+        const lines = mpReadLines();
+        const idx = row ? Number(row.getAttribute('data-mp-line')) : -1;
+        if (idx >= 0) lines.splice(idx, 1);
+        mpRenderLines(lines);
+    });
+    document.getElementById('mpLines').addEventListener('input', function () {
+        mpRefreshTotal();
+    });
+    document.getElementById('mpLines').addEventListener('change', function (e) {
+        const sel = e.target.closest('[data-mp-field="materialId"]');
+        if (!sel) return;
+        const mat = inventory.filter(function (m) { return m.id === sel.value; })[0];
+        const row = sel.closest('[data-mp-line]');
+        const costEl = row && row.querySelector('[data-mp-field="unitCost"]');
+        if (mat && costEl && !(Number(costEl.value) > 0) && Number(mat.unitCost) > 0) {
+            costEl.value = String(mat.unitCost);
+        }
+        mpRefreshTotal();
+    });
+    document.getElementById('mpReceiptForm').addEventListener('submit', submitMpReceipt);
+    document.getElementById('mpDeskTabs').addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-mp-desk]');
+        if (!btn) return;
+        mpDeskTab = btn.getAttribute('data-mp-desk') === 'proveedores' ? 'proveedores' : 'entradas';
+        renderMpDesk();
+    });
+    document.getElementById('mpReceiptsCard').addEventListener('click', function (e) {
+        const cancelReceipt = e.target.closest('[data-mp-cancel-receipt]');
+        if (cancelReceipt) {
+            cancelMpReceipt(cancelReceipt.getAttribute('data-mp-cancel-receipt'));
+            return;
+        }
+        const pay = e.target.closest('[data-mp-pay]');
+        if (pay) {
+            openMpPayModal(pay.getAttribute('data-mp-pay'));
+            return;
+        }
+        const open = e.target.closest('[data-mp-open-supplier]');
+        if (open) {
+            const id = open.getAttribute('data-mp-open-supplier');
+            mpOpenSupplier = mpOpenSupplier === id ? '' : id;
+            renderMpDesk();
+            return;
+        }
+        const cancelPay = e.target.closest('[data-mp-cancel-payment]');
+        if (cancelPay) cancelMpPayment(cancelPay.getAttribute('data-mp-cancel-payment'));
+    });
+    (function bindMaterialsMovementsToggle() {
+        const movBlock = document.getElementById('materialsMovementsBlock');
+        const movToggle = document.getElementById('materialsMovementsToggle');
+        const movBody = document.getElementById('materialsMovementsBody');
+        function setMaterialsMovementsOpen(open) {
+            if (!movBlock || !movToggle || !movBody) return;
+            movBlock.classList.toggle('is-open', open);
+            movBody.hidden = !open;
+            movToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        if (movToggle) {
+            movToggle.addEventListener('click', function () {
+                setMaterialsMovementsOpen(!movBlock.classList.contains('is-open'));
+            });
+        }
+        if (movBlock) {
+            movBlock.addEventListener('click', function (e) {
+                if (movBlock.classList.contains('is-open')) return;
+                if (e.target.closest('button, a, input, select, label')) return;
+                setMaterialsMovementsOpen(true);
+            });
+        }
+    })();
+    document.getElementById('mpPayClose').addEventListener('click', closeMpPayModal);
+    document.getElementById('mpPayCancel').addEventListener('click', closeMpPayModal);
+    document.getElementById('mpPayModal').addEventListener('click', function (e) {
+        if (e.target === this) closeMpPayModal();
+    });
+    document.getElementById('mpPayForm').addEventListener('submit', submitMpPayment);
+    mpDeskReady = true;
+    renderMpDesk();
 
     const recipes = data.recipes || [];
     if (!Array.isArray(data.presentations)) data.presentations = [];
@@ -18666,8 +19906,10 @@
                 k === 's35_tesoreria_movs_v1' || k === 's35_promo_codes_v1' || k === 's35_pos_prices_v4';
         });
         const touchLots = all || keySet['s35_production_lots'] || keySet['s35_compra_tickets'];
+        const touchMpDesk = all || keySet['s35_mp_suppliers_v1'] || keySet['s35_mp_receipts_v1'] || keySet['s35_mp_supplier_payments_v1'];
 
         if (touchLots && typeof refreshLotTicketLists === 'function') refreshLotTicketLists();
+        if (touchMpDesk && typeof hydrateMpDeskFromLocal === 'function') hydrateMpDeskFromLocal();
         if (touchPlant && typeof hydrateInventoryFromLocal === 'function') hydrateInventoryFromLocal();
         if (touchFinished) hydrateFinishedFromLocal();
         if (touchFormulas && typeof hydrateFormulasFromLocal === 'function') hydrateFormulasFromLocal();
@@ -18839,7 +20081,7 @@
 
     </script>
     <div class="period-range-popover" id="periodRangePopover" hidden role="dialog" aria-label="Elegir periodo"></div>
-    <script src="/colaboradores/pos-module.js?v=20261029-iphone-f2f4"></script>
+    <script src="/colaboradores/pos-module.js?v=20261102-mp-entradas"></script>
     <script src="/colaboradores/command-palette.js?v=20261029-iphone-f2f4"></script>
     <script src="/colaboradores/mail-copilot.js?v=20261029-iphone-f2f4"></script>
     <script src="/colaboradores/s35-copilot.js?v=20260925-copilot-links"></script>

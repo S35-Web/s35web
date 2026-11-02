@@ -29,7 +29,10 @@
         's35_promo_codes_v1',
         's35_product_families',
         's35_product_family_overrides',
-        's35_product_catalog_v1'
+        's35_product_catalog_v1',
+        's35_mp_suppliers_v1',
+        's35_mp_receipts_v1',
+        's35_mp_supplier_payments_v1'
         // Flags locales (no cloud): s35_plant_unit_costs_flag_v1, s35_plant_count_*, s35_hist_sales_imported_*
     ];
 
@@ -40,7 +43,10 @@
         s35_tesoreria_movs_v1: true,
         s35_production_lots: true,
         s35_compra_tickets: true,
-        s35_promo_codes_v1: true
+        s35_promo_codes_v1: true,
+        s35_mp_suppliers_v1: true,
+        s35_mp_receipts_v1: true,
+        s35_mp_supplier_payments_v1: true
     };
 
     /** Mapas { byId: {} } fusionados por clave. */

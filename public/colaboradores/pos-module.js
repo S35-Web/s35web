@@ -8433,6 +8433,8 @@
         if (type === 'ajuste') return 'Ajuste';
         if (type === 'venta') return 'Venta';
         if (type === 'gasto') return 'Gasto';
+        if (source === 'compra-mp') return 'Compra de MP';
+        if (source === 'pago-proveedor') return 'Pago a proveedor';
         return type || 'Movimiento';
     }
     function buildDineroLedger() {
@@ -8611,9 +8613,11 @@
             return null;
         }
         const user = currentUserSnapshot();
-        const city = dineroCityFilter === 'all'
-            ? normalizeCityId(payload.city || loadPreferredSaleCity())
-            : normalizeCityId(dineroCityFilter);
+        const city = payload.city
+            ? normalizeCityId(payload.city)
+            : (dineroCityFilter === 'all'
+                ? normalizeCityId(loadPreferredSaleCity())
+                : normalizeCityId(dineroCityFilter));
         const mov = {
             id: 'teso-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7),
             createdAt: new Date().toISOString(),
@@ -8621,8 +8625,10 @@
             type: type,
             amount: amount,
             note: String(payload.note || '').trim(),
+            reference: String(payload.reference || '').trim(),
             city: city,
-            source: 'manual',
+            source: payload.source || 'manual',
+            locked: payload.locked === true,
             user: user,
             userId: user.id,
             userName: user.name || user.username
@@ -8632,12 +8638,18 @@
         renderDinero();
         return mov;
     }
-    function removeTesoreriaMov(id) {
+    function removeTesoreriaMov(id, opts) {
+        opts = opts || {};
         const idx = tesoreriaMovs.findIndex(function (m) { return m.id === id; });
-        if (idx < 0) return;
-        if (tesoreriaMovLocked(tesoreriaMovs[idx])) {
+        if (idx < 0) return false;
+        const src = tesoreriaMovs[idx].source;
+        if (opts.forceLinked && src !== 'compra-mp' && src !== 'pago-proveedor') {
+            toast('Este movimiento no corresponde a una entrada o abono de materia prima');
+            return false;
+        }
+        if (tesoreriaMovLocked(tesoreriaMovs[idx]) && !opts.forceLinked) {
             toast('Este movimiento es del estado de cuenta o de la apertura y no se puede borrar');
-            return;
+            return false;
         }
         const now = new Date().toISOString();
         tesoreriaMovs.splice(idx, 1);
@@ -8646,7 +8658,8 @@
         localStorage.setItem(TESORERIA_MOVS_KEY, JSON.stringify({ items: raw, updatedAt: now }));
         saveTesoreriaMovs();
         renderDinero();
-        toast('Movimiento eliminado');
+        if (!opts.silent) toast('Movimiento eliminado');
+        return true;
     }
     function submitDineroMov(ev) {
         if (ev) ev.preventDefault();
@@ -12579,6 +12592,15 @@
             importHistoricalSales: importHistoricalSales,
             renderCobranza: renderCobranza,
             renderPrecompras: renderPrecompras,
+            recordAccountOut: function (payload) {
+                return createTesoreriaMov(Object.assign({}, payload, {
+                    type: 'retiro',
+                    locked: true
+                }));
+            },
+            voidAccountOut: function (id) {
+                return removeTesoreriaMov(id, { forceLinked: true, silent: true });
+            },
             baseUnitPrice: baseUnitPrice,
             monthAverageUnitPriceMap: monthAverageUnitPriceMap,
             unitFor: unitFor,
