@@ -10765,9 +10765,10 @@
                 <div class="mp-receipt-section">
                     <p class="pd-section-label">Datos de la entrada</p>
                     <div class="mp-receipt-meta-grid">
-                        <label>Proveedor
-                            <input id="mpSupplierName" type="text" required autocomplete="off" list="mpSupplierList" placeholder="Nombre del proveedor">
-                            <datalist id="mpSupplierList"></datalist>
+                        <label class="mp-receipt-supplier">Proveedor
+                            <select id="mpSupplierName" required>
+                                <option value="">Elegir proveedor</option>
+                            </select>
                         </label>
                         <label>Fecha
                             <input id="mpReceiptDate" type="date" required>
@@ -13828,7 +13829,7 @@
             movBody.hidden = false;
             movToggle.setAttribute('aria-expanded', 'true');
         }
-        mpFillSupplierList();
+        mpFillSupplierList(supplier.name);
         renderMpDesk();
         closeMpSupplierModal();
         panelToast('Proveedor «' + supplier.name + '» listo', 'ok');
@@ -13947,24 +13948,34 @@
             btn.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
     }
-    function mpFillSupplierList() {
-        const list = document.getElementById('mpSupplierList');
-        if (!list) return;
-        list.innerHTML = mpActiveSuppliers()
+    function mpFillSupplierList(selectedName) {
+        const sel = document.getElementById('mpSupplierName');
+        if (!sel) return;
+        const keep = selectedName != null ? mpNormName(selectedName) : mpNormName(sel.value);
+        const suppliers = mpActiveSuppliers()
             .slice()
-            .sort(function (a, b) { return mpNormName(a.name).localeCompare(mpNormName(b.name), 'es'); })
-            .map(function (s) { return '<option value="' + esc(s.name) + '"></option>'; })
-            .join('');
+            .sort(function (a, b) { return mpNormName(a.name).localeCompare(mpNormName(b.name), 'es'); });
+        if (!suppliers.length) {
+            sel.innerHTML = '<option value="">Sin proveedores — da de alta uno</option>';
+            return;
+        }
+        sel.innerHTML = '<option value="">Elegir proveedor</option>' + suppliers.map(function (s) {
+            return '<option value="' + esc(s.name) + '">' + esc(s.name) + '</option>';
+        }).join('');
+        if (keep && suppliers.some(function (s) { return mpNormName(s.name) === keep; })) {
+            sel.value = suppliers.filter(function (s) { return mpNormName(s.name) === keep; })[0].name;
+        } else {
+            sel.value = '';
+        }
     }
     function openMpReceiptModal() {
         mpPayMode = 'contado';
         mpSyncPayMode();
-        mpFillSupplierList();
+        mpFillSupplierList('');
         const nameEl = document.getElementById('mpSupplierName');
         const dateEl = document.getElementById('mpReceiptDate');
         const cityEl = document.getElementById('mpReceiptCity');
         const noteEl = document.getElementById('mpReceiptNote');
-        if (nameEl) nameEl.value = '';
         if (dateEl) dateEl.value = mpTodayValue();
         if (cityEl) cityEl.value = materialsCityFilter !== 'all' ? materialsCityFilter : INV_DEFAULT_CITY;
         if (noteEl) noteEl.value = '';
@@ -14021,7 +14032,9 @@
         if (mpSaving) return;
         const supplierName = mpNormName((document.getElementById('mpSupplierName') || {}).value);
         if (!supplierName) {
-            panelToast('Escribe el proveedor', 'err');
+            panelToast('Elige el proveedor', 'err');
+            const nameEl = document.getElementById('mpSupplierName');
+            if (nameEl) nameEl.focus();
             return;
         }
         const city = normalizeInvCity((document.getElementById('mpReceiptCity') || {}).value);
