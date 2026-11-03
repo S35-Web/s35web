@@ -6301,12 +6301,68 @@
         .mp-pay-credito { color: #b45309; }
         .mp-pay-ok { color: #2f7d32; }
         .mp-rel { margin: 0 0 8px 12px; padding-left: 12px; border-left: 2px solid var(--border); }
-        #mpReceiptModal .modal-card {
+        #mpReceiptModal .modal-card,
+        #mpExitModal .modal-card {
             max-width: 680px;
             width: min(680px, calc(100vw - 24px));
         }
-        #mpReceiptModal .modal-body.mp-receipt-form {
+        #mpReceiptModal .modal-body.mp-receipt-form,
+        #mpExitModal .modal-body.mp-receipt-form {
             gap: 18px;
+        }
+        .mp-exit-meta-grid {
+            display: grid;
+            grid-template-columns: 140px minmax(0, 1fr);
+            gap: 12px;
+            align-items: end;
+        }
+        .mp-exit-lines-cols,
+        .mp-exit-line {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 120px 36px;
+            gap: 8px;
+            align-items: center;
+        }
+        .mp-exit-lines-cols {
+            padding: 0 0 6px;
+            margin-bottom: 4px;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            letter-spacing: .03em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .mp-exit-line {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .mp-exit-line:last-child { border-bottom: none; }
+        .mp-exit-line input[data-mp-exit-field="qty"] {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .mp-desk-kind {
+            display: inline-block;
+            font-size: 10px;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 999px;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .mp-desk-kind.is-entrada {
+            background: rgba(47, 125, 50, 0.12);
+            color: #2f7d32;
+        }
+        .mp-desk-kind.is-salida {
+            background: rgba(180, 83, 9, 0.12);
+            color: #b45309;
+        }
+        .mp-desk-kind.is-void {
+            background: rgba(107, 107, 107, 0.14);
+            color: var(--muted);
         }
         .mp-receipt-section {
             display: grid;
@@ -8460,10 +8516,20 @@
             }
             .products-print-btn { width: 44px; }
             #productsAddInventoryBtn,
-            #mpReceiptOpenBtn {
+            #mpReceiptOpenBtn,
+            #mpExitOpenBtn {
                 min-height: 44px;
                 flex: 1 1 auto;
             }
+            .mp-exit-meta-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .mp-exit-lines-cols { display: none; }
+            .mp-exit-line {
+                grid-template-columns: 1fr auto;
+                gap: 8px;
+            }
+            .mp-exit-line select { grid-column: 1 / -1; }
             .products-inventory-chart {
                 grid-template-columns: 1fr;
                 gap: 2px;
@@ -9112,6 +9178,9 @@
                                         <i class="fa-solid fa-arrow-down-a-z" aria-hidden="true"></i>
                                         <span class="products-sort-label">A-Z</span>
                                     </button>
+                                    <button type="button" class="btn" id="mpExitOpenBtn">
+                                        <i class="fa-solid fa-minus" aria-hidden="true"></i> Salida
+                                    </button>
                                     <button type="button" class="btn primary" id="mpReceiptOpenBtn">
                                         <i class="fa-solid fa-plus" aria-hidden="true"></i> Entrada
                                     </button>
@@ -9126,12 +9195,12 @@
                                 <i class="fa-solid fa-chevron-right products-movements-chevron" aria-hidden="true"></i>
                                 <span class="products-movements-toggle-copy">
                                     <span class="pd-section-label">Movimientos</span>
-                                    <span class="page-sub" id="mpReceiptsSub">Historial de entradas y proveedores</span>
+                                    <span class="page-sub" id="mpReceiptsSub">Historial de entradas, salidas y proveedores</span>
                                 </span>
                             </button>
                             <div class="materials-movements-tools">
-                                <div class="seg-control materials-movements-tabs" id="mpDeskTabs" role="tablist" aria-label="Entradas o proveedores">
-                                    <button type="button" data-mp-desk="entradas" class="active" aria-selected="true">Entradas</button>
+                                <div class="seg-control materials-movements-tabs" id="mpDeskTabs" role="tablist" aria-label="Registro o proveedores">
+                                    <button type="button" data-mp-desk="entradas" class="active" aria-selected="true">Registro</button>
                                     <button type="button" data-mp-desk="proveedores" aria-selected="false">Proveedores</button>
                                 </div>
                                 <button type="button" class="btn primary" id="mpSupplierOpenBtn" hidden>
@@ -10823,6 +10892,51 @@
                     </div>
                     <button type="button" class="btn" id="mpReceiptCancel">Cancelar</button>
                     <button type="submit" class="btn primary" id="mpReceiptSave">Registrar entrada</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="mpExitModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="mpExitTitle">
+            <div class="modal-head">
+                <strong id="mpExitTitle">Salida de materia prima</strong>
+                <button type="button" class="btn" id="mpExitClose">Cerrar</button>
+            </div>
+            <form id="mpExitForm" class="modal-body mp-receipt-form">
+                <div class="mp-receipt-section">
+                    <p class="pd-section-label">Datos de la salida</p>
+                    <div class="mp-exit-meta-grid">
+                        <label>Fecha
+                            <input id="mpExitDate" type="date" required>
+                        </label>
+                        <label>Ciudad
+                            <select id="mpExitCity" required>
+                                <option value="culiacan">Culiacán</option>
+                                <option value="mochis">Los Mochis</option>
+                                <option value="mazatlan">Mazatlán</option>
+                            </select>
+                        </label>
+                    </div>
+                    <p class="page-sub">Descuenta del inventario. Úsalo para consumo de obra, merma o usos que no pasan por producción.</p>
+                </div>
+                <div class="mp-receipt-section mp-receipt-lines">
+                    <div class="mp-lines-head">
+                        <p class="pd-section-label">Materiales</p>
+                        <button type="button" class="btn" id="mpExitAddLine"><i class="fa-solid fa-plus" aria-hidden="true"></i> Línea</button>
+                    </div>
+                    <div class="mp-exit-lines-cols" aria-hidden="true">
+                        <span>Materia prima</span>
+                        <span>Cant.</span>
+                        <span></span>
+                    </div>
+                    <div id="mpExitLines"></div>
+                </div>
+                <label class="mp-receipt-note">Motivo / nota
+                    <input id="mpExitNote" type="text" maxlength="160" placeholder="Ej. Piso de patio · merma · prueba">
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="mpExitCancel">Cancelar</button>
+                    <button type="submit" class="btn primary" id="mpExitSave">Registrar salida</button>
                 </div>
             </form>
         </div>
@@ -13658,6 +13772,7 @@
     var mpDeskReady = false;
     const MP_SUPPLIERS_KEY = 's35_mp_suppliers_v1';
     const MP_RECEIPTS_KEY = 's35_mp_receipts_v1';
+    const MP_EXITS_KEY = 's35_mp_exits_v1';
     const MP_PAYMENTS_KEY = 's35_mp_supplier_payments_v1';
     const MP_ACCOUNTS = {
         efectivo: 'Efectivo',
@@ -13669,6 +13784,7 @@
     let mpPayMode = 'contado';
     let mpOpenSupplier = '';
     let mpSaving = false;
+    let mpExitSaving = false;
     function loadMpCollection(key) {
         try {
             const raw = JSON.parse(localStorage.getItem(key) || 'null');
@@ -13686,10 +13802,12 @@
     }
     let mpSuppliers = loadMpCollection(MP_SUPPLIERS_KEY);
     let mpReceipts = loadMpCollection(MP_RECEIPTS_KEY);
+    let mpExits = loadMpCollection(MP_EXITS_KEY);
     let mpPayments = loadMpCollection(MP_PAYMENTS_KEY);
     function hydrateMpDeskFromLocal() {
         mpSuppliers = loadMpCollection(MP_SUPPLIERS_KEY);
         mpReceipts = loadMpCollection(MP_RECEIPTS_KEY);
+        mpExits = loadMpCollection(MP_EXITS_KEY);
         mpPayments = loadMpCollection(MP_PAYMENTS_KEY);
         renderMpDesk();
     }
@@ -13854,19 +13972,203 @@
             return n + Math.max(0, mpSupplierBalance(s.id));
         }, 0));
     }
-    function mpNextFolio(iso) {
+    function mpNextFolio(iso, kind) {
         const d = new Date(iso || Date.now());
-        const prefix = 'MP-' + String(d.getFullYear()).slice(2) +
+        const tag = kind === 'salida' ? 'MS-' : 'MP-';
+        const prefix = tag + String(d.getFullYear()).slice(2) +
             String(d.getMonth() + 1).padStart(2, '0') +
             String(d.getDate()).padStart(2, '0') + '-';
         let n = 0;
-        mpReceipts.forEach(function (row) {
+        const rows = kind === 'salida' ? mpExits : mpReceipts;
+        rows.forEach(function (row) {
             const folio = String(row && row.folio || '');
             if (folio.indexOf(prefix) !== 0) return;
             const k = Number(folio.slice(prefix.length));
             if (k > n) n = k;
         });
         return prefix + String(n + 1).padStart(2, '0');
+    }
+    function mpExitLive(row) {
+        return !!(row && row.status !== 'cancelled' && !row.deleted);
+    }
+    function mpCityStock(mat, city) {
+        if (!mat) return 0;
+        ensureMaterialByCity(mat);
+        return Math.max(0, Number(mat.byCity[city]) || 0);
+    }
+    function mpApplyStockOut(materialId, city, qty) {
+        const mat = inventory.filter(function (m) { return m.id === materialId; })[0];
+        if (!mat) return { ok: false, available: 0, taken: 0 };
+        const need = Math.max(0, Number(qty) || 0);
+        const available = mpCityStock(mat, city);
+        if (need > available + 1e-9) {
+            return { ok: false, available: available, taken: 0, mat: mat };
+        }
+        mat.byCity[city] = Math.max(0, available - need);
+        syncMaterialCityTotals(mat);
+        mat.updatedAt = mpStamp();
+        return { ok: true, available: available, taken: need, mat: mat };
+    }
+    function mpRestoreStockOut(materialId, city, qty) {
+        const mat = inventory.filter(function (m) { return m.id === materialId; })[0];
+        if (!mat) return;
+        ensureMaterialByCity(mat);
+        mat.byCity[city] = (Number(mat.byCity[city]) || 0) + Math.max(0, Number(qty) || 0);
+        syncMaterialCityTotals(mat);
+        mat.updatedAt = mpStamp();
+    }
+    function mpReadExitLines() {
+        const host = document.getElementById('mpExitLines');
+        if (!host) return [];
+        return Array.prototype.map.call(host.querySelectorAll('[data-mp-exit-line]'), function (row) {
+            const matEl = row.querySelector('[data-mp-exit-field="materialId"]');
+            const qtyEl = row.querySelector('[data-mp-exit-field="qty"]');
+            return {
+                materialId: matEl ? matEl.value : '',
+                qty: qtyEl ? qtyEl.value : ''
+            };
+        });
+    }
+    function mpRenderExitLines(lines) {
+        const host = document.getElementById('mpExitLines');
+        if (!host) return;
+        const rows = (lines && lines.length) ? lines : [{ materialId: '', qty: '' }];
+        host.innerHTML = rows.map(function (line, idx) {
+            return '<div class="mp-exit-line" data-mp-exit-line="' + idx + '">' +
+                '<select data-mp-exit-field="materialId" aria-label="Materia prima">' +
+                '<option value="">Elegir</option>' + mpMaterialOptions(line.materialId) +
+                '</select>' +
+                '<input data-mp-exit-field="qty" type="number" min="0" step="any" inputmode="decimal" value="' +
+                esc(line.qty) + '" aria-label="Cantidad" placeholder="0">' +
+                '<button type="button" class="icon-action" data-mp-exit-remove aria-label="Quitar línea" title="Quitar línea"' +
+                (rows.length < 2 ? ' disabled' : '') + '><i class="fa-solid fa-xmark"></i></button>' +
+                '</div>';
+        }).join('');
+    }
+    function openMpExitModal() {
+        const dateEl = document.getElementById('mpExitDate');
+        const cityEl = document.getElementById('mpExitCity');
+        const noteEl = document.getElementById('mpExitNote');
+        if (dateEl) dateEl.value = mpTodayValue();
+        if (cityEl) cityEl.value = materialsCityFilter !== 'all' ? materialsCityFilter : INV_DEFAULT_CITY;
+        if (noteEl) noteEl.value = '';
+        mpRenderExitLines([{ materialId: '', qty: '' }]);
+        const modal = document.getElementById('mpExitModal');
+        if (!modal) return;
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        const firstSel = document.querySelector('#mpExitLines [data-mp-exit-field="materialId"]');
+        if (firstSel) firstSel.focus();
+    }
+    function closeMpExitModal() {
+        const modal = document.getElementById('mpExitModal');
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+    function submitMpExit(ev) {
+        if (ev) ev.preventDefault();
+        if (mpExitSaving) return;
+        const city = normalizeInvCity((document.getElementById('mpExitCity') || {}).value);
+        const createdAt = mpDateToIso((document.getElementById('mpExitDate') || {}).value);
+        const note = String((document.getElementById('mpExitNote') || {}).value || '').trim();
+        const parsed = [];
+        const seen = {};
+        let invalid = '';
+        mpReadExitLines().forEach(function (line) {
+            const qty = Number(line.qty) || 0;
+            if (!line.materialId && !(qty > 0)) return;
+            const mat = inventory.filter(function (m) { return m.id === line.materialId; })[0];
+            if (!mat) {
+                invalid = 'Elige la materia prima de cada línea';
+                return;
+            }
+            if (!(qty > 0)) {
+                invalid = 'La cantidad de «' + mat.name + '» tiene que ser mayor a 0';
+                return;
+            }
+            if (seen[mat.id]) {
+                invalid = '«' + mat.name + '» está repetida. Junta la cantidad en una línea';
+                return;
+            }
+            seen[mat.id] = true;
+            const available = mpCityStock(mat, city);
+            if (qty > available + 1e-9) {
+                const unit = mat.unit ? (' ' + mat.unit) : '';
+                invalid = '«' + mat.name + '» solo tiene ' + available + unit + ' en ' + invCityLabel(city);
+                return;
+            }
+            parsed.push({
+                materialId: mat.id,
+                name: mat.name,
+                unit: mat.unit || '',
+                qty: qty
+            });
+        });
+        if (invalid) {
+            panelToast(invalid, 'err');
+            return;
+        }
+        if (!parsed.length) {
+            panelToast('Agrega al menos un material', 'err');
+            return;
+        }
+        mpExitSaving = true;
+        parsed.forEach(function (line) {
+            const result = mpApplyStockOut(line.materialId, city, line.qty);
+            if (!result.ok) {
+                invalid = 'No se pudo descontar «' + ((result.mat && result.mat.name) || line.name) + '»';
+            }
+        });
+        if (invalid) {
+            mpExitSaving = false;
+            panelToast(invalid, 'err');
+            return;
+        }
+        saveInventory(inventory);
+        const now = mpStamp();
+        const folio = mpNextFolio(createdAt, 'salida');
+        mpExits.unshift({
+            id: mpId('mpx'),
+            folio: folio,
+            kind: 'salida',
+            createdAt: createdAt,
+            updatedAt: now,
+            editedAt: now,
+            city: city,
+            lines: parsed,
+            note: note,
+            status: 'posted',
+            userName: panelUserName
+        });
+        saveMpCollection(MP_EXITS_KEY, mpExits);
+        mpExitSaving = false;
+        mpDeskTab = 'entradas';
+        updateMaterialKpi();
+        renderMaterials();
+        renderMpDesk();
+        closeMpExitModal();
+        panelToast(folio + ' · salida registrada', 'ok');
+    }
+    function cancelMpExit(id) {
+        const row = mpExits.filter(function (item) { return item.id === id; })[0];
+        if (!row || !mpExitLive(row)) return;
+        const label = row.folio + (row.note ? (' · ' + row.note) : '');
+        if (!confirm('¿Anular ' + label + '?\nSe regresa la cantidad al inventario de ' + invCityLabel(row.city) + '.')) return;
+        (row.lines || []).forEach(function (line) {
+            mpRestoreStockOut(line.materialId, row.city, line.qty);
+        });
+        saveInventory(inventory);
+        const now = mpStamp();
+        row.status = 'cancelled';
+        row.cancelledAt = now;
+        row.updatedAt = now;
+        row.editedAt = now;
+        saveMpCollection(MP_EXITS_KEY, mpExits);
+        updateMaterialKpi();
+        renderMaterials();
+        renderMpDesk();
+        panelToast(row.folio + ' anulada', 'ok');
     }
     function mpMaterialOptions(selected) {
         return inventory.slice().sort(cmpMatName).map(function (m) {
@@ -14300,10 +14602,17 @@
         const visibleReceipts = mpReceipts.filter(function (row) {
             return !row.deleted && (city === 'all' || row.city === city);
         });
+        const visibleExits = mpExits.filter(function (row) {
+            return !row.deleted && (city === 'all' || row.city === city);
+        });
         if (sub) {
             const cityNote = city === 'all' ? '' : (' · ' + invCityLabel(city));
-            sub.textContent = visibleReceipts.length +
-                (visibleReceipts.length === 1 ? ' entrada' : ' entradas') +
+            const nIn = visibleReceipts.length;
+            const nOut = visibleExits.length;
+            const bits = [];
+            if (nIn) bits.push(nIn + (nIn === 1 ? ' entrada' : ' entradas'));
+            if (nOut) bits.push(nOut + (nOut === 1 ? ' salida' : ' salidas'));
+            sub.textContent = (bits.length ? bits.join(' · ') : 'Sin movimientos') +
                 cityNote + ' · por pagar ' + moneyMx(owed);
         }
         const showEntries = mpDeskTab !== 'proveedores';
@@ -14311,13 +14620,44 @@
         entriesHost.hidden = !showEntries;
         suppliersHost.hidden = showEntries;
         if (showEntries) {
-            entriesHost.innerHTML = visibleReceipts.length
-                ? visibleReceipts.map(function (row) {
+            const feed = [];
+            visibleReceipts.forEach(function (row) {
+                feed.push({ kind: 'entrada', at: row.createdAt, row: row });
+            });
+            visibleExits.forEach(function (row) {
+                feed.push({ kind: 'salida', at: row.createdAt, row: row });
+            });
+            feed.sort(function (a, b) { return Date.parse(b.at || 0) - Date.parse(a.at || 0); });
+            entriesHost.innerHTML = feed.length
+                ? feed.map(function (item) {
+                    const row = item.row;
+                    if (item.kind === 'salida') {
+                        const live = mpExitLive(row);
+                        const kindClass = live ? 'is-salida' : 'is-void';
+                        const title = row.note || mpLineSummary(row) || 'Salida';
+                        return '<article class="mp-desk-row">' +
+                            '<div class="mp-desk-main">' +
+                            '<div class="mp-desk-title"><span class="mp-desk-kind ' + kindClass + '">Salida</span>' +
+                            esc(title) + '</div>' +
+                            '<div class="mp-desk-meta">' + esc(row.folio || '') + ' · ' + esc(mpFormatDate(row.createdAt)) +
+                            ' · ' + esc(invCityLabel(row.city)) + '</div>' +
+                            '<div class="mp-desk-meta">' + esc(mpLineSummary(row) || 'Sin materiales') + '</div>' +
+                            '</div>' +
+                            '<div class="mp-desk-side">' +
+                            '<div class="' + (live ? 'mp-pay-credito' : 'mp-desk-meta') + '">' +
+                            (live ? 'Consumo' : 'Anulada') + '</div>' +
+                            (live
+                                ? '<div class="mp-desk-actions"><button type="button" class="btn" data-mp-cancel-exit="' + esc(row.id) + '">Anular</button></div>'
+                                : '') +
+                            '</div></article>';
+                    }
                     const live = mpReceiptLive(row);
                     const payClass = !live ? 'mp-desk-meta' : (row.payMode === 'credito' ? 'mp-pay-credito' : 'mp-pay-ok');
+                    const kindClass = live ? 'is-entrada' : 'is-void';
                     return '<article class="mp-desk-row">' +
                         '<div class="mp-desk-main">' +
-                        '<div class="mp-desk-title">' + esc(row.supplierName || 'Sin proveedor') + '</div>' +
+                        '<div class="mp-desk-title"><span class="mp-desk-kind ' + kindClass + '">Entrada</span>' +
+                        esc(row.supplierName || 'Sin proveedor') + '</div>' +
                         '<div class="mp-desk-meta">' + esc(row.folio || '') + ' · ' + esc(mpFormatDate(row.createdAt)) +
                         ' · ' + esc(invCityLabel(row.city)) + '</div>' +
                         '<div class="mp-desk-meta">' + esc(mpLineSummary(row) || 'Sin materiales') +
@@ -14331,7 +14671,7 @@
                             : '') +
                         '</div></article>';
                 }).join('')
-                : '<div class="empty">Sin entradas' + (city === 'all' ? '' : (' en ' + esc(invCityLabel(city)))) + '.</div>';
+                : '<div class="empty">Sin movimientos' + (city === 'all' ? '' : (' en ' + esc(invCityLabel(city)))) + '.</div>';
             return;
         }
         const suppliers = mpActiveSuppliers().slice().sort(function (a, b) {
@@ -14416,6 +14756,42 @@
     document.getElementById('mpReceiptModal').addEventListener('click', function (e) {
         if (e.target === this) closeMpReceiptModal();
     });
+    (function bindMpExitModal() {
+        const openBtn = document.getElementById('mpExitOpenBtn');
+        const modal = document.getElementById('mpExitModal');
+        const form = document.getElementById('mpExitForm');
+        const closeBtn = document.getElementById('mpExitClose');
+        const cancelBtn = document.getElementById('mpExitCancel');
+        const addBtn = document.getElementById('mpExitAddLine');
+        const linesHost = document.getElementById('mpExitLines');
+        if (openBtn) openBtn.addEventListener('click', openMpExitModal);
+        if (closeBtn) closeBtn.addEventListener('click', closeMpExitModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', closeMpExitModal);
+        if (modal) {
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) closeMpExitModal();
+            });
+        }
+        if (addBtn) {
+            addBtn.addEventListener('click', function () {
+                const lines = mpReadExitLines();
+                lines.push({ materialId: '', qty: '' });
+                mpRenderExitLines(lines);
+            });
+        }
+        if (linesHost) {
+            linesHost.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-mp-exit-remove]');
+                if (!btn || btn.disabled) return;
+                const row = btn.closest('[data-mp-exit-line]');
+                const lines = mpReadExitLines();
+                const idx = row ? Number(row.getAttribute('data-mp-exit-line')) : -1;
+                if (idx >= 0) lines.splice(idx, 1);
+                mpRenderExitLines(lines);
+            });
+        }
+        if (form) form.addEventListener('submit', submitMpExit);
+    })();
     document.getElementById('mpPayMode').addEventListener('click', function (e) {
         const btn = e.target.closest('[data-mp-pay]');
         if (!btn) return;
@@ -14461,6 +14837,11 @@
         const cancelReceipt = e.target.closest('[data-mp-cancel-receipt]');
         if (cancelReceipt) {
             cancelMpReceipt(cancelReceipt.getAttribute('data-mp-cancel-receipt'));
+            return;
+        }
+        const cancelExit = e.target.closest('[data-mp-cancel-exit]');
+        if (cancelExit) {
+            cancelMpExit(cancelExit.getAttribute('data-mp-cancel-exit'));
             return;
         }
         const openForm = e.target.closest('[data-mp-open-supplier-form]');
@@ -20102,7 +20483,8 @@
                 k === 's35_tesoreria_movs_v1' || k === 's35_promo_codes_v1' || k === 's35_pos_prices_v4';
         });
         const touchLots = all || keySet['s35_production_lots'] || keySet['s35_compra_tickets'];
-        const touchMpDesk = all || keySet['s35_mp_suppliers_v1'] || keySet['s35_mp_receipts_v1'] || keySet['s35_mp_supplier_payments_v1'];
+        const touchMpDesk = all || keySet['s35_mp_suppliers_v1'] || keySet['s35_mp_receipts_v1'] ||
+            keySet['s35_mp_exits_v1'] || keySet['s35_mp_supplier_payments_v1'];
 
         if (touchLots && typeof refreshLotTicketLists === 'function') refreshLotTicketLists();
         if (touchMpDesk && typeof hydrateMpDeskFromLocal === 'function') hydrateMpDeskFromLocal();
