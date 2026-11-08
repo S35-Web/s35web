@@ -20521,7 +20521,7 @@
             return finishedStockInCity(fin, city);
         },
         deductFinished: function (slug, qty, city) {
-            adjustFinishedMap((function () { const d = {}; d[slug] = -Math.abs(Number(qty) || 0); return d; })(), city);
+            return adjustFinishedMap((function () { const d = {}; d[slug] = -Math.abs(Number(qty) || 0); return d; })(), city);
         },
         adjustFinished: function (slug, delta, city) {
             const d = {};

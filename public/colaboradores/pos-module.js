@@ -4909,6 +4909,27 @@
         if (meta.branch !== 'SUCURSAL UNO') return false;
         return normalizeCityId(sale.city || meta.city || '') === 'culiacan';
     }
+    /**
+     * Notas de Sucursal Uno subidas el 7 nov 2026. El panel las marcó como
+     * descontadas antes de mover el producto terminado, así que hay que
+     * aplicarlas una vez más. La cotización de Mazatlán no entra.
+     */
+    const CATCHUP_INVENTORY_REPLAY_TOKEN = '2026-11-07-sucursal-uno';
+    const CATCHUP_INVENTORY_REPLAY_RECEIPTS = {
+        64330: true, 64331: true, 64333: true, 64334: true, 64335: true,
+        64336: true, 64337: true, 64338: true, 64339: true, 64340: true,
+        64341: true, 64342: true, 64343: true, 64344: true,
+        64346: true, 64347: true, 64348: true, 64349: true, 64350: true,
+        64351: true, 64352: true,
+        64353: true, 64354: true, 64355: true, 64356: true, 64357: true,
+        64358: true, 64359: true, 64360: true
+    };
+    function catchupReplayToken(sale) {
+        const rid = sale && sale.meta ? sale.meta.receiptId : null;
+        if (rid == null || rid === '') return '';
+        if (!CATCHUP_INVENTORY_REPLAY_RECEIPTS[String(rid)]) return '';
+        return CATCHUP_INVENTORY_REPLAY_TOKEN;
+    }
     function catchupInventoryAlready(id) {
         if (!id) return false;
         try {
@@ -4925,13 +4946,23 @@
         } catch (_) {}
     }
     function saleInventoryAlreadyApplied(sale) {
-        return !!(sale && ((sale.meta && sale.meta.inventoryApplied) || catchupInventoryAlready(sale.id)));
+        if (!sale) return false;
+        const token = catchupReplayToken(sale);
+        if (token) {
+            if (sale.meta && sale.meta.inventoryReplay === token) return true;
+            return catchupInventoryAlready(sale.id + '@' + token);
+        }
+        return !!((sale.meta && sale.meta.inventoryApplied) || catchupInventoryAlready(sale.id));
     }
     function deductCatchupFinishedOnce(sale) {
         if (!sale || saleInventoryAlreadyApplied(sale)) return false;
-        markCatchupInventory(sale.id);
-        sale.meta = Object.assign({}, sale.meta || {}, { inventoryApplied: true });
-        applySaleInventoryChange([], sale.items, sale.city);
+        const changed = applySaleInventoryChange([], sale.items, sale.city);
+        if (!changed) return false;
+        const token = catchupReplayToken(sale);
+        markCatchupInventory(token ? (sale.id + '@' + token) : sale.id);
+        const patch = { inventoryApplied: true };
+        if (token) patch.inventoryReplay = token;
+        sale.meta = Object.assign({}, sale.meta || {}, patch);
         return true;
     }
     function promotePostOpeningCatchupReceipts() {
@@ -5105,8 +5136,7 @@
     }
     function deductFinished(slug, qty, city) {
         if (window.S35PanelAPI && window.S35PanelAPI.deductFinished) {
-            window.S35PanelAPI.deductFinished(slug, qty, city || selectedSaleCity());
-            return;
+            return window.S35PanelAPI.deductFinished(slug, qty, city || selectedSaleCity());
         }
         let existing = {};
         try {
@@ -5119,11 +5149,16 @@
         const row = existing[slug];
         if (!row.byCity) row.byCity = { culiacan: Number(row.stock) || 0, mochis: 0, mazatlan: 0 };
         const c = city || selectedSaleCity() || 'culiacan';
-        row.byCity[c] = Math.max(0, (Number(row.byCity[c]) || 0) - qty);
+        const prevQty = Number(row.byCity[c]) || 0;
+        const nextQty = Math.max(0, prevQty - qty);
+        if (nextQty === prevQty) return false;
+        row.byCity[c] = nextQty;
         row.stock = ['culiacan', 'mochis', 'mazatlan'].reduce(function (n, k) {
             return n + (Number(row.byCity[k]) || 0);
         }, 0);
+        row.updatedAt = new Date().toISOString();
         localStorage.setItem(FINISHED_KEY, JSON.stringify({ items: existing, updatedAt: new Date().toISOString() }));
+        return true;
     }
     function saleQtyByProduct(items) {
         const map = {};
@@ -5146,19 +5181,21 @@
             const soldDelta = (after[slug] || 0) - (before[slug] || 0);
             if (soldDelta) deltas[slug] = -soldDelta;
         });
-        if (!Object.keys(deltas).length) return;
+        if (!Object.keys(deltas).length) return false;
         const cityKey = city || selectedSaleCity() || 'culiacan';
+        let changed = false;
         if (window.S35PanelAPI && window.S35PanelAPI.adjustFinishedMap) {
-            window.S35PanelAPI.adjustFinishedMap(deltas, cityKey);
+            changed = !!window.S35PanelAPI.adjustFinishedMap(deltas, cityKey);
         } else {
             Object.keys(deltas).forEach(function (slug) {
                 const delta = deltas[slug];
-                if (delta < 0) deductFinished(slug, -delta, cityKey);
+                if (delta < 0 && deductFinished(slug, -delta, cityKey)) changed = true;
             });
         }
         if (window.S35PanelAPI && window.S35PanelAPI.refreshStockViews) {
             window.S35PanelAPI.refreshStockViews();
         }
+        return changed;
     }
 
     let cart = [];
