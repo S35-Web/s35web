@@ -5312,7 +5312,7 @@
         });
         return map;
     }
-    function applySaleInventoryChange(beforeItems, afterItems, city) {
+    function applySaleInventoryChange(beforeItems, afterItems, city, reasonOrOpts) {
         const before = saleQtyByProduct(beforeItems);
         const after = saleQtyByProduct(afterItems);
         const deltas = {};
@@ -5325,9 +5325,23 @@
         });
         if (!Object.keys(deltas).length) return false;
         const cityKey = city || selectedSaleCity() || 'culiacan';
+        let reason = 'venta';
+        let ref = null;
+        let note = '';
+        if (typeof reasonOrOpts === 'string') reason = reasonOrOpts;
+        else if (reasonOrOpts && typeof reasonOrOpts === 'object') {
+            if (reasonOrOpts.reason) reason = reasonOrOpts.reason;
+            if (reasonOrOpts.ref) ref = reasonOrOpts.ref;
+            if (reasonOrOpts.note) note = reasonOrOpts.note;
+        }
         let changed = false;
         if (window.S35PanelAPI && window.S35PanelAPI.adjustFinishedMap) {
-            changed = !!window.S35PanelAPI.adjustFinishedMap(deltas, cityKey);
+            changed = !!window.S35PanelAPI.adjustFinishedMap(deltas, {
+                city: cityKey,
+                reason: reason,
+                ref: ref,
+                note: note
+            });
         } else {
             Object.keys(deltas).forEach(function (slug) {
                 const delta = deltas[slug];
@@ -7562,7 +7576,11 @@
         setSaleStockCity(ticket, stockCityId);
 
         if (!skipInventory) {
-            applySaleInventoryChange([], ticket.items, stockCityId);
+            applySaleInventoryChange([], ticket.items, stockCityId, {
+                reason: 'venta',
+                ref: { type: 'sale', id: ticket.id, folio: ticket.folio || '' },
+                note: 'Venta ' + (ticket.folio || ticket.id)
+            });
         }
 
         sales.unshift(ticket);
@@ -12100,7 +12118,11 @@
         }
         function applySurtir(stockCityId) {
             setSaleStockCity(sale, stockCityId);
-            applySaleInventoryChange([], invItems, stockCityId);
+            applySaleInventoryChange([], invItems, stockCityId, {
+                reason: 'precompra',
+                ref: { type: 'sale', id: sale.id, folio: sale.folio || '' },
+                note: 'Surtido precompra ' + (sale.folio || sale.id)
+            });
             deliveries.forEach(function (d) {
                 const line = ff.lines.filter(function (l) { return l.product === d.product; })[0];
                 if (line) line.deliveredQty = (Number(line.deliveredQty) || 0) + d.qty;

@@ -33,7 +33,8 @@
         's35_mp_suppliers_v1',
         's35_mp_receipts_v1',
         's35_mp_exits_v1',
-        's35_mp_supplier_payments_v1'
+        's35_mp_supplier_payments_v1',
+        's35_finished_movements_v1'
         // Flags locales (no cloud): s35_plant_unit_costs_flag_v1, s35_plant_count_*, s35_hist_sales_imported_*
     ];
 
@@ -48,7 +49,8 @@
         s35_mp_suppliers_v1: true,
         s35_mp_receipts_v1: true,
         s35_mp_exits_v1: true,
-        s35_mp_supplier_payments_v1: true
+        s35_mp_supplier_payments_v1: true,
+        s35_finished_movements_v1: true
     };
 
     /** Mapas { byId: {} } fusionados por clave. */

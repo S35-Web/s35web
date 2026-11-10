@@ -36,7 +36,8 @@ const ALLOWED_KEYS = [
   's35_mp_suppliers_v1',
   's35_mp_receipts_v1',
   's35_mp_exits_v1',
-  's35_mp_supplier_payments_v1'
+  's35_mp_supplier_payments_v1',
+  's35_finished_movements_v1'
   // Flags locales no van a la nube (evita timestamps ISO como "costos").
 ];
 
@@ -66,7 +67,8 @@ const MERGE_ITEMS_KEYS = new Set([
   's35_mp_suppliers_v1',
   's35_mp_receipts_v1',
   's35_mp_exits_v1',
-  's35_mp_supplier_payments_v1'
+  's35_mp_supplier_payments_v1',
+  's35_finished_movements_v1'
 ]);
 
 const MERGE_MAP_KEYS = new Set([

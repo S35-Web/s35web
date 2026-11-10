@@ -10218,29 +10218,44 @@
                                         <button type="button" class="btn" id="productsAddInventoryBtn">
                                             <i class="fa-solid fa-plus" aria-hidden="true"></i> Agregar inventario
                                         </button>
+                                        <button type="button" class="btn" id="productsRemoveInventoryBtn">
+                                            <i class="fa-solid fa-minus" aria-hidden="true"></i> Quitar inventario
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                             <div class="products-inventory-chart" id="productsInventoryChart" role="group" aria-label="Inventario de todos los productos"></div>
                         </div>
 
-                        <div class="pd-sales-block products-movements-block" id="productsMovementsBlock">
+                        <div class="pd-sales-block products-movements-block materials-movements-block" id="productsMovementsBlock">
                             <div class="pd-sales-head">
                                 <button type="button" class="products-movements-toggle" id="productsMovementsToggle" aria-expanded="false" aria-controls="productsMovementsBody">
                                     <i class="fa-solid fa-chevron-right products-movements-chevron" aria-hidden="true"></i>
                                     <span class="products-movements-toggle-copy">
                                         <span class="pd-section-label">Movimientos</span>
-                                        <span class="page-sub">Ritmo de ventas por productos</span>
+                                        <span class="page-sub" id="finishedMovementsSub">Historial de entradas y salidas de PT</span>
                                     </span>
                                 </button>
-                                <div class="cortes-range pd-sales-range">
-                                    <button type="button" class="cortes-nav-btn" id="productsMovPrev" title="Periodo anterior" aria-label="Periodo anterior"><i class="fa-solid fa-chevron-left"></i></button>
-                                    <button type="button" class="cortes-range-label" id="productsMovRangeLabel" data-period-range-trigger="productsMov" aria-haspopup="dialog" aria-expanded="false" title="Elegir periodo">Hoy</button>
-                                    <button type="button" class="cortes-nav-btn" id="productsMovNext" title="Periodo siguiente" aria-label="Periodo siguiente"><i class="fa-solid fa-chevron-right"></i></button>
-                                    <button type="button" class="cortes-today-btn" id="productsMovReset">Actual</button>
+                                <div class="materials-movements-tools">
+                                    <div class="seg-control materials-movements-tabs" id="productsMovDeskTabs" role="tablist" aria-label="Registro o ventas">
+                                        <button type="button" data-products-mov-desk="registro" class="active" aria-selected="true">Registro</button>
+                                        <button type="button" data-products-mov-desk="ventas" aria-selected="false">Ventas</button>
+                                    </div>
+                                    <div class="cortes-range pd-sales-range" id="productsMovSalesRange" hidden>
+                                        <button type="button" class="cortes-nav-btn" id="productsMovPrev" title="Periodo anterior" aria-label="Periodo anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                                        <button type="button" class="cortes-range-label" id="productsMovRangeLabel" data-period-range-trigger="productsMov" aria-haspopup="dialog" aria-expanded="false" title="Elegir periodo">Hoy</button>
+                                        <button type="button" class="cortes-nav-btn" id="productsMovNext" title="Periodo siguiente" aria-label="Periodo siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                                        <button type="button" class="cortes-today-btn" id="productsMovReset">Actual</button>
+                                    </div>
                                 </div>
                             </div>
                             <div id="productsMovementsBody" hidden>
+                            <div id="finishedMovementsPanel">
+                                <div class="materials-movements-list" id="finishedMovementsCard">
+                                    <div id="finishedMovementsList"></div>
+                                </div>
+                            </div>
+                            <div id="productsMovSalesPanel" hidden>
                             <div class="cortes-filters-bar">
                                 <div class="seg-control" id="productsMovPeriodTabs" role="tablist" aria-label="Periodo de movimientos">
                                     <button type="button" role="tab" data-products-mov-period="day" class="active" aria-selected="true">Día</button>
@@ -10266,6 +10281,7 @@
                                     </div>
                                 </div>
                                 <div class="cortes-chart" id="productsMovChart" role="img" aria-label="Gráfica de movimientos de productos"></div>
+                            </div>
                             </div>
                             </div>
                         </div>
@@ -10858,6 +10874,7 @@
                 <button id="addInventoryClose" class="btn" type="button">Cerrar</button>
             </div>
             <form id="addInventoryForm" class="modal-body">
+                <input type="hidden" id="addInventoryMode" value="add">
                 <div class="form-grid">
                     <label>Producto
                         <select id="addInventoryProduct" required></select>
@@ -10869,14 +10886,18 @@
                             <option value="mazatlan">Mazatlán</option>
                         </select>
                     </label>
-                    <label>Cantidad a sumar
+                    <label id="addInventoryQtyLabel">Cantidad a sumar
                         <input id="addInventoryQty" type="number" min="0.001" step="any" required value="1" inputmode="decimal">
                     </label>
+                    <label class="span-2">Motivo / nota
+                        <input id="addInventoryNote" type="text" maxlength="160" placeholder="Ej. Conteo · merma · ajuste">
+                    </label>
                     <p class="muted" id="addInventoryCurrent" style="margin:0">Existencia actual: 0</p>
+                    <p class="muted" id="addInventoryHint" style="margin:0" hidden>Descuenta del inventario de producto terminado.</p>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn" id="addInventoryCancel">Cancelar</button>
-                    <button type="submit" class="btn primary">Agregar</button>
+                    <button type="submit" class="btn primary" id="addInventorySave">Agregar</button>
                 </div>
             </form>
         </div>
@@ -11186,7 +11207,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="/colaboradores-data.js"></script>
     <script src="/colaboradores/roles.js?v=20260926-dinero"></script>
-    <script src="/colaboradores/panel-sync.js?v=20261102-mp-entradas"></script>
+    <script src="/colaboradores/panel-sync.js?v=20261110-pt-movs"></script>
     <script>
     const LOGIN_URL = '/colaboradores';
     function getToken() { return localStorage.getItem('s35_admin_token'); }
@@ -11850,6 +11871,9 @@
     }
 
     const FINISHED_KEY = 's35_finished_stock';
+    const FINISHED_MOV_KEY = 's35_finished_movements_v1';
+    let finishedMovements = [];
+    let productsMovDeskTab = 'registro';
     function finishedStockItems(raw) {
         let current = raw;
         if (typeof current === 'string') {
@@ -11941,29 +11965,127 @@
         inventory.splice(0, inventory.length);
         fresh.forEach(function (m) { inventory.push(m); });
     }
+    function loadFinishedMovements() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(FINISHED_MOV_KEY) || 'null');
+            const items = raw && Array.isArray(raw.items) ? raw.items : (Array.isArray(raw) ? raw : []);
+            return items.filter(function (row) { return row && row.id; });
+        } catch (_) {
+            return [];
+        }
+    }
+    function saveFinishedMovements(list) {
+        finishedMovements = Array.isArray(list) ? list : [];
+        localStorage.setItem(FINISHED_MOV_KEY, JSON.stringify({
+            items: finishedMovements,
+            updatedAt: new Date().toISOString()
+        }));
+    }
+    function hydrateFinishedMovementsFromLocal() {
+        finishedMovements = loadFinishedMovements();
+    }
+    hydrateFinishedMovementsFromLocal();
+    function finishedProductName(slug) {
+        const fromHub = (typeof hubCatalog === 'function' ? hubCatalog() : []).filter(function (p) {
+            return p && p.slug === slug;
+        })[0];
+        if (fromHub && fromHub.name) return fromHub.name;
+        if (finishedStock[slug] && finishedStock[slug].name) return finishedStock[slug].name;
+        return slug || 'Producto';
+    }
+    function finishedMovReasonLabel(reason, kind) {
+        const map = {
+            manual: kind === 'salida' ? 'Salida manual' : 'Entrada manual',
+            produccion: 'Producción',
+            venta: 'Venta',
+            anula_produccion: 'Anulación de producción',
+            ajuste: 'Ajuste',
+            precompra: 'Surtido precompra'
+        };
+        return map[reason] || (kind === 'salida' ? 'Salida' : 'Entrada');
+    }
+    function pushFinishedMovement(entry) {
+        if (!entry || !entry.slug) return null;
+        const qty = Math.abs(Number(entry.qty) || 0);
+        if (!(qty > 0)) return null;
+        const kind = entry.kind === 'salida' || Number(entry.qty) < 0 ? 'salida' : 'entrada';
+        const city = normalizeInvCity(entry.city || INV_DEFAULT_CITY);
+        const row = {
+            id: entry.id || ('fm-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7)),
+            createdAt: entry.createdAt || new Date().toISOString(),
+            kind: kind,
+            reason: entry.reason || 'ajuste',
+            city: city === 'all' ? INV_DEFAULT_CITY : city,
+            slug: entry.slug,
+            name: entry.name || finishedProductName(entry.slug),
+            qty: qty,
+            note: String(entry.note || '').trim(),
+            ref: entry.ref || null,
+            userName: entry.userName || '',
+            userId: entry.userId || '',
+            editedAt: new Date().toISOString()
+        };
+        hydrateFinishedMovementsFromLocal();
+        finishedMovements.unshift(row);
+        if (finishedMovements.length > 5000) finishedMovements = finishedMovements.slice(0, 5000);
+        saveFinishedMovements(finishedMovements);
+        return row;
+    }
     function adjustFinishedMap(deltas, cityOrOpts) {
         hydrateFinishedFromLocal();
         let city = activeProductsCity();
+        let reason = 'ajuste';
+        let note = '';
+        let ref = null;
+        let skipLog = false;
+        let userName = '';
+        let userId = '';
         if (typeof cityOrOpts === 'string') city = cityOrOpts;
-        else if (cityOrOpts && typeof cityOrOpts === 'object' && cityOrOpts.city) city = cityOrOpts.city;
+        else if (cityOrOpts && typeof cityOrOpts === 'object') {
+            if (cityOrOpts.city) city = cityOrOpts.city;
+            if (cityOrOpts.reason) reason = String(cityOrOpts.reason);
+            if (cityOrOpts.note != null) note = String(cityOrOpts.note || '');
+            if (cityOrOpts.ref) ref = cityOrOpts.ref;
+            if (cityOrOpts.skipLog) skipLog = true;
+            if (cityOrOpts.userName) userName = String(cityOrOpts.userName);
+            if (cityOrOpts.userId) userId = String(cityOrOpts.userId);
+        }
         city = normalizeInvCity(city);
         if (city === 'all') city = INV_DEFAULT_CITY;
         let changed = false;
+        const applied = [];
         Object.keys(deltas || {}).forEach(function (slug) {
             const delta = Number(deltas[slug]) || 0;
             if (!slug || !delta) return;
             if (!finishedStock[slug]) finishedStock[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza', byCity: emptyCityMap() };
             ensureFinishedByCity(finishedStock[slug]);
-            const nextCity = Math.max(0, (Number(finishedStock[slug].byCity[city]) || 0) + delta);
-            if (nextCity === (Number(finishedStock[slug].byCity[city]) || 0) && delta < 0 && (Number(finishedStock[slug].byCity[city]) || 0) === 0) {
-                return;
-            }
+            const prevCity = Number(finishedStock[slug].byCity[city]) || 0;
+            const nextCity = Math.max(0, prevCity + delta);
+            const appliedDelta = nextCity - prevCity;
+            if (!appliedDelta) return;
             finishedStock[slug].byCity[city] = nextCity;
             syncFinishedCityTotals(finishedStock[slug]);
             finishedStock[slug].updatedAt = new Date().toISOString();
             changed = true;
+            applied.push({ slug: slug, delta: appliedDelta });
         });
         if (changed) saveFinished();
+        if (changed && !skipLog) {
+            applied.forEach(function (row) {
+                pushFinishedMovement({
+                    kind: row.delta < 0 ? 'salida' : 'entrada',
+                    reason: reason,
+                    city: city,
+                    slug: row.slug,
+                    qty: Math.abs(row.delta),
+                    note: note,
+                    ref: ref,
+                    userName: userName,
+                    userId: userId
+                });
+            });
+            if (typeof renderFinishedMovementsList === 'function') renderFinishedMovementsList();
+        }
         return changed;
     }
 
@@ -17865,15 +17987,25 @@
             });
         }
         const addInvBtn = document.getElementById('productsAddInventoryBtn');
+        const removeInvBtn = document.getElementById('productsRemoveInventoryBtn');
         const addInvModal = document.getElementById('addInventoryModal');
         const addInvForm = document.getElementById('addInventoryForm');
         const addInvProduct = document.getElementById('addInventoryProduct');
         const addInvQty = document.getElementById('addInventoryQty');
         const addInvCurrent = document.getElementById('addInventoryCurrent');
+        const addInvMode = document.getElementById('addInventoryMode');
+        const addInvTitle = document.getElementById('addInventoryTitle');
+        const addInvSave = document.getElementById('addInventorySave');
+        const addInvQtyLabel = document.getElementById('addInventoryQtyLabel');
+        const addInvHint = document.getElementById('addInventoryHint');
+        const addInvNote = document.getElementById('addInventoryNote');
         function closeAddInventory() {
             if (!addInvModal) return;
             addInvModal.classList.remove('show');
             addInvModal.setAttribute('aria-hidden', 'true');
+        }
+        function inventoryAdjustMode() {
+            return (addInvMode && addInvMode.value === 'remove') ? 'remove' : 'add';
         }
         function paintAddInventoryCurrent() {
             if (!addInvCurrent || !addInvProduct) return;
@@ -17884,8 +18016,16 @@
             const qty = fin ? finishedStockInCity(fin, city === 'all' ? 'all' : city) : 0;
             addInvCurrent.textContent = 'Existencia en ' + invCityLabel(city === 'all' ? 'all' : city) + ': ' + fmtStockQty(qty);
         }
-        function openAddInventory(preselect) {
+        function openInventoryAdjust(mode, preselect) {
             if (!addInvModal || !addInvProduct) return;
+            const isRemove = mode === 'remove';
+            if (addInvMode) addInvMode.value = isRemove ? 'remove' : 'add';
+            if (addInvTitle) addInvTitle.textContent = isRemove ? 'Quitar inventario' : 'Agregar inventario';
+            if (addInvSave) addInvSave.textContent = isRemove ? 'Quitar' : 'Agregar';
+            if (addInvQtyLabel) {
+                addInvQtyLabel.childNodes[0].textContent = isRemove ? 'Cantidad a restar' : 'Cantidad a sumar';
+            }
+            if (addInvHint) addInvHint.hidden = !isRemove;
             hydrateFinishedFromLocal();
             const list = hubCatalog().slice().sort(function (a, b) {
                 return String(a.name || a.slug).localeCompare(String(b.name || b.slug), 'es');
@@ -17895,14 +18035,18 @@
             }).join('');
             if (preselect && finishedStock[preselect]) addInvProduct.value = preselect;
             const cityEl = document.getElementById('addInventoryCity');
-            if (cityEl) cityEl.value = activeProductsCity();
+            if (cityEl) cityEl.value = activeProductsCity() === 'all' ? INV_DEFAULT_CITY : activeProductsCity();
             if (addInvQty) addInvQty.value = '1';
+            if (addInvNote) addInvNote.value = '';
             paintAddInventoryCurrent();
             addInvModal.classList.add('show');
             addInvModal.setAttribute('aria-hidden', 'false');
             if (addInvQty) addInvQty.focus();
         }
+        function openAddInventory(preselect) { openInventoryAdjust('add', preselect); }
+        function openRemoveInventory(preselect) { openInventoryAdjust('remove', preselect); }
         if (addInvBtn) addInvBtn.addEventListener('click', function () { openAddInventory(); });
+        if (removeInvBtn) removeInvBtn.addEventListener('click', function () { openRemoveInventory(); });
         if (addInvProduct) addInvProduct.addEventListener('change', paintAddInventoryCurrent);
         const addInvCity = document.getElementById('addInventoryCity');
         if (addInvCity) addInvCity.addEventListener('change', paintAddInventoryCurrent);
@@ -17922,14 +18066,32 @@
                 const qty = Number(addInvQty && addInvQty.value);
                 if (!slug || !(qty > 0)) return;
                 const cityEl = document.getElementById('addInventoryCity');
-                const city = cityEl ? normalizeInvCity(cityEl.value) : activeProductsCity();
-                adjustFinishedMap((function () { const d = {}; d[slug] = qty; return d; })(), city === 'all' ? INV_DEFAULT_CITY : city);
+                let city = cityEl ? normalizeInvCity(cityEl.value) : activeProductsCity();
+                if (city === 'all') city = INV_DEFAULT_CITY;
+                const isRemove = inventoryAdjustMode() === 'remove';
+                const note = addInvNote ? String(addInvNote.value || '').trim() : '';
+                if (isRemove) {
+                    const fin = finishedStock[slug];
+                    const have = fin ? finishedStockInCity(fin, city) : 0;
+                    if (qty > have) {
+                        panelToast('Solo hay ' + fmtStockQty(have) + ' en ' + invCityLabel(city));
+                        return;
+                    }
+                }
+                const delta = {};
+                delta[slug] = isRemove ? -qty : qty;
+                adjustFinishedMap(delta, {
+                    city: city,
+                    reason: 'manual',
+                    note: note
+                });
                 refreshStockViews();
+                renderFinishedMovementsList();
                 closeAddInventory();
                 const name = (hubCatalog().filter(function (p) { return p.slug === slug; })[0] || {}).name || slug;
                 const toastEl = document.getElementById('toast');
                 if (toastEl) {
-                    toastEl.textContent = '+' + fmtStockQty(qty) + ' en ' + name;
+                    toastEl.textContent = (isRemove ? '−' : '+') + fmtStockQty(qty) + ' en ' + name;
                     toastEl.classList.add('show');
                     clearTimeout(openAddInventory._toast);
                     openAddInventory._toast = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
@@ -18151,18 +18313,44 @@
         const movBlock = document.getElementById('productsMovementsBlock');
         const movToggle = document.getElementById('productsMovementsToggle');
         const movBody = document.getElementById('productsMovementsBody');
+        const movDeskTabs = document.getElementById('productsMovDeskTabs');
+        function setProductsMovDeskTab(tab) {
+            productsMovDeskTab = tab === 'ventas' ? 'ventas' : 'registro';
+            const regPanel = document.getElementById('finishedMovementsPanel');
+            const salesPanel = document.getElementById('productsMovSalesPanel');
+            const salesRange = document.getElementById('productsMovSalesRange');
+            if (regPanel) regPanel.hidden = productsMovDeskTab !== 'registro';
+            if (salesPanel) salesPanel.hidden = productsMovDeskTab !== 'ventas';
+            if (salesRange) salesRange.hidden = productsMovDeskTab !== 'ventas';
+            if (movDeskTabs) {
+                movDeskTabs.querySelectorAll('[data-products-mov-desk]').forEach(function (btn) {
+                    const on = btn.getAttribute('data-products-mov-desk') === productsMovDeskTab;
+                    btn.classList.toggle('active', on);
+                    btn.setAttribute('aria-selected', on ? 'true' : 'false');
+                });
+            }
+            if (productsMovDeskTab === 'registro') renderFinishedMovementsList();
+            else if (window.S35PosModule && typeof window.S35PosModule.renderProductsMovementsChart === 'function') {
+                window.S35PosModule.renderProductsMovementsChart();
+            }
+        }
         function setProductsMovementsOpen(open) {
             if (!movBlock || !movToggle || !movBody) return;
             movBlock.classList.toggle('is-open', open);
             movBody.hidden = !open;
             movToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-            if (open && window.S35PosModule && typeof window.S35PosModule.renderProductsMovementsChart === 'function') {
-                window.S35PosModule.renderProductsMovementsChart();
-            }
+            if (open) setProductsMovDeskTab(productsMovDeskTab);
         }
         if (movToggle) {
             movToggle.addEventListener('click', function () {
                 setProductsMovementsOpen(!movBlock.classList.contains('is-open'));
+            });
+        }
+        if (movDeskTabs) {
+            movDeskTabs.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-products-mov-desk]');
+                if (!btn) return;
+                setProductsMovDeskTab(btn.getAttribute('data-products-mov-desk'));
             });
         }
         if (movBlock) {
@@ -18172,6 +18360,65 @@
                 setProductsMovementsOpen(true);
             });
         }
+        renderFinishedMovementsList();
+    }
+
+    function finishedMovFormatAt(iso) {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return '—';
+        return d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
+    }
+    function renderFinishedMovementsList() {
+        const host = document.getElementById('finishedMovementsList');
+        const sub = document.getElementById('finishedMovementsSub');
+        if (!host) return;
+        hydrateFinishedMovementsFromLocal();
+        const city = activeProductsCity();
+        const rows = finishedMovements.filter(function (row) {
+            if (!row || row.deleted) return false;
+            if (city === 'all') return true;
+            return normalizeInvCity(row.city) === city;
+        });
+        if (sub) {
+            const nIn = rows.filter(function (r) { return r.kind === 'entrada'; }).length;
+            const nOut = rows.filter(function (r) { return r.kind === 'salida'; }).length;
+            const bits = [];
+            if (nIn) bits.push(nIn + (nIn === 1 ? ' entrada' : ' entradas'));
+            if (nOut) bits.push(nOut + (nOut === 1 ? ' salida' : ' salidas'));
+            sub.textContent = (bits.length ? bits.join(' · ') : 'Sin movimientos de inventario') +
+                (city === 'all' ? '' : (' · ' + invCityLabel(city)));
+        }
+        if (!rows.length) {
+            host.innerHTML = '<div class="empty">Sin movimientos' +
+                (city === 'all' ? '' : (' en ' + esc(invCityLabel(city)))) + '.</div>';
+            return;
+        }
+        host.innerHTML = rows.slice(0, 200).map(function (row) {
+            const kindClass = row.kind === 'salida' ? 'is-salida' : 'is-entrada';
+            const kindLabel = row.kind === 'salida' ? 'Salida' : 'Entrada';
+            const reason = finishedMovReasonLabel(row.reason, row.kind);
+            const sign = row.kind === 'salida' ? '−' : '+';
+            const refBits = [];
+            if (row.ref && row.ref.type === 'lot' && row.ref.id) refBits.push('Lote ' + row.ref.id);
+            if (row.ref && row.ref.type === 'sale' && (row.ref.folio || row.ref.id)) {
+                refBits.push(row.ref.folio || row.ref.id);
+            }
+            return '<article class="mp-desk-row">' +
+                '<div class="mp-desk-main">' +
+                '<div class="mp-desk-title"><span class="mp-desk-kind ' + kindClass + '">' + kindLabel + '</span>' +
+                esc(row.name || row.slug) + '</div>' +
+                '<div class="mp-desk-meta">' + esc(reason) + ' · ' + esc(finishedMovFormatAt(row.createdAt)) +
+                ' · ' + esc(invCityLabel(row.city)) +
+                (refBits.length ? (' · ' + esc(refBits.join(' · '))) : '') +
+                (row.userName ? (' · ' + esc(row.userName)) : '') +
+                '</div>' +
+                (row.note ? ('<div class="mp-desk-meta">' + esc(row.note) + '</div>') : '') +
+                '</div>' +
+                '<div class="mp-desk-side">' +
+                '<div class="' + (row.kind === 'salida' ? 'mp-pay-credito' : 'mp-pay-ok') + '">' +
+                sign + fmtStockQty(row.qty) + '</div>' +
+                '</div></article>';
+        }).join('');
     }
 
     function renderProductFamiliesList() {
@@ -20028,6 +20275,7 @@
         syncInventoryCityMenus();
         if (typeof renderProductsInventoryChart === 'function') renderProductsInventoryChart();
         if (typeof renderFinished === 'function') renderFinished();
+        if (typeof renderFinishedMovementsList === 'function') renderFinishedMovementsList();
     }
     function setMaterialsCityFilter(next) {
         if (next === 'all') materialsCityFilter = 'all';
@@ -20044,6 +20292,7 @@
         if (typeof renderCatalog === 'function') renderCatalog(data.products);
         renderFinished();
         if (typeof renderProductsInventoryChart === 'function') renderProductsInventoryChart();
+        if (typeof renderFinishedMovementsList === 'function') renderFinishedMovementsList();
         updateProdPreview();
         renderProdFormulaChart();
         refreshLotTicketLists();
@@ -20325,7 +20574,12 @@
         if (packConsumptions.length) saveInventory(inventory);
         const finDelta = {};
         finDelta[t.product] = bagsOut;
-        adjustFinishedMap(finDelta, confirmCity);
+        adjustFinishedMap(finDelta, {
+            city: confirmCity,
+            reason: 'produccion',
+            ref: { type: 'lot', id: t.id },
+            note: 'Ingreso lote ' + t.id
+        });
         t.status = 'confirmed';
         t.confirmedAt = new Date().toISOString();
         t.editedAt = t.confirmedAt;
@@ -20444,7 +20698,12 @@
             )) return;
             const finDelta = {};
             finDelta[t.product] = deltaBags;
-            adjustFinishedMap(finDelta, lotCity);
+            adjustFinishedMap(finDelta, {
+                city: lotCity,
+                reason: 'produccion',
+                ref: { type: 'lot', id: t.id },
+                note: 'Ajuste lote ' + t.id + ' (' + oldBags + ' → ' + newBags + ')'
+            });
             (t.packConsumed || []).forEach(function (pc) {
                 const pieces = lotPackPiecesPerBag(t, pc.plantId);
                 const packDelta = deltaBags * pieces;
@@ -20533,7 +20792,12 @@
         if (bags > 0 && t.product) {
             const finDelta = {};
             finDelta[t.product] = -bags;
-            adjustFinishedMap(finDelta, lotCity);
+            adjustFinishedMap(finDelta, {
+                city: lotCity,
+                reason: 'anula_produccion',
+                ref: { type: 'lot', id: t.id },
+                note: 'Anulación lote ' + t.id
+            });
         }
         (t.packConsumed || []).forEach(function (pc) {
             const mat = plantById(pc.plantId);
@@ -20608,6 +20872,7 @@
         const all = !keys.length;
         const touchPlant = all || keySet['s35_plant_inventory'] || keySet['s35_plant_families'];
         const touchFinished = all || keySet['s35_finished_stock'] || keySet['s35_product_catalog_v1'];
+        const touchFinishedMov = all || keySet['s35_finished_movements_v1'];
         const touchFormulas = all || keySet['s35_plant_formulas_v3'];
         const touchCatalog = all || keySet['s35_product_catalog_v1'] || keySet['s35_product_families'] || keySet['s35_product_family_overrides'];
         const touchPos = all || keys.some(function (k) {
@@ -20622,6 +20887,10 @@
         if (touchMpDesk && typeof hydrateMpDeskFromLocal === 'function') hydrateMpDeskFromLocal();
         if (touchPlant && typeof hydrateInventoryFromLocal === 'function') hydrateInventoryFromLocal();
         if (touchFinished) hydrateFinishedFromLocal();
+        if (touchFinishedMov && typeof hydrateFinishedMovementsFromLocal === 'function') {
+            hydrateFinishedMovementsFromLocal();
+            if (typeof renderFinishedMovementsList === 'function') renderFinishedMovementsList();
+        }
         if (touchFormulas && typeof hydrateFormulasFromLocal === 'function') hydrateFormulasFromLocal();
         if (touchCatalog) applyProductCatalog();
         if ((touchPlant || touchFinished || touchCatalog) && typeof refreshStockViews === 'function') {
@@ -20652,15 +20921,20 @@
             if (city == null || city === 'all') return Number(fin.stock) || 0;
             return finishedStockInCity(fin, city);
         },
-        deductFinished: function (slug, qty, city) {
-            return adjustFinishedMap((function () { const d = {}; d[slug] = -Math.abs(Number(qty) || 0); return d; })(), city);
+        deductFinished: function (slug, qty, cityOrOpts) {
+            const opts = (cityOrOpts && typeof cityOrOpts === 'object')
+                ? Object.assign({}, cityOrOpts)
+                : { city: cityOrOpts };
+            if (!opts.reason) opts.reason = 'venta';
+            return adjustFinishedMap((function () { const d = {}; d[slug] = -Math.abs(Number(qty) || 0); return d; })(), opts);
         },
-        adjustFinished: function (slug, delta, city) {
+        adjustFinished: function (slug, delta, cityOrOpts) {
             const d = {};
             d[slug] = Number(delta) || 0;
-            return adjustFinishedMap(d, city);
+            return adjustFinishedMap(d, cityOrOpts);
         },
         adjustFinishedMap: adjustFinishedMap,
+        recordFinishedMovement: pushFinishedMovement,
         refreshStockViews: function () {
             if (typeof refreshStockViews === 'function') refreshStockViews();
             else {
