@@ -797,6 +797,122 @@
         }).join('');
     }
 
+    /**
+     * Mazatlán/Mochis suelen surtir desde Culiacán. Hay que elegir bodega de PT.
+     * Culiacán descuenta local sin preguntar.
+     */
+    function needsStockOriginPrompt(cityId) {
+        const c = normalizeCityId(cityId);
+        return c === 'mazatlan' || c === 'mochis';
+    }
+    /** Bodega de la que baja el producto terminado (puede diferir de la ciudad de venta). */
+    function saleStockCity(sale) {
+        if (!sale) return 'culiacan';
+        const meta = sale.meta || {};
+        if (meta.stockCity) return normalizeCityId(meta.stockCity);
+        if (meta.inventoryCity) return normalizeCityId(meta.inventoryCity);
+        return saleCity(sale);
+    }
+    function setSaleStockCity(sale, stockCityId) {
+        if (!sale) return;
+        if (!sale.meta || typeof sale.meta !== 'object') sale.meta = {};
+        sale.meta.stockCity = normalizeCityId(stockCityId || saleCity(sale));
+        return sale.meta.stockCity;
+    }
+    let stockOriginPromptPending = null;
+    function closeStockOriginModal(result) {
+        const modal = document.getElementById('posStockOriginModal');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+        const pending = stockOriginPromptPending;
+        stockOriginPromptPending = null;
+        if (pending) pending(result || null);
+    }
+    function promptStockOriginCity(opts) {
+        opts = opts || {};
+        const saleCityId = normalizeCityId(opts.saleCity || 'culiacan');
+        const preferred = normalizeCityId(opts.preferred || saleCityId);
+        const modal = document.getElementById('posStockOriginModal');
+        const choices = document.getElementById('posStockOriginChoices');
+        const lead = document.getElementById('posStockOriginLead');
+        if (!modal || !choices) {
+            return Promise.resolve(preferred);
+        }
+        if (stockOriginPromptPending) {
+            closeStockOriginModal(null);
+        }
+        if (lead) {
+            lead.textContent = 'Venta en ' + cityLabel(saleCityId) +
+                '. Elige la bodega de la que se surte el producto terminado (para el cuadre de inventario).';
+        }
+        const order = [saleCityId, 'culiacan'].concat(
+            SALE_CITIES.map(function (c) { return c.id; }).filter(function (id) {
+                return id !== saleCityId && id !== 'culiacan';
+            })
+        );
+        const seen = {};
+        const ordered = order.filter(function (id) {
+            if (seen[id]) return false;
+            seen[id] = true;
+            return !!cityById(id);
+        });
+        choices.innerHTML = ordered.map(function (id) {
+            const local = id === saleCityId;
+            const hint = local
+                ? 'Inventario de la misma sucursal de venta'
+                : (id === 'culiacan'
+                    ? 'Suele usarse cuando la mercancía sale de planta / Culiacán'
+                    : 'Inventario de ' + cityLabel(id));
+            return '<label class="stock-origin-choice">' +
+                '<input type="radio" name="posStockOrigin" value="' + esc(id) + '"' +
+                (id === preferred ? ' checked' : '') + '>' +
+                '<span><strong>' + esc(cityLabel(id)) + '</strong><span>' + esc(hint) + '</span></span>' +
+                '</label>';
+        }).join('');
+        return new Promise(function (resolve) {
+            stockOriginPromptPending = resolve;
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+            const first = choices.querySelector('input[name="posStockOrigin"]:checked') ||
+                choices.querySelector('input[name="posStockOrigin"]');
+            if (first) first.focus();
+        });
+    }
+    function bindStockOriginModal() {
+        const modal = document.getElementById('posStockOriginModal');
+        if (!modal || modal._s35Bound) return;
+        modal._s35Bound = true;
+        const confirmBtn = document.getElementById('posStockOriginConfirm');
+        const cancelBtn = document.getElementById('posStockOriginCancel');
+        const closeBtn = document.getElementById('posStockOriginClose');
+        function readChoice() {
+            const el = modal.querySelector('input[name="posStockOrigin"]:checked');
+            return el && el.value ? normalizeCityId(el.value) : null;
+        }
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function () {
+                const chosen = readChoice();
+                if (!chosen) {
+                    toast('Elige la bodega de surtido');
+                    return;
+                }
+                closeStockOriginModal(chosen);
+            });
+        }
+        if (cancelBtn) cancelBtn.addEventListener('click', function () { closeStockOriginModal(null); });
+        if (closeBtn) closeBtn.addEventListener('click', function () { closeStockOriginModal(null); });
+        modal.addEventListener('click', function (ev) {
+            if (ev.target === modal) closeStockOriginModal(null);
+        });
+        document.addEventListener('keydown', function (ev) {
+            if (ev.key !== 'Escape') return;
+            if (!modal.classList.contains('show')) return;
+            closeStockOriginModal(null);
+        });
+    }
+
     function toast(msg) {
         const el = document.getElementById('toast');
         if (!el) return;
@@ -1538,6 +1654,11 @@
                 return '<option value="' + esc(c.id) + '"' + (saleCity(sale) === c.id ? ' selected' : '') + '>' + esc(c.label) + '</option>';
             }).join('') +
             '</select></label>' +
+            '<label class="span-2">Bodega de surtido (inventario)<select id="sneStockCity">' +
+            SALE_CITIES.map(function (c) {
+                return '<option value="' + esc(c.id) + '"' + (saleStockCity(sale) === c.id ? ' selected' : '') + '>' + esc(c.label) + '</option>';
+            }).join('') +
+            '</select></label>' +
             '<label class="span-2">Observaciones<textarea id="sneObs" rows="2" placeholder="Entrega, obra, referencia…">' + esc(saleObservations(sale)) + '</textarea></label>' +
             '<div class="span-2 sne-pay-split-block">' +
             '<label class="sne-pay-split-check"><input type="checkbox" id="snePaySplit"' + (isSplit ? ' checked' : '') + '> Dividir pago (varios métodos)</label>' +
@@ -1657,6 +1778,9 @@
         const customerRaw = ((document.getElementById('sneCustomer') || {}).value || '').trim();
         const bill = (document.getElementById('sneBill') || {}).value || 'sin_facturar';
         const city = normalizeCityId((document.getElementById('sneCity') || {}).value || saleCity(sale));
+        const stockCity = normalizeCityId(
+            (document.getElementById('sneStockCity') || {}).value || saleStockCity(sale) || city
+        );
         const createdAt = fromDatetimeLocalValue((document.getElementById('sneCreatedAt') || {}).value);
         const body = document.getElementById('sneLinesBody');
         const items = [];
@@ -1728,6 +1852,7 @@
             payments: payments,
             billing: bill,
             city: city,
+            stockCity: stockCity,
             items: items,
             total: Math.round(total * 100) / 100,
             observations: observations
@@ -1787,8 +1912,13 @@
         const patch = collectSaleNoteEditForm();
         if (!patch) return;
         const beforeItems = (sale.items || []).map(function (it) { return Object.assign({}, it); });
+        const beforeStockCity = saleStockCity(sale);
         const trackStock = !isHistoricalImportSale(sale) && !isPrecompraSale(sale);
+        const nextStockCity = normalizeCityId(patch.stockCity || patch.city || beforeStockCity);
+        delete patch.stockCity;
         Object.assign(sale, patch);
+        if (!sale.meta || typeof sale.meta !== 'object') sale.meta = {};
+        setSaleStockCity(sale, nextStockCity);
         if (isPrecompraSale(sale)) {
             if (!sale.meta) sale.meta = {};
             sale.meta.kind = 'precompra';
@@ -1811,7 +1941,14 @@
             toast('No se pudo guardar el ticket');
             return;
         }
-        if (trackStock) applySaleInventoryChange(beforeItems, sale.items, sale.city);
+        if (trackStock) {
+            if (beforeStockCity !== nextStockCity) {
+                applySaleInventoryChange(beforeItems, [], beforeStockCity);
+                applySaleInventoryChange([], sale.items, nextStockCity);
+            } else {
+                applySaleInventoryChange(beforeItems, sale.items, nextStockCity);
+            }
+        }
         setSaleNoteMode(false);
         openSaleNoteModal(sale);
         renderHistory();
@@ -1990,10 +2127,15 @@
             saleNoteSummaryRow('Pago', formatSalePayLabel(sale)),
             saleNoteSummaryRow('Factura', billLabel(sale.billing, sale)),
             saleNoteSummaryRow('Condición', isPendingCollection(sale) ? 'Crédito' : 'Contado'),
-            saleNoteSummaryRow('Sucursal', cityLabel(saleCity(sale)) || '—'),
+            saleNoteSummaryRow('Sucursal', cityLabel(saleCity(sale)) || '—')
+        ];
+        if (saleStockCity(sale) !== saleCity(sale)) {
+            generalRows.push(saleNoteSummaryRow('Surtido', cityLabel(saleStockCity(sale))));
+        }
+        generalRows.push(
             saleNoteSummaryRow('Piezas', pieceLabel),
             saleNoteSummaryRow('Total', money(sale.total), 'total')
-        ];
+        );
         host.innerHTML = '' +
             '<div class="block">' +
             '<p class="k">Cliente</p>' +
@@ -2054,7 +2196,7 @@
         const label = saleReceiptLabel(sale);
         if (!confirm('¿Eliminar esta venta? No se puede deshacer')) return;
         const wasHist = isHistoricalImportSale(sale);
-        if (!wasHist && !isPrecompraSale(sale)) applySaleInventoryChange(sale.items, [], sale.city);
+        if (!wasHist && !isPrecompraSale(sale)) applySaleInventoryChange(sale.items, [], saleStockCity(sale));
         if (wasHist) {
             historicalSales = historicalSales.filter(function (s) { return s.id !== id; });
             putSaleEdit(id, { deleted: true });
@@ -4956,7 +5098,7 @@
     }
     function deductCatchupFinishedOnce(sale) {
         if (!sale || saleInventoryAlreadyApplied(sale)) return false;
-        const changed = applySaleInventoryChange([], sale.items, sale.city);
+        const changed = applySaleInventoryChange([], sale.items, saleStockCity(sale));
         if (!changed) return false;
         const token = catchupReplayToken(sale);
         markCatchupInventory(token ? (sale.id + '@' + token) : sale.id);
@@ -7327,6 +7469,22 @@
 
         const saleCityId = opts.city != null ? normalizeCityId(opts.city) : selectedSaleCity();
         savePreferredSaleCity(saleCityId);
+        const askStockOrigin = needsStockOriginPrompt(saleCityId) &&
+            (!skipInventory || wantPrecompra) &&
+            opts.stockCity == null;
+        if (askStockOrigin) {
+            promptStockOriginCity({ saleCity: saleCityId, preferred: saleCityId }).then(function (chosen) {
+                if (!chosen) {
+                    toast('Venta cancelada: falta bodega de surtido');
+                    return;
+                }
+                checkout(Object.assign({}, opts, { stockCity: chosen }));
+            });
+            return;
+        }
+        const stockCityId = normalizeCityId(
+            opts.stockCity != null ? opts.stockCity : saleCityId
+        );
         const clientSnapshot = client ? {
             id: client.id,
             name: client.name,
@@ -7392,7 +7550,7 @@
                 generatedAt: new Date().toISOString()
             });
             if (adminNote) ticket.meta.note = adminNote;
-        } else if (fromGenerate || skipInventory || adminNote) {
+        } else if (fromGenerate || skipInventory || adminNote || stockCityId !== saleCityId) {
             ticket.meta = {
                 source: fromGenerate ? 'pos-generate' : 'pos',
                 generatedAt: new Date().toISOString(),
@@ -7400,9 +7558,11 @@
             };
             if (adminNote) ticket.meta.note = adminNote;
         }
+        if (!ticket.meta) ticket.meta = { source: fromGenerate ? 'pos-generate' : 'pos' };
+        setSaleStockCity(ticket, stockCityId);
 
         if (!skipInventory) {
-            applySaleInventoryChange([], ticket.items, ticket.city || saleCityId);
+            applySaleInventoryChange([], ticket.items, stockCityId);
         }
 
         sales.unshift(ticket);
@@ -7425,9 +7585,12 @@
         }
         refreshSalesDependentViews();
 
+        const stockHint = (!skipInventory && stockCityId !== saleCityId)
+            ? (' · surtido ' + cityLabel(stockCityId))
+            : '';
         const invHint = wantPrecompra
             ? ' · precompra (sin descontar inventario)'
-            : (skipInventory ? ' · sin descontar inventario' : '');
+            : (skipInventory ? ' · sin descontar inventario' : stockHint);
         toast((fromGenerate ? 'Ticket generado ' : (wantPrecompra ? 'Precompra ' : 'Venta ')) +
             ticket.folio + ' · ' + formatSalePayLabel(ticket) + ' · ' + billLabel(billing) + invHint);
 
@@ -11935,48 +12098,68 @@
             toast('Cantidad inválida: no puede superar el saldo');
             return;
         }
-        applySaleInventoryChange([], invItems, sale.city);
-        deliveries.forEach(function (d) {
-            const line = ff.lines.filter(function (l) { return l.product === d.product; })[0];
-            if (line) line.deliveredQty = (Number(line.deliveredQty) || 0) + d.qty;
-        });
-        const user = currentUserSnapshot();
-        if (!Array.isArray(sale.meta.fulfillments)) sale.meta.fulfillments = [];
-        sale.meta.fulfillments.push({
-            id: 'ff-' + Date.now().toString(36),
-            createdAt: new Date().toISOString(),
-            userId: user.id,
-            userName: user.name || user.username || '',
-            lines: deliveries.map(function (d) {
-                return { product: d.product, qty: d.qty };
-            })
-        });
-        const pending = precompraPendingUnits(sale);
-        sale.meta.fulfillment.status = pending > 0 ? 'open' : 'closed';
-        if (!persistSaleRecord(sale)) {
-            toast('No se pudo guardar el surtido');
+        function applySurtir(stockCityId) {
+            setSaleStockCity(sale, stockCityId);
+            applySaleInventoryChange([], invItems, stockCityId);
+            deliveries.forEach(function (d) {
+                const line = ff.lines.filter(function (l) { return l.product === d.product; })[0];
+                if (line) line.deliveredQty = (Number(line.deliveredQty) || 0) + d.qty;
+            });
+            const user = currentUserSnapshot();
+            if (!Array.isArray(sale.meta.fulfillments)) sale.meta.fulfillments = [];
+            sale.meta.fulfillments.push({
+                id: 'ff-' + Date.now().toString(36),
+                createdAt: new Date().toISOString(),
+                userId: user.id,
+                userName: user.name || user.username || '',
+                stockCity: stockCityId,
+                lines: deliveries.map(function (d) {
+                    return { product: d.product, qty: d.qty };
+                })
+            });
+            const pending = precompraPendingUnits(sale);
+            sale.meta.fulfillment.status = pending > 0 ? 'open' : 'closed';
+            if (!persistSaleRecord(sale)) {
+                toast('No se pudo guardar el surtido');
+                return;
+            }
+            confirmSaleEditInCloud(sale);
+            const units = deliveries.reduce(function (n, d) { return n + d.qty; }, 0);
+            const stockHint = stockCityId !== saleCity(sale) ? (' · bodega ' + cityLabel(stockCityId)) : '';
+            toast('Surtido ' + formatUnits(units) + ' · ' + saleReceiptLabel(sale) + stockHint +
+                (pending > 0 ? (' · quedan ' + formatUnits(pending)) : ' · precompra cerrada'));
+            renderPrecompras();
+            renderHistory();
+            refreshSalesDependentViews();
+            updatePosPrecompraBanner();
+            if (clientDashId) renderClientDashboard(clientDashId);
+            if (window.S35PanelAPI && window.S35PanelAPI.refreshStockViews) {
+                window.S35PanelAPI.refreshStockViews();
+            }
+            const stillOpen = isOpenPrecompra(sale);
+            if (stillOpen && precomprasActiveKey) {
+                openPrecomprasDetail(precomprasActiveKey, sale.id);
+            } else if (precomprasActiveKey) {
+                const still = groupOpenPrecomprasByClient().some(function (g) { return g.key === precomprasActiveKey; });
+                if (still) openPrecomprasDetail(precomprasActiveKey);
+                else closePrecomprasDetail();
+            }
+        }
+        const knownStock = !!(sale.meta && sale.meta.stockCity);
+        if (needsStockOriginPrompt(saleCity(sale)) && !knownStock) {
+            promptStockOriginCity({
+                saleCity: saleCity(sale),
+                preferred: saleStockCity(sale)
+            }).then(function (chosen) {
+                if (!chosen) {
+                    toast('Surtido cancelado: falta bodega de origen');
+                    return;
+                }
+                applySurtir(chosen);
+            });
             return;
         }
-        confirmSaleEditInCloud(sale);
-        const units = deliveries.reduce(function (n, d) { return n + d.qty; }, 0);
-        toast('Surtido ' + formatUnits(units) + ' · ' + saleReceiptLabel(sale) +
-            (pending > 0 ? (' · quedan ' + formatUnits(pending)) : ' · precompra cerrada'));
-        renderPrecompras();
-        renderHistory();
-        refreshSalesDependentViews();
-        updatePosPrecompraBanner();
-        if (clientDashId) renderClientDashboard(clientDashId);
-        if (window.S35PanelAPI && window.S35PanelAPI.refreshStockViews) {
-            window.S35PanelAPI.refreshStockViews();
-        }
-        const stillOpen = isOpenPrecompra(sale);
-        if (stillOpen && precomprasActiveKey) {
-            openPrecomprasDetail(precomprasActiveKey, sale.id);
-        } else if (precomprasActiveKey) {
-            const still = groupOpenPrecomprasByClient().some(function (g) { return g.key === precomprasActiveKey; });
-            if (still) openPrecomprasDetail(precomprasActiveKey);
-            else closePrecomprasDetail();
-        }
+        applySurtir(saleStockCity(sale));
     }
 
     function renderPrecompras() {
@@ -12565,6 +12748,7 @@
         bind();
         bindCobranza();
         bindPrecompras();
+        bindStockOriginModal();
         (function syncSaleCityRadios() {
             syncSaleCityControl();
             syncGastoCityControl();

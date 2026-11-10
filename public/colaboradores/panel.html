@@ -3354,6 +3354,48 @@
         }
         .modal-head strong { font-weight: 500; font-size: 14px; }
         .modal-body { padding: 16px; display: grid; gap: 12px; }
+        #posStockOriginModal { z-index: 95; }
+        #posStockOriginModal .modal-card { max-width: 420px; }
+        #posStockOriginModal .stock-origin-lead {
+            margin: 0;
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+        #posStockOriginModal .stock-origin-choices {
+            display: grid;
+            gap: 8px;
+        }
+        #posStockOriginModal .stock-origin-choice {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 0;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-soft, var(--panel));
+            cursor: pointer;
+        }
+        #posStockOriginModal .stock-origin-choice:has(input:checked) {
+            border-color: var(--accent, #171717);
+            box-shadow: inset 0 0 0 1px var(--accent, #171717);
+        }
+        #posStockOriginModal .stock-origin-choice input {
+            margin-top: 2px;
+            flex: 0 0 auto;
+        }
+        #posStockOriginModal .stock-origin-choice strong {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        #posStockOriginModal .stock-origin-choice span {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
         .field { display: grid; grid-template-columns: 100px 1fr; gap: 8px; align-items: start; }
         .field label { color: var(--muted); font-size: 12px; padding-top: 2px; }
         .msg-box {
@@ -10336,6 +10378,25 @@
     </div>
 
 
+    <div id="posStockOriginModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="posStockOriginTitle">
+            <div class="modal-head">
+                <strong id="posStockOriginTitle">Bodega de surtido</strong>
+                <button type="button" class="btn" id="posStockOriginClose">Cerrar</button>
+            </div>
+            <div class="modal-body">
+                <p class="stock-origin-lead" id="posStockOriginLead">
+                    La venta es de otra sucursal. ¿De qué bodega se surte el producto terminado?
+                </p>
+                <div class="stock-origin-choices" id="posStockOriginChoices" role="radiogroup" aria-label="Bodega de origen"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn" id="posStockOriginCancel">Cancelar</button>
+                    <button type="button" class="btn primary" id="posStockOriginConfirm">Continuar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="posGenerateModal" class="modal-backdrop" aria-hidden="true">
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="posGenerateModalTitle">
             <div class="modal-head">
@@ -13783,6 +13844,7 @@
     let mpDeskTab = 'entradas';
     let mpPayMode = 'contado';
     let mpOpenSupplier = '';
+    let mpEditingSupplierId = '';
     let mpSaving = false;
     let mpExitSaving = false;
     function loadMpCollection(key) {
@@ -13850,6 +13912,32 @@
             return mpNormName(s.name).toLowerCase() === key;
         })[0] || null;
     }
+    function mpFindSupplierById(id) {
+        const key = String(id || '');
+        if (!key) return null;
+        return mpSuppliers.filter(function (s) { return s && !s.deleted && s.id === key; })[0] || null;
+    }
+    function mpSyncSupplierNameRefs(supplierId, name) {
+        const clean = mpNormName(name);
+        if (!supplierId || !clean) return;
+        let touched = false;
+        mpReceipts.forEach(function (row) {
+            if (!row || row.supplierId !== supplierId) return;
+            if (row.supplierName === clean) return;
+            row.supplierName = clean;
+            touched = true;
+        });
+        mpPayments.forEach(function (row) {
+            if (!row || row.supplierId !== supplierId) return;
+            if (row.supplierName === clean) return;
+            row.supplierName = clean;
+            touched = true;
+        });
+        if (touched) {
+            saveMpCollection(MP_RECEIPTS_KEY, mpReceipts);
+            saveMpCollection(MP_PAYMENTS_KEY, mpPayments);
+        }
+    }
     function mpEnsureSupplier(name, extras) {
         const clean = mpNormName(name);
         if (!clean) return null;
@@ -13886,16 +13974,22 @@
         saveMpCollection(MP_SUPPLIERS_KEY, mpSuppliers);
         return supplier;
     }
-    function openMpSupplierModal() {
+    function openMpSupplierModal(supplier) {
         const modal = document.getElementById('mpSupplierModal');
+        const titleEl = document.getElementById('mpSupplierTitle');
+        const saveEl = document.getElementById('mpSupplierSave');
         const nameEl = document.getElementById('mpSupplierFormName');
         const phoneEl = document.getElementById('mpSupplierFormPhone');
         const emailEl = document.getElementById('mpSupplierFormEmail');
         const noteEl = document.getElementById('mpSupplierFormNote');
-        if (nameEl) nameEl.value = '';
-        if (phoneEl) phoneEl.value = '';
-        if (emailEl) emailEl.value = '';
-        if (noteEl) noteEl.value = '';
+        const editing = !!(supplier && supplier.id);
+        mpEditingSupplierId = editing ? supplier.id : '';
+        if (titleEl) titleEl.textContent = editing ? 'Editar proveedor' : 'Alta de proveedor';
+        if (saveEl) saveEl.textContent = editing ? 'Guardar cambios' : 'Guardar proveedor';
+        if (nameEl) nameEl.value = editing ? (supplier.name || '') : '';
+        if (phoneEl) phoneEl.value = editing ? (supplier.phone || '') : '';
+        if (emailEl) emailEl.value = editing ? (supplier.email || '') : '';
+        if (noteEl) noteEl.value = editing ? (supplier.note || '') : '';
         if (modal) {
             modal.classList.add('show');
             modal.setAttribute('aria-hidden', 'false');
@@ -13906,6 +14000,7 @@
     }
     function closeMpSupplierModal() {
         const modal = document.getElementById('mpSupplierModal');
+        mpEditingSupplierId = '';
         if (!modal) return;
         modal.classList.remove('show');
         modal.setAttribute('aria-hidden', 'true');
@@ -13924,15 +14019,34 @@
             panelToast('Revisa el correo del proveedor', 'err');
             return;
         }
+        const editingId = mpEditingSupplierId;
         const existing = mpFindSupplierByName(name);
-        if (existing) {
+        if (existing && existing.id !== editingId) {
             panelToast('«' + existing.name + '» ya está dado de alta', 'err');
             if (document.getElementById('mpSupplierFormName')) {
                 document.getElementById('mpSupplierFormName').focus();
             }
             return;
         }
-        const supplier = mpEnsureSupplier(name, { phone: phone, email: email, note: note });
+        let supplier = null;
+        if (editingId) {
+            supplier = mpFindSupplierById(editingId);
+            if (!supplier) {
+                panelToast('No se encontró el proveedor a editar', 'err');
+                return;
+            }
+            const prevName = mpNormName(supplier.name);
+            supplier.name = name;
+            supplier.phone = phone;
+            supplier.email = email;
+            supplier.note = note;
+            supplier.updatedAt = mpStamp();
+            supplier.editedAt = supplier.updatedAt;
+            saveMpCollection(MP_SUPPLIERS_KEY, mpSuppliers);
+            if (prevName !== name) mpSyncSupplierNameRefs(supplier.id, name);
+        } else {
+            supplier = mpEnsureSupplier(name, { phone: phone, email: email, note: note });
+        }
         if (!supplier) {
             panelToast('No se pudo guardar el proveedor', 'err');
             return;
@@ -13950,7 +14064,12 @@
         mpFillSupplierList(supplier.name);
         renderMpDesk();
         closeMpSupplierModal();
-        panelToast('Proveedor «' + supplier.name + '» listo', 'ok');
+        panelToast(
+            editingId
+                ? ('Proveedor «' + supplier.name + '» actualizado')
+                : ('Proveedor «' + supplier.name + '» listo'),
+            'ok'
+        );
     }
     function mpReceiptLive(row) {
         return !!(row && row.status !== 'cancelled' && !row.deleted);
@@ -14741,7 +14860,10 @@
                     rel +
                     '</div>' +
                     '<div class="mp-desk-side">' +
-                    '<div class="mp-desk-actions"><button type="button" class="btn primary" data-mp-pay="' + esc(s.id) + '">Abonar</button></div>' +
+                    '<div class="mp-desk-actions">' +
+                    '<button type="button" class="btn" data-mp-edit-supplier="' + esc(s.id) + '">Editar</button>' +
+                    '<button type="button" class="btn primary" data-mp-pay="' + esc(s.id) + '">Abonar</button>' +
+                    '</div>' +
                     '</div></article>';
             }).join('')
             : '<div class="mp-suppliers-empty">' +
@@ -14846,7 +14968,17 @@
         }
         const openForm = e.target.closest('[data-mp-open-supplier-form]');
         if (openForm) {
-            openMpSupplierModal();
+            openMpSupplierModal(null);
+            return;
+        }
+        const editSupplier = e.target.closest('[data-mp-edit-supplier]');
+        if (editSupplier) {
+            const supplier = mpFindSupplierById(editSupplier.getAttribute('data-mp-edit-supplier'));
+            if (!supplier) {
+                panelToast('No se encontró el proveedor', 'err');
+                return;
+            }
+            openMpSupplierModal(supplier);
             return;
         }
         const pay = e.target.closest('[data-mp-pay]');
