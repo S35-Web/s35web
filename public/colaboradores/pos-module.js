@@ -4233,6 +4233,104 @@
         if (isNaN(d.getTime())) return '';
         return tesoreriaDayKey(new Date(d.getTime() + 86400000).toISOString());
     }
+    /** Días cercanos a una fecha (p. ej. venta cargada después del SPEI o liquidación T+n). */
+    function tesoreriaNearbyDayKeys(iso, daysBefore, daysAfter) {
+        const d = new Date(iso || '');
+        if (isNaN(d.getTime())) return [];
+        const before = Math.max(0, Number(daysBefore) || 0);
+        const after = Math.max(0, Number(daysAfter) || 0);
+        const out = [];
+        const seen = Object.create(null);
+        for (let i = -before; i <= after; i++) {
+            const key = tesoreriaDayKey(new Date(d.getTime() + i * 86400000).toISOString());
+            if (!key || seen[key]) continue;
+            seen[key] = true;
+            out.push(key);
+        }
+        return out;
+    }
+    function normalizeBankMatchToken(raw) {
+        return String(raw || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+    }
+    /** Folios / recibos de una venta para cruzar con el concepto del extracto. */
+    function saleBankMatchTokens(sale) {
+        const raw = [];
+        if (!sale) return raw;
+        raw.push(sale.folio, sale.id, saleReceiptLabel(sale));
+        if (sale.note && typeof sale.note === 'object') {
+            raw.push(sale.note.folio, sale.note.id, sale.note.receiptId);
+        } else if (sale.note) {
+            raw.push(sale.note);
+        }
+        if (sale.meta) {
+            raw.push(sale.meta.folio, sale.meta.receiptId, sale.meta.panelNoteId);
+        }
+        const tokens = [];
+        const seen = Object.create(null);
+        raw.forEach(function (v) {
+            const t = normalizeBankMatchToken(v);
+            if (!t || t.length < 5 || seen[t]) return;
+            seen[t] = true;
+            tokens.push(t);
+        });
+        return tokens;
+    }
+    /**
+     * Pool de abonos del extracto Banregio (una sola cuenta, sin filtrar ciudad).
+     * Se consume al casar ventas para no duplicar saldo.
+     */
+    function buildBankDepositClaimPool() {
+        const pool = [];
+        (tesoreriaMovs || []).forEach(function (m) {
+            if (!isPostOpeningBankStatement(m)) return;
+            const signed = tesoreriaSignedAmount(m);
+            if (!(signed > 0)) return;
+            const day = tesoreriaDayKey(m.createdAt) || '';
+            let dayFromFecha = '';
+            const fecha = String(m.fecha || '');
+            const fm = fecha.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (fm) dayFromFecha = fm[3] + '-' + fm[2] + '-' + fm[1];
+            pool.push({
+                id: m.id,
+                day: day || dayFromFecha,
+                amount: roundMoney(signed),
+                text: normalizeBankMatchToken((m.note || '') + ' ' + (m.reference || '')),
+                used: false
+            });
+        });
+        return pool;
+    }
+    function claimBankDepositForSale(pool, sale, amount) {
+        if (!pool || !pool.length) return false;
+        const amt = roundMoney(amount);
+        if (!(amt > 0)) return false;
+        const days = tesoreriaNearbyDayKeys(sale && sale.createdAt, 7, 3);
+        const daySet = Object.create(null);
+        days.forEach(function (d) { daySet[d] = true; });
+        // 1) mismo monto en ventana de fechas (venta ± días del SPEI).
+        for (let i = 0; i < pool.length; i++) {
+            const row = pool[i];
+            if (row.used || !daySet[row.day]) continue;
+            if (Math.abs(row.amount - amt) <= 0.05) {
+                row.used = true;
+                return true;
+            }
+        }
+        // 2) folio/recibo de la nota aparece en el concepto del extracto + mismo monto.
+        const tokens = saleBankMatchTokens(sale);
+        if (!tokens.length) return false;
+        for (let i = 0; i < pool.length; i++) {
+            const row = pool[i];
+            if (row.used || Math.abs(row.amount - amt) > 0.05) continue;
+            for (let t = 0; t < tokens.length; t++) {
+                if (row.text.indexOf(tokens[t]) >= 0) {
+                    row.used = true;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     function afterTesoreriaOpening(iso) {
         const t = Date.parse(iso || '');
         return isFinite(t) && t > TESORERIA_OPENED_AT;
@@ -4478,51 +4576,11 @@
             };
         });
         const statement = filterTesoreriaMovsByCity(tesoreriaMovs, city).filter(isPostOpeningBankStatement);
-        const depositPool = {};
         statement.forEach(function (m) {
-            const signed = tesoreriaSignedAmount(m);
-            buckets.banco.extracto = roundMoney(buckets.banco.extracto + signed);
-            if (signed <= 0) return;
-            const key = tesoreriaDayKey(m.createdAt) + '|' + signed.toFixed(2);
-            depositPool[key] = (depositPool[key] || 0) + 1;
+            buckets.banco.extracto = roundMoney(buckets.banco.extracto + tesoreriaSignedAmount(m));
         });
-        function statementAlreadyReceived(sale, amount) {
-            const amt = roundMoney(amount);
-            const day0 = tesoreriaDayKey(sale && sale.createdAt);
-            const day1 = tesoreriaNextDayKey(sale && sale.createdAt);
-            let day2 = '';
-            try {
-                const d = new Date(sale && sale.createdAt);
-                if (!isNaN(d.getTime())) {
-                    day2 = tesoreriaDayKey(new Date(d.getTime() + 2 * 86400000).toISOString());
-                }
-            } catch (_) {}
-            const days = [day0, day1, day2].filter(Boolean);
-            // Exacto por día (hoy / +1 / +2) — liquidación TDC a veces cae a T+2.
-            for (let i = 0; i < days.length; i++) {
-                const exact = days[i] + '|' + amt.toFixed(2);
-                if (depositPool[exact] > 0) {
-                    depositPool[exact] -= 1;
-                    return true;
-                }
-            }
-            // Tolerancia ±$0.05 (SPEI con centavos vs ticket redondo, p.ej. Humaya 175000.04).
-            const poolKeys = Object.keys(depositPool);
-            for (let i = 0; i < days.length; i++) {
-                const prefix = days[i] + '|';
-                for (let k = 0; k < poolKeys.length; k++) {
-                    const key = poolKeys[k];
-                    if (depositPool[key] <= 0 || key.indexOf(prefix) !== 0) continue;
-                    const poolAmt = Number(key.slice(prefix.length));
-                    if (!isFinite(poolAmt)) continue;
-                    if (Math.abs(poolAmt - amt) <= 0.05) {
-                        depositPool[key] -= 1;
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
+        // Matching contra toda la cuenta Banregio (no por ciudad de venta).
+        const depositClaimPool = buildBankDepositClaimPool();
         list.slice().sort(function (a, b) {
             return (Date.parse(a && a.createdAt) || 0) - (Date.parse(b && b.createdAt) || 0);
         }).forEach(function (sale) {
@@ -4530,7 +4588,7 @@
             salePaymentLines(sale).forEach(function (p) {
                 const account = tesoreriaAccountOfPayment(p.method, billing);
                 if (!account) return;
-                if (account === 'banco' && statementAlreadyReceived(sale, p.amount)) return;
+                if (account === 'banco' && claimBankDepositForSale(depositClaimPool, sale, p.amount)) return;
                 // Tarjeta s/factura (Clip): abona el neto tras comisión 3.60% + IVA 16% sobre comisión.
                 const credit = account === 'tarjeta_sf' ? clipTarjetaSfNet(p.amount) : p.amount;
                 buckets[account].tickets = roundMoney(buckets[account].tickets + credit);
@@ -8748,8 +8806,11 @@
                 setBalance: isApertura ? roundMoney(m.amount) : null
             });
         });
+        const ledgerDepositPool = buildBankDepositClaimPool();
         filterSalesByCity(sales, dineroCityFilter).filter(function (sale) {
             return afterTesoreriaOpening(sale && sale.createdAt);
+        }).slice().sort(function (a, b) {
+            return (Date.parse(a && a.createdAt) || 0) - (Date.parse(b && b.createdAt) || 0);
         }).forEach(function (sale) {
             const billing = sale.billing || 'sin_facturar';
             const client = (sale.client && sale.client.name) || 'Mostrador';
@@ -8760,6 +8821,8 @@
                 const isClipSf = account === 'tarjeta_sf';
                 const clip = isClipSf ? clipTarjetaSfBreakdown(p.amount) : null;
                 const credited = clip ? clip.net : roundMoney(p.amount);
+                const coveredByBank = account === 'banco' &&
+                    claimBankDepositForSale(ledgerDepositPool, sale, p.amount);
                 rows.push({
                     id: (sale.id || 'sale') + '-' + p.method + '-' + idx,
                     createdAt: sale.createdAt,
@@ -8769,11 +8832,13 @@
                     source: 'pos',
                     note: folio + ' · ' + client + ' · ' + payLabel(p.method) +
                         (billing === 'facturado' ? ' facturado' : ' s/factura') +
-                        (clip ? ' · neto Clip (' + money(clip.gross) + ' − ' + money(clip.fee) + ')' : ''),
+                        (clip ? ' · neto Clip (' + money(clip.gross) + ' − ' + money(clip.fee) + ')' : '') +
+                        (coveredByBank ? ' · en extracto Banregio' : ''),
                     reference: sale.folio || '',
                     amount: credited,
-                    signed: credited,
-                    ingreso: credited,
+                    // Ya está en el extracto: se lista, pero no suma otra vez al corrido.
+                    signed: coveredByBank ? 0 : credited,
+                    ingreso: coveredByBank ? 0 : credited,
                     gasto: 0,
                     city: saleCity(sale),
                     locked: true,
