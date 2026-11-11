@@ -6828,6 +6828,33 @@
             margin-bottom: 14px;
         }
         .pd-sales-chart-panel { margin-bottom: 16px; }
+        .pd-stock-movements {
+            margin: 4px 0 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .pd-stock-movements .pd-stock-mov-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .pd-stock-movements .pd-stock-mov-head .page-sub { margin: 0; }
+        .pd-stock-movements .pd-stock-mov-balance {
+            font-size: 12px;
+            color: var(--muted);
+            text-align: right;
+            white-space: nowrap;
+        }
+        .pd-stock-movements .pd-stock-mov-balance strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+        .pd-stock-movements .materials-movements-list {
+            max-height: 420px;
+            overflow: auto;
+        }
         .pd-sales-clients .cortes-row {
             display: flex;
             justify-content: space-between;
@@ -18368,6 +18395,38 @@
         if (isNaN(d.getTime())) return '—';
         return d.toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' });
     }
+    function finishedMovementRowHtml(row, opts) {
+        opts = opts || {};
+        const kindClass = row.kind === 'salida' ? 'is-salida' : 'is-entrada';
+        const kindLabel = row.kind === 'salida' ? 'Salida' : 'Entrada';
+        const reason = finishedMovReasonLabel(row.reason, row.kind);
+        const sign = row.kind === 'salida' ? '−' : '+';
+        const refBits = [];
+        if (row.ref && row.ref.type === 'lot' && row.ref.id) refBits.push('Lote ' + row.ref.id);
+        if (row.ref && row.ref.type === 'sale' && (row.ref.folio || row.ref.id)) {
+            refBits.push(row.ref.folio || row.ref.id);
+        }
+        const title = opts.hideProductName
+            ? reason
+            : (row.name || row.slug);
+        const metaLead = opts.hideProductName
+            ? (finishedMovFormatAt(row.createdAt) + ' · ' + invCityLabel(row.city))
+            : (reason + ' · ' + finishedMovFormatAt(row.createdAt) + ' · ' + invCityLabel(row.city));
+        return '<article class="mp-desk-row">' +
+            '<div class="mp-desk-main">' +
+            '<div class="mp-desk-title"><span class="mp-desk-kind ' + kindClass + '">' + kindLabel + '</span>' +
+            esc(title) + '</div>' +
+            '<div class="mp-desk-meta">' + esc(metaLead) +
+            (refBits.length ? (' · ' + esc(refBits.join(' · '))) : '') +
+            (row.userName ? (' · ' + esc(row.userName)) : '') +
+            '</div>' +
+            (row.note ? ('<div class="mp-desk-meta">' + esc(row.note) + '</div>') : '') +
+            '</div>' +
+            '<div class="mp-desk-side">' +
+            '<div class="' + (row.kind === 'salida' ? 'mp-pay-credito' : 'mp-pay-ok') + '">' +
+            sign + fmtStockQty(row.qty) + '</div>' +
+            '</div></article>';
+    }
     function renderFinishedMovementsList() {
         const host = document.getElementById('finishedMovementsList');
         const sub = document.getElementById('finishedMovementsSub');
@@ -18394,31 +18453,57 @@
             return;
         }
         host.innerHTML = rows.slice(0, 200).map(function (row) {
-            const kindClass = row.kind === 'salida' ? 'is-salida' : 'is-entrada';
-            const kindLabel = row.kind === 'salida' ? 'Salida' : 'Entrada';
-            const reason = finishedMovReasonLabel(row.reason, row.kind);
-            const sign = row.kind === 'salida' ? '−' : '+';
-            const refBits = [];
-            if (row.ref && row.ref.type === 'lot' && row.ref.id) refBits.push('Lote ' + row.ref.id);
-            if (row.ref && row.ref.type === 'sale' && (row.ref.folio || row.ref.id)) {
-                refBits.push(row.ref.folio || row.ref.id);
-            }
-            return '<article class="mp-desk-row">' +
-                '<div class="mp-desk-main">' +
-                '<div class="mp-desk-title"><span class="mp-desk-kind ' + kindClass + '">' + kindLabel + '</span>' +
-                esc(row.name || row.slug) + '</div>' +
-                '<div class="mp-desk-meta">' + esc(reason) + ' · ' + esc(finishedMovFormatAt(row.createdAt)) +
-                ' · ' + esc(invCityLabel(row.city)) +
-                (refBits.length ? (' · ' + esc(refBits.join(' · '))) : '') +
-                (row.userName ? (' · ' + esc(row.userName)) : '') +
-                '</div>' +
-                (row.note ? ('<div class="mp-desk-meta">' + esc(row.note) + '</div>') : '') +
-                '</div>' +
-                '<div class="mp-desk-side">' +
-                '<div class="' + (row.kind === 'salida' ? 'mp-pay-credito' : 'mp-pay-ok') + '">' +
-                sign + fmtStockQty(row.qty) + '</div>' +
-                '</div></article>';
+            return finishedMovementRowHtml(row);
         }).join('');
+    }
+    function renderProductStockMovements(slug) {
+        const host = document.getElementById('pdStockMovements');
+        if (!host) return;
+        if (!slug) {
+            host.innerHTML = '';
+            return;
+        }
+        hydrateFinishedMovementsFromLocal();
+        hydrateFinishedFromLocal();
+        const city = activeProductsCity();
+        const rows = finishedMovements.filter(function (row) {
+            if (!row || row.deleted || row.slug !== slug) return false;
+            if (city === 'all') return true;
+            return normalizeInvCity(row.city) === city;
+        });
+        let inQty = 0;
+        let outQty = 0;
+        rows.forEach(function (row) {
+            const q = Math.abs(Number(row.qty) || 0);
+            if (row.kind === 'salida') outQty += q;
+            else inQty += q;
+        });
+        const fin = finishedStock[slug];
+        const stockNow = fin
+            ? finishedStockInCity(fin, city === 'all' ? 'all' : city)
+            : 0;
+        const cityNote = city === 'all' ? 'todas las ciudades' : invCityLabel(city);
+        host.innerHTML =
+            '<div class="pd-stock-mov-head">' +
+            '<div>' +
+            '<p class="pd-section-label">Historial de entradas y salidas</p>' +
+            '<p class="page-sub">Cómo llegó al inventario actual · ' + esc(cityNote) + '</p>' +
+            '</div>' +
+            '<div class="pd-stock-mov-balance">' +
+            'Stock actual <strong>' + esc(fmtStockQty(stockNow)) + '</strong>' +
+            (rows.length
+                ? ('<div>+' + esc(fmtStockQty(inQty)) + ' / −' + esc(fmtStockQty(outQty)) + '</div>')
+                : '') +
+            '</div></div>' +
+            '<div class="materials-movements-list">' +
+            (rows.length
+                ? rows.slice(0, 120).map(function (row) {
+                    return finishedMovementRowHtml(row, { hideProductName: true });
+                }).join('')
+                : '<div class="empty">Aún no hay movimientos registrados para este producto' +
+                    (city === 'all' ? '' : (' en ' + esc(invCityLabel(city)))) +
+                    '. Las próximas producciones, ventas y ajustes manuales aparecerán aquí.</div>') +
+            '</div>';
     }
 
     function renderProductFamiliesList() {
@@ -20276,6 +20361,9 @@
         if (typeof renderProductsInventoryChart === 'function') renderProductsInventoryChart();
         if (typeof renderFinished === 'function') renderFinished();
         if (typeof renderFinishedMovementsList === 'function') renderFinishedMovementsList();
+        if (hubProductSlug && typeof renderProductStockMovements === 'function') {
+            renderProductStockMovements(hubProductSlug);
+        }
     }
     function setMaterialsCityFilter(next) {
         if (next === 'all') materialsCityFilter = 'all';
@@ -20293,6 +20381,9 @@
         renderFinished();
         if (typeof renderProductsInventoryChart === 'function') renderProductsInventoryChart();
         if (typeof renderFinishedMovementsList === 'function') renderFinishedMovementsList();
+        if (hubProductSlug && typeof renderProductStockMovements === 'function') {
+            renderProductStockMovements(hubProductSlug);
+        }
         updateProdPreview();
         renderProdFormulaChart();
         refreshLotTicketLists();
@@ -20935,6 +21026,7 @@
         },
         adjustFinishedMap: adjustFinishedMap,
         recordFinishedMovement: pushFinishedMovement,
+        renderProductStockMovements: renderProductStockMovements,
         refreshStockViews: function () {
             if (typeof refreshStockViews === 'function') refreshStockViews();
             else {

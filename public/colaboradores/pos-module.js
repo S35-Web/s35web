@@ -11492,7 +11492,12 @@
                 '<div class="pd-sales-empty">' +
                 '<p class="empty-title">Sin ventas registradas</p>' +
                 '<p class="muted">Aún no hay tickets del POS con este producto.</p>' +
-                '</div></div>';
+                '</div>' +
+                '<div id="pdStockMovements" class="pd-stock-movements"></div>' +
+                '</div>';
+            if (window.S35PanelAPI && typeof window.S35PanelAPI.renderProductStockMovements === 'function') {
+                window.S35PanelAPI.renderProductStockMovements(slug);
+            }
             return;
         }
 
@@ -11567,6 +11572,7 @@
             '</div></div>' +
             '<div class="cortes-chart" id="pdSalesChart" role="img" aria-label="Ritmo de ventas del producto"></div>' +
             '</div>' +
+            '<div id="pdStockMovements" class="pd-stock-movements"></div>' +
             '<div class="pd-sales-clients">' +
             '<p class="pd-section-label">Principales clientes</p>' +
             '<div id="pdSalesClients">' +
@@ -11591,6 +11597,9 @@
             prevList: prevSeries,
             showUnits: true
         });
+        if (window.S35PanelAPI && typeof window.S35PanelAPI.renderProductStockMovements === 'function') {
+            window.S35PanelAPI.renderProductStockMovements(slug);
+        }
     }
 
     // —— Cobranza (notas por cobrar) ——
