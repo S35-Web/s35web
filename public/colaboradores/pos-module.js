@@ -4563,6 +4563,27 @@
             return n + tesoreriaSignedAmount(m);
         }, 0);
     }
+    /** Último saldo del extracto Banregio (fuente de verdad de la cuenta). */
+    function latestBanregioStatementSaldo(cityFilter) {
+        const city = cityFilter == null ? dineroCityFilter : cityFilter;
+        let best = null;
+        let bestKey = '';
+        filterTesoreriaMovsByCity(tesoreriaMovs, city).forEach(function (m) {
+            if (!m || m.deleted || m.account !== 'banco') return;
+            if (m.source !== 'banorte-csv' && m.type !== 'banco_csv' && !m.ledgerOnly) return;
+            if (m.bankSaldo == null || m.type === 'apertura') return;
+            const key = banorteCsvSortKey(m);
+            if (!best || key > bestKey) {
+                best = m;
+                bestKey = key;
+            }
+        });
+        if (best) return roundMoney(best.bankSaldo);
+        if (TESORERIA_BANK_META && TESORERIA_BANK_META.closing != null) {
+            return roundMoney(TESORERIA_BANK_META.closing);
+        }
+        return null;
+    }
     function computeDineroAccounts(cityFilter) {
         const city = cityFilter == null ? dineroCityFilter : cityFilter;
         const list = filterSalesByCity(sales, city).filter(function (sale) {
@@ -4572,7 +4593,8 @@
         TESORERIA_ACCOUNTS.forEach(function (acc) {
             buckets[acc.id] = {
                 tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0,
-                tarjetaFact: 0, tarjetaSf: 0, tarjetaSfGross: 0, clipFees: 0, extracto: 0
+                tarjetaFact: 0, tarjetaSf: 0, tarjetaSfGross: 0, clipFees: 0,
+                extracto: 0, bankSaldo: null
             };
         });
         const statement = filterTesoreriaMovsByCity(tesoreriaMovs, city).filter(isPostOpeningBankStatement);
@@ -4613,10 +4635,25 @@
         TESORERIA_ACCOUNTS.forEach(function (acc) {
             buckets[acc.id].apertura = tesoreriaOpeningAmount(movs, acc.id, city);
             buckets[acc.id].ajustes = roundMoney(sumTesoreriaAdjustments(movs, acc.id));
-            buckets[acc.id].total = roundMoney(
-                buckets[acc.id].apertura + buckets[acc.id].tickets - buckets[acc.id].gastos +
-                buckets[acc.id].ajustes + (buckets[acc.id].extracto || 0)
-            );
+            if (acc.id === 'banco') {
+                // Extracto Banregio = verdad. No sumar otra vez apertura/extracto/ajustes
+                // de compras o retiros que ya vienen en el estado de cuenta.
+                const live = latestBanregioStatementSaldo(city);
+                buckets[acc.id].bankSaldo = live;
+                if (live != null) {
+                    buckets[acc.id].total = roundMoney(live + buckets[acc.id].tickets);
+                } else {
+                    buckets[acc.id].total = roundMoney(
+                        buckets[acc.id].apertura + buckets[acc.id].tickets +
+                        buckets[acc.id].ajustes + (buckets[acc.id].extracto || 0)
+                    );
+                }
+            } else {
+                buckets[acc.id].total = roundMoney(
+                    buckets[acc.id].apertura + buckets[acc.id].tickets - buckets[acc.id].gastos +
+                    buckets[acc.id].ajustes + (buckets[acc.id].extracto || 0)
+                );
+            }
         });
         return buckets;
     }
@@ -8687,13 +8724,20 @@
         }
         const bankLines = document.getElementById('dineroBancoLines');
         if (bankLines) {
-            // Visible: resumen del CSV Banregio del mes. Interno (apertura/extracto/matching) sigue en computeDineroAccounts.
             const mesCsv = computeBancoMesCsvSummary(dineroCityFilter);
-            bankLines.innerHTML = dineroLinesHtml([
+            const live = acc.banco.bankSaldo;
+            const rows = [
                 { label: 'Saldo inicio de mes', amount: mesCsv.inicio },
                 { label: 'Cargos del mes', amount: mesCsv.cargos, out: true },
                 { label: 'Depósitos del mes', amount: mesCsv.depositos }
-            ]);
+            ];
+            if (live != null) {
+                rows.push({ label: 'Saldo extracto Banregio', amount: live });
+            }
+            if (acc.banco.tickets) {
+                rows.push({ label: 'Pendiente por liquidar', amount: acc.banco.tickets });
+            }
+            bankLines.innerHTML = dineroLinesHtml(rows);
         }
         const cardLines = document.getElementById('dineroTarjetaSfLines');
         if (cardLines) {
