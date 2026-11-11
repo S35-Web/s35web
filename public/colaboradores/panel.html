@@ -6833,23 +6833,58 @@
             padding-top: 16px;
             border-top: 1px solid var(--border);
         }
-        .pd-stock-movements .pd-stock-mov-head {
+        .pd-stock-movements .pd-stock-mov-toggle {
+            width: 100%;
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
             gap: 12px;
-            margin-bottom: 10px;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            text-align: left;
+            cursor: pointer;
         }
-        .pd-stock-movements .pd-stock-mov-head .page-sub { margin: 0; }
+        .pd-stock-movements .pd-stock-mov-toggle:focus-visible {
+            outline: 2px solid var(--accent, #171717);
+            outline-offset: 3px;
+            border-radius: 6px;
+        }
+        .pd-stock-movements .pd-stock-mov-toggle-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            min-width: 0;
+        }
+        .pd-stock-movements .pd-stock-mov-chevron {
+            margin-top: 3px;
+            font-size: 12px;
+            color: var(--muted);
+            transition: transform .15s ease;
+            flex: 0 0 auto;
+        }
+        .pd-stock-movements.is-open .pd-stock-mov-chevron {
+            transform: rotate(90deg);
+        }
+        .pd-stock-movements .pd-stock-mov-copy .page-sub { margin: 0; }
         .pd-stock-movements .pd-stock-mov-balance {
             font-size: 12px;
             color: var(--muted);
             text-align: right;
             white-space: nowrap;
+            flex: 0 0 auto;
         }
         .pd-stock-movements .pd-stock-mov-balance strong {
             color: var(--text);
             font-weight: 600;
+        }
+        .pd-stock-movements .pd-stock-mov-body {
+            margin-top: 12px;
+        }
+        .pd-stock-movements:not(.is-open) .pd-stock-mov-body {
+            display: none;
         }
         .pd-stock-movements .materials-movements-list {
             max-height: 420px;
@@ -11901,6 +11936,9 @@
     const FINISHED_MOV_KEY = 's35_finished_movements_v1';
     let finishedMovements = [];
     let productsMovDeskTab = 'registro';
+    let pdStockMovementsOpen = false;
+    let pdStockMovementsSlug = null;
+    let pdStockMovementsPeriod = null;
     function finishedStockItems(raw) {
         let current = raw;
         if (typeof current === 'string') {
@@ -18456,20 +18494,67 @@
             return finishedMovementRowHtml(row);
         }).join('');
     }
-    function renderProductStockMovements(slug) {
+    function resolveProductStockMovementsPeriod(opts) {
+        if (opts && typeof opts === 'object') {
+            pdStockMovementsPeriod = {
+                period: opts.period || 'historial',
+                offset: Number(opts.offset) || 0,
+                start: opts.start || null,
+                end: opts.end || null,
+                label: opts.label || ''
+            };
+            return pdStockMovementsPeriod;
+        }
+        if (window.S35PosModule && typeof window.S35PosModule.getProductStockMovementsPeriod === 'function') {
+            const fromPos = window.S35PosModule.getProductStockMovementsPeriod();
+            if (fromPos) {
+                pdStockMovementsPeriod = {
+                    period: fromPos.period || 'historial',
+                    offset: Number(fromPos.offset) || 0,
+                    start: fromPos.start || null,
+                    end: fromPos.end || null,
+                    label: fromPos.label || ''
+                };
+                return pdStockMovementsPeriod;
+            }
+        }
+        return pdStockMovementsPeriod || {
+            period: 'historial',
+            offset: 0,
+            start: null,
+            end: null,
+            label: 'Historial'
+        };
+    }
+    function movementInPeriod(row, periodOpts) {
+        if (!periodOpts || periodOpts.period === 'historial' || !periodOpts.start || !periodOpts.end) return true;
+        const t = Date.parse(row && row.createdAt);
+        if (!isFinite(t)) return false;
+        const startMs = periodOpts.start instanceof Date ? periodOpts.start.getTime() : Date.parse(periodOpts.start);
+        const endMs = periodOpts.end instanceof Date ? periodOpts.end.getTime() : Date.parse(periodOpts.end);
+        if (!isFinite(startMs) || !isFinite(endMs)) return true;
+        return t >= startMs && t < endMs;
+    }
+    function renderProductStockMovements(slug, opts) {
         const host = document.getElementById('pdStockMovements');
         if (!host) return;
         if (!slug) {
             host.innerHTML = '';
+            pdStockMovementsSlug = null;
             return;
         }
+        if (pdStockMovementsSlug !== slug) {
+            pdStockMovementsSlug = slug;
+            pdStockMovementsOpen = false;
+        }
+        const periodOpts = resolveProductStockMovementsPeriod(opts);
         hydrateFinishedMovementsFromLocal();
         hydrateFinishedFromLocal();
         const city = activeProductsCity();
         const rows = finishedMovements.filter(function (row) {
             if (!row || row.deleted || row.slug !== slug) return false;
-            if (city === 'all') return true;
-            return normalizeInvCity(row.city) === city;
+            if (city !== 'all' && normalizeInvCity(row.city) !== city) return false;
+            return movementInPeriod(row, periodOpts);
         });
         let inQty = 0;
         let outQty = 0;
@@ -18483,27 +18568,48 @@
             ? finishedStockInCity(fin, city === 'all' ? 'all' : city)
             : 0;
         const cityNote = city === 'all' ? 'todas las ciudades' : invCityLabel(city);
+        const periodNote = periodOpts.period === 'historial'
+            ? 'Historial'
+            : (periodOpts.label || 'Periodo');
+        const countBits = [];
+        if (rows.length) {
+            countBits.push(rows.length + (rows.length === 1 ? ' movimiento' : ' movimientos'));
+            countBits.push('+' + fmtStockQty(inQty) + ' / −' + fmtStockQty(outQty));
+        } else {
+            countBits.push('Sin movimientos en este periodo');
+        }
+        host.classList.toggle('is-open', !!pdStockMovementsOpen);
         host.innerHTML =
-            '<div class="pd-stock-mov-head">' +
-            '<div>' +
+            '<button type="button" class="pd-stock-mov-toggle" id="pdStockMovementsToggle" aria-expanded="' +
+            (pdStockMovementsOpen ? 'true' : 'false') + '" aria-controls="pdStockMovementsBody">' +
+            '<span class="pd-stock-mov-toggle-main">' +
+            '<i class="fa-solid fa-chevron-right pd-stock-mov-chevron" aria-hidden="true"></i>' +
+            '<span class="pd-stock-mov-copy">' +
             '<p class="pd-section-label">Historial de entradas y salidas</p>' +
-            '<p class="page-sub">Cómo llegó al inventario actual · ' + esc(cityNote) + '</p>' +
-            '</div>' +
-            '<div class="pd-stock-mov-balance">' +
+            '<p class="page-sub">' + esc(countBits.join(' · ')) + ' · ' + esc(periodNote) + ' · ' + esc(cityNote) + '</p>' +
+            '</span></span>' +
+            '<span class="pd-stock-mov-balance">' +
             'Stock actual <strong>' + esc(fmtStockQty(stockNow)) + '</strong>' +
-            (rows.length
-                ? ('<div>+' + esc(fmtStockQty(inQty)) + ' / −' + esc(fmtStockQty(outQty)) + '</div>')
-                : '') +
-            '</div></div>' +
+            '</span></button>' +
+            '<div class="pd-stock-mov-body" id="pdStockMovementsBody"' +
+            (pdStockMovementsOpen ? '' : ' hidden') + '>' +
             '<div class="materials-movements-list">' +
             (rows.length
                 ? rows.slice(0, 120).map(function (row) {
                     return finishedMovementRowHtml(row, { hideProductName: true });
                 }).join('')
-                : '<div class="empty">Aún no hay movimientos registrados para este producto' +
-                    (city === 'all' ? '' : (' en ' + esc(invCityLabel(city)))) +
-                    '. Las próximas producciones, ventas y ajustes manuales aparecerán aquí.</div>') +
-            '</div>';
+                : '<div class="empty">Sin movimientos de inventario en ' + esc(periodNote) +
+                    (city === 'all' ? '' : (' · ' + esc(invCityLabel(city)))) +
+                    '.</div>') +
+            '</div></div>';
+        const toggle = document.getElementById('pdStockMovementsToggle');
+        if (toggle && !toggle._s35Bound) {
+            toggle._s35Bound = true;
+            toggle.addEventListener('click', function () {
+                pdStockMovementsOpen = !pdStockMovementsOpen;
+                renderProductStockMovements(slug, pdStockMovementsPeriod);
+            });
+        }
     }
 
     function renderProductFamiliesList() {

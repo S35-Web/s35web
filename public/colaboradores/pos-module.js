@@ -11465,6 +11465,32 @@
         });
     }
 
+    function productStockMovementsPeriodOpts() {
+        const isHist = pdSalesPeriod === 'historial';
+        if (isHist) {
+            return {
+                period: 'historial',
+                offset: 0,
+                start: null,
+                end: null,
+                label: 'Historial'
+            };
+        }
+        const bounds = periodBounds(pdSalesPeriod, pdSalesOffset);
+        return {
+            period: pdSalesPeriod,
+            offset: pdSalesOffset,
+            start: bounds.start,
+            end: bounds.end,
+            label: formatPeriodLabel(pdSalesPeriod, bounds.start, bounds.end)
+        };
+    }
+    function paintProductStockMovements(slug) {
+        if (!slug) return;
+        if (window.S35PanelAPI && typeof window.S35PanelAPI.renderProductStockMovements === 'function') {
+            window.S35PanelAPI.renderProductStockMovements(slug, productStockMovementsPeriodOpts());
+        }
+    }
     function renderProductSalesAnalytics(slug) {
         const mount = document.getElementById('pdSalesAnalytics');
         if (!mount) return;
@@ -11495,9 +11521,7 @@
                 '</div>' +
                 '<div id="pdStockMovements" class="pd-stock-movements"></div>' +
                 '</div>';
-            if (window.S35PanelAPI && typeof window.S35PanelAPI.renderProductStockMovements === 'function') {
-                window.S35PanelAPI.renderProductStockMovements(slug);
-            }
+            paintProductStockMovements(slug);
             return;
         }
 
@@ -11597,9 +11621,7 @@
             prevList: prevSeries,
             showUnits: true
         });
-        if (window.S35PanelAPI && typeof window.S35PanelAPI.renderProductStockMovements === 'function') {
-            window.S35PanelAPI.renderProductStockMovements(slug);
-        }
+        paintProductStockMovements(slug);
     }
 
     // —— Cobranza (notas por cobrar) ——
@@ -12822,6 +12844,8 @@
             reloadSyncedFromStorage: reloadSyncedFromStorage,
             savePrices: function (opts) { return savePrices(opts || {}); },
             renderProductSalesAnalytics: renderProductSalesAnalytics,
+            getProductStockMovementsPeriod: productStockMovementsPeriodOpts,
+            paintProductStockMovements: paintProductStockMovements,
             renderProductsMovementsChart: renderProductsMovementsChart,
             renderCortes: renderCortes,
             renderDinero: renderDinero,
