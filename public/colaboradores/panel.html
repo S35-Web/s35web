@@ -12096,6 +12096,199 @@
         saveFinishedMovements(finishedMovements);
         return row;
     }
+    /** Rellena el ledger PT con ventas/lotes previos a la bitácora (idempotente). */
+    function ensureFinishedMovementsBackfill() {
+        hydrateFinishedMovementsFromLocal();
+        const existingIds = Object.create(null);
+        const coveredSale = Object.create(null);
+        const coveredLot = Object.create(null);
+        const coveredFf = Object.create(null);
+        finishedMovements.forEach(function (m) {
+            if (!m || !m.id || m.deleted) return;
+            existingIds[m.id] = true;
+            if (!m.ref || !m.slug) return;
+            if (m.ref.type === 'lot') {
+                coveredLot[String(m.ref.id) + '|' + m.slug] = true;
+            } else if (m.ref.type === 'sale') {
+                const saleKey = String(m.ref.id) + '|' + m.slug + '|' + String(m.reason || '');
+                coveredSale[saleKey] = true;
+                if (m.ref.fulfillmentId) {
+                    coveredFf[String(m.ref.id) + '|' + String(m.ref.fulfillmentId) + '|' + m.slug] = true;
+                }
+            }
+        });
+
+        function makeRow(partial) {
+            const qty = Math.abs(Number(partial.qty) || 0);
+            if (!partial.slug || !(qty > 0) || existingIds[partial.id]) return null;
+            let city = normalizeInvCity(partial.city || INV_DEFAULT_CITY);
+            if (city === 'all') city = INV_DEFAULT_CITY;
+            existingIds[partial.id] = true;
+            return {
+                id: partial.id,
+                createdAt: partial.createdAt || new Date().toISOString(),
+                kind: partial.kind === 'salida' ? 'salida' : 'entrada',
+                reason: partial.reason || 'ajuste',
+                city: city,
+                slug: partial.slug,
+                name: partial.name || finishedProductName(partial.slug),
+                qty: qty,
+                note: String(partial.note || '').trim(),
+                ref: partial.ref || null,
+                userName: partial.userName || '',
+                userId: partial.userId || '',
+                editedAt: new Date().toISOString(),
+                backfill: true
+            };
+        }
+
+        const added = [];
+
+        // Entradas por lotes confirmados
+        try {
+            (typeof loadLotTickets === 'function' ? loadLotTickets() : []).forEach(function (t) {
+                if (!t || t.status !== 'confirmed' || !t.product) return;
+                const bags = Number(t.bagsOut) || 0;
+                if (!(bags > 0)) return;
+                const slug = String(t.product);
+                const lotKey = String(t.id) + '|' + slug;
+                if (coveredLot[lotKey]) return;
+                const id = 'fm-bf-lot-' + String(t.id) + '-' + slug;
+                const row = makeRow({
+                    id: id,
+                    createdAt: t.confirmedAt || t.editedAt || t.createdAt,
+                    kind: 'entrada',
+                    reason: 'produccion',
+                    city: t.city || INV_DEFAULT_CITY,
+                    slug: slug,
+                    name: t.name || finishedProductName(slug),
+                    qty: bags,
+                    note: 'Ingreso lote ' + t.id + ' (historial)',
+                    ref: { type: 'lot', id: t.id }
+                });
+                if (row) {
+                    coveredLot[lotKey] = true;
+                    added.push(row);
+                }
+            });
+        } catch (_) {}
+
+        // Salidas por ventas vivas / surtidos de precompra (no histórico importado)
+        let saleEdits = {};
+        try {
+            const er = JSON.parse(localStorage.getItem('s35_sale_edits_v1') || 'null');
+            if (er && er.byId && typeof er.byId === 'object') saleEdits = er.byId;
+            else if (er && er.items && typeof er.items === 'object' && !Array.isArray(er.items)) saleEdits = er.items;
+        } catch (_) {}
+        let salesRaw = [];
+        try {
+            const sr = JSON.parse(localStorage.getItem('s35_pos_sales') || 'null');
+            if (sr && Array.isArray(sr.items)) salesRaw = sr.items;
+        } catch (_) {}
+
+        salesRaw.forEach(function (sale) {
+            if (!sale || !sale.id || sale.deleted) return;
+            if (saleEdits[sale.id] && saleEdits[sale.id].deleted) return;
+            if (sale.user === 'import-historico') return;
+            const src = sale.meta && sale.meta.source;
+            if (src === 'old-panel') return;
+
+            const meta = sale.meta || {};
+            const isPrecompra = meta.kind === 'precompra';
+            const stockCity = meta.stockCity || meta.inventoryCity || sale.city || INV_DEFAULT_CITY;
+            const folio = sale.folio || sale.id;
+
+            if (isPrecompra) {
+                const ffs = Array.isArray(meta.fulfillments) ? meta.fulfillments : [];
+                ffs.forEach(function (ff) {
+                    if (!ff || !ff.id) return;
+                    const ffCity = ff.stockCity || stockCity;
+                    const ffAt = ff.createdAt || sale.createdAt;
+                    (ff.lines || []).forEach(function (line) {
+                        const slug = line && String(line.product || '').trim();
+                        const qty = Number(line && line.qty) || 0;
+                        if (!slug || !(qty > 0)) return;
+                        const ffKey = String(sale.id) + '|' + String(ff.id) + '|' + slug;
+                        if (coveredFf[ffKey]) return;
+                        // Live logging no guarda fulfillmentId: si ya hay salida precompra
+                        // de esa venta+slug, asumimos que el ledger ya está cubierto.
+                        const saleKey = String(sale.id) + '|' + slug + '|precompra';
+                        if (coveredSale[saleKey]) return;
+                        const id = 'fm-bf-ff-' + String(sale.id) + '-' + String(ff.id) + '-' + slug;
+                        const row = makeRow({
+                            id: id,
+                            createdAt: ffAt,
+                            kind: 'salida',
+                            reason: 'precompra',
+                            city: ffCity,
+                            slug: slug,
+                            qty: qty,
+                            note: 'Surtido precompra ' + folio + ' (historial)',
+                            ref: { type: 'sale', id: sale.id, folio: folio, fulfillmentId: ff.id },
+                            userName: ff.userName || '',
+                            userId: ff.userId || ''
+                        });
+                        if (row) {
+                            coveredFf[ffKey] = true;
+                            added.push(row);
+                        }
+                    });
+                });
+                return;
+            }
+
+            if (meta.skipInventory && !meta.inventoryApplied) return;
+
+            const qtyBySlug = {};
+            const nameBySlug = {};
+            (sale.items || []).forEach(function (it) {
+                const slug = it && String(it.product || '').trim();
+                const qty = Number(it && it.qty) || 0;
+                if (!slug || !(qty > 0)) return;
+                qtyBySlug[slug] = (qtyBySlug[slug] || 0) + qty;
+                if (it.name) nameBySlug[slug] = it.name;
+            });
+            Object.keys(qtyBySlug).forEach(function (slug) {
+                const saleKey = String(sale.id) + '|' + slug + '|venta';
+                if (coveredSale[saleKey]) return;
+                const id = 'fm-bf-sale-' + String(sale.id) + '-' + slug;
+                const row = makeRow({
+                    id: id,
+                    createdAt: sale.createdAt || sale.editedAt,
+                    kind: 'salida',
+                    reason: 'venta',
+                    city: stockCity,
+                    slug: slug,
+                    name: nameBySlug[slug] || finishedProductName(slug),
+                    qty: qtyBySlug[slug],
+                    note: 'Venta ' + folio + ' (historial)',
+                    ref: { type: 'sale', id: sale.id, folio: folio },
+                    userName: sale.userName || (sale.user && sale.user.name) || '',
+                    userId: sale.userId || (sale.user && sale.user.id) || ''
+                });
+                if (row) {
+                    coveredSale[saleKey] = true;
+                    added.push(row);
+                }
+            });
+        });
+
+        if (!added.length) return 0;
+        finishedMovements = added.concat(finishedMovements);
+        finishedMovements.sort(function (a, b) {
+            return Date.parse(b.createdAt || 0) - Date.parse(a.createdAt || 0);
+        });
+        if (finishedMovements.length > 5000) finishedMovements = finishedMovements.slice(0, 5000);
+        saveFinishedMovements(finishedMovements);
+        if (window.S35PanelSync && typeof window.S35PanelSync.flushPush === 'function') {
+            try { window.S35PanelSync.flushPush(); } catch (_) {}
+        }
+        if (typeof renderFinishedMovementsList === 'function') renderFinishedMovementsList();
+        if (pdStockMovementsSlug && typeof renderProductStockMovements === 'function') {
+            renderProductStockMovements(pdStockMovementsSlug);
+        }
+        return added.length;
+    }
     function adjustFinishedMap(deltas, cityOrOpts) {
         hydrateFinishedFromLocal();
         let city = activeProductsCity();
@@ -21088,6 +21281,9 @@
             hydrateFinishedMovementsFromLocal();
             if (typeof renderFinishedMovementsList === 'function') renderFinishedMovementsList();
         }
+        if ((touchPos || touchLots || touchFinishedMov) && typeof ensureFinishedMovementsBackfill === 'function') {
+            ensureFinishedMovementsBackfill();
+        }
         if (touchFormulas && typeof hydrateFormulasFromLocal === 'function') hydrateFormulasFromLocal();
         if (touchCatalog) applyProductCatalog();
         if ((touchPlant || touchFinished || touchCatalog) && typeof refreshStockViews === 'function') {
@@ -21141,6 +21337,7 @@
             }
         },
         onPosReady: function () {
+            if (typeof ensureFinishedMovementsBackfill === 'function') ensureFinishedMovementsBackfill();
             if (typeof renderProductHubChips === 'function') renderProductHubChips();
             if (typeof renderProductHubList === 'function') renderProductHubList();
             if (typeof renderProductsInventoryChart === 'function') renderProductsInventoryChart();
@@ -21149,6 +21346,9 @@
             }
             if (hubProductSlug && window.S35PosModule && window.S35PosModule.renderProductSalesAnalytics) {
                 window.S35PosModule.renderProductSalesAnalytics(hubProductSlug);
+            }
+            if (hubProductSlug && typeof renderProductStockMovements === 'function') {
+                renderProductStockMovements(hubProductSlug);
             }
             refreshDashboardRadar();
             if (typeof window.__s35CopilotBoot === 'function') window.__s35CopilotBoot();
