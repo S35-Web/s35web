@@ -31,7 +31,7 @@
         holder: 'PRODUCTOS S35 S.A. DE C.V.',
         city: 'culiacan',
         opening: 1838.47,
-        closing: 233042.01
+        closing: 226545.87
     };
     const SALE_EDITS_KEY = 's35_sale_edits_v1';
     const CLIENTS_KEY = 's35_pos_clients';
@@ -4203,6 +4203,8 @@
         if (m.ledgerOnly || m.source === 'banorte-csv' || m.type === 'banco_csv' || m.type === 'apertura') {
             return false;
         }
+        // Ya aparece en el extracto Banregio: no sumar otra vez al saldo.
+        if (m.statementCovered) return false;
         return true;
     }
     /** Renglón del estado de cuenta Banorte posterior al corte. No es un ajuste manual. */
@@ -4349,6 +4351,65 @@
             locked: true
         };
     }
+    /**
+     * Marca retiros/depósitos manuales (o de compras MP) que ya están en el extracto
+     * para no duplicar el efecto en el saldo de Transferencias.
+     */
+    function reconcileManualBancoWithStatement() {
+        const statement = (tesoreriaMovs || []).filter(isPostOpeningBankStatement);
+        if (!statement.length) return false;
+        const pool = {};
+        statement.forEach(function (m) {
+            const signed = tesoreriaSignedAmount(m);
+            if (!signed) return;
+            const day = tesoreriaDayKey(m.createdAt) || String(m.fecha || '');
+            if (!day) return;
+            const key = day + '|' + signed.toFixed(2);
+            if (!pool[key]) pool[key] = [];
+            pool[key].push(m.id);
+        });
+        let changed = false;
+        (tesoreriaMovs || []).forEach(function (m) {
+            if (!m || m.deleted || m.account !== 'banco') return;
+            if (m.source === 'banorte-csv' || m.type === 'banco_csv' || m.ledgerOnly || m.type === 'apertura') return;
+            if (m.statementCovered) return;
+            const signed = tesoreriaSignedAmount(m);
+            if (!signed) return;
+            const day0 = tesoreriaDayKey(m.createdAt);
+            const day1 = tesoreriaNextDayKey(m.createdAt);
+            const days = [day0, day1].filter(Boolean);
+            let matchId = null;
+            for (let i = 0; i < days.length && !matchId; i++) {
+                const exact = days[i] + '|' + signed.toFixed(2);
+                if (pool[exact] && pool[exact].length) {
+                    matchId = pool[exact].shift();
+                    break;
+                }
+            }
+            if (!matchId) {
+                const keys = Object.keys(pool);
+                for (let i = 0; i < days.length && !matchId; i++) {
+                    const prefix = days[i] + '|';
+                    for (let k = 0; k < keys.length; k++) {
+                        const key = keys[k];
+                        if (!pool[key] || !pool[key].length || key.indexOf(prefix) !== 0) continue;
+                        const poolAmt = Number(key.slice(prefix.length));
+                        if (!isFinite(poolAmt)) continue;
+                        if (Math.abs(poolAmt - signed) <= 0.05) {
+                            matchId = pool[key].shift();
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!matchId) return;
+            m.statementCovered = true;
+            m.statementMatchId = matchId;
+            m.editedAt = new Date().toISOString();
+            changed = true;
+        });
+        return changed;
+    }
     function applyTesoreriaSeeds(data) {
         let added = false;
         tesoreriaOpeningSeeds().forEach(function (mov) {
@@ -4358,6 +4419,7 @@
             const bank = Object.assign({}, TESORERIA_BANK_META, data.bank || {});
             // El CSV histórico puede venir etiquetado Banorte; el banco operativo es Banregio.
             bank.name = TESORERIA_BANK_META.name;
+            if (bank.closing != null) TESORERIA_BANK_META.closing = roundMoney(bank.closing);
             if (upsertTesoreriaSeed({
                 id: 'banorte-saldo-inicial',
                 createdAt: '2026-06-01T06:00:00.000Z',
@@ -4378,12 +4440,13 @@
                 if (mov && upsertTesoreriaSeed(mov)) added = true;
             });
         }
-        if (added) {
+        const reconciled = reconcileManualBancoWithStatement();
+        if (added || reconciled) {
             saveTesoreriaMovs();
             tesoreriaMovs = loadTesoreriaMovs();
             renderDinero();
         }
-        return added;
+        return added || reconciled;
     }
     function ensureTesoreriaSeeds() {
         if (!tesoreriaSeedsPromise) {
@@ -8661,7 +8724,10 @@
             if (!m) return;
             const locked = tesoreriaMovLocked(m);
             const isApertura = m.type === 'apertura';
-            const signed = isApertura ? 0 : tesoreriaSignedAmount(m);
+            const covered = !!m.statementCovered;
+            // Cubiertos por extracto: se listan, pero no mueven el saldo corrido.
+            const signed = (isApertura || covered) ? 0 : tesoreriaSignedAmount(m);
+            const note = (m.note || '') + (covered ? (m.note ? ' · ' : '') + 'cubierto por extracto' : '');
             rows.push({
                 id: m.id,
                 createdAt: m.createdAt,
@@ -8669,16 +8735,16 @@
                 account: m.account,
                 type: m.type,
                 source: m.source || '',
-                note: m.note || '',
+                note: note,
                 reference: m.reference || '',
                 amount: roundMoney(m.amount),
                 signed: signed,
-                ingreso: !isApertura && signed > 0 ? signed : 0,
-                gasto: !isApertura && signed < 0 ? -signed : 0,
+                ingreso: !isApertura && !covered && signed > 0 ? signed : 0,
+                gasto: !isApertura && !covered && signed < 0 ? -signed : 0,
                 bankSaldo: m.bankSaldo,
                 fecha: m.fecha || '',
                 city: tesoreriaMovCity(m),
-                locked: locked,
+                locked: locked || covered,
                 setBalance: isApertura ? roundMoney(m.amount) : null
             });
         });
