@@ -982,320 +982,358 @@ document.addEventListener('DOMContentLoaded', function() {
 
 window.addEventListener('scroll', optimizedScroll);
 
-// Interactive Cards Stack
+// Interactive Cards Stack — infinite slide-by-slide carousel
 class CardsStack {
     constructor() {
         this.container = document.getElementById('cardsContainer');
         this.stack = document.getElementById('cardsStack');
-        this.cards = document.querySelectorAll('.card-item');
-        
-        if (this.container && this.stack && this.cards.length > 0) {
+        this.cycle = 0;
+        this.cards = [];
+        this.wrapping = false;
+        this.pointer = null;
+        this.ignoreClick = false;
+        this.scrollEndTimer = null;
+        this.edgeRaf = 0;
+        this.edgeDir = 0;
+
+        if (this.container && this.stack) {
             this.init();
         }
     }
 
     init() {
-        console.log('Inicializando stack de cards...');
-        
-        this.setupCards();
-        this.setupScroll();
-        this.setupTouch();
-        this.setupAnimations();
-        this.centerFirstCard();
+        this.buildInfiniteTrack();
+        if (!this.cycle) return;
+
+        this.bindEvents();
+        this.jumpToIndex(this.cycle, false);
+        this.stack.classList.add('is-ready');
+        this.reapplyI18n();
     }
 
-    setupCards() {
-        // Configurar cada card individualmente
+    buildInfiniteTrack() {
+        const originals = Array.from(this.stack.querySelectorAll('.card-item'));
+        this.cycle = originals.length;
+        if (!this.cycle) return;
+
+        const beforeFrag = document.createDocumentFragment();
+        const afterFrag = document.createDocumentFragment();
+
+        originals.forEach((card) => {
+            const before = card.cloneNode(true);
+            const after = card.cloneNode(true);
+            before.setAttribute('aria-hidden', 'true');
+            after.setAttribute('aria-hidden', 'true');
+            beforeFrag.appendChild(before);
+            afterFrag.appendChild(after);
+        });
+
+        this.stack.insertBefore(beforeFrag, this.stack.firstChild);
+        this.stack.appendChild(afterFrag);
+        this.cards = Array.from(this.stack.querySelectorAll('.card-item'));
+    }
+
+    reapplyI18n() {
+        if (window.S35_I18N && typeof window.S35_I18N.setLanguage === 'function') {
+            window.S35_I18N.setLanguage(window.S35_I18N.getLanguage(), false);
+        }
+    }
+
+    bindEvents() {
+        this.stack.addEventListener('scroll', () => this.onScroll(), { passive: true });
+        this.stack.addEventListener('scrollend', () => this.wrapIfNeeded());
+
+        this.stack.addEventListener('pointerdown', (e) => this.onPointerDown(e));
+        this.stack.addEventListener('pointermove', (e) => this.onPointerMove(e), { passive: false });
+        this.stack.addEventListener('pointerup', (e) => this.onPointerUp(e));
+        this.stack.addEventListener('pointercancel', (e) => this.onPointerUp(e));
+
+        this.stack.addEventListener('click', (e) => this.onClick(e));
+
+        this.stack.addEventListener('keydown', (e) => this.onKeyDown(e));
+        this.stack.setAttribute('tabindex', '0');
+        this.stack.setAttribute('role', 'region');
+        this.stack.setAttribute('aria-roledescription', 'carousel');
+
+        this.stack.addEventListener('mouseenter', () => this.startEdgeLoop());
+        this.stack.addEventListener('mouseleave', () => this.stopEdgeLoop());
+        this.stack.addEventListener('mousemove', (e) => this.onMouseMove(e));
+
+        window.addEventListener('resize', () => {
+            const idx = this.closestIndex();
+            this.jumpToIndex(idx, false);
+            this.wrapIfNeeded();
+        });
+
+        this.cards.forEach((card) => {
+            const img = card.querySelector('img');
+            if (img && !img.complete) {
+                img.addEventListener('load', () => {
+                    if (!this.pointer) this.wrapIfNeeded();
+                }, { once: true });
+            }
+        });
+    }
+
+    closestIndex() {
+        const center = this.stack.scrollLeft + this.stack.clientWidth / 2;
+        let best = 0;
+        let bestDist = Infinity;
         this.cards.forEach((card, index) => {
-            // Agregar delay escalonado para animación de entrada
-            card.style.animationDelay = `${index * 0.1}s`;
-            
-            // Configurar eventos de hover
-            card.addEventListener('mouseenter', () => {
-                this.highlightCard(card);
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                this.unhighlightCard(card);
-            });
-            
-            // Configurar click
-            card.addEventListener('click', () => {
-                this.selectCard(card);
-            });
-            
-            // Click para zoom en móvil
-            if (window.innerWidth <= 768) {
-                card.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.toggleZoom(card);
-                });
-                
-                // Agregar indicador visual de que es clickeable
-                card.style.cursor = 'pointer';
-                card.title = 'Toca para hacer zoom';
+            const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+            const dist = Math.abs(cardCenter - center);
+            if (dist < bestDist) {
+                bestDist = dist;
+                best = index;
             }
         });
+        return best;
     }
 
-    setupScroll() {
-        // Scroll con movimiento del mouse para desktop
-        if (window.innerWidth > 768) {
-            this.setupMouseScroll();
+    canonicalIndex(index) {
+        if (!this.cycle) return index;
+        return (index % this.cycle) + this.cycle;
+    }
+
+    scrollLeftForIndex(index) {
+        const card = this.cards[index];
+        if (!card) return 0;
+        return card.offsetLeft - (this.stack.clientWidth - card.offsetWidth) / 2;
+    }
+
+    jumpToIndex(index, smooth) {
+        const card = this.cards[index];
+        if (!card) return;
+        this.stack.style.scrollSnapType = 'none';
+        this.stack.style.scrollBehavior = smooth ? 'smooth' : 'auto';
+        this.stack.scrollTo({
+            left: this.scrollLeftForIndex(index),
+            behavior: smooth ? 'smooth' : 'auto'
+        });
+        if (!smooth) {
+            this.stack.style.scrollSnapType = 'x mandatory';
+        } else {
+            window.setTimeout(() => {
+                this.stack.style.scrollSnapType = 'x mandatory';
+                this.stack.style.scrollBehavior = 'auto';
+                this.wrapIfNeeded();
+            }, 380);
         }
     }
 
-    setupMouseScroll() {
-        let isScrolling = false;
-        let scrollDirection = 0;
-        const scrollSpeed = 2;
-        
-        this.stack.addEventListener('mouseenter', () => {
-            isScrolling = true;
-        });
-        
-        this.stack.addEventListener('mouseleave', () => {
-            isScrolling = false;
-        });
-        
-        this.stack.addEventListener('mousemove', (e) => {
-            if (!isScrolling) return;
-            
-            const rect = this.stack.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const containerWidth = rect.width;
-            
-            // Determine scroll direction based on mouse position
-            if (mouseX < containerWidth * 0.2) {
-                scrollDirection = -1; // Scroll left
-            } else if (mouseX > containerWidth * 0.8) {
-                scrollDirection = 1; // Scroll right
-            } else {
-                scrollDirection = 0; // No scroll
-            }
-        });
-        
-        // Smooth scrolling animation
-        const scroll = () => {
-            if (isScrolling && scrollDirection !== 0) {
-                this.stack.scrollLeft += scrollDirection * scrollSpeed;
-                requestAnimationFrame(scroll);
-            }
+    goBy(delta) {
+        if (this.stack.querySelector('.card-item.zoomed')) return;
+        this.goFrom(this.closestIndex(), delta);
+    }
+
+    goFrom(startIndex, delta) {
+        const next = this.canonicalIndex(startIndex) + delta;
+        if (next < 0 || next >= this.cards.length) return;
+        this.jumpToIndex(next, true);
+    }
+
+    wrapIfNeeded() {
+        if (this.wrapping || !this.cycle) return;
+        if (this.pointer && this.pointer.dragging) return;
+        const index = this.closestIndex();
+        const target = this.canonicalIndex(index);
+        if (target === index) return;
+
+        const zoomed = this.stack.querySelector('.card-item.zoomed');
+        this.wrapping = true;
+        this.stack.style.scrollSnapType = 'none';
+        this.stack.style.scrollBehavior = 'auto';
+        this.stack.scrollTo({ left: this.scrollLeftForIndex(target), behavior: 'auto' });
+        this.stack.style.scrollSnapType = 'x mandatory';
+        if (zoomed && this.cards[target] && zoomed !== this.cards[target]) {
+            this.moveZoom(zoomed, this.cards[target]);
+        }
+        this.wrapping = false;
+    }
+
+    onScroll() {
+        if (this.wrapping) return;
+        window.clearTimeout(this.scrollEndTimer);
+        this.scrollEndTimer = window.setTimeout(() => this.wrapIfNeeded(), 80);
+    }
+
+    onPointerDown(e) {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        if (e.target.closest('.zoom-close-btn')) return;
+        this.pointer = {
+            id: e.pointerId,
+            startX: e.clientX,
+            startY: e.clientY,
+            lastX: e.clientX,
+            startScroll: this.stack.scrollLeft,
+            startIndex: this.closestIndex(),
+            moved: false,
+            dragging: false
         };
-        
-        requestAnimationFrame(scroll);
     }
 
-    setupTouch() {
-        // Touch gestures para móvil
-        if (window.innerWidth <= 768) {
-            this.setupTinderSwipe();
+    onPointerMove(e) {
+        if (!this.pointer || e.pointerId !== this.pointer.id) return;
+        const dx = e.clientX - this.pointer.startX;
+        const dy = e.clientY - this.pointer.startY;
+        if (!this.pointer.moved && Math.hypot(dx, dy) > 8) {
+            this.pointer.moved = true;
+        }
+        if (!this.pointer.dragging && this.pointer.moved && Math.abs(dx) > Math.abs(dy)) {
+            this.pointer.dragging = true;
+            this.clearZoom();
+            this.stack.style.scrollSnapType = 'none';
+            this.stack.style.scrollBehavior = 'auto';
+            try {
+                this.stack.setPointerCapture(e.pointerId);
+            } catch (err) {
+                /* ignore */
+            }
+        }
+        if (this.pointer.dragging) {
+            e.preventDefault();
+            this.stack.scrollLeft = this.pointer.startScroll - dx;
+            this.pointer.lastX = e.clientX;
         }
     }
 
-    setupTinderSwipe() {
-        // Configurar scroll horizontal nativo
+    onPointerUp(e) {
+        if (!this.pointer || e.pointerId !== this.pointer.id) return;
+        const dx = e.clientX - this.pointer.startX;
+        const dragging = this.pointer.dragging;
+        const startIndex = this.pointer.startIndex;
+        const cardWidth = this.cards[startIndex]?.offsetWidth || 280;
+        this.ignoreClick = dragging || this.pointer.moved;
+        this.pointer = null;
+
+        this.stack.style.scrollBehavior = 'auto';
+        this.stack.style.scrollSnapType = 'x mandatory';
+
+        if (!dragging) return;
+
+        const threshold = Math.min(80, cardWidth * 0.22);
+        if (dx <= -threshold) {
+            this.goFrom(startIndex, 1);
+        } else if (dx >= threshold) {
+            this.goFrom(startIndex, -1);
+        } else {
+            this.jumpToIndex(startIndex, true);
+        }
+    }
+
+    onClick(e) {
+        if (this.ignoreClick) {
+            this.ignoreClick = false;
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        const closeBtn = e.target.closest('.zoom-close-btn');
+        if (closeBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const card = closeBtn.closest('.card-item');
+            if (card) this.toggleZoom(card);
+            return;
+        }
+        const card = e.target.closest('.card-item');
+        if (!card || !this.stack.contains(card)) return;
+        if (window.innerWidth <= 768) {
+            e.preventDefault();
+            this.toggleZoom(card);
+        }
+    }
+
+    onKeyDown(e) {
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            this.goBy(1);
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            this.goBy(-1);
+        }
+    }
+
+    onMouseMove(e) {
+        if (window.innerWidth <= 768) return;
+        const rect = this.stack.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        if (x < rect.width * 0.12) {
+            this.edgeDir = -1;
+        } else if (x > rect.width * 0.88) {
+            this.edgeDir = 1;
+        } else {
+            this.edgeDir = 0;
+        }
+    }
+
+    startEdgeLoop() {
+        if (window.innerWidth <= 768) return;
+        const step = () => {
+            if (this.edgeDir !== 0 && !this.pointer) {
+                this.stack.scrollLeft += this.edgeDir * 2.2;
+                this.wrapIfNeeded();
+            }
+            this.edgeRaf = requestAnimationFrame(step);
+        };
+        cancelAnimationFrame(this.edgeRaf);
+        this.edgeRaf = requestAnimationFrame(step);
+    }
+
+    stopEdgeLoop() {
+        this.edgeDir = 0;
+        cancelAnimationFrame(this.edgeRaf);
+        this.edgeRaf = 0;
+        this.wrapIfNeeded();
+    }
+
+    clearZoom() {
+        this.cards.forEach((card) => {
+            if (card.classList.contains('zoomed')) {
+                card.classList.remove('zoomed');
+                this.removeCloseButton(card);
+            }
+        });
         this.stack.style.overflowX = 'auto';
         this.stack.style.overflowY = 'hidden';
-        this.stack.style.scrollBehavior = 'smooth';
-        this.stack.style.scrollbarWidth = 'none';
-        this.stack.style.msOverflowStyle = 'none';
         this.stack.style.scrollSnapType = 'x mandatory';
-        this.stack.style.webkitOverflowScrolling = 'touch';
-        
-        // Ocultar scrollbar en webkit
-        const style = document.createElement('style');
-        style.textContent = `
-            .cards-stack::-webkit-scrollbar {
-                display: none;
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // Configurar cada card para scroll horizontal
-        this.cards.forEach((card, index) => {
-            card.style.flexShrink = '0';
-            card.style.position = 'relative';
-            card.style.transform = 'none';
-            card.style.opacity = '1';
-            card.style.zIndex = '1';
-            card.style.scrollSnapAlign = 'center';
-            card.style.scrollSnapStop = 'always';
-            
-            // Remover todas las clases de estado
-            card.classList.remove('swiping', 'swiped-left', 'swiped-right', 'returning');
-        });
-        
-        // Configurar scroll suave entre cards
-        this.setupSmoothScrolling();
-        
-        console.log('Carrusel horizontal configurado para móvil');
-    }
-    
-    setupSmoothScrolling() {
-        let isScrolling = false;
-        let scrollTimeout;
-        
-        this.stack.addEventListener('scroll', () => {
-            if (isScrolling) return;
-            
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                // Calcular la card más cercana al centro
-                const containerWidth = this.stack.clientWidth;
-                const scrollLeft = this.stack.scrollLeft;
-                const center = scrollLeft + (containerWidth / 2);
-                
-                let closestCard = null;
-                let closestDistance = Infinity;
-                
-                this.cards.forEach((card) => {
-                    const cardRect = card.getBoundingClientRect();
-                    const cardCenter = cardRect.left + (cardRect.width / 2);
-                    const distance = Math.abs(cardCenter - center);
-                    
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        closestCard = card;
-                    }
-                });
-                
-                // Si hay una card cercana, centrarla suavemente
-                if (closestCard && closestDistance > 50) {
-                    isScrolling = true;
-                    const cardRect = closestCard.getBoundingClientRect();
-                    const containerRect = this.stack.getBoundingClientRect();
-                    const targetScroll = this.stack.scrollLeft + (cardRect.left - containerRect.left) - (containerWidth / 2) + (cardRect.width / 2);
-                    
-                    this.stack.scrollTo({
-                        left: targetScroll,
-                        behavior: 'smooth'
-                    });
-                    
-                    setTimeout(() => {
-                        isScrolling = false;
-                    }, 300);
-                }
-            }, 150);
-        });
     }
 
-    setupAnimations() {
-        // Animación de entrada
-        this.cards.forEach((card, index) => {
-            if (window.innerWidth <= 768) {
-                // Móvil: animación simple para carrusel horizontal
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(30px)';
-                
-                setTimeout(() => {
-                    card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 100);
-            } else {
-                // Desktop: animación normal
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(50px)';
-                
-                setTimeout(() => {
-                    card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 100);
-            }
-        });
+    moveZoom(fromCard, toCard) {
+        if (!fromCard || !toCard || fromCard === toCard) return;
+        fromCard.classList.remove('zoomed');
+        this.removeCloseButton(fromCard);
+        toCard.classList.add('zoomed');
+        this.addCloseButton(toCard);
     }
 
-    highlightCard(card) {
-        // Efecto de resaltado
-        card.style.zIndex = '10';
-        this.cards.forEach(otherCard => {
-            if (otherCard !== card) {
-                otherCard.style.opacity = '0.7';
-                otherCard.style.transform = 'scale(0.95)';
-            }
-        });
-    }
-
-    unhighlightCard(card) {
-        // Restaurar estado normal
-        this.cards.forEach(otherCard => {
-            otherCard.style.opacity = '1';
-            otherCard.style.transform = 'scale(1)';
-        });
-    }
-
-    selectCard(card) {
-        // Efecto de selección
-        card.style.transform = 'scale(0.95)';
-        
-        setTimeout(() => {
-            card.style.transform = 'scale(1)';
-        }, 150);
-        
-        console.log('Card seleccionada:', card.dataset.card);
-    }
-    
     toggleZoom(card) {
-        // Toggle zoom effect
         if (card.classList.contains('zoomed')) {
-            // Remove zoom
             card.classList.remove('zoomed');
-            // Remove close button
             this.removeCloseButton(card);
-            // Restore normal scroll behavior
-            this.stack.style.overflow = 'auto';
+            this.stack.style.overflowX = 'auto';
+            this.stack.style.overflowY = 'hidden';
             this.stack.style.scrollSnapType = 'x mandatory';
-            console.log('Zoom removed from card:', card.dataset.card);
-        } else {
-            // Remove zoom from other cards first
-            this.cards.forEach(otherCard => {
-                if (otherCard !== card) {
-                    otherCard.classList.remove('zoomed');
-                    this.removeCloseButton(otherCard);
-                }
-            });
-            
-            // Add zoom to clicked card
-            card.classList.add('zoomed');
-            // Disable scroll while zoomed
-            this.stack.style.overflow = 'hidden';
-            this.stack.style.scrollSnapType = 'none';
-            
-            // Center the zoomed card
-            const cardRect = card.getBoundingClientRect();
-            const containerRect = this.stack.getBoundingClientRect();
-            const centerX = containerRect.width / 2;
-            const cardCenterX = cardRect.left - containerRect.left + (cardRect.width / 2);
-            const scrollOffset = cardCenterX - centerX;
-            
-            this.stack.scrollTo({
-                left: this.stack.scrollLeft + scrollOffset,
-                behavior: 'smooth'
-            });
-            
-            // Agregar botón de cerrar
-            this.addCloseButton(card);
-            
-            console.log('Zoom added to card:', card.dataset.card);
+            return;
         }
+
+        this.clearZoom();
+        const index = this.canonicalIndex(this.cards.indexOf(card));
+        const target = this.cards[index];
+        this.jumpToIndex(index, false);
+        if (!target) return;
+        target.classList.add('zoomed');
+        this.addCloseButton(target);
     }
-    
+
     addCloseButton(card) {
-        // Remover botón anterior si existe
-        const existingButton = card.querySelector('.zoom-close-btn');
-        if (existingButton) {
-            existingButton.remove();
-        }
-        
-        // Crear botón de cerrar
+        this.removeCloseButton(card);
         const closeButton = document.createElement('button');
+        closeButton.type = 'button';
         closeButton.className = 'zoom-close-btn';
         closeButton.innerHTML = '×';
         closeButton.title = 'Cerrar zoom';
-        
-        // Posicionar el botón
+        closeButton.setAttribute('aria-label', 'Cerrar zoom');
         closeButton.style.cssText = `
             position: absolute;
             top: 10px;
@@ -1313,51 +1351,24 @@ class CardsStack {
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: background 0.3s ease, transform 0.3s ease;
             backdrop-filter: blur(10px);
         `;
-        
-        // Agregar hover effect
-        closeButton.addEventListener('mouseenter', () => {
+        closeButton.addEventListener('pointerenter', () => {
             closeButton.style.background = 'rgba(0, 0, 0, 0.9)';
             closeButton.style.transform = 'scale(1.1)';
         });
-        
-        closeButton.addEventListener('mouseleave', () => {
+        closeButton.addEventListener('pointerleave', () => {
             closeButton.style.background = 'rgba(0, 0, 0, 0.7)';
             closeButton.style.transform = 'scale(1)';
         });
-        
-        // Evento de click para cerrar
-        closeButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggleZoom(card);
-        });
-        
         card.appendChild(closeButton);
     }
-    
+
     removeCloseButton(card) {
         const closeButton = card.querySelector('.zoom-close-btn');
-        if (closeButton) {
-            closeButton.remove();
-        }
+        if (closeButton) closeButton.remove();
     }
-
-    centerFirstCard() {
-        // Solo centrar la primera card sin forzar posiciones específicas
-        setTimeout(() => {
-            const stack = this.stack;
-            if (!stack || !this.cards.length) return;
-            
-            // Scroll suave al inicio
-            stack.scrollTo({
-                left: 0,
-                behavior: 'smooth'
-            });
-        }, 100);
-    }
-
 }
 
 // Inicializar stack de cards cuando el DOM esté listo
