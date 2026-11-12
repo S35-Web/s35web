@@ -1090,6 +1090,11 @@ class CardsStack {
         return best;
     }
 
+    canonicalIndex(index) {
+        if (!this.cycle) return index;
+        return (index % this.cycle) + this.cycle;
+    }
+
     scrollLeftForIndex(index) {
         const card = this.cards[index];
         if (!card) return 0;
@@ -1118,7 +1123,11 @@ class CardsStack {
 
     goBy(delta) {
         if (this.stack.querySelector('.card-item.zoomed')) return;
-        const next = this.closestIndex() + delta;
+        this.goFrom(this.closestIndex(), delta);
+    }
+
+    goFrom(startIndex, delta) {
+        const next = this.canonicalIndex(startIndex) + delta;
         if (next < 0 || next >= this.cards.length) return;
         this.jumpToIndex(next, true);
     }
@@ -1127,20 +1136,18 @@ class CardsStack {
         if (this.wrapping || !this.cycle) return;
         if (this.pointer && this.pointer.dragging) return;
         const index = this.closestIndex();
-        let target = index;
-        if (index < this.cycle) {
-            target = index + this.cycle;
-        } else if (index >= this.cycle * 2) {
-            target = index - this.cycle;
-        } else {
-            return;
-        }
+        const target = this.canonicalIndex(index);
+        if (target === index) return;
 
+        const zoomed = this.stack.querySelector('.card-item.zoomed');
         this.wrapping = true;
         this.stack.style.scrollSnapType = 'none';
         this.stack.style.scrollBehavior = 'auto';
         this.stack.scrollTo({ left: this.scrollLeftForIndex(target), behavior: 'auto' });
         this.stack.style.scrollSnapType = 'x mandatory';
+        if (zoomed && this.cards[target] && zoomed !== this.cards[target]) {
+            this.moveZoom(zoomed, this.cards[target]);
+        }
         this.wrapping = false;
     }
 
@@ -1159,6 +1166,7 @@ class CardsStack {
             startY: e.clientY,
             lastX: e.clientX,
             startScroll: this.stack.scrollLeft,
+            startIndex: this.closestIndex(),
             moved: false,
             dragging: false
         };
@@ -1193,7 +1201,8 @@ class CardsStack {
         if (!this.pointer || e.pointerId !== this.pointer.id) return;
         const dx = e.clientX - this.pointer.startX;
         const dragging = this.pointer.dragging;
-        const cardWidth = this.cards[this.closestIndex()]?.offsetWidth || 280;
+        const startIndex = this.pointer.startIndex;
+        const cardWidth = this.cards[startIndex]?.offsetWidth || 280;
         this.ignoreClick = dragging || this.pointer.moved;
         this.pointer = null;
 
@@ -1204,11 +1213,11 @@ class CardsStack {
 
         const threshold = Math.min(80, cardWidth * 0.22);
         if (dx <= -threshold) {
-            this.goBy(1);
+            this.goFrom(startIndex, 1);
         } else if (dx >= threshold) {
-            this.goBy(-1);
+            this.goFrom(startIndex, -1);
         } else {
-            this.jumpToIndex(this.closestIndex(), true);
+            this.jumpToIndex(startIndex, true);
         }
     }
 
@@ -1290,6 +1299,14 @@ class CardsStack {
         this.stack.style.scrollSnapType = 'x mandatory';
     }
 
+    moveZoom(fromCard, toCard) {
+        if (!fromCard || !toCard || fromCard === toCard) return;
+        fromCard.classList.remove('zoomed');
+        this.removeCloseButton(fromCard);
+        toCard.classList.add('zoomed');
+        this.addCloseButton(toCard);
+    }
+
     toggleZoom(card) {
         if (card.classList.contains('zoomed')) {
             card.classList.remove('zoomed');
@@ -1301,9 +1318,12 @@ class CardsStack {
         }
 
         this.clearZoom();
-        card.classList.add('zoomed');
-        this.jumpToIndex(this.cards.indexOf(card), true);
-        this.addCloseButton(card);
+        const index = this.canonicalIndex(this.cards.indexOf(card));
+        const target = this.cards[index];
+        this.jumpToIndex(index, false);
+        if (!target) return;
+        target.classList.add('zoomed');
+        this.addCloseButton(target);
     }
 
     addCloseButton(card) {
