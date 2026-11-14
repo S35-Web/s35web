@@ -6812,6 +6812,11 @@
         #productsInventoryChart .mat-inv-value { color: var(--muted); }
         @media (max-width: 900px) {
             .products-inventory-chart { grid-template-columns: 1fr; }
+            #productsInventoryChart .products-inventory-where { display: none; }
+            #productsInventoryChart .products-inventory-row {
+                grid-template-columns: minmax(0, 1fr) minmax(72px, 0.8fr) auto;
+            }
+            .pd-stock-movements .pd-stock-mov-balance { white-space: normal; }
             .products-inventory-head { flex-wrap: wrap; }
             .products-inventory-actions { flex-wrap: wrap; justify-content: flex-end; }
         }
@@ -17676,9 +17681,12 @@
                 ? (qtyPlain + ' x ' + moneyMx(p.unitPrice) + ' (PP)')
                 : 'Sin precio público';
             const finRow = finishedStock[p.slug];
-            const where = city === 'all' && finRow ? finishedCityPartsLabel(finRow) : '';
-            const whereHtml = where
-                ? '<span class="products-inventory-where"> · ' + esc(where) + '</span>'
+            const parts = city === 'all' && finRow ? finishedCityParts(finRow) : [];
+            const where = parts.length === 1
+                ? parts[0].label
+                : (parts.length > 1 ? finishedCityPartsLabel(finRow) : '');
+            const whereHtml = parts.length === 1
+                ? '<span class="products-inventory-where"> · ' + esc(parts[0].label) + '</span>'
                 : '';
             return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name + (where ? ' · ' + where : '')) + '">' +
                 '<span class="products-inventory-name">' + familyDotHtml(p.family) +
