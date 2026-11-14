@@ -6777,6 +6777,10 @@
             text-align: right;
         }
         .products-inventory-qty.is-zero { color: var(--muted); }
+        .products-inventory-where {
+            color: var(--muted);
+            font-weight: 500;
+        }
         #productsInventoryChart .products-inventory-row {
             grid-template-columns: minmax(0, 1.2fr) minmax(72px, 1fr) var(--products-qty-col, max-content);
         }
@@ -11717,6 +11721,25 @@
         const c = normalizeInvCity(city);
         if (c === 'all') return Math.max(0, Number(row.stock) || 0);
         return Math.max(0, Number(row.byCity[c]) || 0);
+    }
+    /** Ciudades con piezas. La tabla y el historial usan el mismo filtro. */
+    function finishedCityParts(row) {
+        if (!row) return [];
+        ensureFinishedByCity(row);
+        return INV_CITIES.map(function (c) {
+            return {
+                id: c.id,
+                label: c.label,
+                qty: Math.max(0, Number(row.byCity && row.byCity[c.id]) || 0)
+            };
+        }).filter(function (c) { return c.qty > 0; });
+    }
+    function finishedCityPartsLabel(row) {
+        const parts = finishedCityParts(row);
+        if (parts.length === 1) return parts[0].label;
+        return parts.map(function (c) {
+            return c.label + ' ' + fmtStockQty(c.qty);
+        }).join(' · ');
     }
     function invCitySelectHtml(selected, id) {
         const cur = selected == null ? 'all' : selected;
@@ -17652,14 +17675,19 @@
             const valueTitle = p.unitPrice > 0
                 ? (qtyPlain + ' x ' + moneyMx(p.unitPrice) + ' (PP)')
                 : 'Sin precio público';
-            return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name) + '">' +
+            const finRow = finishedStock[p.slug];
+            const where = city === 'all' && finRow ? finishedCityPartsLabel(finRow) : '';
+            const whereHtml = where
+                ? '<span class="products-inventory-where"> · ' + esc(where) + '</span>'
+                : '';
+            return '<button type="button" class="products-inventory-row" data-open-product="' + esc(p.slug) + '" title="' + esc(p.name + (where ? ' · ' + where : '')) + '">' +
                 '<span class="products-inventory-name">' + familyDotHtml(p.family) +
                 '<span class="products-inventory-label">' + esc(p.name) + '</span>' +
                 productNameCostMark(p.slug) + '</span>' +
                 '<span class="products-inventory-track" aria-hidden="true"><span class="products-inventory-fill" style="width:' +
                 pct.toFixed(1) + '%;background:' + esc(color) + '"></span></span>' +
-                '<span class="products-inventory-qty' + (p.stock ? '' : ' is-zero') + '" title="' + esc(valueTitle) + '">' +
-                fmtStockQty(p.stock) + ' <span class="mat-inv-value">/ ' + esc(moneyMx(p.value)) + '</span></span>' +
+                '<span class="products-inventory-qty' + (p.stock ? '' : ' is-zero') + '" title="' + esc((where ? where + ' · ' : '') + valueTitle) + '">' +
+                fmtStockQty(p.stock) + whereHtml + ' <span class="mat-inv-value">/ ' + esc(moneyMx(p.value)) + '</span></span>' +
                 '</button>';
         }).join('');
         host.setAttribute('aria-label', 'Inventario de producto terminado. Total ' + fmtStockQty(total) + '.');
@@ -18678,7 +18706,7 @@
         const sub = document.getElementById('finishedMovementsSub');
         if (!host) return;
         hydrateFinishedMovementsFromLocal();
-        const city = activeProductsCity();
+        const city = productsCityFilter;
         const rows = finishedMovements.filter(function (row) {
             if (!row || row.deleted) return false;
             if (city === 'all') return true;
@@ -18691,7 +18719,7 @@
             if (nIn) bits.push(nIn + (nIn === 1 ? ' entrada' : ' entradas'));
             if (nOut) bits.push(nOut + (nOut === 1 ? ' salida' : ' salidas'));
             sub.textContent = (bits.length ? bits.join(' · ') : 'Sin movimientos de inventario') +
-                (city === 'all' ? '' : (' · ' + invCityLabel(city)));
+                ' · ' + (city === 'all' ? 'Todas' : invCityLabel(city));
         }
         if (!rows.length) {
             host.innerHTML = '<div class="empty">Sin movimientos' +
@@ -18758,7 +18786,7 @@
         const periodOpts = resolveProductStockMovementsPeriod(opts);
         hydrateFinishedMovementsFromLocal();
         hydrateFinishedFromLocal();
-        const city = activeProductsCity();
+        const city = productsCityFilter;
         const rows = finishedMovements.filter(function (row) {
             if (!row || row.deleted || row.slug !== slug) return false;
             if (city !== 'all' && normalizeInvCity(row.city) !== city) return false;
@@ -18775,7 +18803,8 @@
         const stockNow = fin
             ? finishedStockInCity(fin, city === 'all' ? 'all' : city)
             : 0;
-        const cityNote = city === 'all' ? 'todas las ciudades' : invCityLabel(city);
+        const where = city === 'all' && fin ? finishedCityPartsLabel(fin) : '';
+        const cityNote = city === 'all' ? 'Todas' : invCityLabel(city);
         const periodNote = periodOpts.period === 'historial'
             ? 'Historial'
             : (periodOpts.label || 'Periodo');
@@ -18798,6 +18827,7 @@
             '</span></span>' +
             '<span class="pd-stock-mov-balance">' +
             'Stock actual <strong>' + esc(fmtStockQty(stockNow)) + '</strong>' +
+            (where ? (' · ' + esc(where)) : '') +
             '</span></button>' +
             '<div class="pd-stock-mov-body" id="pdStockMovementsBody"' +
             (pdStockMovementsOpen ? '' : ' hidden') + '>' +
