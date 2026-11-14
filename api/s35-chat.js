@@ -54,7 +54,7 @@ const TOOLS = [
           },
           city: {
             type: 'string',
-            enum: ['all', 'culiacan', 'mochis', 'mazatlan'],
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan', 'guasave'],
             description: 'Sucursal o all. Default all'
           }
         },
@@ -76,7 +76,7 @@ const TOOLS = [
           offsetB: { type: 'integer', description: 'Segundo periodo (ej. -2 = antier)' },
           city: {
             type: 'string',
-            enum: ['all', 'culiacan', 'mochis', 'mazatlan']
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan', 'guasave']
           }
         },
         required: ['period', 'offsetA', 'offsetB']
@@ -141,7 +141,7 @@ const TOOLS = [
           offset: { type: 'integer' },
           city: {
             type: 'string',
-            enum: ['all', 'culiacan', 'mochis', 'mazatlan']
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan', 'guasave']
           },
           limit: { type: 'integer', description: 'Cantidad (ej. 10). Default 10, máx 25' }
         },
@@ -164,7 +164,7 @@ const TOOLS = [
           offset: { type: 'integer' },
           city: {
             type: 'string',
-            enum: ['all', 'culiacan', 'mochis', 'mazatlan']
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan', 'guasave']
           },
           limit: { type: 'integer', description: 'Cantidad (ej. 10). Default 10, máx 25' }
         },
@@ -191,7 +191,7 @@ const TOOLS = [
         'Existencia actual de producto terminado en Mongo (s35_finished_stock), por ciudad. ' +
         'Sin query, o query "inventario", lista el inventario actual. ' +
         'Con query filtra por slug o nombre (ej. waxtard-blanco-perla). ' +
-        'Devuelve byCity.culiacan, byCity.mochis y byCity.mazatlan. 0 es cero piezas, no falta de datos. ' +
+        'Devuelve byCity de Culiacán, Los Mochis, Mazatlán y Guasave. 0 es cero piezas, no falta de datos. ' +
         'updatedAt es la última escritura en la nube. Si results viene vacío, no está en el inventario; no inventes 0.',
       parameters: {
         type: 'object',
@@ -202,8 +202,8 @@ const TOOLS = [
           },
           city: {
             type: 'string',
-            enum: ['all', 'culiacan', 'mochis', 'mazatlan'],
-            description: 'Sucursal a resaltar. Igual devuelve las tres ciudades. Default all'
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan', 'guasave'],
+            description: 'Sucursal a resaltar. Igual devuelve todas las sucursales. Default all'
           }
         }
       }
@@ -241,7 +241,7 @@ const TOOLS = [
           },
           city: {
             type: 'string',
-            enum: ['all', 'culiacan', 'mochis', 'mazatlan']
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan', 'guasave']
           },
           clientId: { type: 'string' },
           productSlug: { type: 'string' },
@@ -271,8 +271,8 @@ const TOOLS = [
           },
           city: {
             type: 'string',
-            enum: ['all', 'culiacan', 'mochis', 'mazatlan'],
-            description: 'Sucursal a resaltar. Igual devuelve las tres ciudades. Default all'
+            enum: ['all', 'culiacan', 'mochis', 'mazatlan', 'guasave'],
+            description: 'Sucursal a resaltar. Igual devuelve todas las sucursales. Default all'
           }
         }
       }
@@ -312,7 +312,7 @@ function readTool(name, description, properties, required) {
 }
 
 const ymd = { type: 'string', description: 'Fecha YYYY-MM-DD inclusive, America/Mazatlan' };
-const cityProp = { type: 'string', enum: ['all', 'culiacan', 'mochis', 'mazatlan'] };
+const cityProp = { type: 'string', enum: ['all', 'culiacan', 'mochis', 'mazatlan', 'guasave'] };
 [
   ['get_client_balances', 'Saldos de clientes. balance es la suma de notas por_cobrar. No inventes límite de crédito.', { query: { type: 'string' } }],
   ['get_prices', 'Lista de precios. listPrice es tiers[0] (menudeo). No varía por ciudad.', { query: { type: 'string' }, city: cityProp }],
@@ -366,7 +366,7 @@ function systemPrompt(context) {
     'Para existencia de producto terminado (sacos, Waxtard, etc.) usa get_finished_stock. Para materias primas (cemento, arena, bentonita, etc.) usa get_material_stock. stock_alerts es solo lo que está bajo mínimo.',
     'Sin query, get_finished_stock y get_material_stock listan el inventario actual. Con query filtran.',
     'Esas tools leen Mongo en esta petición: s35_finished_stock, s35_plant_inventory y s35_pos_sales, más el historial de notas. updatedAt es la última escritura en la nube. Cita esa fecha si te preguntan qué tan fresco está.',
-    'get_finished_stock y get_material_stock devuelven byCity de Culiacán, Los Mochis y Mazatlán. Si el número es 0, di 0. No digas «sin datos» cuando la ciudad viene en byCity. Si results está vacío, di que no está en el inventario; no inventes 0.',
+    'get_finished_stock y get_material_stock devuelven byCity de Culiacán, Los Mochis, Mazatlán y Guasave. Si el número es 0, di 0. No digas «sin datos» cuando la ciudad viene en byCity. Si results está vacío, di que no está en el inventario; no inventes 0.',
     'Para abrir pantallas de inmediato (sin esperar clic) usa navigate. Para solo informar, no navegues: deja los botones [[…]] en el texto.',
     '',
     'SNAPSHOT (JSON):',

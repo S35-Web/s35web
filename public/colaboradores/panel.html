@@ -9242,6 +9242,7 @@
                                     <option value="culiacan">Culiacán</option>
                                     <option value="mochis">Los Mochis</option>
                                     <option value="mazatlan">Mazatlán</option>
+                                    <option value="guasave">Guasave</option>
                                 </select>
                             </div>
                         </div>
@@ -9463,6 +9464,7 @@
                                         <option value="culiacan">Culiacán</option>
                                         <option value="mochis">Los Mochis</option>
                                         <option value="mazatlan">Mazatlán</option>
+                                        <option value="guasave">Guasave</option>
                                     </select>
                                 </div>
                             </div>
@@ -9579,6 +9581,7 @@
                                                 <option value="culiacan">Culiacán</option>
                                                 <option value="mochis">Los Mochis</option>
                                                 <option value="mazatlan">Mazatlán</option>
+                                                <option value="guasave">Guasave</option>
                                             </select>
                                         </label>
                                         <label for="posGastoNote">Nota (opcional)
@@ -10057,6 +10060,7 @@
                                 <option value="culiacan">Culiacán</option>
                                 <option value="mochis">Los Mochis</option>
                                 <option value="mazatlan">Mazatlán</option>
+                                <option value="guasave">Guasave</option>
                             </select>
                         </div>
                     </div>
@@ -10139,6 +10143,7 @@
                                 <option value="culiacan" selected>Culiacán</option>
                                 <option value="mochis">Los Mochis</option>
                                 <option value="mazatlan">Mazatlán</option>
+                                <option value="guasave">Guasave</option>
                             </select>
                         </div>
                     </div>
@@ -10244,6 +10249,7 @@
                                         <option value="culiacan">Culiacán</option>
                                         <option value="mochis">Los Mochis</option>
                                         <option value="mazatlan">Mazatlán</option>
+                                        <option value="guasave">Guasave</option>
                                     </select>
                                 </div>
                             </div>
@@ -10551,6 +10557,7 @@
                                 <option value="culiacan">Culiacán</option>
                                 <option value="mochis">Los Mochis</option>
                                 <option value="mazatlan">Mazatlán</option>
+                                <option value="guasave">Guasave</option>
                             </select>
                         </label>
                     </div>
@@ -10596,6 +10603,7 @@
                                 <option value="culiacan">Culiacán</option>
                                 <option value="mochis">Los Mochis</option>
                                 <option value="mazatlan">Mazatlán</option>
+                                <option value="guasave">Guasave</option>
                             </select>
                         </label>
                         <label class="span-2">Concepto
@@ -10843,6 +10851,7 @@
                             <option value="culiacan">Culiacán</option>
                             <option value="mochis">Los Mochis</option>
                             <option value="mazatlan">Mazatlán</option>
+                            <option value="guasave">Guasave</option>
                         </select>
                     </label>
                     <label>Quién produjo
@@ -10947,6 +10956,7 @@
                             <option value="culiacan">Culiacán</option>
                             <option value="mochis">Los Mochis</option>
                             <option value="mazatlan">Mazatlán</option>
+                            <option value="guasave">Guasave</option>
                         </select>
                     </label>
                     <label id="addInventoryQtyLabel">Cantidad a sumar
@@ -10992,6 +11002,7 @@
                                 <option value="culiacan">Culiacán</option>
                                 <option value="mochis">Los Mochis</option>
                                 <option value="mazatlan">Mazatlán</option>
+                                <option value="guasave">Guasave</option>
                             </select>
                         </label>
                         <label>Pago
@@ -11059,6 +11070,7 @@
                                 <option value="culiacan">Culiacán</option>
                                 <option value="mochis">Los Mochis</option>
                                 <option value="mazatlan">Mazatlán</option>
+                                <option value="guasave">Guasave</option>
                             </select>
                         </label>
                     </div>
@@ -11112,6 +11124,7 @@
                             <option value="culiacan">Culiacán</option>
                             <option value="mochis">Los Mochis</option>
                             <option value="mazatlan">Mazatlán</option>
+                            <option value="guasave">Guasave</option>
                         </select>
                     </label>
                     <label>Nota
@@ -11529,18 +11542,16 @@
             unitCost: Math.max(0, Math.round((Number(m.unitCost) || 0) * 100) / 100)
         };
         if (m.byCity && typeof m.byCity === 'object') {
-            item.byCity = {
-                culiacan: Math.max(0, Number(m.byCity.culiacan) || 0),
-                mochis: Math.max(0, Number(m.byCity.mochis) || 0),
-                mazatlan: Math.max(0, Number(m.byCity.mazatlan) || 0)
-            };
+            item.byCity = {};
+            INV_CITIES.forEach(function (c) {
+                item.byCity[c.id] = Math.max(0, Number(m.byCity[c.id]) || 0);
+            });
         }
         if (m.reservedByCity && typeof m.reservedByCity === 'object') {
-            item.reservedByCity = {
-                culiacan: Math.max(0, Number(m.reservedByCity.culiacan) || 0),
-                mochis: Math.max(0, Number(m.reservedByCity.mochis) || 0),
-                mazatlan: Math.max(0, Number(m.reservedByCity.mazatlan) || 0)
-            };
+            item.reservedByCity = {};
+            INV_CITIES.forEach(function (c) {
+                item.reservedByCity[c.id] = Math.max(0, Number(m.reservedByCity[c.id]) || 0);
+            });
         }
         ensureMaterialByCity(item);
         return item;
@@ -11550,7 +11561,8 @@
     const INV_CITIES = [
         { id: 'culiacan', label: 'Culiacán' },
         { id: 'mochis', label: 'Los Mochis' },
-        { id: 'mazatlan', label: 'Mazatlán' }
+        { id: 'mazatlan', label: 'Mazatlán' },
+        { id: 'guasave', label: 'Guasave' }
     ];
     const PRODUCTS_CITY_KEY = 's35_products_inv_city';
     const MATERIALS_CITY_KEY = 's35_materials_inv_city';
@@ -11571,6 +11583,7 @@
         if (v === 'culiacan' || v === 'cln') return 'culiacan';
         if (v === 'mochis' || v === 'los mochis' || v === 'lmm') return 'mochis';
         if (v === 'mazatlan' || v === 'mzt') return 'mazatlan';
+        if (v === 'guasave' || v === 'gsv') return 'guasave';
         return INV_DEFAULT_CITY;
     }
     function invCityLabel(id) {
@@ -11579,7 +11592,9 @@
         return c ? c.label : 'Culiacán';
     }
     function emptyCityMap() {
-        return { culiacan: 0, mochis: 0, mazatlan: 0 };
+        const map = {};
+        INV_CITIES.forEach(function (c) { map[c.id] = 0; });
+        return map;
     }
     function sumCityMap(map) {
         if (!map) return 0;
@@ -11990,11 +12005,10 @@
                     seed[slug].minStock = Number(row.minStock) || 0;
                     if (row.unit) seed[slug].unit = row.unit;
                     if (row.byCity && typeof row.byCity === 'object') {
-                        seed[slug].byCity = {
-                            culiacan: Math.max(0, Number(row.byCity.culiacan) || 0),
-                            mochis: Math.max(0, Number(row.byCity.mochis) || 0),
-                            mazatlan: Math.max(0, Number(row.byCity.mazatlan) || 0)
-                        };
+                        seed[slug].byCity = {};
+                        INV_CITIES.forEach(function (c) {
+                            seed[slug].byCity[c.id] = Math.max(0, Number(row.byCity[c.id]) || 0);
+                        });
                     }
                     ensureFinishedByCity(seed[slug]);
                 });

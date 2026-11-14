@@ -125,7 +125,9 @@ const dataset = buildDataset({
 });
 
 eq(dataset.finished['saco-a'].byCity.culiacan, 10, 'forma tolerante saco-a culiacan');
+eq(dataset.finished['saco-a'].byCity.guasave, 0, 'Guasave en cero si no viene en la fila');
 eq(dataset.finished['saco-b'].byCity.culiacan, 7, 'forma tolerante saco-b');
+eq(dataset.finished['saco-b'].byCity.guasave, 0, 'saco-b Guasave');
 eq(dataset.prices['saco-a'].tiers[0], 50, 'precio string tiers[0]');
 eq(dataset.prices['saco-b'].tiers[0], 11, 'precio numérico');
 eq(dataset.clients[0].creditLimit, 500, 'crédito solo si existe');
@@ -144,8 +146,10 @@ assert(String(inv.priceBasis).indexOf('tiers[0]') >= 0, 'priceBasis');
 
 const all = ex('get_inventory_totals', {});
 eq(all.byCity.mochis.value, 150, 'valor Mochis');
-eq(all.totals.value, 727, 'valor tres ciudades');
-eq(all.totals.pieces, 20, 'piezas tres ciudades');
+eq(all.byCity.guasave.value, 0, 'valor Guasave');
+eq(all.byCity.guasave.pieces, 0, 'piezas Guasave');
+eq(all.totals.value, 727, 'valor todas las ciudades');
+eq(all.totals.pieces, 20, 'piezas todas las ciudades');
 
 const from = '2026-10-01';
 const to = '2026-10-02';

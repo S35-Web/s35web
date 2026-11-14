@@ -32,10 +32,24 @@ cases.forEach(function (pair) {
   assert.strictEqual(hit.byCity.culiacan, 4, name + ' culiacan');
   assert.strictEqual(hit.byCity.mochis, 1, name + ' mochis');
   assert.strictEqual(hit.byCity.mazatlan, 0, name + ' mazatlan');
+  assert.strictEqual(hit.byCity.guasave, 0, name + ' guasave');
   assert.ok(got.shape, name + ' sin forma');
 });
 
 const numeric = extractFinished({ items: { 'waxtard-blanco-perla': 3 } });
 assert.strictEqual(numeric.bySlug['waxtard-blanco-perla'].byCity.culiacan, 3);
+assert.strictEqual(numeric.bySlug['waxtard-blanco-perla'].byCity.guasave, 0);
+
+const guasave = extractFinished({
+  items: {
+    'saco-guasave': {
+      slug: 'saco-guasave',
+      stock: 6,
+      byCity: { culiacan: 1, mochis: 0, mazatlan: 2, guasave: 3 }
+    }
+  }
+});
+assert.strictEqual(guasave.bySlug['saco-guasave'].byCity.guasave, 3, 'conserva piezas de Guasave');
+assert.strictEqual(guasave.bySlug['saco-guasave'].stock, 6, 'stock suma las cuatro sucursales');
 
 console.log('ok ' + cases.length + ' formas + numero');

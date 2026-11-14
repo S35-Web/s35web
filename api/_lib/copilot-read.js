@@ -47,7 +47,8 @@ const PANEL_KEYS = [
 const CITIES = [
   { id: 'culiacan', label: 'Culiacán', short: 'CLN' },
   { id: 'mochis', label: 'Los Mochis', short: 'LMM' },
-  { id: 'mazatlan', label: 'Mazatlán', short: 'MZT' }
+  { id: 'mazatlan', label: 'Mazatlán', short: 'MZT' },
+  { id: 'guasave', label: 'Guasave', short: 'GSV' }
 ];
 
 let cachedHistorical = null;
@@ -142,6 +143,7 @@ function normalizeCityId(raw) {
   if (v === 'culiacan' || v === 'cln') return 'culiacan';
   if (v === 'mochis' || v === 'los mochis' || v === 'lmm') return 'mochis';
   if (v === 'mazatlan' || v === 'mzt') return 'mazatlan';
+  if (v === 'guasave' || v === 'gsv') return 'guasave';
   if (CITIES.some(function (c) { return c.id === v; })) return v;
   return 'culiacan';
 }
@@ -150,6 +152,12 @@ function cityLabel(id) {
   const key = normalizeCityId(id);
   const c = CITIES.filter(function (row) { return row.id === key; })[0];
   return c ? c.label : 'Culiacán';
+}
+
+function emptyCityQty() {
+  const out = {};
+  CITIES.forEach(function (c) { out[c.id] = 0; });
+  return out;
 }
 
 function resolveSaleCity(sale) {
@@ -505,7 +513,7 @@ function extractFinished(value) {
     if (!row || typeof row !== 'object' || Array.isArray(row)) return;
     const key = finishedSlugKey(row, slug);
     if (!key) return;
-    const byCity = { culiacan: 0, mochis: 0, mazatlan: 0 };
+    const byCity = emptyCityQty();
     const hasByCity = !!(row.byCity && typeof row.byCity === 'object');
     if (hasByCity) {
       CITIES.forEach(function (c) {
@@ -801,7 +809,7 @@ function topClientsInSales(list, limit, byId) {
 }
 
 function cityQtyMap(src) {
-  const out = { culiacan: 0, mochis: 0, mazatlan: 0 };
+  const out = emptyCityQty();
   if (src && typeof src === 'object') {
     CITIES.forEach(function (c) {
       out[c.id] = Math.max(0, Number(src[c.id]) || 0);
@@ -1407,11 +1415,10 @@ function createReadRuntime(dataset) {
   }
 
   function publicFinished(row, cityId) {
-    const byCity = {
-      culiacan: Number(row.byCity && row.byCity.culiacan) || 0,
-      mochis: Number(row.byCity && row.byCity.mochis) || 0,
-      mazatlan: Number(row.byCity && row.byCity.mazatlan) || 0
-    };
+    const byCity = emptyCityQty();
+    CITIES.forEach(function (c) {
+      byCity[c.id] = Number(row.byCity && row.byCity[c.id]) || 0;
+    });
     const cities = CITIES.map(function (c) {
       return { id: c.id, label: c.label, qty: byCity[c.id] };
     });
@@ -1668,7 +1675,7 @@ function createReadRuntime(dataset) {
         totals: found.totals,
         listed: found.listed,
         results: hits,
-        note: 'byCity.culiacan, byCity.mochis y byCity.mazatlan son piezas en la nube. 0 es cero, no falta de datos. totals cubre el conjunto completo.'
+        note: 'byCity trae piezas por sucursal (Culiacán, Los Mochis, Mazatlán y Guasave). 0 es cero, no falta de datos. totals cubre el conjunto completo.'
       };
     }
     if (name === 'get_material_stock') {

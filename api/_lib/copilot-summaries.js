@@ -432,7 +432,10 @@ function executeSummary(name, args, bag, helpers) {
 
   if (name === 'get_inventory_totals') {
     const focus = args.city && args.city !== 'all' ? cityId : 'all';
-    const byCity = { culiacan: { pieces: 0, value: 0, skus: 0 }, mochis: { pieces: 0, value: 0, skus: 0 }, mazatlan: { pieces: 0, value: 0, skus: 0 } };
+    const byCity = {};
+    helpers.CITIES.forEach(function (c) {
+      byCity[c.id] = { pieces: 0, value: 0, skus: 0 };
+    });
     let missingPrice = 0;
     Object.keys(bag.finished || {}).forEach(function (slug) {
       const row = bag.finished[slug];
@@ -447,8 +450,9 @@ function executeSummary(name, args, bag, helpers) {
         if (price != null) byCity[c.id].value = round2(byCity[c.id].value + qty * price);
       });
     });
-    const cities = focus === 'all' ? ['culiacan', 'mochis', 'mazatlan'] : [focus];
+    const cities = focus === 'all' ? helpers.CITIES.map(function (c) { return c.id; }) : [focus];
     const totals = cities.reduce(function (acc, id) {
+      if (!byCity[id]) byCity[id] = { pieces: 0, value: 0, skus: 0 };
       acc.pieces = round2(acc.pieces + byCity[id].pieces);
       acc.value = round2(acc.value + byCity[id].value);
       acc.skus += byCity[id].skus;

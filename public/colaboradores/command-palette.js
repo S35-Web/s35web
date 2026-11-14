@@ -398,6 +398,7 @@
             if (c.id === 'culiacan') aliases.push('cln');
             if (c.id === 'mochis') aliases.push('lmm', 'losmochis');
             if (c.id === 'mazatlan') aliases.push('mzt');
+            if (c.id === 'guasave') aliases.push('gsv');
             if (c.id === 'all') aliases.push('todas', 'todos');
             if (aliases.indexOf(t) >= 0) return c;
             if (scoreMatch(c.label, t) >= 70 || scoreMatch(c.short, t) >= 70) return c;

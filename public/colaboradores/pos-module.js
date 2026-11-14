@@ -685,10 +685,22 @@
     const SALE_CITIES = [
         { id: 'culiacan', label: 'Culiacán', color: '#171717', short: 'CLN' },
         { id: 'mochis', label: 'Los Mochis', color: '#15803d', short: 'LMM' },
-        { id: 'mazatlan', label: 'Mazatlán', color: '#b91c1c', short: 'MZT' }
+        { id: 'mazatlan', label: 'Mazatlán', color: '#b91c1c', short: 'MZT' },
+        { id: 'guasave', label: 'Guasave', color: '#ea580c', short: 'GSV' }
     ];
     const CITY_STORAGE_KEY = 's35_pos_sale_city';
     let cortesCityFilter = 'all';
+
+    function emptySaleCityQty() {
+        const map = {};
+        SALE_CITIES.forEach(function (c) { map[c.id] = 0; });
+        return map;
+    }
+    function sumSaleCityQty(map) {
+        return SALE_CITIES.reduce(function (n, c) {
+            return n + (Number(map && map[c.id]) || 0);
+        }, 0);
+    }
 
     function saleCityCatalog() {
         return SALE_CITIES;
@@ -703,6 +715,7 @@
         if (v === 'culiacan' || v === 'cln') return 'culiacan';
         if (v === 'mochis' || v === 'los mochis' || v === 'lmm') return 'mochis';
         if (v === 'mazatlan' || v === 'mzt') return 'mazatlan';
+        if (v === 'guasave' || v === 'gsv') return 'guasave';
         if (cityById(v)) return v;
         return 'culiacan';
     }
@@ -763,13 +776,12 @@
         const preferred = loadPreferredSaleCity();
         const sel = document.getElementById('posSaleCity');
         if (sel) {
-            if (!sel.options.length) {
-                SALE_CITIES.forEach(function (c) {
-                    const opt = document.createElement('option');
-                    opt.value = c.id;
-                    opt.textContent = c.label;
-                    sel.appendChild(opt);
-                });
+            const wanted = SALE_CITIES.map(function (c) { return c.id; }).join('|');
+            const cur = Array.prototype.map.call(sel.options, function (o) { return o.value; }).join('|');
+            if (cur !== wanted) {
+                sel.innerHTML = SALE_CITIES.map(function (c) {
+                    return '<option value="' + esc(c.id) + '">' + esc(c.label) + '</option>';
+                }).join('');
             }
             sel.value = preferred;
             if (!sel._s35CityBound) {
@@ -798,12 +810,12 @@
     }
 
     /**
-     * Mazatlán/Mochis suelen surtir desde Culiacán. Hay que elegir bodega de PT.
+     * Mazatlán, Los Mochis y Guasave suelen surtir desde Culiacán. Hay que elegir bodega de PT.
      * Culiacán descuenta local sin preguntar.
      */
     function needsStockOriginPrompt(cityId) {
         const c = normalizeCityId(cityId);
-        return c === 'mazatlan' || c === 'mochis';
+        return c === 'mazatlan' || c === 'mochis' || c === 'guasave';
     }
     /** Bodega de la que baja el producto terminado (puede diferir de la ciudad de venta). */
     function saleStockCity(sale) {
@@ -5449,18 +5461,20 @@
             existing = (raw && raw.items) ? raw.items : (raw || {});
         } catch (_) {}
         if (!existing[slug] || typeof existing[slug] !== 'object') {
-            existing[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza', byCity: { culiacan: 0, mochis: 0, mazatlan: 0 } };
+            existing[slug] = { slug: slug, stock: 0, minStock: 0, unit: 'Pza', byCity: emptySaleCityQty() };
         }
         const row = existing[slug];
-        if (!row.byCity) row.byCity = { culiacan: Number(row.stock) || 0, mochis: 0, mazatlan: 0 };
+        if (!row.byCity) {
+            row.byCity = emptySaleCityQty();
+            row.byCity.culiacan = Number(row.stock) || 0;
+        }
         const c = city || selectedSaleCity() || 'culiacan';
+        if (row.byCity[c] == null) row.byCity[c] = 0;
         const prevQty = Number(row.byCity[c]) || 0;
         const nextQty = Math.max(0, prevQty - qty);
         if (nextQty === prevQty) return false;
         row.byCity[c] = nextQty;
-        row.stock = ['culiacan', 'mochis', 'mazatlan'].reduce(function (n, k) {
-            return n + (Number(row.byCity[k]) || 0);
-        }, 0);
+        row.stock = sumSaleCityQty(row.byCity);
         row.updatedAt = new Date().toISOString();
         localStorage.setItem(FINISHED_KEY, JSON.stringify({ items: existing, updatedAt: new Date().toISOString() }));
         return true;
@@ -7132,18 +7146,18 @@
                     return textMatchesTokens(hay, tokens, needle);
                 }).slice(0, 8).map(function (slug) {
                     const row = map[slug] || {};
-                    const byCity = { culiacan: 0, mochis: 0, mazatlan: 0 };
+                    const byCity = emptySaleCityQty();
                     if (row.byCity && typeof row.byCity === 'object') {
-                        byCity.culiacan = Math.max(0, Number(row.byCity.culiacan) || 0);
-                        byCity.mochis = Math.max(0, Number(row.byCity.mochis) || 0);
-                        byCity.mazatlan = Math.max(0, Number(row.byCity.mazatlan) || 0);
+                        SALE_CITIES.forEach(function (c) {
+                            byCity[c.id] = Math.max(0, Number(row.byCity[c.id]) || 0);
+                        });
                     } else {
                         byCity.culiacan = Math.max(0, Number(row.stock) || 0);
                     }
                     return {
                         slug: slug,
                         unit: row.unit || 'Pza',
-                        stock: byCity.culiacan + byCity.mochis + byCity.mazatlan,
+                        stock: sumSaleCityQty(byCity),
                         byCity: byCity,
                         note: '0 es cero piezas en esa ciudad, no falta de datos.'
                     };
@@ -7155,7 +7169,7 @@
                     ok: true,
                     query: args.query,
                     results: hits,
-                    note: 'byCity.culiacan, byCity.mochis y byCity.mazatlan son piezas. 0 es cero, no falta de datos.'
+                    note: 'byCity trae piezas por sucursal (Culiacán, Los Mochis, Mazatlán y Guasave). 0 es cero, no falta de datos.'
                 };
             }
             if (name === 'stock_alerts') {
