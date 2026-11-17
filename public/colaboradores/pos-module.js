@@ -5316,16 +5316,26 @@
                     putSaleEdit(existing.id, payload);
                     dirty = true;
                 }
-                if (existing.id === s.id && deductCatchupFinishedOnce(existing)) {
+                if (s.meta && s.meta.inventoryApplied) {
+                    if (!saleInventoryAlreadyApplied(existing)) {
+                        existing.meta = Object.assign({}, existing.meta || {}, { inventoryApplied: true });
+                        markCatchupInventory(existing.id);
+                        touchSaleRecord(existing);
+                        dirty = true;
+                    }
+                } else if (existing.id === s.id && deductCatchupFinishedOnce(existing)) {
                     deducted += 1;
                     dirty = true;
                 }
                 return;
             }
+            // Una nota que ya bajó existencia (inventoryApplied) entra al panel
+            // sin volver a descontar. El resto sí descuenta una sola vez.
+            const alreadyApplied = !!(s.meta && s.meta.inventoryApplied);
             const meta = Object.assign({}, s.meta || {}, {
                 source: 'panel-note',
                 catchupSource: (s.meta && s.meta.source) || 'old-panel',
-                inventoryApplied: false
+                inventoryApplied: alreadyApplied
             });
             if (!meta.storeName) meta.storeName = meta.branch || 'SUCURSAL UNO';
             const live = Object.assign({}, s, {
@@ -5337,7 +5347,8 @@
             if (rid) liveByReceipt[rid] = live;
             added += 1;
             dirty = true;
-            if (deductCatchupFinishedOnce(live)) deducted += 1;
+            if (alreadyApplied) markCatchupInventory(live.id);
+            else if (deductCatchupFinishedOnce(live)) deducted += 1;
         });
         if (keep.length !== historicalSales.length) {
             historicalSales = keep;

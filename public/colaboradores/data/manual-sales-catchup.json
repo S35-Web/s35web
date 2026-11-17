@@ -11599,6 +11599,7 @@
         "day": 14,
         "city": "culiacan",
         "stockCity": "culiacan",
+        "inventoryApplied": true,
         "issuedAt": "2026-11-14T08:43:00",
         "timeRule": "hora-expedida-minus-1h",
         "branch": "SUCURSAL UNO"
@@ -11639,6 +11640,7 @@
         "day": 14,
         "city": "culiacan",
         "stockCity": "culiacan",
+        "inventoryApplied": true,
         "issuedAt": "2026-11-14T08:54:00",
         "timeRule": "hora-expedida-minus-1h",
         "branch": "SUCURSAL UNO"
@@ -11687,6 +11689,7 @@
         "day": 14,
         "city": "culiacan",
         "stockCity": "culiacan",
+        "inventoryApplied": true,
         "issuedAt": "2026-11-14T09:26:00",
         "timeRule": "hora-expedida-minus-1h",
         "branch": "SUCURSAL UNO",
@@ -11728,6 +11731,7 @@
         "day": 14,
         "city": "culiacan",
         "stockCity": "culiacan",
+        "inventoryApplied": true,
         "issuedAt": "2026-11-14T10:51:00",
         "timeRule": "hora-expedida-minus-1h",
         "branch": "SUCURSAL UNO"
@@ -11768,6 +11772,7 @@
         "day": 14,
         "city": "culiacan",
         "stockCity": "culiacan",
+        "inventoryApplied": true,
         "issuedAt": "2026-11-14T11:38:00",
         "timeRule": "hora-expedida-minus-1h",
         "branch": "SUCURSAL UNO",
@@ -11809,6 +11814,7 @@
         "day": 14,
         "city": "culiacan",
         "stockCity": "culiacan",
+        "inventoryApplied": true,
         "issuedAt": "2026-11-14T12:27:00",
         "timeRule": "hora-expedida-minus-1h",
         "branch": "SUCURSAL UNO"
