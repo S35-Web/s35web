@@ -5226,6 +5226,17 @@
         if (meta.branch !== 'SUCURSAL UNO') return false;
         return normalizeCityId(sale.city || meta.city || '') === 'culiacan';
     }
+    function isPostOpeningBranchPrecompra(sale) {
+        if (!sale || !afterTesoreriaOpening(sale.createdAt)) return false;
+        const meta = sale.meta || {};
+        if (meta.kind !== 'precompra') return false;
+        if (meta.branch !== 'SUCURSAL UNO') return false;
+        return normalizeCityId(sale.city || meta.city || '') === 'culiacan';
+    }
+    function catchupNoteSkipsInventory(sale) {
+        const meta = (sale && sale.meta) || {};
+        return meta.kind === 'precompra' || meta.skipInventory === true;
+    }
     /**
      * Notas de Sucursal Uno subidas el 7 nov 2026. El panel las marcó como
      * descontadas antes de mover el producto terminado, así que hay que
@@ -5296,7 +5307,7 @@
         let deducted = 0;
         let dirty = false;
         historicalSales.forEach(function (s) {
-            if (!isPostOpeningBranchReceipt(s)) {
+            if (!isPostOpeningBranchReceipt(s) && !isPostOpeningBranchPrecompra(s)) {
                 keep.push(s);
                 return;
             }
@@ -5316,7 +5327,9 @@
                     putSaleEdit(existing.id, payload);
                     dirty = true;
                 }
-                if (s.meta && s.meta.inventoryApplied) {
+                if (catchupNoteSkipsInventory(s) || catchupNoteSkipsInventory(existing)) {
+                    // La precompra no baja existencia al cargarse. Sale al surtirla.
+                } else if (s.meta && s.meta.inventoryApplied) {
                     if (!saleInventoryAlreadyApplied(existing)) {
                         existing.meta = Object.assign({}, existing.meta || {}, { inventoryApplied: true });
                         markCatchupInventory(existing.id);
@@ -5330,13 +5343,18 @@
                 return;
             }
             // Una nota que ya bajó existencia (inventoryApplied) entra al panel
-            // sin volver a descontar. El resto sí descuenta una sola vez.
-            const alreadyApplied = !!(s.meta && s.meta.inventoryApplied);
+            // sin volver a descontar. Una precompra tampoco descuenta aquí.
+            const skipInventory = catchupNoteSkipsInventory(s);
+            const alreadyApplied = !skipInventory && !!(s.meta && s.meta.inventoryApplied);
             const meta = Object.assign({}, s.meta || {}, {
                 source: 'panel-note',
                 catchupSource: (s.meta && s.meta.source) || 'old-panel',
                 inventoryApplied: alreadyApplied
             });
+            if (skipInventory) {
+                meta.skipInventory = true;
+                meta.inventoryApplied = false;
+            }
             if (!meta.storeName) meta.storeName = meta.branch || 'SUCURSAL UNO';
             const live = Object.assign({}, s, {
                 user: 'nota-sucursal',
@@ -5347,7 +5365,9 @@
             if (rid) liveByReceipt[rid] = live;
             added += 1;
             dirty = true;
-            if (alreadyApplied) markCatchupInventory(live.id);
+            if (skipInventory) {
+                // Sin marca de inventario: el surtido sí puede descontar después.
+            } else if (alreadyApplied) markCatchupInventory(live.id);
             else if (deductCatchupFinishedOnce(live)) deducted += 1;
         });
         if (keep.length !== historicalSales.length) {
