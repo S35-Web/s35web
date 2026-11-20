@@ -11931,6 +11931,10 @@
                 '<td>' + saleReceiptCellHtml(s) + '</td>' +
                 '<td><span class="badge ' + (s.billing === 'facturado' ? 'b-success' : '') + '">' + esc(billLabel(s.billing, s)) + '</span></td>' +
                 '<td class="num">' + money(s.total) + '</td>' +
+                '<td><div class="row-actions">' +
+                '<button type="button" class="btn" data-cobranza-edit="' + esc(s.id) + '" title="Editar esta nota">' +
+                '<i class="fa-solid fa-pen-to-square"></i> Editar</button>' +
+                '</div></td>' +
                 '</tr>';
         }).join('');
         card.hidden = false;
@@ -11941,6 +11945,21 @@
         }
         updateCobranzaCollectBar();
         card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function openCobranzaSaleEdit(id) {
+        const sale = saleById(id);
+        if (!sale) {
+            toast('Nota no encontrada');
+            return;
+        }
+        if (precompraHasDeliveries(sale)) {
+            toast('No se puede editar una precompra con surtidos');
+            return;
+        }
+        openSaleNoteById(id);
+        setSaleNoteMode(true);
+        syncSaleNoteDeleteVisibility();
     }
 
     function closeCobranzaDetail() {
@@ -12061,6 +12080,12 @@
                 if (e.target && e.target.matches('input[data-cobranza-sale]')) {
                     updateCobranzaCollectBar();
                 }
+            });
+            detailBody.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-cobranza-edit]');
+                if (!btn) return;
+                e.preventDefault();
+                openCobranzaSaleEdit(btn.getAttribute('data-cobranza-edit'));
             });
         }
         const selectAll = document.getElementById('cobranzaSelectAll');
