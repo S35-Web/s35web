@@ -31,7 +31,9 @@
         holder: 'PRODUCTOS S35 S.A. DE C.V.',
         city: 'culiacan',
         opening: 1838.47,
-        closing: 226545.87
+        closing: 180688.49,
+        /** Corte del extracto Banregio. Después solo entran ventas y compras a proveedores. */
+        statementAsOf: '2026-11-20T23:00:00.000Z'
     };
     const SALE_EDITS_KEY = 's35_sale_edits_v1';
     const CLIENTS_KEY = 's35_pos_clients';
@@ -4343,6 +4345,11 @@
         }
         return false;
     }
+    function isAfterBankStatement(iso) {
+        const cutoff = Date.parse(TESORERIA_BANK_META.statementAsOf || '');
+        const t = Date.parse(iso || '');
+        return isFinite(cutoff) && isFinite(t) && t > cutoff;
+    }
     function afterTesoreriaOpening(iso) {
         const t = Date.parse(iso || '');
         return isFinite(t) && t > TESORERIA_OPENED_AT;
@@ -4530,6 +4537,7 @@
             // El CSV histórico puede venir etiquetado Banorte; el banco operativo es Banregio.
             bank.name = TESORERIA_BANK_META.name;
             if (bank.closing != null) TESORERIA_BANK_META.closing = roundMoney(bank.closing);
+            if (bank.statementAsOf) TESORERIA_BANK_META.statementAsOf = bank.statementAsOf;
             if (upsertTesoreriaSeed({
                 id: 'banorte-saldo-inicial',
                 createdAt: '2026-06-01T06:00:00.000Z',
@@ -4606,7 +4614,7 @@
             buckets[acc.id] = {
                 tickets: 0, gastos: 0, ajustes: 0, apertura: 0, transfer: 0,
                 tarjetaFact: 0, tarjetaSf: 0, tarjetaSfGross: 0, clipFees: 0,
-                extracto: 0, bankSaldo: null
+                extracto: 0, bankSaldo: null, ventasNuevas: 0, comprasNuevas: 0
             };
         });
         const statement = filterTesoreriaMovsByCity(tesoreriaMovs, city).filter(isPostOpeningBankStatement);
@@ -4619,10 +4627,15 @@
             return (Date.parse(a && a.createdAt) || 0) - (Date.parse(b && b.createdAt) || 0);
         }).forEach(function (sale) {
             const billing = sale.billing || 'sin_facturar';
+            const ventaNueva = isAfterBankStatement(sale.createdAt) ||
+                isAfterBankStatement(sale.meta && sale.meta.collectedAt);
             salePaymentLines(sale).forEach(function (p) {
                 const account = tesoreriaAccountOfPayment(p.method, billing);
                 if (!account) return;
                 if (account === 'banco' && claimBankDepositForSale(depositClaimPool, sale, p.amount)) return;
+                if (account === 'banco' && ventaNueva) {
+                    buckets.banco.ventasNuevas = roundMoney(buckets.banco.ventasNuevas + p.amount);
+                }
                 // Tarjeta s/factura (Clip): abona el neto tras comisión 3.60% + IVA 16% sobre comisión.
                 const credit = account === 'tarjeta_sf' ? clipTarjetaSfNet(p.amount) : p.amount;
                 buckets[account].tickets = roundMoney(buckets[account].tickets + credit);
@@ -4644,21 +4657,27 @@
             })
         ));
         const movs = filterTesoreriaMovsByCity(tesoreriaMovs, city);
-        buckets.banco.porCobrar = roundMoney(
-            filterSalesByCity(pendingCollectionSales(), city).reduce(function (n, s) {
-                return n + (Number(s.total) || 0);
-            }, 0)
-        );
+        movs.forEach(function (m) {
+            if (!m || m.account !== 'banco' || !isAfterBankStatement(m.createdAt)) return;
+            if (!tesoreriaAffectsBalance(m)) return;
+            const src = m.source || '';
+            if (src !== 'compra-mp' && src !== 'pago-proveedor') return;
+            buckets.banco.comprasNuevas = roundMoney(
+                buckets.banco.comprasNuevas + tesoreriaSignedAmount(m)
+            );
+        });
         TESORERIA_ACCOUNTS.forEach(function (acc) {
             buckets[acc.id].apertura = tesoreriaOpeningAmount(movs, acc.id, city);
             buckets[acc.id].ajustes = roundMoney(sumTesoreriaAdjustments(movs, acc.id));
             if (acc.id === 'banco') {
-                // Extracto Banregio = verdad. El total grande es solo dinero en cuenta.
-                // Tickets aún no liquidados y por cobrar se muestran aparte (no se suman).
+                // El saldo grande es el extracto Banregio. Después del corte solo se suman
+                // ventas nuevas y compras o pagos a proveedores.
                 const live = latestBanregioStatementSaldo(city);
                 buckets[acc.id].bankSaldo = live;
                 if (live != null) {
-                    buckets[acc.id].total = roundMoney(live);
+                    buckets[acc.id].total = roundMoney(
+                        live + (buckets[acc.id].ventasNuevas || 0) + (buckets[acc.id].comprasNuevas || 0)
+                    );
                 } else {
                     buckets[acc.id].total = roundMoney(
                         buckets[acc.id].apertura + buckets[acc.id].ajustes +
@@ -8781,11 +8800,15 @@
                 { label: 'Cargos del mes', amount: mesCsv.cargos, out: true },
                 { label: 'Depósitos del mes', amount: mesCsv.depositos }
             ];
-            if (acc.banco.porCobrar > 0) {
-                rows.push({ label: 'Por cobrar', amount: acc.banco.porCobrar, porCobrar: true });
+            if (acc.banco.ventasNuevas) {
+                rows.push({ label: 'Ventas nuevas', amount: acc.banco.ventasNuevas });
             }
-            if (acc.banco.tickets > 0) {
-                rows.push({ label: 'Pendiente por liquidar', amount: acc.banco.tickets, porCobrar: true });
+            if (acc.banco.comprasNuevas) {
+                rows.push({
+                    label: 'Compras a proveedores',
+                    amount: Math.abs(acc.banco.comprasNuevas),
+                    out: acc.banco.comprasNuevas < 0
+                });
             }
             bankLines.innerHTML = dineroLinesHtml(rows);
         }
