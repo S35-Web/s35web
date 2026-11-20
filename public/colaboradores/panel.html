@@ -5168,7 +5168,7 @@
         .mat-count-print th.num,
         .mat-count-print td.num { text-align: right; }
         .mat-count-print th.blank,
-        .mat-count-print td.blank { text-align: center; width: 28%; }
+        .mat-count-print td.blank { text-align: center; width: 42%; }
         .mat-count-print td {
             padding: 8px 6px 8px 0;
             border-bottom: 1px solid #d4d4d4;
@@ -13772,15 +13772,9 @@
     }
     function matCountRowHtml(m) {
         const unit = m.unit ? String(m.unit) : '—';
-        const reserved = materialReserved(m);
-        const stockLabel = reserved > 0
-            ? (String(m.stock) + ' (res. ' + reserved + ')')
-            : String(m.stock);
         return '<tr>' +
             '<td><span class="mc-name">' + esc(m.name) + '</span>' +
             '<span class="mc-unit">' + esc(unit) + '</span></td>' +
-            '<td class="num">' + esc(stockLabel) + '</td>' +
-            '<td class="num">' + esc(String(m.minStock)) + '</td>' +
             '<td class="blank"><span class="mc-blank-line" aria-hidden="true"></span></td>' +
             '</tr>';
     }
@@ -13799,8 +13793,6 @@
 
         const thead = '<thead><tr>' +
             '<th>Materia prima</th>' +
-            '<th class="num">Sist.</th>' +
-            '<th class="num">Mín.</th>' +
             '<th class="blank">Inventario real</th>' +
             '</tr></thead>';
 
