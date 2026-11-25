@@ -19994,6 +19994,25 @@
     function canEditLotTickets() {
         return canVoidConfirmedLotTickets();
     }
+    /**
+     * Sacos sugeridos al cerrar el lote. El rendimiento teórico ya es el total
+     * de los N lotes (igual que el plan de producción). Tickets viejos guardaron
+     * ese total multiplicado otra vez por los lotes.
+     */
+    function suggestedLotBags(t) {
+        if (!t) return 1;
+        const lots = Math.max(1, Math.floor(Number(t.lots) || 1));
+        const theo = Number(t.yieldTheoretical) || 0;
+        let stored = Number(t.bagsExpected) || 0;
+        if (lots > 1 && theo > 0 && stored > 0 && stored === Math.round(theo) * lots) {
+            stored = Math.round(theo / lots) * lots;
+        }
+        const mid = stored || (theo > 0 ? Math.round(theo / lots) * lots : 0) ||
+            (t.yieldMin && t.yieldMax
+                ? Math.round((Number(t.yieldMin) + Number(t.yieldMax)) / 2)
+                : 0);
+        return Math.max(1, Math.floor(Number(mid) || 1));
+    }
     function fillLotConfirmFieldsFromTicket(t) {
         const bags = document.getElementById('lotConfirmBags');
         const producedBy = document.getElementById('lotConfirmProducedBy');
@@ -20003,11 +20022,8 @@
         if (!bags || !notes) return;
         const confirmed = t && t.status === 'confirmed';
         const mid = confirmed
-            ? (Number(t.bagsOut) || Number(t.bagsExpected) || 0)
-            : (t.bagsExpected || Math.round(Number(t.yieldTheoretical) || 0) ||
-                (t.yieldMin && t.yieldMax
-                    ? Math.round((Number(t.yieldMin) + Number(t.yieldMax)) / 2)
-                    : 0));
+            ? (Number(t.bagsOut) || suggestedLotBags(t))
+            : suggestedLotBags(t);
         bags.value = String(Math.max(1, Math.floor(Number(mid) || 1)));
         if (producedBy) producedBy.value = t.producedBy || '';
         notes.value = t.notes || '';
@@ -20090,7 +20106,10 @@
             if (ln.hidden) chemKg += Number(ln.amount) || 0;
         });
         chemKg = Math.round(chemKg * 1000) / 1000;
-        const bagsExpected = lotMode ? Math.round(theo) * lots : lots;
+        // theo ya incluye los lotes. No volver a multiplicar: si no, 15 batidas
+        // de ~31 sacos sugieren 7005 en lugar de ~465.
+        const lotCount = Math.max(1, Math.floor(Number(lots) || 1));
+        const bagsExpected = Math.max(1, bagsExpectedPerLot(f) * lotCount);
         const packTheo = packagingTheoNeed(f, lots, r);
         const packLines = packTheo
             ? [{
