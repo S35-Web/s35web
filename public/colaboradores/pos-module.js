@@ -13,6 +13,9 @@
         'waxtard-basecoat-gris-plus': 'basecoat-plus-gris'
     };
     const SALES_KEY = 's35_pos_sales';
+    const CHECKOUT_ATTEMPT_KEY = 's35_pos_checkout_attempt';
+    let checkoutBusy = false;
+    let checkoutAttempt = null;
     const CAJA_GASTOS_KEY = 's35_caja_gastos_v1';
     const TESORERIA_MOVS_KEY = 's35_tesoreria_movs_v1';
     /** Corte oficial dado el 26 sep 2026 · 13:40 (Culiacán). Lo anterior no mueve el saldo. */
@@ -480,8 +483,12 @@
         return roundMoney(amount);
     }
 
+    function isCancelledSale(sale) {
+        return !!(sale && String(sale.status || '') === 'cancelada');
+    }
+
     function isOpenPrecompra(sale) {
-        return isPrecompraSale(sale) && precompraPendingUnits(sale) > 0;
+        return isPrecompraSale(sale) && !isCancelledSale(sale) && precompraPendingUnits(sale) > 0;
     }
 
     function precompraHasDeliveries(sale) {
@@ -1097,7 +1104,7 @@
         });
         const obs = saleObservations(sale);
         const parts = [
-            'S-35 · Nota de venta',
+            isCancelledSale(sale) ? 'S-35 · Nota de venta CANCELADA' : 'S-35 · Nota de venta',
             'Folio: ' + (sale.folio || ''),
             'Fecha: ' + formatSaleDateTime(sale.createdAt),
             'Sucursal: ' + cityLabel(saleCity(sale)),
@@ -1178,8 +1185,9 @@
             return '<span class="hist-receipt">' + esc(inv || sale.folio || '—') +
                 '<span class="sub">Factura CFDI</span></span>';
         }
+        const cancelSub = isCancelledSale(sale) ? 'Cancelada' : 'Folio POS';
         return '<span class="hist-receipt">' + esc(sale.folio || '—') +
-            (sale.folio ? '<span class="sub">Folio POS</span>' : '') + '</span>';
+            (sale.folio ? '<span class="sub">' + esc(cancelSub) + '</span>' : '') + '</span>';
     }
 
     function noteDateDots(iso) {
@@ -1287,7 +1295,9 @@
             rfc ? ('RFC ' + rfc) : '',
             phone ? ('Tel. ' + phone) : ''
         ].filter(Boolean).join(' · ');
-        const docTitle = isPrecompraSale(sale) ? 'Precompra' : 'Nota de venta';
+        const docTitle = isCancelledSale(sale)
+            ? 'Venta cancelada'
+            : (isPrecompraSale(sale) ? 'Precompra' : 'Nota de venta');
         const total = Number(sale.total) || 0;
         const condicion = isPendingCollection(sale) ? 'Crédito' : 'Contado';
         return '' +
@@ -1897,6 +1907,10 @@
     }
 
     function setSaleNoteMode(editing) {
+        if (editing && isCancelledSale(saleById(activeNoteSaleId))) {
+            toast('Una venta cancelada no se puede editar');
+            editing = false;
+        }
         saleNoteEditing = !!editing;
         if (!saleNoteEditing) closeSneClientPicker();
         const modal = document.getElementById('saleNoteModal');
@@ -1908,7 +1922,7 @@
         if (doc) doc.hidden = saleNoteEditing;
         if (edit) edit.hidden = !saleNoteEditing;
         if (share) share.hidden = saleNoteEditing;
-        if (editBtn) editBtn.hidden = saleNoteEditing;
+        if (editBtn) editBtn.hidden = saleNoteEditing || isCancelledSale(saleById(activeNoteSaleId));
         if (saleNoteEditing) {
             const sale = saleById(activeNoteSaleId);
             if (sale) renderSaleNoteEditForm(sale);
@@ -1919,6 +1933,10 @@
     function saveSaleNoteEdit() {
         const sale = saleById(activeNoteSaleId);
         if (!sale) return;
+        if (isCancelledSale(sale)) {
+            toast('Una venta cancelada no se puede editar');
+            return;
+        }
         if (precompraHasDeliveries(sale)) {
             toast('No se puede editar una precompra con surtidos');
             return;
@@ -1927,7 +1945,7 @@
         if (!patch) return;
         const beforeItems = (sale.items || []).map(function (it) { return Object.assign({}, it); });
         const beforeStockCity = saleStockCity(sale);
-        const trackStock = !isHistoricalImportSale(sale) && !isPrecompraSale(sale);
+        const trackStock = !isHistoricalImportSale(sale) && !isPrecompraSale(sale) && !isCancelledSale(sale);
         const nextStockCity = normalizeCityId(patch.stockCity || patch.city || beforeStockCity);
         delete patch.stockCity;
         Object.assign(sale, patch);
@@ -2071,7 +2089,8 @@
         const delBtn = document.getElementById('saleNoteDelete');
         if (!delBtn) return;
         const sale = saleById(activeNoteSaleId);
-        const canDelete = isAdminRole() && !!sale && !saleNoteEditing;
+        const canDelete = isAdminRole() && !!sale && !saleNoteEditing && !isCancelledSale(sale);
+        delBtn.textContent = (sale && isHistoricalImportSale(sale)) ? 'Eliminar' : 'Cancelar';
         if (canDelete) delBtn.removeAttribute('hidden');
         else delBtn.setAttribute('hidden', '');
     }
@@ -2098,7 +2117,7 @@
             edit.innerHTML = '';
         }
         if (share) share.hidden = false;
-        if (editBtn) editBtn.hidden = false;
+        if (editBtn) editBtn.hidden = isCancelledSale(sale);
         if (modal) modal.classList.remove('is-editing');
         if (title) {
             title.textContent = (isPrecompraSale(sale) ? 'Precompra · ' : 'Nota de venta · ') + saleReceiptLabel(sale);
@@ -2208,23 +2227,62 @@
             return;
         }
         const label = saleReceiptLabel(sale);
-        if (!confirm('¿Eliminar esta venta? No se puede deshacer')) return;
         const wasHist = isHistoricalImportSale(sale);
-        if (!wasHist && !isPrecompraSale(sale)) applySaleInventoryChange(sale.items, [], saleStockCity(sale));
-        if (wasHist) {
-            historicalSales = historicalSales.filter(function (s) { return s.id !== id; });
-            putSaleEdit(id, { deleted: true });
-            invalidateAnalyticsSalesCache();
-        } else {
+        if (!wasHist) {
+            if (isCancelledSale(sale)) {
+                toast('Esa venta ya está cancelada');
+                return;
+            }
+            if (!confirm('¿Cancelar ' + (sale.folio || 'esta venta') + '? El folio queda usado y, si se había descontado, el inventario regresa.')) return;
+            const skipStock = !!(sale.meta && (sale.meta.skipInventory || sale.meta.kind === 'precompra')) || isPrecompraSale(sale);
+            if (!skipStock) {
+                applySaleInventoryChange(sale.items, [], saleStockCity(sale), {
+                    reason: 'cancelacion',
+                    ref: { type: 'sale', id: sale.id, folio: sale.folio || '' },
+                    note: 'Cancelación ' + (sale.folio || sale.id)
+                });
+            }
             const now = new Date().toISOString();
-            sales = sales.filter(function (s) { return s.id !== id; });
-            putSaleEdit(id, { deleted: true });
-            // Tombstone en la colección sync para que merge-by-id no resucite el ticket.
-            const raw = loadSalesRaw().filter(function (s) { return !s || s.id !== id; });
-            raw.push({ id: id, deleted: true, editedAt: now, updatedAt: now });
-            localStorage.setItem(SALES_KEY, JSON.stringify({ items: raw, updatedAt: now }));
+            const who = currentUserSnapshot();
+            sale.status = 'cancelada';
+            sale.cancelledAt = now;
+            sale.cancelledBy = {
+                id: who && who.id,
+                username: who && who.username,
+                name: who && (who.name || who.username)
+            };
+            sale.editedAt = now;
+            sale.updatedAt = now;
             saveSales();
+            const token = localStorage.getItem('s35_admin_token') || '';
+            if (token && sale.folio) {
+                fetch('/api/pos-checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        action: 'cancel',
+                        id: sale.id,
+                        folio: sale.folio,
+                        cancelledBy: sale.cancelledBy
+                    })
+                }).catch(function () {});
+            }
+            closeSaleNoteModal();
+            renderHistory();
+            refreshSalesDependentViews();
+            updatePosKpis();
+            renderDashboardRadar();
+            renderPrecompras();
+            toast((sale.folio || label || 'Venta') + ' cancelada');
+            return;
         }
+        if (!confirm('¿Eliminar esta venta? No se puede deshacer')) return;
+        historicalSales = historicalSales.filter(function (s) { return s.id !== id; });
+        putSaleEdit(id, { deleted: true });
+        invalidateAnalyticsSalesCache();
         closeSaleNoteModal();
         renderHistory();
         refreshSalesDependentViews();
@@ -4040,11 +4098,16 @@
     }
 
     function salesForAnalytics() {
-        if (!historicalSales.length) return sales;
+        const live = sales.filter(function (s) { return !isCancelledSale(s); });
+        if (!historicalSales.length) return live;
         if (!analyticsSalesCache) {
-            analyticsSalesCache = historicalSales.concat(sales);
+            analyticsSalesCache = historicalSales.concat(live);
         }
         return analyticsSalesCache;
+    }
+    function historySourceSales() {
+        if (!historicalSales.length) return sales.slice();
+        return historicalSales.concat(sales);
     }
 
     function loadSalesRaw() {
@@ -4607,7 +4670,7 @@
     function computeDineroAccounts(cityFilter) {
         const city = cityFilter == null ? dineroCityFilter : cityFilter;
         const list = filterSalesByCity(sales, city).filter(function (sale) {
-            return afterTesoreriaOpening(sale && sale.createdAt);
+            return afterTesoreriaOpening(sale && sale.createdAt) && !isCancelledSale(sale);
         });
         const buckets = {};
         TESORERIA_ACCOUNTS.forEach(function (acc) {
@@ -5643,7 +5706,7 @@
         const q = (document.getElementById('posHistorySearch') && document.getElementById('posHistorySearch').value || '').toLowerCase().trim();
         const fromB = historyDateInputBounds('posHistoryFrom');
         const toB = historyDateInputBounds('posHistoryTo');
-        return salesForAnalytics().filter(function (s) {
+        return historySourceSales().filter(function (s) {
             return saleMatchesHistoryFilters(s, q, fromB, toB);
         }).sort(function (a, b) {
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -5684,7 +5747,7 @@
                 const pendingHint = isOpenPrecompra(s)
                     ? (' <span class="muted" style="font-size:11px">' + formatUnits(precompraPendingUnits(s)) + ' pend.</span>')
                     : '';
-                return '<tr>' +
+                return '<tr' + (isCancelledSale(s) ? ' class="is-cancelled"' : '') + '>' +
                     '<td class="muted">' + esc(dateStr) + '</td>' +
                     '<td>' + saleReceiptCellHtml(s) + '</td>' +
                     '<td>' + esc(clientLabel) + '</td>' +
@@ -6588,7 +6651,7 @@
         }
         if (!cart.length) {
             body.innerHTML = '<div class="empty"><span class="empty-title">Ticket vacío</span><span class="empty-sub">Toca un producto para sumarlo.</span></div>';
-            if (btn) btn.disabled = true;
+            if (btn && !checkoutBusy) btn.disabled = true;
         } else {
             body.innerHTML = cart.map(function (it, idx) {
                 const base = it.basePrice != null ? it.basePrice : it.price;
@@ -6666,11 +6729,14 @@
                     qtyRow +
                     '</div>';
             }).join('');
-            if (btn) btn.disabled = !hasCheckoutClientSelection();
+            if (btn && !checkoutBusy) btn.disabled = !hasCheckoutClientSelection();
         }
-        if (btn) {
+        if (btn && checkoutBusy) {
+            btn.disabled = true;
+            btn.textContent = 'Cobrando…';
+        } else if (btn) {
             btn.textContent = isPosPrecompraMode()
-                ? (cart.length ? 'Registrar precompra' : 'Registrar precompra')
+                ? 'Registrar precompra'
                 : 'Cobrar';
         }
         if (totalEl) totalEl.textContent = money(cartTotal());
@@ -7606,8 +7672,50 @@
         renderProducts();
     }
 
-    function nextFolio() {
-        return 'POS-' + String(sales.length + 1).padStart(4, '0');
+    function newCheckoutKey() {
+        return 'ck-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    }
+    function checkoutSignature(ticket) {
+        return JSON.stringify({
+            clientId: ticket.clientId || '',
+            total: Math.round((Number(ticket.total) || 0) * 100),
+            billing: ticket.billing || '',
+            paymentMethod: ticket.paymentMethod || '',
+            city: ticket.city || '',
+            items: (ticket.items || []).map(function (it) {
+                return [it.product, it.qty, it.price];
+            })
+        });
+    }
+    function bindCheckoutAttempt(ticket) {
+        const signature = checkoutSignature(ticket);
+        if (!checkoutAttempt || checkoutAttempt.signature !== signature) {
+            checkoutAttempt = {
+                key: newCheckoutKey(),
+                signature: signature,
+                saleId: 'sale-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+            };
+        }
+        ticket.id = checkoutAttempt.saleId;
+        return checkoutAttempt;
+    }
+    function persistCheckoutAttempt() {
+        try {
+            if (!checkoutAttempt) sessionStorage.removeItem(CHECKOUT_ATTEMPT_KEY);
+            else sessionStorage.setItem(CHECKOUT_ATTEMPT_KEY, JSON.stringify(checkoutAttempt));
+        } catch (_) {}
+    }
+    function setCheckoutBusy(on) {
+        checkoutBusy = !!on;
+        const btn = document.getElementById('posCheckoutBtn');
+        if (!btn) return;
+        if (on) {
+            btn.disabled = true;
+            btn.setAttribute('aria-busy', 'true');
+            btn.textContent = 'Cobrando…';
+            return;
+        }
+        btn.removeAttribute('aria-busy');
     }
 
     /**
@@ -7625,6 +7733,7 @@
      * @param {string} [opts.city]
      */
     function checkout(opts) {
+        if (checkoutBusy) return;
         opts = (opts && typeof opts === 'object' && !opts.type) ? opts : {};
         const fromGenerate = !!opts.fromGenerate;
         const useExternalItems = !!(opts.cartItems && opts.cartItems.length);
@@ -7739,8 +7848,8 @@
         let soldBy = currentUserSnapshot();
 
         const ticket = {
-            id: 'sale-' + Date.now().toString(36),
-            folio: nextFolio(),
+            id: '',
+            status: 'activa',
             createdAt: createdAt,
             clientId: client ? client.id : null,
             client: clientSnapshot,
@@ -7777,6 +7886,7 @@
             userName: soldBy.name || soldBy.username
         };
         if (!useExternalItems && appliedPromoCode) ticket.promoCode = appliedPromoCode;
+        bindCheckoutAttempt(ticket);
         ticket.note = {
             id: 'note-' + ticket.id,
             folio: ticket.folio,
@@ -7801,19 +7911,44 @@
         }
         if (!ticket.meta) ticket.meta = { source: fromGenerate ? 'pos-generate' : 'pos' };
         setSaleStockCity(ticket, stockCityId);
+        submitPosCheckout(ticket, {
+            fromGenerate: fromGenerate,
+            useExternalItems: useExternalItems,
+            skipInventory: skipInventory,
+            wantPrecompra: wantPrecompra,
+            stockCityId: stockCityId,
+            saleCityId: saleCityId,
+            billing: billing
+        });
+    }
 
-        if (!skipInventory) {
-            applySaleInventoryChange([], ticket.items, stockCityId, {
-                reason: 'venta',
-                ref: { type: 'sale', id: ticket.id, folio: ticket.folio || '' },
-                note: 'Venta ' + (ticket.folio || ticket.id)
-            });
+    function checkoutSkipsInventory(sale) {
+        if (!sale) return true;
+        if (isPrecompraSale(sale)) return true;
+        return !!(sale.meta && (sale.meta.skipInventory || sale.meta.kind === 'precompra'));
+    }
+
+    function finishPosCheckout(sale, ctx) {
+        ctx = ctx || {};
+        const skipInventory = checkoutSkipsInventory(sale);
+        const stockCityId = saleStockCity(sale);
+        const saleCityId = normalizeCityId(sale && sale.city);
+        const wantPrecompra = isPrecompraSale(sale);
+        const already = sales.some(function (row) { return row && row.id === sale.id; });
+        if (!already) {
+            if (!skipInventory) {
+                applySaleInventoryChange([], sale.items, stockCityId, {
+                    reason: 'venta',
+                    ref: { type: 'sale', id: sale.id, folio: sale.folio || '' },
+                    note: 'Venta ' + (sale.folio || sale.id)
+                });
+            }
+            sales.unshift(sale);
+            saveSales();
         }
-
-        sales.unshift(ticket);
-        saveSales();
-
-        if (!useExternalItems) {
+        checkoutAttempt = null;
+        persistCheckoutAttempt();
+        if (!ctx.useExternalItems) {
             cart = [];
             appliedPromoCode = null;
             editingPriceIdx = null;
@@ -7825,31 +7960,97 @@
             if (billS) billS.checked = true;
             setSelectedClientId('', { refresh: false });
             closeClientPicker();
-            renderCart();
             renderProducts();
         }
         refreshSalesDependentViews();
-
         const stockHint = (!skipInventory && stockCityId !== saleCityId)
             ? (' · surtido ' + cityLabel(stockCityId))
             : '';
         const invHint = wantPrecompra
             ? ' · precompra (sin descontar inventario)'
             : (skipInventory ? ' · sin descontar inventario' : stockHint);
-        toast((fromGenerate ? 'Ticket generado ' : (wantPrecompra ? 'Precompra ' : 'Venta ')) +
-            ticket.folio + ' · ' + formatSalePayLabel(ticket) + ' · ' + billLabel(billing) + invHint);
-
-        if (fromGenerate) {
+        toast((ctx.fromGenerate ? 'Ticket generado ' : (wantPrecompra ? 'Precompra ' : 'Venta ')) +
+            sale.folio + ' · ' + formatSalePayLabel(sale) + ' · ' + billLabel(sale.billing || ctx.billing) + invHint);
+        if (ctx.fromGenerate) {
             closePosGenerateModal();
-            focusHistoryOnSaleDate(ticket.createdAt);
+            focusHistoryOnSaleDate(sale.createdAt);
             renderHistory();
-            openSaleNoteModal(ticket);
+            openSaleNoteModal(sale);
         } else {
             renderHistory();
-            openSaleNoteModal(ticket);
+            openSaleNoteModal(sale);
         }
         renderCobranza();
         renderPrecompras();
+    }
+
+    function submitPosCheckout(ticket, ctx) {
+        if (checkoutBusy) return;
+        const attempt = bindCheckoutAttempt(ticket);
+        if (!attempt.sale) {
+            attempt.sale = ticket;
+            attempt.ctx = ctx;
+            persistCheckoutAttempt();
+        }
+        const payload = attempt.sale;
+        const savedCtx = attempt.ctx || ctx;
+        setCheckoutBusy(true);
+        const token = localStorage.getItem('s35_admin_token') || '';
+        fetch('/api/pos-checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                action: 'checkout',
+                idempotencyKey: attempt.key,
+                sale: payload
+            })
+        }).then(function (res) {
+            return res.json().then(function (data) {
+                return { ok: res.ok, status: res.status, data: data || {} };
+            }).catch(function () {
+                return { ok: false, status: res.status, data: {} };
+            });
+        }).then(function (res) {
+            if (res.status === 409) {
+                toast('El cobro ya se está registrando. Vuelve a intentar en un momento.');
+                return;
+            }
+            if (!res.ok || !res.data.sale || !res.data.sale.folio) {
+                toast((res.data && res.data.error) || 'No se pudo asignar el folio. El ticket sigue en pantalla.');
+                return;
+            }
+            finishPosCheckout(res.data.sale, savedCtx);
+        }).catch(function () {
+            toast('Sin conexión. El ticket sigue en pantalla; al reintentar se usa el mismo cobro.');
+        }).then(function () {
+            setCheckoutBusy(false);
+            renderCart();
+        });
+    }
+
+    function recoverPendingCheckout() {
+        if (checkoutBusy) return;
+        let saved = null;
+        try {
+            saved = JSON.parse(sessionStorage.getItem(CHECKOUT_ATTEMPT_KEY) || 'null');
+        } catch (_) {
+            saved = null;
+        }
+        if (!saved || !saved.key || !saved.saleId || !saved.sale || !saved.ctx) return;
+        if (sales.some(function (row) { return row && row.id === saved.saleId && row.folio; })) {
+            checkoutAttempt = null;
+            persistCheckoutAttempt();
+            return;
+        }
+        checkoutAttempt = {
+            key: saved.key,
+            signature: saved.signature,
+            saleId: saved.saleId
+        };
+        submitPosCheckout(saved.sale, saved.ctx);
     }
 
     function posPaySplitEnabled() {
@@ -8925,7 +9126,7 @@
         });
         const ledgerDepositPool = buildBankDepositClaimPool();
         filterSalesByCity(sales, dineroCityFilter).filter(function (sale) {
-            return afterTesoreriaOpening(sale && sale.createdAt);
+            return afterTesoreriaOpening(sale && sale.createdAt) && !isCancelledSale(sale);
         }).slice().sort(function (a, b) {
             return (Date.parse(a && a.createdAt) || 0) - (Date.parse(b && b.createdAt) || 0);
         }).forEach(function (sale) {
@@ -10331,7 +10532,10 @@
             });
         }
         const checkoutBtn = document.getElementById('posCheckoutBtn');
-        if (checkoutBtn) checkoutBtn.addEventListener('click', function () { checkout(); });
+        if (checkoutBtn) checkoutBtn.addEventListener('click', function () {
+            if (checkoutBusy) return;
+            checkout();
+        });
 
         const paySplitCb = document.getElementById('posPaySplit');
         if (paySplitCb) {
@@ -11976,6 +12180,10 @@
             toast('Nota no encontrada');
             return;
         }
+        if (isCancelledSale(sale)) {
+            toast('Una venta cancelada no se puede editar');
+            return;
+        }
         if (precompraHasDeliveries(sale)) {
             toast('No se puede editar una precompra con surtidos');
             return;
@@ -13069,6 +13277,7 @@
                 return pushClientsToServer();
             }).catch(function () {});
             refreshPosAfterDataLoad();
+            recoverPendingCheckout();
         }
 
         bind();
