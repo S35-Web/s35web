@@ -15,6 +15,7 @@ const {
   formatRepairReport,
   formatPosFolio,
   parsePosSeq,
+  maxPosSeq,
   loadFolioSources,
   ensurePosIndexes,
   SEQ_ID
@@ -62,12 +63,6 @@ async function applyPlan(db, plan) {
       updatedAt: now
     });
   });
-  if (doc) {
-    await state.updateOne(
-      { _id: 's35_pos_sales' },
-      { $set: { value: Object.assign({}, value, { items: nextItems, updatedAt: now }), updatedAt: now, updatedBy: 'reassign-pos-folios' } }
-    );
-  }
   const ledger = db.collection('pos_sales');
   for (let i = 0; i < plan.changes.length; i++) {
     const change = plan.changes[i];
@@ -82,6 +77,12 @@ async function applyPlan(db, plan) {
       { _id: sale.id },
       { $set: setDoc },
       { upsert: true }
+    );
+  }
+  if (doc) {
+    await state.updateOne(
+      { _id: 's35_pos_sales' },
+      { $set: { value: Object.assign({}, value, { items: nextItems, updatedAt: now }), updatedAt: now, updatedBy: 'reassign-pos-folios' } }
     );
   }
   await db.collection('pos_folio_seq').updateOne(
@@ -99,7 +100,7 @@ async function main() {
   }
   const db = await getDb();
   const sources = await loadFolioSources(db);
-  const plan = planPosFolioRepair(sources.blob);
+  const plan = planPosFolioRepair(sources.blob, maxPosSeq(sources.combined));
   console.log(formatRepairReport(plan));
   console.log('');
   console.log('Ventas en el panel: ' + sources.blob.length + ' · filas en pos_sales: ' + sources.ledger.length);

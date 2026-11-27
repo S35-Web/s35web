@@ -49,9 +49,11 @@ function saleStamp(sale) {
 /**
  * Los duplicados más recientes reciben el siguiente folio libre.
  * La copia más antigua conserva el folio original.
+ * `reservedMax` sube el piso con folios que ya existen en otro lado
+ * (por ejemplo el libro pos_sales) para no reutilizarlos.
  * No escribe nada.
  */
-function planPosFolioRepair(sales) {
+function planPosFolioRepair(sales, reservedMax) {
   const list = (sales || []).filter(function (sale) {
     return sale && sale.id && !sale.deleted && parsePosSeq(sale.folio);
   });
@@ -62,7 +64,7 @@ function planPosFolioRepair(sales) {
     groups[folio].push(sale);
   });
   const changes = [];
-  let max = maxPosSeq(list);
+  let max = Math.max(maxPosSeq(list), Math.floor(Number(reservedMax) || 0));
   const beforeMax = max;
   Object.keys(groups).sort().forEach(function (folio) {
     const rows = groups[folio].slice().sort(function (a, b) {

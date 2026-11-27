@@ -65,6 +65,11 @@ assert(plan.duplicateFolios.join(',') === 'POS-0402,POS-0403', '0404 no está re
 const kept = plan.changes.map(function (row) { return row.keptId; }).sort();
 assert(kept[0] === 'sale-old-402' && kept[1] === 'sale-old-403', 'la venta más antigua conserva el folio');
 
+const reserved = planPosFolioRepair([newer402, older, solo, newer403, older403], 410);
+assert(reserved.beforeMax === 410, 'el piso incluye folios ya reservados fuera del panel');
+assert(reserved.changes[0].to === 'POS-0411' && reserved.changes[1].to === 'POS-0412', 'no reutiliza un folio del libro');
+assert(reserved.nextFolio === 'POS-0413', 'el siguiente queda arriba del libro');
+
 assert(parsePosSeq('POS-0007') === 7, 'lee el consecutivo');
 assert(parsePosSeq('HIST-R1') === null, 'ignora folios que no son POS');
 assert(maxPosSeq([{ folio: 'POS-0002' }, { deleted: true, folio: 'POS-0099' }]) === 99, 'un borrado físico todavía cuenta si sigue en la lista');

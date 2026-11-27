@@ -1907,6 +1907,10 @@
     }
 
     function setSaleNoteMode(editing) {
+        if (editing && isCancelledSale(saleById(activeNoteSaleId))) {
+            toast('Una venta cancelada no se puede editar');
+            editing = false;
+        }
         saleNoteEditing = !!editing;
         if (!saleNoteEditing) closeSneClientPicker();
         const modal = document.getElementById('saleNoteModal');
@@ -1918,7 +1922,7 @@
         if (doc) doc.hidden = saleNoteEditing;
         if (edit) edit.hidden = !saleNoteEditing;
         if (share) share.hidden = saleNoteEditing;
-        if (editBtn) editBtn.hidden = saleNoteEditing;
+        if (editBtn) editBtn.hidden = saleNoteEditing || isCancelledSale(saleById(activeNoteSaleId));
         if (saleNoteEditing) {
             const sale = saleById(activeNoteSaleId);
             if (sale) renderSaleNoteEditForm(sale);
@@ -1929,6 +1933,10 @@
     function saveSaleNoteEdit() {
         const sale = saleById(activeNoteSaleId);
         if (!sale) return;
+        if (isCancelledSale(sale)) {
+            toast('Una venta cancelada no se puede editar');
+            return;
+        }
         if (precompraHasDeliveries(sale)) {
             toast('No se puede editar una precompra con surtidos');
             return;
@@ -1937,7 +1945,7 @@
         if (!patch) return;
         const beforeItems = (sale.items || []).map(function (it) { return Object.assign({}, it); });
         const beforeStockCity = saleStockCity(sale);
-        const trackStock = !isHistoricalImportSale(sale) && !isPrecompraSale(sale);
+        const trackStock = !isHistoricalImportSale(sale) && !isPrecompraSale(sale) && !isCancelledSale(sale);
         const nextStockCity = normalizeCityId(patch.stockCity || patch.city || beforeStockCity);
         delete patch.stockCity;
         Object.assign(sale, patch);
@@ -2109,7 +2117,7 @@
             edit.innerHTML = '';
         }
         if (share) share.hidden = false;
-        if (editBtn) editBtn.hidden = false;
+        if (editBtn) editBtn.hidden = isCancelledSale(sale);
         if (modal) modal.classList.remove('is-editing');
         if (title) {
             title.textContent = (isPrecompraSale(sale) ? 'Precompra · ' : 'Nota de venta · ') + saleReceiptLabel(sale);
@@ -7914,11 +7922,22 @@
         });
     }
 
+    function checkoutSkipsInventory(sale) {
+        if (!sale) return true;
+        if (isPrecompraSale(sale)) return true;
+        return !!(sale.meta && (sale.meta.skipInventory || sale.meta.kind === 'precompra'));
+    }
+
     function finishPosCheckout(sale, ctx) {
+        ctx = ctx || {};
+        const skipInventory = checkoutSkipsInventory(sale);
+        const stockCityId = saleStockCity(sale);
+        const saleCityId = normalizeCityId(sale && sale.city);
+        const wantPrecompra = isPrecompraSale(sale);
         const already = sales.some(function (row) { return row && row.id === sale.id; });
         if (!already) {
-            if (!ctx.skipInventory) {
-                applySaleInventoryChange([], sale.items, ctx.stockCityId, {
+            if (!skipInventory) {
+                applySaleInventoryChange([], sale.items, stockCityId, {
                     reason: 'venta',
                     ref: { type: 'sale', id: sale.id, folio: sale.folio || '' },
                     note: 'Venta ' + (sale.folio || sale.id)
@@ -7944,14 +7963,14 @@
             renderProducts();
         }
         refreshSalesDependentViews();
-        const stockHint = (!ctx.skipInventory && ctx.stockCityId !== ctx.saleCityId)
-            ? (' · surtido ' + cityLabel(ctx.stockCityId))
+        const stockHint = (!skipInventory && stockCityId !== saleCityId)
+            ? (' · surtido ' + cityLabel(stockCityId))
             : '';
-        const invHint = ctx.wantPrecompra
+        const invHint = wantPrecompra
             ? ' · precompra (sin descontar inventario)'
-            : (ctx.skipInventory ? ' · sin descontar inventario' : stockHint);
-        toast((ctx.fromGenerate ? 'Ticket generado ' : (ctx.wantPrecompra ? 'Precompra ' : 'Venta ')) +
-            sale.folio + ' · ' + formatSalePayLabel(sale) + ' · ' + billLabel(ctx.billing) + invHint);
+            : (skipInventory ? ' · sin descontar inventario' : stockHint);
+        toast((ctx.fromGenerate ? 'Ticket generado ' : (wantPrecompra ? 'Precompra ' : 'Venta ')) +
+            sale.folio + ' · ' + formatSalePayLabel(sale) + ' · ' + billLabel(sale.billing || ctx.billing) + invHint);
         if (ctx.fromGenerate) {
             closePosGenerateModal();
             focusHistoryOnSaleDate(sale.createdAt);
@@ -7968,9 +7987,13 @@
     function submitPosCheckout(ticket, ctx) {
         if (checkoutBusy) return;
         const attempt = bindCheckoutAttempt(ticket);
-        attempt.sale = ticket;
-        attempt.ctx = ctx;
-        persistCheckoutAttempt();
+        if (!attempt.sale) {
+            attempt.sale = ticket;
+            attempt.ctx = ctx;
+            persistCheckoutAttempt();
+        }
+        const payload = attempt.sale;
+        const savedCtx = attempt.ctx || ctx;
         setCheckoutBusy(true);
         const token = localStorage.getItem('s35_admin_token') || '';
         fetch('/api/pos-checkout', {
@@ -7982,7 +8005,7 @@
             body: JSON.stringify({
                 action: 'checkout',
                 idempotencyKey: attempt.key,
-                sale: ticket
+                sale: payload
             })
         }).then(function (res) {
             return res.json().then(function (data) {
@@ -7999,7 +8022,7 @@
                 toast((res.data && res.data.error) || 'No se pudo asignar el folio. El ticket sigue en pantalla.');
                 return;
             }
-            finishPosCheckout(res.data.sale, ctx);
+            finishPosCheckout(res.data.sale, savedCtx);
         }).catch(function () {
             toast('Sin conexión. El ticket sigue en pantalla; al reintentar se usa el mismo cobro.');
         }).then(function () {
@@ -12155,6 +12178,10 @@
         const sale = saleById(id);
         if (!sale) {
             toast('Nota no encontrada');
+            return;
+        }
+        if (isCancelledSale(sale)) {
+            toast('Una venta cancelada no se puede editar');
             return;
         }
         if (precompraHasDeliveries(sale)) {
